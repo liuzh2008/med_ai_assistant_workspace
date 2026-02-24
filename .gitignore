@@ -1,0 +1,6 @@
+# IDE配置
+.vscode/
+
+# 子项目（独立Git仓库）
+med_ai_assistant_1.0_bs_backend/
+med_ai_assistant_1.0_bs_vue/
