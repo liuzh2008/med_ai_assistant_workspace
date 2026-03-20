@@ -21,6 +21,8 @@
 - [restore-backend.sh](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/restore-backend.sh)
 - [主服务器从执行服务器下载构建产物实现方案](file://med_ai_assistant_1.0_bs_backend/doc/布署/自动化部署/主服务器从执行服务器下载构建产物实现方案.md)
 - [更新小结](file://更新小结.md)
+- [后端自动部署API接口文档](file://med_ai_assistant_1.0_bs_backend/doc/接口/后端自动部署API接口文档.md)
+- [前端自动部署接口](file://med_ai_assistant_1.0_bs_backend/doc/接口/前端自动部署接口.md)
 </cite>
 
 ## 目录
@@ -252,6 +254,8 @@ AC-->>FE : "返回结果列表"
   - 超时时间：600秒
   - 用途：执行后端自动部署脚本，自动完成版本检查、下载、备份、解压、部署等操作
   - 特性：版本号+文件大小双校验防重复部署、自动备份与回滚、错误处理和日志记录
+  - 防重复部署机制：版本号比对 + 文件大小校验 + 双校验通过则跳过部署
+  - 错误恢复：部署失败时自动从备份恢复
 - 自动部署前端
   - 方法：POST
   - 路径：/api/deploy/auto-deploy-frontend
@@ -289,6 +293,8 @@ AC-->>FE : "返回结果列表"
 - [auto-deploy-backend.sh:1-478](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L1-L478)
 - [restore-backend.sh:1-237](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/restore-backend.sh#L1-L237)
 - [主服务器从执行服务器下载构建产物实现方案:44-141](file://med_ai_assistant_1.0_bs_backend/doc/布署/自动化部署/主服务器从执行服务器下载构建产物实现方案.md#L44-L141)
+- [后端自动部署API接口文档:1-213](file://med_ai_assistant_1.0_bs_backend/doc/接口/后端自动部署API接口文档.md#L1-L213)
+- [前端自动部署接口:1-114](file://med_ai_assistant_1.0_bs_backend/doc/接口/前端自动部署接口.md#L1-L114)
 
 ### 执行服务器专用接口
 - 加密数据提交：POST /api/execute/encrypted-prompt
@@ -341,7 +347,6 @@ date testDate
 EXAMINATION_RESULT {
 int examinationResultId PK
 string patientId FK
-string itemName
 text result
 date examinationDate
 }
@@ -502,6 +507,7 @@ I --> A
   - 文件下载失败：检查下载目录权限、磁盘空间、网络连通性
   - 部署脚本超时：检查服务器性能、磁盘IO、网络延迟
   - 后端部署失败：检查Docker镜像、配置文件、端口占用
+  - 版本号不一致：检查主服务器和执行服务器的版本同步
 
 **章节来源**
 - [主服务器(Linux+Oracle)部署:282-346](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/README.md#L282-L346)
@@ -556,6 +562,7 @@ I --> A
   - 文件下载失败：检查网络连接、磁盘空间、权限
   - 部署脚本执行失败：检查脚本完整性、依赖环境、权限
   - 后端部署失败：检查Docker镜像、配置文件、端口占用
+  - 版本号不一致：检查主服务器和执行服务器的版本同步
 
 **章节来源**
 - [API文档:400-432](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L400-L432)
@@ -589,6 +596,7 @@ I --> A
   - 支持自动版本检查和回滚
   - 版本号+文件大小双校验防重复部署
   - 支持自定义下载目录
+  - 防重复部署机制：版本号比对 + 文件大小校验
 
 **章节来源**
 - [API文档:452-464](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L452-L464)
@@ -607,6 +615,7 @@ I --> A
   - 执行deploy.sh进行部署
   - 支持自动备份与回滚
   - 600秒超时控制
+  - 防重复部署机制：版本号比对 + 文件大小校验
 - 后端手动恢复脚本（restore-backend.sh）
   - 查找所有备份
   - 交互式选择备份版本
@@ -621,6 +630,7 @@ I --> A
   - 解压并部署新版本
   - 执行部署脚本
   - 支持强制重新部署
+  - 600秒超时控制
 - 手动恢复脚本（restore-frontend.sh）
   - 查找所有备份
   - 交互式选择备份版本
@@ -647,6 +657,7 @@ I --> A
 - 版本信息展示：显示后端和前端版本号及文件大小
 - 部署状态反馈：成功/失败状态提示和详细日志输出
 - 文件大小格式化：人性化显示文件大小（Bytes/KB/MB/GB）
+- 接口路径修复：避免与基础URL中的/api重复，使用`/deploy/auto-deploy-frontend`和`/deploy/auto-deploy-backend`
 
 **章节来源**
 - [UpdateView.vue:1-493](file://med_ai_assistant_1.0_bs_vue/src/views/UpdateView.vue#L1-L493)
