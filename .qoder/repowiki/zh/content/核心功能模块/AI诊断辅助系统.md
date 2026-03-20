@@ -14,17 +14,20 @@
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
 - [2026-03-20.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-20.md)
 - [2026-03-08.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-08.md)
-- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
-- [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+- [PromptTemplateEditDialog.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue)
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
+- [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
+- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [更新小结.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 修复AI对话UI无内容显示问题（aiService.js非流式响应回调时序修复）
-- 版本号从0.4.071更新到0.4.072
-- 优化AI服务调用时序，确保UI能够正确显示非流式响应内容
-- 完善错误处理机制，提升用户体验和系统稳定性
+- 新增AI辅助界面Prompt模板补充信息输入对话框功能，增强用户在使用'请会诊记录'和'日常对话'模板时提供额外上下文信息的能力
+- 优化模板执行流程，支持动态补充信息的收集与处理
+- 完善用户交互体验，提供更灵活的上下文信息输入选项
+- 增强AI分析的全面性和准确性，通过补充信息提升诊断质量
 
 ## 目录
 1. [简介](#简介)
@@ -41,12 +44,13 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**更新** 版本0.4.072修复了AI对话UI无内容显示的关键问题，通过优化非流式响应回调时序，确保用户界面能够正确接收和显示AI生成的内容。
+**最新更新** 新增AI辅助界面Prompt模板补充信息输入对话框功能，用户在使用'请会诊记录'和'日常对话'模板时可以输入额外的上下文信息，显著提升了AI分析的全面性和准确性。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
 - 配置与控制器：AI模型配置类、执行服务器控制器等
 - 前端AI服务：aiService.js提供统一的AI服务调用接口
+- 模板管理：PromptTemplates.vue、PromptTemplateEditDialog.vue等模板管理组件
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
 
@@ -59,6 +63,8 @@ end
 subgraph "前端应用"
 VueApp["Vue.js 应用<br/>AI对话界面"]
 AIService["AI服务模块<br/>aiService.js"]
+PromptTemplates["模板管理组件<br/>PromptTemplates.vue"]
+PromptEditor["模板编辑对话框<br/>PromptTemplateEditDialog.vue"]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
@@ -70,6 +76,8 @@ Main --> Exec
 Exec --> LLM
 Main --> DB
 Exec --> DB
+PromptTemplates --> AIService
+PromptEditor --> AIService
 ```
 
 **图表来源**
@@ -87,20 +95,24 @@ Exec --> DB
 - 响应缓存：对相同Prompt进行缓存，减少重复LLM调用，提升吞吐与稳定性。
 - 错误分类与恢复：区分网络超时、服务端错误与未知异常，结合指数退避重试与告警机制。
 - **前端AI服务模块**：提供统一的AI服务调用接口，支持Promise和回调两种模式，优化非流式响应处理时序。
+- **模板管理组件**：提供Prompt模板的树形展示、编辑、删除等功能，支持补充信息输入对话框。
+- **模板编辑对话框**：支持模板的创建、编辑、删除操作，包含完整的表单验证和数据管理。
 
-**更新** 新增前端AI服务模块的时序优化，确保UI能够及时接收和显示AI响应内容。
+**最新更新** 新增模板管理组件的补充信息输入功能，用户可以在执行特定模板时输入额外的上下文信息。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
 - [执行服务器控制器.java:84-403](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L403)
 - [执行服务器LLM调用优化敏捷迭代规划.md:139-225](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L139-L225)
 - [aiService.js:1-280](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L1-L280)
+- [PromptTemplates.vue:26-31](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L26-L31)
+- [PromptTemplateEditDialog.vue:144-453](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue#L144-L453)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
 - 主服务器：聚合患者数据、生成Prompt、调度执行服务器、提供对外API。
 - 执行服务器：专注LLM调用与加密处理，支持轮询模式与回调机制，具备完善的监控与统计。
-- **前端应用**：通过AI服务模块统一调用后端AI接口，提供用户友好的对话界面。
+- **前端应用**：通过AI服务模块统一调用后端AI接口，提供用户友好的对话界面和模板管理功能。
 
 ```mermaid
 graph TB
@@ -115,10 +127,14 @@ subgraph "前端应用"
 G["Vue.js 应用"]
 H["AI服务模块"]
 I["对话界面组件"]
+J["模板管理组件"]
+K["模板编辑对话框"]
 end
 G --> H
 H --> F
 I --> G
+J --> H
+K --> H
 ```
 
 **图表来源**
@@ -240,7 +256,7 @@ AIService->>VueComp : "onData回调先调用"
 AIService-->>VueComp : "Promise resolve后完成"
 ```
 
-**更新** 修复了非流式响应模式下的回调时序问题，确保UI能够在Promise resolve之前接收到数据。
+**最新更新** 修复了非流式响应模式下的回调时序问题，确保UI能够在Promise resolve之前接收到数据。
 
 **图表来源**
 - [aiService.js:110-170](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L110-L170)
@@ -250,10 +266,67 @@ AIService-->>VueComp : "Promise resolve后完成"
 - [aiService.js:110-170](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L110-L170)
 - [aiService.js:229-279](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L229-L279)
 
+### 模板管理组件（补充信息输入功能）
+- 设计要点
+  - 支持Prompt模板的树形展示和分类管理
+  - 新增补充信息输入对话框功能，针对特定模板提供额外上下文
+  - 动态处理用户输入的补充信息，将其注入到执行选项中
+  - 完善用户交互体验，提供灵活的上下文信息收集
+- 关键特性
+  - 模板常量定义：`TEMPLATES_REQUIRING_ADDITIONAL_INFO = ['请会诊记录', '日常对话']`
+  - 弹窗输入：使用Element Plus的MessageBox.prompt组件
+  - 信息处理：将补充信息格式化为`AdditionalInfo`字段
+  - 状态管理：支持跳过输入和关闭对话框的操作
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant TemplateComp as "模板组件"
+participant MessageBox as "消息框组件"
+participant Utils as "promptUtils"
+User->>TemplateComp : "点击模板执行"
+TemplateComp->>TemplateComp : "检查是否需要补充信息"
+alt "需要补充信息"
+TemplateComp->>MessageBox : "显示输入对话框"
+MessageBox-->>TemplateComp : "用户输入或取消"
+TemplateComp->>TemplateComp : "格式化补充信息"
+TemplateComp->>Utils : "执行Prompt"
+else "不需要补充信息"
+TemplateComp->>Utils : "直接执行Prompt"
+end
+Utils-->>User : "显示执行结果"
+```
+
+**最新更新** 新增补充信息输入对话框功能，显著提升了用户在使用特定模板时的上下文信息提供能力。
+
+**图表来源**
+- [PromptTemplates.vue:106-131](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L106-L131)
+- [PromptTemplates.vue:149-152](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L149-L152)
+
+**章节来源**
+- [PromptTemplates.vue:26-31](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L26-L31)
+- [PromptTemplates.vue:86-174](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L86-L174)
+
+### 模板编辑对话框（完整管理功能）
+- 设计要点
+  - 提供完整的模板编辑界面，支持创建、编辑、删除操作
+  - 包含多标签页的表单结构，支持不同类型的模板配置
+  - 集成数据类型、过滤规则、作用范围等高级配置选项
+  - 实现模板树形结构的可视化展示和管理
+- 关键功能
+  - 模板树形展示：支持模板类型分组和层级管理
+  - 表单验证：完整的字段验证和错误处理机制
+  - 数据同步：实时刷新模板列表和状态管理
+  - 权限控制：根据用户权限显示不同的操作选项
+
+**章节来源**
+- [PromptTemplateEditDialog.vue:144-453](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue#L144-L453)
+
 ### 数据预处理与结果后处理
 - 预处理
   - 解密：从数据库读取AES密钥与盐值，解密Base64加密的Prompt
   - 缓存：基于Prompt内容生成缓存键，命中则直接返回
+  - 补充信息：处理用户提供的额外上下文信息
 - 推理过程
   - 调用LLM服务，支持流式与非流式响应
   - 指数退避重试，避免网络波动与服务异常导致的失败
@@ -267,7 +340,8 @@ flowchart TD
 Start(["开始"]) --> Decrypt["解密加密Prompt"]
 Decrypt --> CacheCheck{"缓存命中？"}
 CacheCheck --> |是| ReturnCache["返回缓存结果"]
-CacheCheck --> |否| CallLLM["调用LLM服务"]
+CacheCheck --> |否| AddContext["添加补充信息"]
+AddContext --> CallLLM["调用LLM服务"]
 CallLLM --> Retry{"调用成功？"}
 Retry --> |否| ExponentialBackoff["指数退避重试"]
 ExponentialBackoff --> Retry
@@ -297,6 +371,12 @@ Stats --> End(["结束"])
   - 流式调用：POST `/api/ai/stream-response-post`，Content-Type: application/json
   - 非流式调用：POST `/api/ai/response`，请求体包含model与messages
   - 健康检查：GET `/api/health/ai-status`
+- **模板管理API**
+  - 获取模板列表：GET `/api/ai/promptTemplates`
+  - 获取模板详情：GET `/api/ai/promptTemplate`
+  - 创建模板：POST `/api/ai/prompt-templates`
+  - 更新模板：PUT `/api/ai/prompt-templates/{templateId}`
+  - 删除模板：DELETE `/api/ai/prompt-templates/{templateId}`
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -307,14 +387,17 @@ Stats --> End(["结束"])
   - 执行服务器控制器依赖AI模型配置类、专用RestTemplate、加密工具与回调服务
   - 与数据库交互通过执行服务器专用数据源与临时表Repository
   - **前端AI服务模块**依赖Vue.js组件和后端AI接口
+  - **模板管理组件**依赖Element Plus UI组件和promptUtils工具
 - 外部依赖
   - LLM服务：通过RestTemplate调用，需配置URL与密钥
   - 数据库：存储加密临时数据、配置与回调记录
+  - Element Plus：提供UI组件和对话框功能
 - 潜在风险
   - LLM服务不稳定：通过熔断器与重试缓解
   - 连接池耗尽：通过专用连接池与超时配置控制
   - 配置冲突：通过隔离配置与向后兼容策略解决
   - **UI显示时序问题**：通过优化回调时序解决非流式响应显示问题
+  - **模板执行异常**：通过补充信息输入验证和错误处理机制解决
 
 ```mermaid
 graph TB
@@ -329,6 +412,9 @@ subgraph "前端依赖"
 AIService["AI服务模块"] --> VueComp["Vue组件"]
 AIService --> BackendAPI["后端AI接口"]
 VueComp --> UIComponents["UI组件"]
+TemplateComp["模板管理组件"] --> ElementPlus["Element Plus"]
+TemplateComp --> promptUtils["promptUtils工具"]
+TemplateComp --> MessageBox["MessageBox对话框"]
 end
 ```
 
@@ -336,11 +422,13 @@ end
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
 - [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
+- [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
 - [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
+- [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
 
 ## 性能考虑
 - 连接池与超时
@@ -358,8 +446,13 @@ end
 - **UI性能优化**
   - **非流式响应时序优化**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理优化**：支持字符串和对象形式的错误信息，提升错误信息可读性
+  - **模板执行优化**：补充信息输入对话框的异步处理，避免阻塞主界面
+- **模板管理性能**
+  - **树形结构渲染**：优化大量模板的渲染性能
+  - **表单验证**：实时验证用户输入，减少无效提交
+  - **状态管理**：高效的组件状态更新和同步机制
 
-**更新** 新增UI性能优化措施，特别是非流式响应的时序优化。
+**最新更新** 新增模板管理组件的性能优化措施，包括补充信息输入对话框的异步处理和模板树形结构的渲染优化。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
@@ -372,19 +465,24 @@ end
   - 网络中断后连接失败：检查连接Keep-Alive与请求超时设置
   - 错误分类不准确：完善异常捕获与错误类型映射
   - **AI对话UI无内容显示**：检查非流式响应回调时序是否正确
+  - **模板补充信息输入异常**：检查Element Plus对话框组件的配置和事件处理
+  - **模板管理功能失效**：验证模板树形结构渲染和表单验证逻辑
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
   - 验证AI模型配置的有效性与URL可达性
   - 观察回调状态与异步处理日志
   - **检查前端AI服务模块的回调时序**：确认onData回调在Promise resolve之前执行
+  - **验证模板组件的补充信息处理**：检查ElMessageBox.prompt的配置和事件监听
+  - **测试模板编辑对话框功能**：确认表单验证和数据同步机制
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
   - 执行服务器性能优化方案
   - **AI对话UI无内容显示问题修复说明**
+  - **模板管理组件功能实现指南**
 
-**更新** 新增AI对话UI无内容显示问题的排查指南。
+**最新更新** 新增模板管理组件相关的故障排查指南，包括补充信息输入对话框和模板编辑功能的异常处理。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -393,25 +491,34 @@ end
 - [2026-03-20.md:5-10](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-20.md#L5-L10)
 
 ## 结论
-系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。** 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
+系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**更新** 版本0.4.072通过修复非流式响应回调时序问题，显著提升了AI对话UI的用户体验和系统稳定性。
+**最新更新** 新增的模板管理组件补充信息输入功能显著提升了系统的灵活性和实用性，用户可以通过输入额外的上下文信息来增强AI分析的准确性和全面性。该功能的实现体现了系统在用户体验优化方面的持续改进，为复杂的医疗场景提供了更好的支持。
+
+建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
 ## 附录
 - 配置建议
   - 在应用配置中添加LLM专用参数：连接超时、读取超时、最大重试次数、基础延迟、连接池大小等
   - 启用监控与告警：实时成功率、响应时间、超时错误频率与重试成功率
   - **前端配置**：确保AI服务模块的回调时序正确，支持Promise和回调两种调用模式
+  - **模板管理配置**：Element Plus组件的国际化和主题配置
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.4.072，包含UI显示问题修复
+  - **版本管理**：版本号从0.4.071更新到0.4.072，包含UI显示问题修复和模板管理功能增强
 - **UI优化建议**
   - **非流式响应**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理**：支持多种错误格式，提供清晰的错误信息反馈
   - **加载状态**：在AI响应期间提供适当的加载提示，改善用户体验
+  - **模板交互**：优化补充信息输入对话框的用户体验，提供清晰的引导和帮助信息
+- **模板管理最佳实践**
+  - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
+  - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
+  - **权限控制**：根据用户角色限制模板的创建、编辑和删除权限
+  - **数据备份**：定期备份模板配置，防止意外删除造成的数据丢失
 
-**更新** 新增UI优化建议和版本管理说明。
+**最新更新** 新增模板管理组件的配置建议和最佳实践，包括补充信息输入功能的用户体验优化和模板管理的安全控制。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
