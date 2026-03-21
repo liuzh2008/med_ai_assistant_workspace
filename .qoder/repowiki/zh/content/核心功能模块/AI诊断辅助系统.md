@@ -12,22 +12,25 @@
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
-- [2026-03-20.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-20.md)
-- [2026-03-08.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-08.md)
+- [2026-03-21更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
+- [2026-03-20更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
+- [2026-03-08更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
 - [PromptTemplateEditDialog.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue)
 - [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
 - [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
 - [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
-- [更新小结.md](file://med_ai_assistant_1.0_bs/更新小结.md)
+- [TopMenu.vue](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue)
+- [监护仪呼吸机AI OCR数据采集方案.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增AI辅助界面Prompt模板补充信息输入对话框功能，增强用户在使用'请会诊记录'和'日常对话'模板时提供额外上下文信息的能力
-- 优化模板执行流程，支持动态补充信息的收集与处理
-- 完善用户交互体验，提供更灵活的上下文信息输入选项
-- 增强AI分析的全面性和准确性，通过补充信息提升诊断质量
+- 修复Android平板界面问题：解决"AI辅助"子菜单点击后立即收起的问题，新增触屏/桌面设备差异化交互逻辑
+- 增强AI OCR数据采集系统：新增监护仪呼吸机AI OCR数据采集完整技术方案，支持设备屏幕自动识别和数据数字化
+- 优化模板管理组件：完善补充信息输入对话框功能，支持"请会诊记录"和"日常对话"模板的上下文信息收集
+- 改进UI显示时序：优化非流式响应模式下的回调时序，确保AI对话内容能够及时显示在界面上
+- 新增设备差异化交互：通过检测触摸设备能力，智能区分触屏和桌面设备的菜单交互行为
 
 ## 目录
 1. [简介](#简介)
@@ -44,7 +47,7 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 新增AI辅助界面Prompt模板补充信息输入对话框功能，用户在使用'请会诊记录'和'日常对话'模板时可以输入额外的上下文信息，显著提升了AI分析的全面性和准确性。
+**最新更新** 新增Android平板界面修复和AI OCR数据采集系统功能增强，包括触屏/桌面设备差异化交互逻辑、UI显示时序优化、模板管理组件的补充信息输入功能等。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
@@ -53,22 +56,27 @@
 - 模板管理：PromptTemplates.vue、PromptTemplateEditDialog.vue等模板管理组件
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
+- **AI OCR数据采集**：监护仪呼吸机AI OCR数据采集完整技术方案
 
 ```mermaid
 graph TB
 subgraph "后端服务"
 Main["主服务器<br/>业务编排与对外API"]
 Exec["执行服务器<br/>LLM调用与加密处理"]
+OCRAPI["OCR数据采集服务<br/>设备屏幕识别与数据处理"]
 end
 subgraph "前端应用"
 VueApp["Vue.js 应用<br/>AI对话界面"]
 AIService["AI服务模块<br/>aiService.js"]
 PromptTemplates["模板管理组件<br/>PromptTemplates.vue"]
 PromptEditor["模板编辑对话框<br/>PromptTemplateEditDialog.vue"]
+TopMenu["顶部菜单组件<br/>TopMenu.vue"]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
 DB[("数据库")]
+OCRDB[("OCR数据库")]
+EndDevice[("医疗设备")]
 end
 VueApp --> AIService
 AIService --> Main
@@ -78,11 +86,16 @@ Main --> DB
 Exec --> DB
 PromptTemplates --> AIService
 PromptEditor --> AIService
+TopMenu --> AIService
+OCRAPI --> OCRDB
+OCRAPI --> EndDevice
+Main --> OCRAPI
 ```
 
 **图表来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:140-161](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L140-L161)
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
+- [监护仪呼吸机AI OCR数据采集方案.md:375-416](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L375-L416)
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:1-136](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L1-L136)
@@ -97,8 +110,10 @@ PromptEditor --> AIService
 - **前端AI服务模块**：提供统一的AI服务调用接口，支持Promise和回调两种模式，优化非流式响应处理时序。
 - **模板管理组件**：提供Prompt模板的树形展示、编辑、删除等功能，支持补充信息输入对话框。
 - **模板编辑对话框**：支持模板的创建、编辑、删除操作，包含完整的表单验证和数据管理。
+- **顶部菜单组件**：支持触屏/桌面设备差异化交互，修复Android平板上的菜单点击问题。
+- **AI OCR数据采集系统**：实现医疗设备屏幕的自动OCR识别和数据数字化处理。
 
-**最新更新** 新增模板管理组件的补充信息输入功能，用户可以在执行特定模板时输入额外的上下文信息。
+**最新更新** 新增触屏/桌面设备差异化交互逻辑和AI OCR数据采集系统，显著提升了系统的兼容性和功能性。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
@@ -107,39 +122,48 @@ PromptEditor --> AIService
 - [aiService.js:1-280](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L1-L280)
 - [PromptTemplates.vue:26-31](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L26-L31)
 - [PromptTemplateEditDialog.vue:144-453](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue#L144-L453)
+- [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
+- [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
 - 主服务器：聚合患者数据、生成Prompt、调度执行服务器、提供对外API。
 - 执行服务器：专注LLM调用与加密处理，支持轮询模式与回调机制，具备完善的监控与统计。
 - **前端应用**：通过AI服务模块统一调用后端AI接口，提供用户友好的对话界面和模板管理功能。
+- **AI OCR数据采集系统**：独立的OCR识别服务，专门处理医疗设备屏幕数据的自动采集和数字化。
 
 ```mermaid
 graph TB
 A["主服务器"] --> B["执行服务器"]
-B --> C["LLM服务"]
-A --> D["数据库"]
-B --> D
-B --> E["回调服务"]
-A --> F["对外API"]
-F --> A
+A --> C["OCR数据采集服务"]
+B --> D["LLM服务"]
+A --> E["数据库"]
+B --> E
+C --> F["OCR数据库"]
+C --> G["医疗设备"]
+B --> H["回调服务"]
+A --> I["对外API"]
+I --> A
 subgraph "前端应用"
-G["Vue.js 应用"]
-H["AI服务模块"]
-I["对话界面组件"]
-J["模板管理组件"]
-K["模板编辑对话框"]
+J["Vue.js 应用"]
+K["AI服务模块"]
+L["对话界面组件"]
+M["模板管理组件"]
+N["顶部菜单组件"]
+O["OCR数据看板"]
 end
-G --> H
-H --> F
-I --> G
-J --> H
-K --> H
+J --> K
+K --> I
+L --> J
+M --> K
+N --> J
+O --> J
 ```
 
 **图表来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:141-161](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L141-L161)
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
+- [监护仪呼吸机AI OCR数据采集方案.md:375-416](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L375-L416)
 
 ## 详细组件分析
 
@@ -322,6 +346,81 @@ Utils-->>User : "显示执行结果"
 **章节来源**
 - [PromptTemplateEditDialog.vue:144-453](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue#L144-L453)
 
+### 顶部菜单组件（触屏/桌面差异化交互）
+- 设计要点
+  - 检测设备是否支持触摸功能，智能区分触屏和桌面设备
+  - 触屏设备：AI辅助子菜单点击时不触发导航，让子菜单自然展开/收起
+  - 桌面设备：AI辅助子菜单点击时直接导航到AI辅助页面
+  - 支持小屏模式切换，适配7-8英寸设备
+- 关键特性
+  - 设备检测：`'ontouchstart' in window || navigator.maxTouchPoints > 0`
+  - 事件处理：根据设备类型执行不同的菜单交互逻辑
+  - 用户体验：避免Android平板上的菜单点击问题
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant TopMenu as "顶部菜单组件"
+participant Event as "点击事件"
+User->>TopMenu : "点击AI辅助菜单"
+TopMenu->>TopMenu : "检测设备类型"
+alt "触屏设备"
+TopMenu->>Event : "阻止默认导航"
+Event-->>User : "子菜单自然展开/收起"
+else "桌面设备"
+TopMenu->>TopMenu : "执行导航到AI辅助页面"
+TopMenu-->>User : "页面跳转"
+end
+```
+
+**最新更新** 新增触屏/桌面设备差异化交互逻辑，修复Android平板上的菜单点击问题。
+
+**图表来源**
+- [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
+
+**章节来源**
+- [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
+
+### AI OCR数据采集系统
+- 设计要点
+  - 独立的OCR识别服务，专门处理医疗设备屏幕数据
+  - 支持多品牌医疗设备（监护仪、呼吸机、输液泵等）
+  - 提供设备模板管理系统，支持自学习和社区共享
+  - 实现实时数据推送和历史数据查询功能
+- 关键特性
+  - OCR识别：基于PaddleOCR的文字识别技术
+  - 数据校验：规则引擎进行数据有效性检查
+  - 报警机制：危急值自动检测和通知推送
+  - 集成接口：与主系统通过REST API和WebSocket集成
+
+```mermaid
+sequenceDiagram
+participant Device as "医疗设备"
+participant Camera as "摄像头"
+participant Edge as "边缘计算设备"
+participant OCR as "OCR识别引擎"
+participant Service as "OCR服务端"
+participant Main as "主系统"
+Device->>Camera : "屏幕显示数据"
+Camera->>Edge : "图像采集"
+Edge->>Edge : "图像预处理"
+Edge->>OCR : "OCR识别"
+OCR-->>Edge : "识别结果"
+Edge->>Edge : "参数解析和校验"
+Edge->>Service : "上报结构化数据"
+Service->>Service : "服务端校验"
+Service->>Main : "WebSocket推送"
+Main-->>Main : "UI实时更新"
+```
+
+**最新更新** 新增完整的AI OCR数据采集系统，支持医疗设备屏幕的自动识别和数据数字化。
+
+**图表来源**
+- [监护仪呼吸机AI OCR数据采集方案.md:417-454](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L417-L454)
+
+**章节来源**
+- [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
+
 ### 数据预处理与结果后处理
 - 预处理
   - 解密：从数据库读取AES密钥与盐值，解密Base64加密的Prompt
@@ -349,7 +448,6 @@ Retry --> |是| Encrypt["AES加密结果"]
 Encrypt --> Callback["异步回调可选"]
 Callback --> Stats["更新统计"]
 ReturnCache --> Stats
-Stats --> End(["结束"])
 ```
 
 **图表来源**
@@ -377,6 +475,11 @@ Stats --> End(["结束"])
   - 创建模板：POST `/api/ai/prompt-templates`
   - 更新模板：PUT `/api/ai/prompt-templates/{templateId}`
   - 删除模板：DELETE `/api/ai/prompt-templates/{templateId}`
+- **OCR数据采集API**
+  - 设备注册：POST `/api/ocr/devices`
+  - 数据上报：POST `/api/ocr/data`
+  - 模板管理：GET/POST/PUT `/api/ocr/templates`
+  - 实时数据：GET `/api/ocr/live-data`
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -388,16 +491,21 @@ Stats --> End(["结束"])
   - 与数据库交互通过执行服务器专用数据源与临时表Repository
   - **前端AI服务模块**依赖Vue.js组件和后端AI接口
   - **模板管理组件**依赖Element Plus UI组件和promptUtils工具
+  - **顶部菜单组件**依赖设备检测逻辑和路由导航
+  - **OCR数据采集系统**独立部署，通过API与主系统集成
 - 外部依赖
   - LLM服务：通过RestTemplate调用，需配置URL与密钥
   - 数据库：存储加密临时数据、配置与回调记录
   - Element Plus：提供UI组件和对话框功能
+  - PaddleOCR：提供医疗设备屏幕的OCR识别能力
 - 潜在风险
   - LLM服务不稳定：通过熔断器与重试缓解
   - 连接池耗尽：通过专用连接池与超时配置控制
   - 配置冲突：通过隔离配置与向后兼容策略解决
   - **UI显示时序问题**：通过优化回调时序解决非流式响应显示问题
   - **模板执行异常**：通过补充信息输入验证和错误处理机制解决
+  - **设备兼容性问题**：通过触屏/桌面差异化交互解决Android平板菜单问题
+  - **OCR识别准确性**：通过模板管理和规则引擎保证数据质量
 
 ```mermaid
 graph TB
@@ -415,6 +523,10 @@ VueComp --> UIComponents["UI组件"]
 TemplateComp["模板管理组件"] --> ElementPlus["Element Plus"]
 TemplateComp --> promptUtils["promptUtils工具"]
 TemplateComp --> MessageBox["MessageBox对话框"]
+TopMenu["顶部菜单组件"] --> DeviceDetect["设备检测逻辑"]
+TopMenu --> Router["路由导航"]
+OCRAPI["OCR数据采集API"] --> OCRService["OCR服务端"]
+OCRAPI --> MainSystem["主系统集成"]
 end
 ```
 
@@ -423,12 +535,14 @@ end
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
 - [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
 - [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
+- [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
 - [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
 - [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
+- [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 
 ## 性能考虑
 - 连接池与超时
@@ -447,17 +561,24 @@ end
   - **非流式响应时序优化**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理优化**：支持字符串和对象形式的错误信息，提升错误信息可读性
   - **模板执行优化**：补充信息输入对话框的异步处理，避免阻塞主界面
+  - **设备适配优化**：触屏/桌面差异化交互，提升移动端用户体验
 - **模板管理性能**
   - **树形结构渲染**：优化大量模板的渲染性能
   - **表单验证**：实时验证用户输入，减少无效提交
   - **状态管理**：高效的组件状态更新和同步机制
+- **OCR系统性能**
+  - **边缘计算优化**：GPU加速OCR推理，提升识别速度
+  - **模板匹配优化**：基于锚点特征的快速模板识别
+  - **数据流优化**：异步处理和批量上传，减少网络延迟
+  - **缓存策略**：本地缓存和断网续传，保证数据完整性
 
-**最新更新** 新增模板管理组件的性能优化措施，包括补充信息输入对话框的异步处理和模板树形结构的渲染优化。
+**最新更新** 新增触屏/桌面设备差异化交互和AI OCR数据采集系统的性能优化措施。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [执行服务器LLM调用优化敏捷迭代规划.md:229-281](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L229-L281)
-- [2026-03-20.md:5-10](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-20.md#L5-L10)
+- [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
+- [监护仪呼吸机AI OCR数据采集方案.md:1340-1352](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1340-L1352)
 
 ## 故障排查指南
 - 常见问题
@@ -467,6 +588,8 @@ end
   - **AI对话UI无内容显示**：检查非流式响应回调时序是否正确
   - **模板补充信息输入异常**：检查Element Plus对话框组件的配置和事件处理
   - **模板管理功能失效**：验证模板树形结构渲染和表单验证逻辑
+  - **Android平板菜单点击问题**：检查触屏设备检测逻辑和事件处理
+  - **OCR识别失败**：验证设备模板配置和图像预处理参数
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -475,25 +598,30 @@ end
   - **检查前端AI服务模块的回调时序**：确认onData回调在Promise resolve之前执行
   - **验证模板组件的补充信息处理**：检查ElMessageBox.prompt的配置和事件监听
   - **测试模板编辑对话框功能**：确认表单验证和数据同步机制
+  - **验证设备检测逻辑**：检查'ontouchstart'检测和maxTouchPoints判断
+  - **测试OCR数据采集流程**：验证图像采集、OCR识别和数据上报
+  - **检查OCR模板匹配**：确认设备模板配置和参数区域定位
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
   - 执行服务器性能优化方案
   - **AI对话UI无内容显示问题修复说明**
   - **模板管理组件功能实现指南**
+  - **Android平板菜单交互问题解决方案**
+  - **AI OCR数据采集系统技术方案**
 
-**最新更新** 新增模板管理组件相关的故障排查指南，包括补充信息输入对话框和模板编辑功能的异常处理。
+**最新更新** 新增Android平板菜单交互问题和AI OCR数据采集系统的故障排查指南。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
 - [执行服务器架构简化实施报告.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器架构简化实施报告.md)
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
-- [2026-03-20.md:5-10](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-20.md#L5-L10)
+- [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 
 ## 结论
 系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 新增的模板管理组件补充信息输入功能显著提升了系统的灵活性和实用性，用户可以通过输入额外的上下文信息来增强AI分析的准确性和全面性。该功能的实现体现了系统在用户体验优化方面的持续改进，为复杂的医疗场景提供了更好的支持。
+**最新更新** 新增的触屏/桌面设备差异化交互逻辑显著提升了Android平板等触屏设备的用户体验，修复了"AI辅助"子菜单点击后立即收起的问题。AI OCR数据采集系统的引入为医疗设备数据的自动采集和数字化提供了完整的解决方案，支持多品牌设备的屏幕识别和参数提取。这些功能增强体现了系统在兼容性、实用性和扩展性方面的持续改进，为复杂的医疗场景提供了更好的支持。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -503,25 +631,39 @@ end
   - 启用监控与告警：实时成功率、响应时间、超时错误频率与重试成功率
   - **前端配置**：确保AI服务模块的回调时序正确，支持Promise和回调两种调用模式
   - **模板管理配置**：Element Plus组件的国际化和主题配置
+  - **设备检测配置**：触屏设备检测逻辑的兼容性测试
+  - **OCR系统配置**：边缘计算设备的性能参数和网络配置
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.4.072，包含UI显示问题修复和模板管理功能增强
+  - **版本管理**：版本号从0.4.071更新到0.5.075，包含UI显示问题修复、模板管理功能增强和Android平板界面修复
+  - **OCR系统部署**：独立部署OCR服务，与主系统通过API集成
 - **UI优化建议**
   - **非流式响应**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理**：支持多种错误格式，提供清晰的错误信息反馈
   - **加载状态**：在AI响应期间提供适当的加载提示，改善用户体验
   - **模板交互**：优化补充信息输入对话框的用户体验，提供清晰的引导和帮助信息
+  - **设备适配**：完善触屏/桌面差异化交互，提升移动端用户体验
+  - **OCR界面**：提供直观的设备管理和数据监控界面
 - **模板管理最佳实践**
   - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
   - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
   - **权限控制**：根据用户角色限制模板的创建、编辑和删除权限
   - **数据备份**：定期备份模板配置，防止意外删除造成的数据丢失
+  - **模板共享**：建立模板社区共享机制，促进模板的复用和优化
+- **OCR系统最佳实践**
+  - **设备模板管理**：建立完善的设备模板库，支持快速模板匹配
+  - **图像质量优化**：确保摄像头安装位置和角度符合识别要求
+  - **数据校验机制**：建立多层次的数据校验规则，保证数据准确性
+  - **报警机制**：设置合理的报警阈值，及时发现异常情况
+  - **性能监控**：实时监控OCR识别性能和系统运行状态
 
-**最新更新** 新增模板管理组件的配置建议和最佳实践，包括补充信息输入功能的用户体验优化和模板管理的安全控制。
+**最新更新** 新增触屏/桌面设备差异化交互和AI OCR数据采集系统的配置建议和最佳实践，包括设备检测逻辑、OCR模板管理和性能监控等方面。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
-- [2026-03-20.md:15-17](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-20.md#L15-L17)
-- [2026-03-08.md:28-36](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-03-08.md#L28-L36)
+- [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
+- [2026-03-20更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
+- [2026-03-08更新日志.md:28-36](file://med_ai_assistant_1.0_bs/更新小结.md#L28-L36)
+- [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
