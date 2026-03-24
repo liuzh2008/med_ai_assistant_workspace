@@ -12,6 +12,8 @@
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [2026-03-24更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
+- [2026-03-23更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-21更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-20更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-08更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
@@ -31,6 +33,7 @@
 - 优化模板管理组件：完善补充信息输入对话框功能，支持"请会诊记录"和"日常对话"模板的上下文信息收集
 - 改进UI显示时序：优化非流式响应模式下的回调时序，确保AI对话内容能够及时显示在界面上
 - 新增设备差异化交互：通过检测触摸设备能力，智能区分触屏和桌面设备的菜单交互行为
+- **新增AI OCR数据采集系统完整技术方案**：涵盖硬件选型、软件架构、OCR核心技术、数据处理与校验、数据库设计、API接口设计、前端界面设计等
 
 ## 目录
 1. [简介](#简介)
@@ -47,7 +50,7 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 新增Android平板界面修复和AI OCR数据采集系统功能增强，包括触屏/桌面设备差异化交互逻辑、UI显示时序优化、模板管理组件的补充信息输入功能等。
+**最新更新** 新增Android平板界面修复和AI OCR数据采集系统功能增强，包括触屏/桌面设备差异化交互逻辑、UI显示时序优化、模板管理组件的补充信息输入功能等。**AI OCR数据采集系统作为全新的核心功能模块，为医疗设备数据的自动采集和数字化提供了完整的解决方案。**
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
@@ -71,6 +74,7 @@ AIService["AI服务模块<br/>aiService.js"]
 PromptTemplates["模板管理组件<br/>PromptTemplates.vue"]
 PromptEditor["模板编辑对话框<br/>PromptTemplateEditDialog.vue"]
 TopMenu["顶部菜单组件<br/>TopMenu.vue"]
+OCRDash["OCR数据看板<br/>实时监控界面"]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
@@ -90,6 +94,7 @@ TopMenu --> AIService
 OCRAPI --> OCRDB
 OCRAPI --> EndDevice
 Main --> OCRAPI
+OCRDash --> Main
 ```
 
 **图表来源**
@@ -111,7 +116,7 @@ Main --> OCRAPI
 - **模板管理组件**：提供Prompt模板的树形展示、编辑、删除等功能，支持补充信息输入对话框。
 - **模板编辑对话框**：支持模板的创建、编辑、删除操作，包含完整的表单验证和数据管理。
 - **顶部菜单组件**：支持触屏/桌面设备差异化交互，修复Android平板上的菜单点击问题。
-- **AI OCR数据采集系统**：实现医疗设备屏幕的自动OCR识别和数据数字化处理。
+- **AI OCR数据采集系统**：实现医疗设备屏幕的自动OCR识别和数据数字化处理，支持多品牌设备的参数提取。
 
 **最新更新** 新增触屏/桌面设备差异化交互逻辑和AI OCR数据采集系统，显著提升了系统的兼容性和功能性。
 
@@ -130,7 +135,7 @@ Main --> OCRAPI
 - 主服务器：聚合患者数据、生成Prompt、调度执行服务器、提供对外API。
 - 执行服务器：专注LLM调用与加密处理，支持轮询模式与回调机制，具备完善的监控与统计。
 - **前端应用**：通过AI服务模块统一调用后端AI接口，提供用户友好的对话界面和模板管理功能。
-- **AI OCR数据采集系统**：独立的OCR识别服务，专门处理医疗设备屏幕数据的自动采集和数字化。
+- **AI OCR数据采集系统**：独立的OCR识别服务，专门处理医疗设备屏幕数据的自动采集和数字化，与主系统通过REST API和WebSocket集成。
 
 ```mermaid
 graph TB
@@ -636,7 +641,7 @@ end
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.5.075，包含UI显示问题修复、模板管理功能增强和Android平板界面修复
+  - **版本管理**：版本号从0.4.071更新到0.6.080，包含UI显示问题修复、模板管理功能增强、Android平板界面修复和AI OCR数据采集系统
   - **OCR系统部署**：独立部署OCR服务，与主系统通过API集成
 - **UI优化建议**
   - **非流式响应**：确保回调在Promise resolve之前执行，避免UI显示延迟
@@ -663,6 +668,8 @@ end
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
+- [2026-03-24更新日志.md:1-39](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L39)
+- [2026-03-23更新日志.md:1-39](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L39)
 - [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 - [2026-03-20更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 - [2026-03-08更新日志.md:28-36](file://med_ai_assistant_1.0_bs/更新小结.md#L28-L36)
