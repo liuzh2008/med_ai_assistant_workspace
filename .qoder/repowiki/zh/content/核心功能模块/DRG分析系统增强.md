@@ -10,7 +10,45 @@
 - [RetryUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/RetryUtil.java)
 - [AIRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/AIRequest.java)
 - [README.md](file://med_ai_assistant_1.0_bs_backend/deploy/README.md)
+- [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md)
+- [DRG分析API接口.md](file://med_ai_assistant_1.0_bs_backend/doc/系统结构/DRG分析/DRG分析API接口.md)
+- [DiagnosisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
+- [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
+- [DrgAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java)
+- [DrgMatchingController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgMatchingController.java)
+- [DrgCatalogController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgCatalogController.java)
+- [DrgAiAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java)
+- [DrgProfitLossController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgProfitLossController.java)
+- [DrgSnapshotController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgSnapshotController.java)
+- [DrgAnalysisOrchestrator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/orchestrator/DrgAnalysisOrchestrator.java)
+- [PrimaryDiagnosisProcedureMatcher.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/PrimaryDiagnosisProcedureMatcher.java)
+- [DrgCatalogLoader.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgCatalogLoader.java)
+- [DrgAiAnalysisService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgAiAnalysisService.java)
+- [DrgAnalysisService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgAnalysisService.java)
+- [DrgAnalysisResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DrgAnalysisResultRepository.java)
+- [DiagnosisRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DiagnosisRepository.java)
+- [SurgeryRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java)
+- [Diagnosis.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/Diagnosis.java)
+- [Surgery.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/Surgery.java)
+- [Drg.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/Drg.java)
+- [DrgAnalysisInputSnapshot.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisInputSnapshot.java)
+- [DrgAnalysisRequestDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgAnalysisRequestDTO.java)
+- [DrgAnalysisResultDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgAnalysisResultDTO.java)
+- [DrgParsedRecord.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgParsedRecord.java)
+- [DiagnosisEntry.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DiagnosisEntry.java)
+- [PatientDiagnosis.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/PatientDiagnosis.java)
+- [Stage2 DRG Analysis Verification Report.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md)
+- [Update Log.md](file://更新小结.md)
 </cite>
+
+## 更新摘要
+**所做更改**
+- 新增DRG分析页面重构相关内容，包括患者医疗信息卡片设计
+- 新增诊断列表和手术列表双列表架构说明
+- 新增诊断类型切换和唯一主要诊断规则说明
+- 新增手术类型切换和唯一主要手术规则说明
+- 新增从后端API获取真实诊断和手术数据的接口文档
+- 更新DRG分析API接口文档，反映新的页面重构需求
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -19,10 +57,15 @@
 4. [AI模型配置系统](#ai模型配置系统)
 5. [响应式AI服务](#响应式ai服务)
 6. [重试机制设计](#重试机制设计)
-7. [部署架构](#部署架构)
-8. [性能优化特性](#性能优化特性)
-9. [故障排查指南](#故障排查指南)
-10. [总结](#总结)
+7. [DRG分析页面重构](#drg分析页面重构)
+8. [患者医疗信息卡片](#患者医疗信息卡片)
+9. [诊断列表管理](#诊断列表管理)
+10. [手术列表管理](#手术列表管理)
+11. [后端API接口](#后端api接口)
+12. [部署架构](#部署架构)
+13. [性能优化特性](#性能优化特性)
+14. [故障排查指南](#故障排查指南)
+15. [总结](#总结)
 
 ## 项目概述
 
@@ -35,6 +78,7 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **智能重试机制**：内置指数退避和抖动算法，确保网络波动下的稳定性
 - **分布式部署**：支持主服务器和执行服务器的分离部署架构
 - **企业级安全**：完善的配置管理和安全防护机制
+- **页面重构支持**：全新DRG分析页面设计，支持患者医疗信息卡片展示
 
 **章节来源**
 - [MedAiAssistantBackendApplication.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L1-L50)
@@ -60,6 +104,17 @@ AIModelConfig[AI模型配置]
 AIResponseController[AI响应控制器]
 RetryUtil[重试工具]
 end
+subgraph "DRG分析服务层"
+DrgAnalysisController[DRG分析控制器]
+DrgMatchingController[DRG匹配控制器]
+DrgCatalogController[DRG目录控制器]
+DrgAiAnalysisController[DRG AI分析控制器]
+end
+subgraph "数据访问层"
+DiagnosisRepository[诊断数据访问]
+SurgeryRepository[手术数据访问]
+DrgAnalysisResultRepository[分析结果数据访问]
+end
 subgraph "基础设施层"
 Database[(数据库)]
 Redis[(Redis缓存)]
@@ -73,6 +128,13 @@ ExecutionServer --> AIModelConfig
 AIModelConfig --> AIResponseController
 AIResponseController --> RetryUtil
 RetryUtil --> HttpClient
+MainServer --> DrgAnalysisController
+DrgAnalysisController --> DrgMatchingController
+DrgMatchingController --> DrgCatalogController
+DrgCatalogController --> DrgAiAnalysisController
+DrgAnalysisController --> DiagnosisRepository
+DrgAnalysisController --> SurgeryRepository
+DrgAnalysisController --> DrgAnalysisResultRepository
 MainServer --> Database
 MainServer --> Redis
 ExecutionServer --> Database
@@ -81,13 +143,15 @@ ExecutionServer --> Database
 **图表来源**
 - [MedAiAssistantBackendApplication.java:26-37](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L26-L37)
 - [AIResponseController.java:75-87](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L75-L87)
+- [DrgAnalysisController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L50)
 
 ### 核心架构组件
 
 1. **主服务器**：处理用户请求、API网关、任务调度
 2. **执行服务器**：执行AI模型调用、数据处理等耗时任务
 3. **AI服务层**：提供智能的AI响应处理能力
-4. **配置管理层**：统一管理AI模型配置和系统参数
+4. **DRG分析服务层**：专门处理DRG分析相关的业务逻辑
+5. **配置管理层**：统一管理AI模型配置和系统参数
 
 **章节来源**
 - [README.md:42-62](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L42-L62)
@@ -316,6 +380,324 @@ RetryUtil --> RetryableExceptions : "识别可重试异常"
 **章节来源**
 - [RetryUtil.java:17-204](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/RetryUtil.java#L17-L204)
 
+## DRG分析页面重构
+
+### 页面架构变更
+
+根据更新小结的要求，DRG分析页面进行了重大重构：
+
+- **删除所有标签页**：移除了原有的多标签页导航结构
+- **仅保留"开始分析"按钮**：简化用户操作流程，提供直接的分析入口
+- **新增患者医疗信息卡片**：整合诊断和手术信息的可视化展示
+
+### 页面布局设计
+
+```mermaid
+flowchart TD
+StartPage[DRG分析开始页面] --> StartButton["开始分析按钮"]
+StartButton --> PatientCard[患者医疗信息卡片]
+PatientCard --> DiagnosisList[诊断列表]
+PatientCard --> SurgeryList[手术列表]
+DiagnosisList --> TypeSwitch[类型切换：主要/次要]
+SurgeryList --> TypeSwitch
+TypeSwitch --> UniqueRule[唯一规则：主要诊断/手术]
+UniqueRule --> AutoSort[自动排序功能]
+```
+
+**图表来源**
+- [Update Log.md:2-8](file://更新小结.md#L2-L8)
+
+**章节来源**
+- [Update Log.md:1-216](file://更新小结.md#L1-L216)
+
+## 患者医疗信息卡片
+
+### 卡片架构设计
+
+患者医疗信息卡片作为DRG分析页面的核心组件，提供集中式的患者医疗信息展示。
+
+```mermaid
+classDiagram
+class PatientMedicalCard {
++String patientId
++String patientName
++String patientAge
++String patientGender
++DiagnosisList diagnosisList
++SurgeryList surgeryList
++DateTime lastUpdated
++render() void
++updateData() void
+}
+class DiagnosisList {
++DiagnosisItem[] items
++DiagnosisType type
++boolean showSecondary
++sortItems() void
++filterItems() void
+}
+class SurgeryList {
++SurgeryItem[] items
++SurgeryType type
++boolean showSecondary
++sortItems() void
++filterItems() void
+}
+class DiagnosisItem {
++String icdCode
++String diagnosisName
++DiagnosisType type
++DateTime diagnosisDate
++String diagnosedBy
+}
+class SurgeryItem {
++String procedureCode
++String procedureName
++SurgeryType type
++DateTime surgeryDate
++String surgeon
+}
+PatientMedicalCard --> DiagnosisList
+PatientMedicalCard --> SurgeryList
+DiagnosisList --> DiagnosisItem
+SurgeryList --> SurgeryItem
+```
+
+**图表来源**
+- [DiagnosisController.java:87-108](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L87-L108)
+- [SurgeryController.java:32-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L32-L35)
+
+### 卡片功能特性
+
+1. **实时数据更新**：从后端API获取最新的诊断和手术数据
+2. **双列表展示**：同时显示诊断列表和手术列表
+3. **类型切换**：支持主要诊断/次要诊断和主要手术/次要手术的切换显示
+4. **唯一性规则**：确保主要诊断和主要手术的唯一性
+5. **自动排序**：按照时间或其他逻辑进行自动排序
+
+**章节来源**
+- [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
+- [SurgeryController.java:1-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L1-L223)
+
+## 诊断列表管理
+
+### 诊断列表架构
+
+诊断列表作为患者医疗信息卡片的重要组成部分，提供诊断信息的集中管理。
+
+```mermaid
+classDiagram
+class DiagnosisList {
++DiagnosisItem[] items
++DiagnosisType currentType
++boolean showSecondary
++boolean uniquePrimary
++DateTime lastModified
++addItem(item) void
++removeItem(itemId) void
++updateItem(itemId, item) void
++getTypeSwitch() DiagnosisType
++setTypeSwitch(type) void
++toggleSecondary() void
++applyUniqueRule() void
++autoSort() void
+}
+class DiagnosisItem {
++Long id
++String patientId
++String icdCode
++String diagnosisName
++DiagnosisType type
++String diagnosedBy
++DateTime diagnosisDate
++Integer diagnosisIndex
++Integer isPrimary
++Integer isDeleted
+}
+class DiagnosisRepository {
++findByPatientId(patientId) Diagnosis[]
++findPrimaryDiagnoses(patientId) Diagnosis[]
++findSecondaryDiagnoses(patientId) Diagnosis[]
++save(diagnosis) Diagnosis
++deleteById(id) int
+}
+DiagnosisList --> DiagnosisItem
+DiagnosisList --> DiagnosisRepository
+```
+
+**图表来源**
+- [DiagnosisController.java:87-108](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L87-L108)
+- [DiagnosisRepository.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DiagnosisRepository.java#L1-L50)
+
+### 诊断类型管理
+
+系统支持诊断类型的灵活切换和管理：
+
+1. **主要诊断规则**：
+   - 唯一主要诊断原则
+   - 自动排序机制
+   - 类型验证和冲突检测
+
+2. **次要诊断规则**：
+   - 支持多个次要诊断
+   - 自动排序和去重
+   - 类型切换功能
+
+3. **数据验证**：
+   - ICD编码验证
+   - 诊断名称完整性检查
+   - 时间戳一致性验证
+
+**章节来源**
+- [DiagnosisController.java:22-85](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L22-L85)
+- [DiagnosisRepository.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DiagnosisRepository.java#L1-L100)
+
+## 手术列表管理
+
+### 手术列表架构
+
+手术列表提供患者手术信息的完整管理功能，支持复杂的手术数据处理。
+
+```mermaid
+classDiagram
+class SurgeryList {
++SurgeryItem[] items
++SurgeryType currentType
++boolean showSecondary
++boolean uniquePrimary
++DateTime lastModified
++addItem(item) void
++removeItem(itemId) void
++updateItem(itemId, item) void
++getTypeSwitch() SurgeryType
++setTypeSwitch(type) void
++toggleSecondary() void
++applyUniqueRule() void
++autoSort() void
+}
+class SurgeryItem {
++Long id
++String patientId
++String procedureCode
++String procedureName
++SurgeryType type
++String surgeon
++DateTime surgeryDate
++Integer surgeryIndex
++Integer isPrimary
++Integer isDeleted
+}
+class SurgeryRepository {
++findByPatientId(patientId) Surgery[]
++findPrimarySurgeries(patientId) Surgery[]
++findSecondarySurgeries(patientId) Surgery[]
++save(surgery) Surgery
++deleteById(id) int
+}
+SurgeryList --> SurgeryItem
+SurgeryList --> SurgeryRepository
+```
+
+**图表来源**
+- [SurgeryController.java:32-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L32-L35)
+- [SurgeryRepository.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java#L1-L50)
+
+### 手术类型管理
+
+系统对手术类型提供精细的管理控制：
+
+1. **主要手术规则**：
+   - 唯一主要手术原则
+   - 自动排序和时间优先
+   - 类型冲突自动检测
+
+2. **次要手术规则**：
+   - 支持多个次要手术
+   - 按时间顺序自动排序
+   - 类型切换和过滤功能
+
+3. **数据完整性**：
+   - 手术编码验证
+   - 医生信息完整性检查
+   - 手术日期合理性验证
+
+**章节来源**
+- [SurgeryController.java:74-144](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L74-L144)
+- [SurgeryRepository.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java#L1-L100)
+
+## 后端API接口
+
+### 诊断相关API
+
+系统提供完整的诊断数据管理API接口：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant DiagnosisController as 诊断控制器
+participant DiagnosisRepository as 诊断仓库
+participant DB as 数据库
+Client->>DiagnosisController : GET /api/diagnosis/combined/{patientId}
+DiagnosisController->>DiagnosisRepository : findByPatientId(patientId)
+DiagnosisRepository->>DB : 查询诊断记录
+DB-->>DiagnosisRepository : 返回诊断列表
+DiagnosisRepository-->>DiagnosisController : 返回诊断数据
+DiagnosisController->>DiagnosisController : 组合诊断文本
+DiagnosisController-->>Client : 返回组合诊断字符串
+```
+
+**图表来源**
+- [DiagnosisController.java:87-99](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L87-L99)
+
+### 手术相关API
+
+系统提供全面的手术数据管理API接口：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant SurgeryController as 手术控制器
+participant SurgeryService as 手术服务
+participant SurgeryRepository as 手术仓库
+Client->>SurgeryController : GET /api/surgeries/by-patient/{patientId}
+SurgeryController->>SurgeryService : getSurgeriesByPatientId(patientId)
+SurgeryService->>SurgeryRepository : findByPatientId(patientId)
+SurgeryRepository-->>SurgeryService : 返回手术列表
+SurgeryService-->>SurgeryController : 返回手术数据
+SurgeryController-->>Client : 返回手术列表
+```
+
+**图表来源**
+- [SurgeryController.java:32-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L32-L35)
+
+### DRG分析API
+
+系统提供完整的DRG分析相关API接口：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant DrgAnalysisController as DRG分析控制器
+participant DrgAnalysisOrchestrator as 分析编排器
+participant DrgAnalysisService as 分析服务
+Client->>DrgAnalysisController : POST /api/drg/analyze
+DrgAnalysisController->>DrgAnalysisOrchestrator : 执行分析编排
+DrgAnalysisOrchestrator->>DrgAnalysisService : 执行DRG分析
+DrgAnalysisService->>DrgAnalysisService : 匹配诊断和手术
+DrgAnalysisService-->>DrgAnalysisOrchestrator : 返回分析结果
+DrgAnalysisOrchestrator-->>DrgAnalysisController : 返回完整分析数据
+DrgAnalysisController-->>Client : 返回DRG分析结果
+```
+
+**图表来源**
+- [DrgAnalysisController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L50)
+- [DrgAnalysisOrchestrator.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/orchestrator/DrgAnalysisOrchestrator.java#L1-L50)
+
+**章节来源**
+- [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
+- [SurgeryController.java:1-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L1-L223)
+- [DrgAnalysisController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L100)
+
 ## 部署架构
 
 ### 分布式部署模式
@@ -395,6 +777,11 @@ ExecWindows --> MySQL
    - 验证API密钥有效性
    - 监控网络连接状态
 
+4. **DRG分析页面加载失败**
+   - 检查后端API接口状态
+   - 验证数据库连接
+   - 确认缓存配置
+
 ### 日志分析
 
 系统提供详细的日志记录机制，包括：
@@ -417,6 +804,7 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 3. **稳定性保障**：智能重试机制和异常处理，确保服务连续性
 4. **部署友好性**：支持多种部署模式，简化运维管理
 5. **安全性考虑**：完善的配置管理和安全防护机制
+6. **页面重构支持**：全新的DRG分析页面设计，提升用户体验
 
 ### 技术创新
 
@@ -424,5 +812,11 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 - **智能重试算法**：基于指数退避和抖动的优化策略
 - **分布式部署**：支持主执行分离的架构模式
 - **企业级监控**：全面的日志记录和性能监控
+- **页面重构架构**：支持患者医疗信息卡片的复杂交互
+- **诊断手术管理**：提供完整的诊断和手术数据管理功能
 
-该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。
+该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计进一步提升了用户体验，使得DRG分析过程更加直观和高效。
+
+**章节来源**
+- [Stage2 DRG Analysis Verification Report.md:1-163](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md#L1-L163)
+- [Update Log.md:1-216](file://更新小结.md#L1-L216)
