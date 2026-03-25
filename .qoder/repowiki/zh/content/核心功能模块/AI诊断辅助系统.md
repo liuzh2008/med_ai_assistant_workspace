@@ -12,11 +12,19 @@
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [2026-03-25更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-24更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-23更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-21更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-20更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-08更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
+- [MccScreeningController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java)
+- [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md)
+- [drg.js](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js)
+- [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
+- [DRG分析API接口.md](file://med_ai_assistant_1.0_bs_backend/doc/系统结构/DRG分析/DRG分析API接口.md)
+- [MccScreeningService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java)
+- [MccCandidate.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java)
 - [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
 - [PromptTemplateEditDialog.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue)
 - [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
@@ -28,12 +36,13 @@
 
 ## 更新摘要
 **变更内容**
-- 修复Android平板界面问题：解决"AI辅助"子菜单点击后立即收起的问题，新增触屏/桌面设备差异化交互逻辑
-- 增强AI OCR数据采集系统：新增监护仪呼吸机AI OCR数据采集完整技术方案，支持设备屏幕自动识别和数据数字化
-- 优化模板管理组件：完善补充信息输入对话框功能，支持"请会诊记录"和"日常对话"模板的上下文信息收集
-- 改进UI显示时序：优化非流式响应模式下的回调时序，确保AI对话内容能够及时显示在界面上
-- 新增设备差异化交互：通过检测触摸设备能力，智能区分触屏和桌面设备的菜单交互行为
-- **新增AI OCR数据采集系统完整技术方案**：涵盖硬件选型、软件架构、OCR核心技术、数据处理与校验、数据库设计、API接口设计、前端界面设计等
+- 新增MCC（主要并发症和合并症）分析功能模块，包括完整的后端控制器、服务层、模型类和前端组件
+- 新增MCC分析Prompt生成保存接口：POST /api/drg/mcc/generate-prompt
+- 前端MCC预筛选使用真实患者数据，修复硬编码测试数据问题
+- MCC筛查结果按相似度降序排列，显示诊断编码、名称、MCC/CC类型
+- 修复14个API路径重复'/api/'问题，统一API调用规范
+- 修复MCC候选列表字段映射，使用mccCode/mccName替代diagnosisCode/diagnosisName
+- 新增MCC预筛选服务层，支持相似度计算、排除规则检查、TopK筛选等功能
 
 ## 目录
 1. [简介](#简介)
@@ -50,13 +59,14 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 新增Android平板界面修复和AI OCR数据采集系统功能增强，包括触屏/桌面设备差异化交互逻辑、UI显示时序优化、模板管理组件的补充信息输入功能等。**AI OCR数据采集系统作为全新的核心功能模块，为医疗设备数据的自动采集和数字化提供了完整的解决方案。**
+**最新更新** 新增MCC（主要并发症和合并症）分析功能模块，包括完整的后端控制器、服务层、模型类和前端组件。新增MCC分析Prompt生成保存接口，支持根据病人ID和MCC筛选结果生成并保存Prompt到数据库。前端MCC预筛选使用真实患者数据，修复硬编码测试数据问题，MCC筛查结果按相似度降序排列，显示诊断编码、名称、MCC/CC类型。修复14个API路径重复'/api/'问题，统一API调用规范，修复MCC候选列表字段映射问题。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
-- 配置与控制器：AI模型配置类、执行服务器控制器等
-- 前端AI服务：aiService.js提供统一的AI服务调用接口
+- 配置与控制器：AI模型配置类、执行服务器控制器、MCC筛查控制器等
+- 前端AI服务：aiService.js提供统一的AI服务调用接口，drg.js提供DRG/MCC分析API
 - 模板管理：PromptTemplates.vue、PromptTemplateEditDialog.vue等模板管理组件
+- MCC分析模块：完整的MCC预筛选、相似度计算、Prompt生成功能
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
 - **AI OCR数据采集**：监护仪呼吸机AI OCR数据采集完整技术方案
@@ -66,40 +76,49 @@ graph TB
 subgraph "后端服务"
 Main["主服务器<br/>业务编排与对外API"]
 Exec["执行服务器<br/>LLM调用与加密处理"]
+MCC["MCC分析服务<br/>预筛选与Prompt生成"]
 OCRAPI["OCR数据采集服务<br/>设备屏幕识别与数据处理"]
 end
 subgraph "前端应用"
 VueApp["Vue.js 应用<br/>AI对话界面"]
 AIService["AI服务模块<br/>aiService.js"]
+DRGAPI["DRG/MCC分析API<br/>drg.js"]
 PromptTemplates["模板管理组件<br/>PromptTemplates.vue"]
 PromptEditor["模板编辑对话框<br/>PromptTemplateEditDialog.vue"]
 TopMenu["顶部菜单组件<br/>TopMenu.vue"]
 OCRDash["OCR数据看板<br/>实时监控界面"]
+DrgAnalysis["DRG分析组件<br/>DrgAnalysis.vue"]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
 DB[("数据库")]
 OCRDB[("OCR数据库")]
+MCCDB[("MCC字典库")]
 EndDevice[("医疗设备")]
 end
 VueApp --> AIService
 AIService --> Main
+DRGAPI --> Main
 Main --> Exec
+Main --> MCC
+Main --> OCRAPI
 Exec --> LLM
 Main --> DB
+MCC --> MCCDB
 Exec --> DB
+OCRAPI --> OCRDB
+OCRAPI --> EndDevice
+DrgAnalysis --> DRGAPI
 PromptTemplates --> AIService
 PromptEditor --> AIService
 TopMenu --> AIService
-OCRAPI --> OCRDB
-OCRAPI --> EndDevice
-Main --> OCRAPI
 OCRDash --> Main
 ```
 
 **图表来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:140-161](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L140-L161)
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
+- [MccScreeningController.java:33-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L33-L35)
 - [监护仪呼吸机AI OCR数据采集方案.md:375-416](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L375-L416)
 
 **章节来源**
@@ -112,17 +131,27 @@ OCRDash --> Main
 - 专用RestTemplate：针对LLM调用优化连接池、超时与请求配置，降低超时与连接耗尽风险。
 - 响应缓存：对相同Prompt进行缓存，减少重复LLM调用，提升吞吐与稳定性。
 - 错误分类与恢复：区分网络超时、服务端错误与未知异常，结合指数退避重试与告警机制。
+- **MCC分析控制器**：提供完整的MCC预筛选、相似度计算、配置管理、Prompt生成保存等REST API接口。
+- **MCC筛查服务**：实现相似度计算、排除规则检查、TopK筛选、字典缓存等核心算法。
+- **MCC候选模型**：封装MCC候选结果的数据结构，包含编码、名称、类型、相似度等字段。
+- **前端DRG/MCC分析API**：提供统一的DRG和MCC分析API调用接口，支持Promise和回调两种模式。
+- **DRG分析组件**：集成MCC预筛选功能的完整分析界面，支持平铺和分组视图。
 - **前端AI服务模块**：提供统一的AI服务调用接口，支持Promise和回调两种模式，优化非流式响应处理时序。
 - **模板管理组件**：提供Prompt模板的树形展示、编辑、删除等功能，支持补充信息输入对话框。
 - **模板编辑对话框**：支持模板的创建、编辑、删除操作，包含完整的表单验证和数据管理。
 - **顶部菜单组件**：支持触屏/桌面设备差异化交互，修复Android平板上的菜单点击问题。
 - **AI OCR数据采集系统**：实现医疗设备屏幕的自动OCR识别和数据数字化处理，支持多品牌设备的参数提取。
 
-**最新更新** 新增触屏/桌面设备差异化交互逻辑和AI OCR数据采集系统，显著提升了系统的兼容性和功能性。
+**最新更新** 新增MCC分析功能模块，包括MCC筛查控制器、服务层、模型类和前端组件。修复14个API路径重复'/api/'问题，统一API调用规范。前端MCC预筛选使用真实患者数据，MCC筛查结果按相似度降序排列。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
 - [执行服务器控制器.java:84-403](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L403)
+- [MccScreeningController.java:25-57](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L25-L57)
+- [MccScreeningService.java:23-91](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L23-L91)
+- [MccCandidate.java:6-86](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java#L6-L86)
+- [drg.js:17-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L17-L156)
+- [DrgAnalysis.vue:69-181](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L69-L181)
 - [执行服务器LLM调用优化敏捷迭代规划.md:139-225](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L139-L225)
 - [aiService.js:1-280](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L1-L280)
 - [PromptTemplates.vue:26-31](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L26-L31)
@@ -134,6 +163,7 @@ OCRDash --> Main
 系统采用"主服务器 + 执行服务器"协作模式：
 - 主服务器：聚合患者数据、生成Prompt、调度执行服务器、提供对外API。
 - 执行服务器：专注LLM调用与加密处理，支持轮询模式与回调机制，具备完善的监控与统计。
+- **MCC分析模块**：独立的MCC预筛选服务，提供相似度计算、排除规则检查、TopK筛选等功能。
 - **前端应用**：通过AI服务模块统一调用后端AI接口，提供用户友好的对话界面和模板管理功能。
 - **AI OCR数据采集系统**：独立的OCR识别服务，专门处理医疗设备屏幕数据的自动采集和数字化，与主系统通过REST API和WebSocket集成。
 
@@ -141,33 +171,41 @@ OCRDash --> Main
 graph TB
 A["主服务器"] --> B["执行服务器"]
 A --> C["OCR数据采集服务"]
-B --> D["LLM服务"]
-A --> E["数据库"]
-B --> E
-C --> F["OCR数据库"]
-C --> G["医疗设备"]
-B --> H["回调服务"]
-A --> I["对外API"]
-I --> A
+A --> D["MCC分析服务"]
+B --> E["LLM服务"]
+A --> F["数据库"]
+B --> F
+C --> G["OCR数据库"]
+C --> H["医疗设备"]
+D --> I["MCC字典库"]
+B --> J["回调服务"]
+A --> K["对外API"]
+K --> A
 subgraph "前端应用"
-J["Vue.js 应用"]
-K["AI服务模块"]
-L["对话界面组件"]
-M["模板管理组件"]
-N["顶部菜单组件"]
-O["OCR数据看板"]
+L["Vue.js 应用"]
+M["AI服务模块"]
+N["DRG/MCC分析API"]
+O["对话界面组件"]
+P["模板管理组件"]
+Q["顶部菜单组件"]
+R["OCR数据看板"]
+S["DRG分析组件"]
 end
-J --> K
-K --> I
-L --> J
+L --> M
+L --> N
+N --> K
 M --> K
-N --> J
-O --> J
+O --> L
+P --> M
+Q --> L
+R --> L
+S --> N
 ```
 
 **图表来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:141-161](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L141-L161)
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
+- [MccScreeningController.java:33-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L33-L35)
 - [监护仪呼吸机AI OCR数据采集方案.md:375-416](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L375-L416)
 
 ## 详细组件分析
@@ -260,6 +298,180 @@ Exec->>Exec : "异步回调可选"
 - [执行服务器控制器.java:400-470](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L400-L470)
 - [执行服务器控制器.java:781-884](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L781-L884)
 - [执行服务器LLM调用优化敏捷迭代规划.md:229-281](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L229-L281)
+
+### MCC分析控制器（完整MCC功能）
+- 设计要点
+  - 提供完整的MCC预筛选REST API接口
+  - 支持平铺列表和分组视图两种展示模式
+  - 实现相似度计算、排除规则检查、TopK筛选
+  - 提供MCC分析Prompt生成保存功能
+- 关键接口
+  - 筛选MCC候选：POST /api/drg/mcc/screen
+  - 分组MCC候选：POST /api/drg/mcc/screen-grouped
+  - 相似度计算：POST /api/drg/mcc/similarity
+  - 获取配置：GET /api/drg/mcc/config
+  - 重新加载字典：POST /api/drg/mcc/reload
+  - 生成并保存Prompt：POST /api/drg/mcc/generate-prompt
+
+```mermaid
+classDiagram
+class MccScreeningController {
++screenMccCandidates(request) ResponseEntity
++screenMccCandidatesGrouped(request) ResponseEntity
++calculateSimilarity(request) ResponseEntity
++getMccConfig() ResponseEntity
++reloadMccDictionary() ResponseEntity
++generateMccPrompt(request) ResponseEntity
+}
+class MccScreeningService {
++screenMccCandidates(diagnoses) List
++screenMccCandidatesGrouped(diagnoses) Map
++calculateSimilarity(diagnosis, mccName) double
++reloadDictionary() void
+}
+class MccCandidate {
+-string mccCode
+-string mccName
+-string mccType
+-double similarity
+-string matchType
+-Boolean excluded
+}
+MccScreeningController --> MccScreeningService : "调用"
+MccScreeningService --> MccCandidate : "创建"
+```
+
+**图表来源**
+- [MccScreeningController.java:59-162](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L59-L162)
+- [MccScreeningService.java:101-200](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L101-L200)
+- [MccCandidate.java:13-86](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java#L13-L86)
+
+**章节来源**
+- [MccScreeningController.java:59-162](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L59-L162)
+- [MccScreeningController.java:233-341](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L233-L341)
+- [DRG分析接口.md:1809-1851](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md#L1809-L1851)
+
+### MCC筛查服务（核心算法）
+- 设计要点
+  - 使用Levenshtein距离算法计算诊断名称相似度
+  - 支持编码精确匹配和名称相似度匹配两种模式
+  - 实现排除规则检查，基于MCC_EXCEPT字段排除不适用的候选
+  - 提供TopK筛选功能，限制每个诊断的候选数量
+  - 使用原子引用实现线程安全的字典缓存
+- 关键算法
+  - 相似度计算：normalize(diagnosis) vs normalize(mccName)
+  - 排除规则：检查MCC_EXCEPT字段中的ICD编码列表
+  - TopK筛选：按相似度降序排列，取前K个候选
+  - 编码匹配：ICD编码完全相等时的精确匹配
+
+```mermaid
+flowchart TD
+Start(["开始MCC筛查"]) --> LoadDict["加载MCC字典缓存"]
+LoadDict --> CheckCache{"字典缓存有效？"}
+CheckCache --> |否| ReloadDict["重新加载字典"]
+CheckCache --> |是| ProcessDiagnoses["处理患者诊断列表"]
+ReloadDict --> ProcessDiagnoses
+ProcessDiagnoses --> ExactMatch["尝试编码精确匹配"]
+ExactMatch --> SimilarityCalc["计算名称相似度"]
+SimilarityCalc --> ThresholdCheck{"相似度>阈值？"}
+ThresholdCheck --> |是| ExcludeCheck["检查排除规则"]
+ThresholdCheck --> |否| NextDiagnosis["下一个诊断"]
+ExcludeCheck --> |是| NextDiagnosis
+ExcludeCheck --> |否| AddCandidate["添加候选结果"]
+AddCandidate --> NextDiagnosis
+NextDiagnosis --> TopKCheck{"启用TopK？"}
+TopKCheck --> |是| ApplyTopK["按诊断分组TopK筛选"]
+TopKCheck --> |否| SortResults["按相似度降序排序"]
+ApplyTopK --> SortResults
+SortResults --> End(["返回MCC候选列表"])
+```
+
+**图表来源**
+- [MccScreeningService.java:121-200](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L121-L200)
+- [MccScreeningService.java:177-200](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L177-L200)
+
+**章节来源**
+- [MccScreeningService.java:121-200](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L121-L200)
+- [MccScreeningService.java:177-200](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L177-L200)
+
+### 前端DRG/MCC分析API（统一接口）
+- 设计要点
+  - 提供统一的DRG和MCC分析API调用接口
+  - 支持Promise和回调两种模式，向后兼容
+  - 修复14个API路径重复'/api/'问题，统一调用规范
+  - 新增MCC分析Prompt生成保存接口
+- 关键接口
+  - MCC候选筛选：screenMccCandidates(diagnoses)
+  - 分组MCC候选：screenMccCandidatesGrouped(diagnoses)
+  - 相似度计算：calculateSimilarity(diagnosis, mccName)
+  - 获取配置：getMccConfig()
+  - 重新加载字典：reloadMccDictionary()
+  - 生成并保存Prompt：generateMccPrompt(patientId, mccResults)
+
+```mermaid
+sequenceDiagram
+participant VueComp as "Vue组件"
+participant DRGAPI as "DRG/MCC API模块"
+participant Backend as "后端MCC接口"
+participant MCCService as "MCC服务层"
+VueComp->>DRGAPI : "generateMccPrompt(patientId, mccResults)"
+DRGAPI->>Backend : "POST /drg/mcc/generate-prompt"
+Backend->>MCCService : "调用MCC服务"
+MCCService->>MCCService : "参数校验"
+MCCService->>MCCService : "查询病人信息"
+MCCService->>MCCService : "获取Prompt模板"
+MCCService->>MCCService : "构建完整Prompt"
+MCCService->>MCCService : "保存到数据库"
+MCCService-->>Backend : "返回Prompt ID"
+Backend-->>DRGAPI : "JSON响应"
+DRGAPI-->>VueComp : "Promise resolve"
+```
+
+**图表来源**
+- [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
+- [MccScreeningController.java:233-341](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L233-L341)
+
+**章节来源**
+- [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
+- [DRG分析接口.md:1809-1851](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md#L1809-L1851)
+
+### DRG分析组件（MCC预筛选集成）
+- 设计要点
+  - 集成MCC预筛选功能的完整分析界面
+  - 支持平铺视图和分组视图两种展示模式
+  - 使用真实患者数据替代硬编码测试数据
+  - MCC筛查结果按相似度降序排列
+  - 修复MCC候选列表字段映射问题
+- 关键特性
+  - 视图切换：平铺视图 vs 分组视图
+  - 数据展示：诊断编码、名称、MCC/CC类型、相似度
+  - 操作功能：加载MCC候选、生成Prompt、复制Prompt内容
+  - 状态管理：加载状态、错误处理、数据刷新
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant DrgAnalysis as "DRG分析组件"
+participant DRGAPI as "DRG/MCC API模块"
+User->>DrgAnalysis : "点击加载MCC候选"
+DrgAnalysis->>DRGAPI : "screenMccCandidates(diagnoses)"
+DRGAPI-->>DrgAnalysis : "返回MCC候选列表"
+DrgAnalysis->>DrgAnalysis : "按相似度降序排序"
+DrgAnalysis->>DrgAnalysis : "更新视图状态"
+DrgAnalysis-->>User : "显示MCC候选结果"
+User->>DrgAnalysis : "点击生成Prompt"
+DrgAnalysis->>DRGAPI : "generateMccPrompt(patientId, mccResults)"
+DRGAPI-->>DrgAnalysis : "返回Prompt ID"
+DrgAnalysis->>DrgAnalysis : "显示Prompt对话框"
+```
+
+**图表来源**
+- [DrgAnalysis.vue:72-96](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L72-L96)
+- [DrgAnalysis.vue:109-127](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L109-L127)
+
+**章节来源**
+- [DrgAnalysis.vue:72-96](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L72-L96)
+- [DrgAnalysis.vue:109-127](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L109-L127)
 
 ### 前端AI服务模块（时序优化）
 - 设计要点
@@ -470,10 +682,18 @@ ReturnCache --> Stats
   - 非流式AI响应：一次性返回推理过程与最终结果
   - AI参数：支持温度、最大token、top_p、频率惩罚、存在惩罚、生成数量、停止符、用户标识等
   - 健康检查：检查AI模型服务状态
+- **MCC分析服务**
+  - MCC候选筛选：POST /api/drg/mcc/screen，支持平铺和分组两种模式
+  - 相似度计算：POST /api/drg/mcc/similarity，返回相似度值和阈值检查结果
+  - 配置管理：GET /api/drg/mcc/config，获取相似度阈值、TopK设置等
+  - 字典管理：POST /api/drg/mcc/reload，重新加载MCC字典
+  - Prompt生成：POST /api/drg/mcc/generate-prompt，生成并保存MCC分析Prompt
 - 调用示例
   - 流式调用：POST `/api/ai/stream-response-post`，Content-Type: application/json
   - 非流式调用：POST `/api/ai/response`，请求体包含model与messages
   - 健康检查：GET `/api/health/ai-status`
+  - MCC候选筛选：POST `/api/drg/mcc/screen`，请求体包含患者诊断列表
+  - 生成Prompt：POST `/api/drg/mcc/generate-prompt`，请求体包含patientId和mccResults
 - **模板管理API**
   - 获取模板列表：GET `/api/ai/promptTemplates`
   - 获取模板详情：GET `/api/ai/promptTemplate`
@@ -486,14 +706,21 @@ ReturnCache --> Stats
   - 模板管理：GET/POST/PUT `/api/ocr/templates`
   - 实时数据：GET `/api/ocr/live-data`
 
+**最新更新** 新增MCC分析服务的完整API接口，包括候选筛选、相似度计算、配置管理、字典管理和Prompt生成保存功能。修复14个API路径重复'/api/'问题，统一API调用规范。
+
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
 - [API文档.md:494-590](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L494-L590)
+- [DRG分析接口.md:1809-1851](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md#L1809-L1851)
+- [DRG分析API接口.md:25-35](file://med_ai_assistant_1.0_bs_backend/doc/系统结构/DRG分析/DRG分析API接口.md#L25-L35)
 
 ## 依赖关系分析
 - 组件耦合
   - 执行服务器控制器依赖AI模型配置类、专用RestTemplate、加密工具与回调服务
+  - MCC分析控制器依赖MCC筛查服务、患者Repository、Prompt Repository、Prompt模板Repository
+  - MCC筛查服务依赖Levenshtein工具、文本规范化工具、MCC配置属性、MCC字典Repository
   - 与数据库交互通过执行服务器专用数据源与临时表Repository
+  - **前端DRG/MCC分析API**依赖Vue.js组件和后端MCC接口
   - **前端AI服务模块**依赖Vue.js组件和后端AI接口
   - **模板管理组件**依赖Element Plus UI组件和promptUtils工具
   - **顶部菜单组件**依赖设备检测逻辑和路由导航
@@ -503,10 +730,13 @@ ReturnCache --> Stats
   - 数据库：存储加密临时数据、配置与回调记录
   - Element Plus：提供UI组件和对话框功能
   - PaddleOCR：提供医疗设备屏幕的OCR识别能力
+  - **MCC字典库**：存储MCC诊断编码、名称、类型、排除规则等数据
 - 潜在风险
   - LLM服务不稳定：通过熔断器与重试缓解
   - 连接池耗尽：通过专用连接池与超时配置控制
   - 配置冲突：通过隔离配置与向后兼容策略解决
+  - **MCC字典缓存失效**：通过原子引用和热重载机制保证数据一致性
+  - **相似度计算性能**：通过文本规范化缓存和字典预加载优化
   - **UI显示时序问题**：通过优化回调时序解决非流式响应显示问题
   - **模板执行异常**：通过补充信息输入验证和错误处理机制解决
   - **设备兼容性问题**：通过触屏/桌面差异化交互解决Android平板菜单问题
@@ -519,11 +749,21 @@ Controller --> RestTemplate["专用RestTemplate"]
 Controller --> AES["AES加密工具"]
 Controller --> DB["执行服务器数据源"]
 Controller --> Callback["异步回调服务"]
+MCCController["MCC分析控制器"] --> MCCService["MCC筛查服务"]
+MCCController --> PatientRepo["患者Repository"]
+MCCController --> PromptRepo["Prompt Repository"]
+MCCController --> TemplateRepo["Prompt模板Repository"]
+MCCService --> Levenshtein["Levenshtein工具"]
+MCCService --> TextNorm["文本规范化工具"]
+MCCService --> Props["MCC配置属性"]
+MCCService --> MCCRepo["MCC字典Repository"]
 RestTemplate --> LLM["LLM服务"]
 DB --> TempRepo["加密临时表Repository"]
 subgraph "前端依赖"
-AIService["AI服务模块"] --> VueComp["Vue组件"]
-AIService --> BackendAPI["后端AI接口"]
+DRGAPI["DRG/MCC分析API"] --> VueComp["Vue组件"]
+DRGAPI --> BackendAPI["后端MCC接口"]
+AIService["AI服务模块"] --> VueComp
+AIService --> BackendAPI
 VueComp --> UIComponents["UI组件"]
 TemplateComp["模板管理组件"] --> ElementPlus["Element Plus"]
 TemplateComp --> promptUtils["promptUtils工具"]
@@ -537,15 +777,21 @@ end
 
 **图表来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
+- [MccScreeningController.java:42-56](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L42-L56)
+- [MccScreeningService.java:33-43](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L33-L43)
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
 - [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
+- [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
 - [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
 - [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
+- [MccScreeningController.java:42-56](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L42-L56)
+- [MccScreeningService.java:33-43](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L33-L43)
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
 - [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
+- [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
 - [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
 - [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 
@@ -559,6 +805,12 @@ end
 - 缓存与统计
   - 响应缓存：对相同Prompt复用LLM结果，降低延迟与成本
   - 性能统计：成功率、平均响应时间、错误类型分布、重试次数
+- **MCC分析性能优化**
+  - 字典缓存：使用AtomicReference实现线程安全的MCC字典缓存
+  - 文本规范化缓存：预计算MCC名称规范化结果，提高相似度计算性能
+  - 相似度计算优化：使用Levenshtein距离算法，支持文本规范化
+  - TopK筛选：限制每个诊断的候选数量，减少结果集大小
+  - 排除规则优化：基于MCC_EXCEPT字段的快速排除检查
 - 监控与告警
   - 实时监控：调用成功率、响应时间阈值告警
   - 历史分析：每日趋势、错误模式分析，指导配置调优
@@ -567,6 +819,8 @@ end
   - **错误处理优化**：支持字符串和对象形式的错误信息，提升错误信息可读性
   - **模板执行优化**：补充信息输入对话框的异步处理，避免阻塞主界面
   - **设备适配优化**：触屏/桌面差异化交互，提升移动端用户体验
+  - **MCC视图优化**：平铺视图和分组视图的性能差异对比
+  - **API调用优化**：修复14个重复'/api/'前缀问题，统一API调用规范
 - **模板管理性能**
   - **树形结构渲染**：优化大量模板的渲染性能
   - **表单验证**：实时验证用户输入，减少无效提交
@@ -577,11 +831,13 @@ end
   - **数据流优化**：异步处理和批量上传，减少网络延迟
   - **缓存策略**：本地缓存和断网续传，保证数据完整性
 
-**最新更新** 新增触屏/桌面设备差异化交互和AI OCR数据采集系统的性能优化措施。
+**最新更新** 新增MCC分析功能的性能优化措施，包括字典缓存、文本规范化缓存、相似度计算优化、TopK筛选等功能。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，支持平铺和分组两种展示模式。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [执行服务器LLM调用优化敏捷迭代规划.md:229-281](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L229-L281)
+- [MccScreeningService.java:74-91](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L74-L91)
+- [2026-03-25更新日志.md:7-8](file://med_ai_assistant_1.0_bs/更新小结.md#L7-L8)
 - [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 - [监护仪呼吸机AI OCR数据采集方案.md:1340-1352](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1340-L1352)
 
@@ -595,6 +851,9 @@ end
   - **模板管理功能失效**：验证模板树形结构渲染和表单验证逻辑
   - **Android平板菜单点击问题**：检查触屏设备检测逻辑和事件处理
   - **OCR识别失败**：验证设备模板配置和图像预处理参数
+  - **MCC分析失败**：检查MCC字典加载、相似度计算、排除规则检查
+  - **API路径重复问题**：验证drg.js中14个API路径是否修复
+  - **MCC候选字段映射错误**：检查mccCode/mccName字段映射是否正确
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -606,6 +865,9 @@ end
   - **验证设备检测逻辑**：检查'ontouchstart'检测和maxTouchPoints判断
   - **测试OCR数据采集流程**：验证图像采集、OCR识别和数据上报
   - **检查OCR模板匹配**：确认设备模板配置和参数区域定位
+  - **验证MCC分析流程**：检查字典加载、相似度计算、候选筛选、Prompt生成
+  - **测试API路径修复**：确认drg.js中所有MCC相关API路径正确
+  - **验证MCC字段映射**：检查前端视图中mccCode/mccName字段显示
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
@@ -614,19 +876,21 @@ end
   - **模板管理组件功能实现指南**
   - **Android平板菜单交互问题解决方案**
   - **AI OCR数据采集系统技术方案**
+  - **MCC分析功能实现指南**
 
-**最新更新** 新增Android平板菜单交互问题和AI OCR数据采集系统的故障排查指南。
+**最新更新** 新增MCC分析功能的故障排查指南，包括字典加载、相似度计算、排除规则检查、API路径修复、字段映射验证等问题的排查步骤。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
 - [执行服务器架构简化实施报告.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器架构简化实施报告.md)
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
+- [2026-03-25更新日志.md:7-8](file://med_ai_assistant_1.0_bs/更新小结.md#L7-L8)
 - [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 
 ## 结论
-系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
+系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的MCC分析功能模块进一步增强了系统的临床价值，提供了完整的MCC预筛选、相似度计算、排除规则检查、TopK筛选和Prompt生成保存能力。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 新增的触屏/桌面设备差异化交互逻辑显著提升了Android平板等触屏设备的用户体验，修复了"AI辅助"子菜单点击后立即收起的问题。AI OCR数据采集系统的引入为医疗设备数据的自动采集和数字化提供了完整的解决方案，支持多品牌设备的屏幕识别和参数提取。这些功能增强体现了系统在兼容性、实用性和扩展性方面的持续改进，为复杂的医疗场景提供了更好的支持。
+**最新更新** 新增的MCC分析功能模块是系统的重要扩展，包括完整的后端控制器、服务层、模型类和前端组件。新增MCC分析Prompt生成保存接口，支持根据病人ID和MCC筛选结果生成并保存Prompt到数据库。前端MCC预筛选使用真实患者数据，修复硬编码测试数据问题，MCC筛查结果按相似度降序排列，显示诊断编码、名称、MCC/CC类型。修复14个API路径重复'/api/'问题，统一API调用规范，修复MCC候选列表字段映射问题。这些功能增强体现了系统在兼容性、实用性和扩展性方面的持续改进，为复杂的医疗场景提供了更好的支持。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -634,14 +898,17 @@ end
 - 配置建议
   - 在应用配置中添加LLM专用参数：连接超时、读取超时、最大重试次数、基础延迟、连接池大小等
   - 启用监控与告警：实时成功率、响应时间、超时错误频率与重试成功率
+  - **MCC分析配置**：设置相似度阈值、TopK数量、排除规则开关等参数
   - **前端配置**：确保AI服务模块的回调时序正确，支持Promise和回调两种调用模式
   - **模板管理配置**：Element Plus组件的国际化和主题配置
   - **设备检测配置**：触屏设备检测逻辑的兼容性测试
   - **OCR系统配置**：边缘计算设备的性能参数和网络配置
+  - **API调用配置**：统一的API路径规范，避免重复前缀问题
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.6.080，包含UI显示问题修复、模板管理功能增强、Android平板界面修复和AI OCR数据采集系统
+  - **版本管理**：版本号从0.4.071更新到0.6.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复和AI OCR数据采集系统
+  - **MCC字典部署**：独立部署MCC字典库，支持热重载和增量更新
   - **OCR系统部署**：独立部署OCR服务，与主系统通过API集成
 - **UI优化建议**
   - **非流式响应**：确保回调在Promise resolve之前执行，避免UI显示延迟
@@ -650,6 +917,9 @@ end
   - **模板交互**：优化补充信息输入对话框的用户体验，提供清晰的引导和帮助信息
   - **设备适配**：完善触屏/桌面差异化交互，提升移动端用户体验
   - **OCR界面**：提供直观的设备管理和数据监控界面
+  - **MCC视图优化**：优化平铺视图和分组视图的渲染性能
+  - **API调用优化**：统一API路径规范，避免重复前缀问题
+  - **字段映射优化**：确保MCC候选列表字段显示正确
 - **模板管理最佳实践**
   - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
   - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
@@ -662,15 +932,27 @@ end
   - **数据校验机制**：建立多层次的数据校验规则，保证数据准确性
   - **报警机制**：设置合理的报警阈值，及时发现异常情况
   - **性能监控**：实时监控OCR识别性能和系统运行状态
+- **MCC分析最佳实践**
+  - **字典维护**：定期更新MCC字典，支持热重载和增量更新
+  - **相似度阈值**：根据临床需求调整相似度阈值，平衡敏感性和特异性
+  - **TopK筛选**：合理设置TopK数量，避免候选过多或过少
+  - **排除规则**：完善排除规则配置，提高候选质量
+  - **性能监控**：监控MCC分析的响应时间和准确率
+  - **用户培训**：提供MCC分析功能的使用培训和技术支持
 
-**最新更新** 新增触屏/桌面设备差异化交互和AI OCR数据采集系统的配置建议和最佳实践，包括设备检测逻辑、OCR模板管理和性能监控等方面。
+**最新更新** 新增MCC分析功能的配置建议和最佳实践，包括字典维护、相似度阈值设置、TopK筛选、排除规则、性能监控等方面。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
-- [2026-03-24更新日志.md:1-39](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L39)
-- [2026-03-23更新日志.md:1-39](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L39)
+- [2026-03-25更新日志.md:1-8](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L8)
+- [2026-03-24更新日志.md:10-15](file://med_ai_assistant_1.0_bs/更新小结.md#L10-L15)
+- [2026-03-23更新日志.md:1-340](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L340)
 - [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 - [2026-03-20更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 - [2026-03-08更新日志.md:28-36](file://med_ai_assistant_1.0_bs/更新小结.md#L28-L36)
+- [MccScreeningService.java:74-91](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L74-L91)
+- [MccScreeningController.java:233-341](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L233-L341)
+- [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
+- [DrgAnalysis.vue:109-127](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L109-L127)
 - [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
