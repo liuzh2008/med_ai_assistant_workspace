@@ -23,6 +23,10 @@
 - [更新小结](file://更新小结.md)
 - [后端自动部署API接口文档](file://med_ai_assistant_1.0_bs_backend/doc/接口/后端自动部署API接口文档.md)
 - [前端自动部署接口](file://med_ai_assistant_1.0_bs_backend/doc/接口/前端自动部署接口.md)
+- [AIController](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AIResponseController](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [AIContentResponseWrapper](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/AIContentResponseWrapper.java)
+- [AIDisclaimerConstants](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/constant/AIDisclaimerConstants.java)
 </cite>
 
 ## 目录
@@ -306,6 +310,38 @@ AC-->>FE : "返回结果列表"
 
 **章节来源**
 - [主服务器与执行服务器交互机制分析:277-300](file://med_ai_assistant_1.0_bs_backend/doc/其他/主服务器与执行服务器交互机制分析.md#L277-L300)
+
+### AI分析结果渲染系统改进
+**更新** 新增AI分析结果渲染系统改进，实现Markdown渲染能力和自动过滤thinking标签功能，提供更清晰、专业的医学分析结果展示
+
+#### Markdown渲染能力
+- AI内容统一包装：所有AI生成内容通过AIContentResponseWrapper进行标准化包装
+- 免责声明统一添加：自动在响应中添加AI免责声明字段（aiDisclaimer）
+- 流式与非流式响应支持：同时支持SSE流式响应和标准JSON响应
+- 内容结构化输出：content字段包含主要分析内容，reasoning_content字段可选包含推理过程
+
+#### Thinking标签自动过滤
+- 推理过程提取：从AI响应中自动提取reasoning_content字段
+- 思维链内容分离：将推理过程与最终内容分离展示
+- 标准化输出格式：支持thinking标签的自动过滤和格式化
+
+#### AI内容响应包装工具
+- AIContentResponseWrapper类提供多种包装方法：
+  - wrapWithDisclaimer：包装任意对象为标准响应格式
+  - addDisclaimerToMap：向现有Map添加免责声明字段
+  - createStreamResponse：创建流式响应格式
+  - createFullResponse：创建完整的非流式响应
+
+#### 免责声明常量管理
+- AIDisclaimerConstants类集中管理所有AI免责声明相关的常量
+- 标准免责声明文本："本内容由AI生成，仅供参考"
+- 统一的免责声明字段名："aiDisclaimer"
+
+**章节来源**
+- [AIController:663-1192](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L663-L1192)
+- [AIResponseController:329-528](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L329-L528)
+- [AIContentResponseWrapper:1-181](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/AIContentResponseWrapper.java#L1-L181)
+- [AIDisclaimerConstants:1-58](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/constant/AIDisclaimerConstants.java#L1-L58)
 
 ### 数据模型关系
 ```mermaid
@@ -661,3 +697,29 @@ I --> A
 
 **章节来源**
 - [UpdateView.vue:1-493](file://med_ai_assistant_1.0_bs_vue/src/views/UpdateView.vue#L1-L493)
+
+### AI分析结果渲染系统详细说明
+**新增** AI分析结果渲染系统改进的详细技术实现
+
+#### Markdown渲染实现细节
+- 内容结构化输出：AI响应统一通过AIContentResponseWrapper进行包装
+- 免责声明标准化：所有响应自动添加aiDisclaimer字段，确保合规性
+- 流式与非流式支持：同时支持SSE流式响应和标准JSON响应格式
+- 内容分离展示：content字段包含主要分析内容，reasoning_content字段可选包含推理过程
+
+#### Thinking标签自动过滤机制
+- 推理过程提取：从AI响应中自动提取reasoning_content字段
+- 思维链内容分离：将推理过程与最终内容分离展示，便于用户理解AI决策过程
+- 标准化输出格式：支持thinking标签的自动过滤和格式化，确保输出的专业性和可读性
+
+#### 技术实现架构
+- AIContentResponseWrapper：提供多种包装方法，支持不同场景的响应格式
+- AIDisclaimerConstants：集中管理免责声明相关的常量定义
+- AIResponseController：处理AI响应的流式和非流式输出
+- AIController：负责患者数据获取和AI结果管理
+
+**章节来源**
+- [AIController:663-1192](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L663-L1192)
+- [AIResponseController:329-528](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L329-L528)
+- [AIContentResponseWrapper:1-181](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/AIContentResponseWrapper.java#L1-L181)
+- [AIDisclaimerConstants:1-58](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/constant/AIDisclaimerConstants.java#L1-L58)

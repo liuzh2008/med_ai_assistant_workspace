@@ -7,11 +7,13 @@
 - [AIModelConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
 - [AIRouterConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIRouterConfig.java)
 - [AIResponseController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [AIController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [RetryUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/RetryUtil.java)
 - [AIRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/AIRequest.java)
 - [README.md](file://med_ai_assistant_1.0_bs_backend/deploy/README.md)
 - [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md)
 - [DRG分析API接口.md](file://med_ai_assistant_1.0_bs_backend/doc/系统结构/DRG分析/DRG分析API接口.md)
+- [DRG目录匹配接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG目录匹配接口.md)
 - [DiagnosisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
 - [DrgAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java)
@@ -22,33 +24,39 @@
 - [DrgSnapshotController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgSnapshotController.java)
 - [DrgAnalysisOrchestrator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/orchestrator/DrgAnalysisOrchestrator.java)
 - [PrimaryDiagnosisProcedureMatcher.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/PrimaryDiagnosisProcedureMatcher.java)
+- [DrgMatchingService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java)
 - [DrgCatalogLoader.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgCatalogLoader.java)
 - [DrgAiAnalysisService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgAiAnalysisService.java)
 - [DrgAnalysisService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgAnalysisService.java)
 - [DrgAnalysisResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DrgAnalysisResultRepository.java)
 - [DiagnosisRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DiagnosisRepository.java)
 - [SurgeryRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java)
+- [PromptResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptResult.java)
+- [DrgAnalysisResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisResult.java)
 - [Diagnosis.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/Diagnosis.java)
 - [Surgery.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/Surgery.java)
 - [Drg.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/Drg.java)
 - [DrgAnalysisInputSnapshot.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisInputSnapshot.java)
-- [DrgAnalysisRequestDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgAnalysisRequestDTO.java)
+- [DrgAnalysisInputSnapshot.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgAnalysisInputSnapshot.java)
 - [DrgAnalysisResultDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgAnalysisResultDTO.java)
 - [DrgParsedRecord.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DrgParsedRecord.java)
 - [DiagnosisEntry.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/DiagnosisEntry.java)
 - [PatientDiagnosis.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/PatientDiagnosis.java)
+- [MatchingResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/MatchingResult.java)
+- [DrgFilter.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/DrgFilter.java)
+- [NameCollector.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/NameCollector.java)
 - [Stage2 DRG Analysis Verification Report.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md)
 - [Update Log.md](file://更新小结.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增DRG分析页面重构相关内容，包括患者医疗信息卡片设计
-- 新增诊断列表和手术列表双列表架构说明
-- 新增诊断类型切换和唯一主要诊断规则说明
-- 新增手术类型切换和唯一主要手术规则说明
-- 新增从后端API获取真实诊断和手术数据的接口文档
-- 更新DRG分析API接口文档，反映新的页面重构需求
+- 新增DRG目录匹配功能，实现根据主要诊断和主要手术匹配DRG记录
+- 新增DrgMatchingService服务类和DrgMatchingController控制器
+- 新增GET /api/drg/catalog/match接口，支持DRG目录查询和匹配
+- 新增完整的DRG匹配服务架构，包括分流过滤、名称匹配、结果收集
+- 新增前端DRG费用卡片显示匹配结果功能
+- 新增matchDrgRecords API函数支持DRG记录匹配
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -58,14 +66,16 @@
 5. [响应式AI服务](#响应式ai服务)
 6. [重试机制设计](#重试机制设计)
 7. [DRG分析页面重构](#drg分析页面重构)
-8. [患者医疗信息卡片](#患者医疗信息卡片)
-9. [诊断列表管理](#诊断列表管理)
-10. [手术列表管理](#手术列表管理)
-11. [后端API接口](#后端api接口)
-12. [部署架构](#部署架构)
-13. [性能优化特性](#性能优化特性)
-14. [故障排查指南](#故障排查指南)
-15. [总结](#总结)
+8. [DRG目录匹配服务](#drg目录匹配服务)
+9. [患者医疗信息卡片](#患者医疗信息卡片)
+10. [诊断列表管理](#诊断列表管理)
+11. [手术列表管理](#手术列表管理)
+12. [合并症历史结果卡片](#合并症历史结果卡片)
+13. [后端API接口](#后端api接口)
+14. [部署架构](#部署架构)
+15. [性能优化特性](#性能优化特性)
+16. [故障排查指南](#故障排查指南)
+17. [总结](#总结)
 
 ## 项目概述
 
@@ -79,6 +89,8 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **分布式部署**：支持主服务器和执行服务器的分离部署架构
 - **企业级安全**：完善的配置管理和安全防护机制
 - **页面重构支持**：全新DRG分析页面设计，支持患者医疗信息卡片展示
+- **历史结果跟踪**：新增合并症或并发症分析历史结果卡片功能，允许医护人员查看和跟踪过去的分析结果
+- **DRG目录匹配**：新增基于主要诊断和主要手术的DRG目录匹配功能，提供精确的DRG记录查询和匹配能力
 
 **章节来源**
 - [MedAiAssistantBackendApplication.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L1-L50)
@@ -102,6 +114,7 @@ end
 subgraph "AI服务层"
 AIModelConfig[AI模型配置]
 AIResponseController[AI响应控制器]
+AIController[AI控制器]
 RetryUtil[重试工具]
 end
 subgraph "DRG分析服务层"
@@ -109,11 +122,20 @@ DrgAnalysisController[DRG分析控制器]
 DrgMatchingController[DRG匹配控制器]
 DrgCatalogController[DRG目录控制器]
 DrgAiAnalysisController[DRG AI分析控制器]
+DrgMatchingService[DRG匹配服务]
+DrgAnalysisResultRepository[DRG分析结果仓库]
+end
+subgraph "DRG匹配组件层"
+DrgCatalogLoader[DRG目录加载器]
+PrimaryDiagnosisProcedureMatcher[主要诊断手术匹配器]
+DrgFilter[DRG分流过滤器]
+NameCollector[名称收集器]
 end
 subgraph "数据访问层"
 DiagnosisRepository[诊断数据访问]
 SurgeryRepository[手术数据访问]
-DrgAnalysisResultRepository[分析结果数据访问]
+PromptResultRepository[Prompt结果仓库]
+DrgRepository[DRG数据仓库]
 end
 subgraph "基础设施层"
 Database[(数据库)]
@@ -126,15 +148,21 @@ API --> MainServer
 MainServer --> ExecutionServer
 ExecutionServer --> AIModelConfig
 AIModelConfig --> AIResponseController
-AIResponseController --> RetryUtil
+AIResponseController --> AIController
+AIController --> RetryUtil
 RetryUtil --> HttpClient
 MainServer --> DrgAnalysisController
 DrgAnalysisController --> DrgMatchingController
-DrgMatchingController --> DrgCatalogController
+DrgMatchingController --> DrgMatchingService
+DrgMatchingService --> DrgCatalogLoader
+DrgMatchingService --> PrimaryDiagnosisProcedureMatcher
+PrimaryDiagnosisProcedureMatcher --> DrgFilter
+PrimaryDiagnosisProcedureMatcher --> NameCollector
 DrgCatalogController --> DrgAiAnalysisController
+DrgAnalysisController --> DrgAnalysisResultRepository
 DrgAnalysisController --> DiagnosisRepository
 DrgAnalysisController --> SurgeryRepository
-DrgAnalysisController --> DrgAnalysisResultRepository
+DrgAnalysisController --> PromptResultRepository
 MainServer --> Database
 MainServer --> Redis
 ExecutionServer --> Database
@@ -151,7 +179,8 @@ ExecutionServer --> Database
 2. **执行服务器**：执行AI模型调用、数据处理等耗时任务
 3. **AI服务层**：提供智能的AI响应处理能力
 4. **DRG分析服务层**：专门处理DRG分析相关的业务逻辑
-5. **配置管理层**：统一管理AI模型配置和系统参数
+5. **DRG匹配服务层**：提供基于主要诊断和主要手术的DRG目录匹配功能
+6. **配置管理层**：统一管理AI模型配置和系统参数
 
 **章节来源**
 - [README.md:42-62](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L42-L62)
@@ -389,6 +418,8 @@ RetryUtil --> RetryableExceptions : "识别可重试异常"
 - **删除所有标签页**：移除了原有的多标签页导航结构
 - **仅保留"开始分析"按钮**：简化用户操作流程，提供直接的分析入口
 - **新增患者医疗信息卡片**：整合诊断和手术信息的可视化展示
+- **新增合并症历史结果卡片**：提供历史分析结果的集中展示和跟踪功能
+- **新增DRG费用卡片**：基于DRG目录匹配功能，显示匹配的DRG记录和费用信息
 
 ### 页面布局设计
 
@@ -402,6 +433,17 @@ DiagnosisList --> TypeSwitch[类型切换：主要/次要]
 SurgeryList --> TypeSwitch
 TypeSwitch --> UniqueRule[唯一规则：主要诊断/手术]
 UniqueRule --> AutoSort[自动排序功能]
+PatientCard --> HistoryCard[合并症历史结果卡片]
+HistoryCard --> ResultList[历史结果列表]
+HistoryCard --> FilterControls[筛选控制]
+FilterControls --> DateRange[日期范围]
+FilterControls --> ResultType[结果类型]
+ResultType --> MCCResults[MCC结果]
+ResultType --> CCResults[CC结果]
+ResultType --> AllResults[全部结果]
+PatientCard --> DrgFeeCard[DRG费用卡片]
+DrgFeeCard --> MatchResults[匹配结果展示]
+DrgFeeCard --> FeeDetails[费用详情]
 ```
 
 **图表来源**
@@ -409,6 +451,112 @@ UniqueRule --> AutoSort[自动排序功能]
 
 **章节来源**
 - [Update Log.md:1-216](file://更新小结.md#L1-L216)
+
+## DRG目录匹配服务
+
+### 服务架构设计
+
+DRG目录匹配服务是本次更新的核心功能，提供基于主要诊断和主要手术的精确匹配能力。
+
+```mermaid
+classDiagram
+class DrgMatchingService {
++DrgCatalogLoader drgCatalogLoader
++DrgRepository drgRepository
++PrimaryDiagnosisProcedureMatcher primaryMatcher
++matchPrimaryDiagnosisAndProcedure(patientData, drgCatalog) MatchingResult
++matchDrgRecords(mainDiagnosisName, mainProcedureName) DrgParsedRecord[]
++getDrgByCode(drgCode) Drg
+-matchDiagnosis(record, diagnosisName) boolean
+-matchProcedure(record, procedureName) boolean
+-normalizeName(name) String
+}
+class DrgMatchingController {
++DrgMatchingService drgMatchingService
++matchPrimaryDiagnosisAndProcedure(request) ResponseEntity~MatchingResult~
+}
+class PrimaryDiagnosisProcedureMatcher {
++DEFAULT_SIMILARITY_THRESHOLD double
++match(patientData, catalog) MatchingResult
+-matchDiagnoses(patientData, drg) boolean
+-matchProcedures(patientData, drg) boolean
+}
+class DrgFilter {
+<<utility>>
++filterByProcedurePresence(patientData, allDrgs) DrgParsedRecord[]
+}
+class NameCollector {
++Set~String~ primaryDiagnosisSet
++Set~String~ primaryProcedureSet
++getPrimaryDiagnoses() String[]
++getPrimaryProcedures() String[]
+}
+DrgMatchingController --> DrgMatchingService : "依赖注入"
+DrgMatchingService --> PrimaryDiagnosisProcedureMatcher : "委托匹配"
+PrimaryDiagnosisProcedureMatcher --> DrgFilter : "使用分流过滤"
+PrimaryDiagnosisProcedureMatcher --> NameCollector : "收集名称"
+```
+
+**图表来源**
+- [DrgMatchingService.java:28-190](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java#L28-L190)
+- [DrgMatchingController.java:24-83](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgMatchingController.java#L24-L83)
+- [PrimaryDiagnosisProcedureMatcher.java:29-143](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/PrimaryDiagnosisProcedureMatcher.java#L29-L143)
+
+### 匹配流程设计
+
+DRG目录匹配服务实现了完整的匹配流程，包括分流过滤、精确匹配和结果收集。
+
+```mermaid
+flowchart TD
+Start([开始DRG匹配]) --> LoadCatalog[加载DRG目录]
+LoadCatalog --> ValidateInput{验证输入参数}
+ValidateInput --> |有效| FilterByProcedure[根据手术情况分流过滤]
+ValidateInput --> |无效| ReturnEmpty[返回空结果]
+FilterByProcedure --> IterateRecords[遍历过滤后的DRG记录]
+IterateRecords --> MatchDiagnosis[匹配主要诊断]
+MatchDiagnosis --> MatchProcedure{主要手术存在?}
+MatchProcedure --> |是| CheckProcedure[匹配主要手术]
+MatchProcedure --> |否| CollectNames[收集匹配名称]
+CheckProcedure --> |匹配成功| CollectNames
+CheckProcedure --> |匹配失败| NextRecord[下一个记录]
+CollectNames --> NextRecord
+NextRecord --> |还有记录| IterateRecords
+NextRecord --> |完成| CreateResult[创建匹配结果]
+CreateResult --> ReturnResult[返回匹配结果]
+ReturnEmpty --> End([结束])
+ReturnResult --> End
+```
+
+**图表来源**
+- [PrimaryDiagnosisProcedureMatcher.java:40-72](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/PrimaryDiagnosisProcedureMatcher.java#L40-L72)
+
+### 匹配规则实现
+
+系统实现了严格的DRG匹配规则，确保匹配结果的准确性和一致性。
+
+1. **分流过滤规则**：
+   - 患者有手术：只匹配包含主要手术的DRG记录
+   - 患者无手术：只匹配不包含主要手术的DRG记录
+
+2. **诊断匹配规则**：
+   - 支持ICD编码精确匹配
+   - 支持诊断名称相似度匹配（阈值0.7）
+   - 支持诊断别名匹配
+
+3. **手术匹配规则**：
+   - 支持手术编码精确匹配
+   - 支持手术名称相似度匹配（阈值0.7）
+
+4. **名称标准化处理**：
+   - 转换为小写
+   - 移除空白字符
+   - 移除标点符号
+   - 统一字符串格式
+
+**章节来源**
+- [DrgMatchingService.java:50-190](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java#L50-L190)
+- [PrimaryDiagnosisProcedureMatcher.java:34-141](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/PrimaryDiagnosisProcedureMatcher.java#L34-L141)
+- [DrgFilter.java:34-48](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/DrgFilter.java#L34-L48)
 
 ## 患者医疗信息卡片
 
@@ -474,6 +622,7 @@ SurgeryList --> SurgeryItem
 3. **类型切换**：支持主要诊断/次要诊断和主要手术/次要手术的切换显示
 4. **唯一性规则**：确保主要诊断和主要手术的唯一性
 5. **自动排序**：按照时间或其他逻辑进行自动排序
+6. **DRG费用集成**：与DRG目录匹配功能集成，提供费用相关信息
 
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
@@ -625,6 +774,78 @@ SurgeryList --> SurgeryRepository
 - [SurgeryController.java:74-144](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L74-L144)
 - [SurgeryRepository.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java#L1-L100)
 
+## 合并症历史结果卡片
+
+### 历史结果卡片架构
+
+合并症历史结果卡片作为DRG分析页面的重要组成部分，提供历史分析结果的集中展示和跟踪功能。
+
+```mermaid
+classDiagram
+class HistoryResultCard {
++String patientId
++HistoricalResult[] historicalResults
++DateRange dateRange
++ResultType resultType
++render() void
++loadHistory() void
++filterResults() void
++displayResult(result) void
+}
+class HistoricalResult {
++Long resultId
++String promptName
++String originalResultContent
++LocalDateTime executionTime
++LocalDateTime createdAt
++String status
++Integer isRead
+}
+class PromptResultRepository {
++findLatestByPatientIdAndPromptName(patientId, promptName) PromptResult[]
++findByPatientIdOrderByExecutionTimeDesc(patientId) PromptResult[]
++findByPatientIdAndPromptName(patientId, promptName) PromptResult[]
+}
+class DrgAnalysisResultRepository {
++findByPatientIdOrderByCreatedTimeDesc(patientId) DrgAnalysisResult[]
++findLatestByPatientId(patientId) Optional~DrgAnalysisResult~
++findByPatientIdAndUserSelectedMccType(patientId, mccType) DrgAnalysisResult[]
+}
+HistoryResultCard --> HistoricalResult
+HistoryResultCard --> PromptResultRepository
+HistoryResultCard --> DrgAnalysisResultRepository
+```
+
+**图表来源**
+- [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
+- [DrgAnalysisResultRepository.java:53-63](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/DrgAnalysisResultRepository.java#L53-L63)
+
+### 历史结果功能特性
+
+1. **历史结果展示**：
+   - 展示患者所有合并症或并发症分析的历史结果
+   - 支持按时间倒序排列
+   - 显示每次分析的执行时间和状态
+
+2. **结果筛选功能**：
+   - 支持按日期范围筛选历史结果
+   - 支持按结果类型（MCC/CC/全部）筛选
+   - 支持按状态筛选（已完成/进行中）
+
+3. **结果详情查看**：
+   - 点击历史结果可查看详细分析内容
+   - 支持Markdown渲染AI分析结果
+   - 自动过滤thinking标签，优化显示效果
+
+4. **结果管理功能**：
+   - 支持标记结果为已读
+   - 支持软删除历史结果
+   - 支持重新执行分析
+
+**章节来源**
+- [AIController.java:272-400](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L400)
+- [PromptResult.java:1-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptResult.java#L1-L145)
+
 ## 后端API接口
 
 ### 诊断相关API
@@ -693,10 +914,58 @@ DrgAnalysisController-->>Client : 返回DRG分析结果
 - [DrgAnalysisController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L50)
 - [DrgAnalysisOrchestrator.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/orchestrator/DrgAnalysisOrchestrator.java#L1-L50)
 
+### DRG目录匹配API
+
+系统新增了完整的DRG目录匹配API接口，支持基于主要诊断和主要手术的精确匹配。
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant DrgMatchingController as DRG匹配控制器
+participant DrgMatchingService as 匹配服务
+participant DrgCatalogLoader as 目录加载器
+participant DrgRepository as DRG仓库
+Client->>DrgMatchingController : GET /api/drg/catalog/match?mainDiagnosis=&mainProcedure=
+DrgMatchingController->>DrgMatchingService : matchDrgRecords(mainDiagnosis, mainProcedure)
+DrgMatchingService->>DrgCatalogLoader : getCurrentCatalog()
+DrgCatalogLoader-->>DrgMatchingService : 返回DRG目录
+DrgMatchingService->>DrgMatchingService : 遍历匹配DRG记录
+DrgMatchingService->>DrgRepository : getDrgByCode(drgCode)
+DrgRepository-->>DrgMatchingService : 返回DRG费用信息
+DrgMatchingService-->>DrgMatchingController : 返回匹配结果
+DrgMatchingController-->>Client : 返回DRG匹配结果
+```
+
+**图表来源**
+- [DrgMatchingController.java:39-49](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgMatchingController.java#L39-L49)
+- [DrgMatchingService.java:65-111](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java#L65-L111)
+
+### 历史结果API
+
+系统提供合并症历史结果的相关API接口：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant AIController as AI控制器
+participant PromptResultRepository as Prompt结果仓库
+participant DrgAnalysisResultRepository as DRG分析结果仓库
+Client->>AIController : GET /api/ai/latestPromptResult?patientId={}&promptName={}
+AIController->>PromptResultRepository : findLatestByPatientIdAndPromptName
+PromptResultRepository-->>AIController : 返回最新结果
+AIController->>AIController : 包装AI免责声明
+AIController-->>Client : 返回最新历史结果
+```
+
+**图表来源**
+- [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
+
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
 - [SurgeryController.java:1-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L1-L223)
 - [DrgAnalysisController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L100)
+- [DrgMatchingController.java:1-83](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgMatchingController.java#L1-L83)
+- [AIController.java:272-400](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L400)
 
 ## 部署架构
 
@@ -758,6 +1027,24 @@ ExecWindows --> MySQL
 
 系统支持高并发的AI服务调用，通过响应式编程模式实现高效的异步处理。
 
+### Markdown渲染优化
+
+系统新增Markdown渲染AI分析结果功能，自动过滤thinking标签，优化文本左对齐显示效果。
+
+### DRG匹配性能优化
+
+DRG目录匹配服务采用了多项性能优化措施：
+
+1. **原子目录加载**：使用AtomicReference实现DRG目录的原子替换，确保并发读取的一致性
+2. **内存缓存**：DRG目录数据加载到内存中，避免频繁的数据库查询
+3. **分流过滤**：根据患者是否有手术快速过滤DRG记录，减少匹配计算量
+4. **名称标准化**：预处理诊断和手术名称，提高匹配效率
+5. **去重机制**：使用HashSet自动去除重复的匹配结果
+
+**章节来源**
+- [AIResponseController.java:30-528](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L30-L528)
+- [DrgCatalogLoader.java:31-49](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgCatalogLoader.java#L31-L49)
+
 ## 故障排查指南
 
 ### 常见问题诊断
@@ -782,6 +1069,17 @@ ExecWindows --> MySQL
    - 验证数据库连接
    - 确认缓存配置
 
+5. **DRG目录匹配功能异常**
+   - 检查DrgCatalogLoader是否正确加载目录
+   - 验证DRG数据完整性
+   - 确认匹配算法正常运行
+   - 检查DrgRepository连接状态
+
+6. **历史结果卡片显示异常**
+   - 检查PromptResult表连接
+   - 验证历史结果数据完整性
+   - 确认Markdown渲染配置
+
 ### 日志分析
 
 系统提供详细的日志记录机制，包括：
@@ -789,6 +1087,7 @@ ExecWindows --> MySQL
 - 错误追踪日志
 - 性能监控日志
 - 配置变更日志
+- DRG匹配过程日志
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
@@ -805,6 +1104,8 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 4. **部署友好性**：支持多种部署模式，简化运维管理
 5. **安全性考虑**：完善的配置管理和安全防护机制
 6. **页面重构支持**：全新的DRG分析页面设计，提升用户体验
+7. **历史结果跟踪**：新增合并症历史结果卡片功能，支持医护人员跟踪过去分析结果
+8. **DRG目录匹配**：新增基于主要诊断和主要手术的精确匹配功能，提供DRG费用信息查询能力
 
 ### 技术创新
 
@@ -814,8 +1115,13 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 - **企业级监控**：全面的日志记录和性能监控
 - **页面重构架构**：支持患者医疗信息卡片的复杂交互
 - **诊断手术管理**：提供完整的诊断和手术数据管理功能
+- **历史结果管理**：新增PromptResult实体和相关仓库，支持历史结果的存储和查询
+- **Markdown渲染优化**：自动过滤thinking标签，优化AI分析结果的显示效果
+- **DRG匹配服务**：实现完整的DRG目录匹配流程，包括分流过滤、精确匹配和结果收集
+- **原子目录加载**：使用AtomicReference实现DRG目录的原子替换，确保并发一致性
+- **性能优化**：采用内存缓存、分流过滤、名称标准化等技术提升匹配效率
 
-该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计进一步提升了用户体验，使得DRG分析过程更加直观和高效。
+该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能和DRG目录匹配功能进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯和实用。
 
 **章节来源**
 - [Stage2 DRG Analysis Verification Report.md:1-163](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md#L1-L163)

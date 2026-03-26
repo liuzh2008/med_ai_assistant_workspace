@@ -6,10 +6,21 @@
 - [MCC预筛选模块TDD实施指南.md](file://doc/迭代/DRGs自动分析/MCC预筛选模块TDD实施指南.md)
 - [MccScreeningController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java)
 - [DrgAiAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java)
+- [TimerPromptGeneratorController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java)
 - [MccScreeningService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java)
+- [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 - [MccCandidate.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java)
 - [MccType.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/enums/MccType.java)
 </cite>
+
+## 更新摘要
+**所做更改**
+- 新增定时任务中MCC筛选Prompt自动生成功能章节
+- 更新核心组件部分，添加TimerPromptGenerator控制器
+- 更新架构概览图，展示定时任务与MCC筛选的集成
+- 新增generateMccPromptForPatient方法的技术实现细节
+- 更新依赖关系分析，反映新增的依赖注入关系
+- 新增定时任务接口文档和使用说明
 
 ## 目录
 1. [简介](#简介)
@@ -17,16 +28,17 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [依赖关系分析](#依赖关系分析)
-7. [性能考虑](#性能考虑)
-8. [故障排除指南](#故障排除指南)
-9. [结论](#结论)
+6. [定时任务中的MCC筛选Prompt自动生成](#定时任务中的mcc筛选prompt自动生成)
+7. [依赖关系分析](#依赖关系分析)
+8. [性能考虑](#性能考虑)
+9. [故障排除指南](#故障排除指南)
+10. [结论](#结论)
 
 ## 简介
 
 MCC分析系统是MedAi Assistant项目中的一个重要组成部分，专注于医疗诊断中的并发症分析。该系统通过智能匹配患者的诊断信息与MCC（严重并发症）字典，为医生提供准确的并发症候选列表，辅助DRG（疾病诊断相关分组）分析和医疗决策。
 
-系统基于Spring Boot框架构建，采用了现代化的软件工程实践，包括TDD（测试驱动开发）、微服务架构和高性能的数据处理算法。核心功能包括MCC预筛选、相似度计算、排除规则检查和Prompt生成等。
+系统基于Spring Boot框架构建，采用了现代化的软件工程实践，包括TDD（测试驱动开发）、微服务架构和高性能的数据处理算法。核心功能包括MCC预筛选、相似度计算、排除规则检查和Prompt生成等。**最新更新**在定时任务中集成了MCC筛选Prompt自动生成功能，为所有在院患者自动生成诊断分析、诊疗计划、病情小结和MCC分析四种Prompt。
 
 ## 项目结构
 
@@ -45,12 +57,17 @@ L[前端集成] --> M[API接口层]
 M --> N[控制器层]
 N --> O[服务层]
 O --> P[数据访问层]
+Q[定时任务系统] --> R[每日Prompt生成]
+R --> S[自动MCC筛选]
+R --> T[批量患者处理]
+U[定时任务控制器] --> V[手动触发接口]
 end
 ```
 
 **图表来源**
 - [MccScreeningController.java:1-478](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L478)
 - [DrgAiAnalysisController.java:1-332](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java#L1-L332)
+- [TimerPromptGeneratorController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L1-L100)
 
 **章节来源**
 - [更新小结.md:1-509](file://更新小结.md#L1-L509)
@@ -68,6 +85,15 @@ MccScreeningController是系统的核心入口点，提供了完整的MCC预筛�
 - **字典重载**：`POST /api/drg/mcc/reload`
 - **Prompt生成**：`POST /api/drg/mcc/generate-prompt`
 
+### 定时任务控制器
+
+**新增** TimerPromptGeneratorController提供了定时任务的管理和控制接口：
+
+- **启动定时器**：`GET /api/timer-prompt-generator/start`
+- **停止定时器**：`GET /api/timer-prompt-generator/stop`
+- **查询状态**：`GET /api/timer-prompt-generator/status`
+- **手动触发**：`GET /api/timer-prompt-generator/trigger-daily`
+
 ### MCC预筛选服务
 
 MccScreeningService实现了复杂的匹配算法和数据处理逻辑：
@@ -77,6 +103,16 @@ MccScreeningService实现了复杂的匹配算法和数据处理逻辑：
 - **排除规则系统**：支持多分隔符的排除条件解析
 - **Top-K控制**：可配置的候选数量限制
 - **性能优化**：预计算规范化名称，提高相似度计算效率
+
+### 定时任务生成器
+
+**新增** TimerPromptGenerator实现了定时任务的批量Prompt生成功能：
+
+- **批量患者处理**：分页查询在院患者，支持科室过滤
+- **串行处理策略**：避免数据库连接竞争，确保数据一致性
+- **四合一Prompt生成**：为每个患者自动生成诊断分析、诊疗计划、病情小结和MCC分析
+- **异常容错机制**：单个患者失败不影响整体任务执行
+- **性能监控**：实时统计处理进度和性能指标
 
 ### 数据模型
 
@@ -89,7 +125,9 @@ MccScreeningService实现了复杂的匹配算法和数据处理逻辑：
 
 **章节来源**
 - [MccScreeningController.java:1-478](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L478)
+- [TimerPromptGeneratorController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L1-L100)
 - [MccScreeningService.java:1-447](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L447)
+- [TimerPromptGenerator.java:1-2130](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L1-L2130)
 - [MccCandidate.java:1-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java#L1-L135)
 - [MccType.java:1-26](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/enums/MccType.java#L1-L26)
 
@@ -103,30 +141,42 @@ end
 subgraph "控制层面"
 C[MccScreeningController] --> D[DrgAiAnalysisController]
 C --> E[配置管理]
+F[TimerPromptGeneratorController] --> G[定时任务管理]
 end
 subgraph "服务层面"
-F[MccScreeningService] --> G[相似度计算]
-F --> H[排除规则检查]
-F --> I[Top-K控制]
+H[MccScreeningService] --> I[相似度计算]
+H --> J[排除规则检查]
+H --> K[Top-K控制]
+L[TimerPromptGenerator] --> M[批量患者处理]
+L --> N[串行Prompt生成]
+L --> O[MCC筛选集成]
 end
 subgraph "数据访问层"
-J[DrgMccRepository] --> K[数据库]
+P[DrgMccRepository] --> Q[数据库]
+R[DiagnosisRepository] --> Q
+S[PromptTemplateRepository] --> Q
+T[PromptRepository] --> Q
 end
 subgraph "工具层"
-L[LevenshteinUtil] --> M[文本规范化]
-L --> N[相似度算法]
+U[LevenshteinUtil] --> V[文本规范化]
+U --> W[相似度算法]
+X[TextNormalizer] --> Y[标准化处理]
 end
 A --> C
-C --> F
-F --> J
+C --> H
 F --> L
-D --> O[Prompt管理]
-O --> K
+H --> P
+L --> R
+L --> S
+L --> T
+L --> H
 ```
 
 **图表来源**
 - [MccScreeningController.java:33-57](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L33-L57)
+- [TimerPromptGeneratorController.java:14-26](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L14-L26)
 - [MccScreeningService.java:30-447](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L30-L447)
+- [TimerPromptGenerator.java:106-136](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L106-L136)
 
 ## 详细组件分析
 
@@ -206,6 +256,110 @@ Note over Client,Repo : Prompt生成和保存完成
 - [MccScreeningService.java:66-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L66-L68)
 - [MccScreeningService.java:177-202](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L177-L202)
 
+## 定时任务中的MCC筛选Prompt自动生成
+
+**新增章节** 系统在定时任务中集成了MCC筛选Prompt自动生成功能，为所有在院患者自动生成诊断分析、诊疗计划、病情小结和MCC分析四种Prompt。
+
+### 自动生成功能概述
+
+定时任务每天自动为所有在院患者生成MCC筛选Prompt，具体流程如下：
+
+```mermaid
+flowchart TD
+A[定时任务触发] --> B[分页查询在院患者]
+B --> C{患者列表为空?}
+C --> |是| D[结束任务]
+C --> |否| E[串行处理每个患者]
+E --> F[生成诊断分析Prompt]
+F --> G[生成诊疗计划Prompt]
+G --> H[生成病情小结Prompt]
+H --> I[生成MCC分析Prompt]
+I --> J{MCC候选存在?}
+J --> |是| K[包含MCC分析Prompt]
+J --> |否| L[仅生成前三种Prompt]
+K --> M[统计Prompt数量]
+L --> M
+M --> N[记录处理结果]
+N --> O[处理下一个患者]
+O --> E
+```
+
+**图表来源**
+- [TimerPromptGenerator.java:580-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L580-L653)
+
+### generateMccPromptForPatient方法实现
+
+**新增** generateMccPromptForPatient方法实现了MCC筛选和Prompt生成的完整逻辑：
+
+```mermaid
+sequenceDiagram
+participant Service as TimerPromptGenerator
+participant DiagRepo as DiagnosisRepository
+participant ScreenService as MccScreeningService
+participant TemplateRepo as PromptTemplateRepository
+participant DB as 数据库
+Service->>DiagRepo : findByPatientId(patientId)
+DiagRepo-->>Service : 诊断列表
+Service->>ScreenService : screenMccCandidates(diagnoses)
+ScreenService-->>Service : MCC候选列表
+Service->>TemplateRepo : findByPromptTypeAndPromptName("其他","合并症或并发症分析")
+TemplateRepo-->>Service : Prompt模板
+Service->>Service : 组装Prompt内容
+Service->>DB : saveAndFlush(Prompt)
+DB-->>Service : 保存成功
+Service->>Service : 记录生成日志
+```
+
+**图表来源**
+- [TimerPromptGenerator.java:2031-2127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L2031-L2127)
+
+### 定时任务接口文档
+
+**新增** 定时任务控制器提供了完整的接口文档：
+
+| 接口路径 | 方法 | 功能描述 | 请求参数 | 响应示例 |
+|----------|------|----------|----------|----------|
+| `/api/timer-prompt-generator/start` | GET | 启动定时器 | 无 | "定时器启动请求已发送" |
+| `/api/timer-prompt-generator/stop` | GET | 停止定时器 | 无 | "定时器停止请求已发送" |
+| `/api/timer-prompt-generator/status` | GET | 查询定时器状态 | 无 | "定时器正在运行" 或 "定时器未运行" |
+| `/api/timer-prompt-generator/trigger-daily` | GET | 手动触发每日Prompt生成 | time: 临时执行时间(cron表达式)<br/>maxConcurrency: 临时最大并发数 | "每日Prompt生成任务已手动触发" |
+
+### 依赖注入配置
+
+**新增** TimerPromptGenerator类的构造函数展示了完整的依赖注入配置：
+
+```java
+@Autowired
+public TimerPromptGenerator(TaskScheduler taskScheduler,
+                          AlertRuleService alertRuleService,
+                          PatientStatusUpdateService patientStatusUpdateService,
+                          PatientRepository patientRepository,
+                          PromptRepository promptRepository,
+                          PromptResultRepository promptResultRepository,
+                          MedicalRecordRepository medicalRecordRepository,
+                          LabResultRepository labResultRepository,
+                          ExaminationResultRepository examinationResultRepository,
+                          LongTermOrderRepository longTermOrderRepository,
+                          ServerConfigService serverConfigService,
+                          RestTemplate restTemplate,
+                          ApiProperties apiProperties,
+                          SchedulingProperties schedulingProperties,
+                          EmrRecordRepository emrRecordRepository,
+                          EmrContentRepository emrContentRepository,
+                          SurgeryRepository surgeryRepository,
+                          PromptGenerationLogService promptGenerationLogService,
+                          PromptsTaskUpdater promptsTaskUpdater,
+                          MccScreeningService mccScreeningService,
+                          DiagnosisRepository diagnosisRepository,
+                          PromptTemplateRepository promptTemplateRepository) {
+    // 初始化所有依赖
+}
+```
+
+**章节来源**
+- [TimerPromptGenerator.java:2031-2127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L2031-L2127)
+- [TimerPromptGeneratorController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L1-L100)
+
 ## 依赖关系分析
 
 ```mermaid
@@ -216,12 +370,24 @@ class MccScreeningController {
 +generateMccPrompt(request) ResponseEntity
 +reloadMccDictionary() ResponseEntity
 }
+class TimerPromptGeneratorController {
++startTimer() String
++stopTimer() String
++timerStatus() String
++triggerDailyPromptGeneration(time, maxConcurrency) String
+}
 class MccScreeningService {
 +screenMccCandidates(diagnoses) MccCandidate[]
 +calculateSimilarity(diagnosis, mccName) double
 +tryCodeExactMatch(diagnosis, mcc) Optional~MccCandidate~
 +checkExclusionRules(diagnosis, mcc) boolean
 +reloadDictionary() void
+}
+class TimerPromptGenerator {
++dailyPromptGeneration() void
++generateMccPromptForPatient(patientId) boolean
++findInHospitalPatientsByPage(page, pageSize) Patient[]
++generateAndSavePromptOptimized(patientId, promptType, promptName) void
 }
 class MccCandidate {
 +String mccCode
@@ -236,6 +402,12 @@ class MccCandidate {
 class DrgMccRepository {
 +findAll() DrgMcc[]
 }
+class DiagnosisRepository {
++findByPatientId(patientId) Diagnosis[]
+}
+class PromptTemplateRepository {
++findByPromptTypeAndPromptName(type, name) PromptTemplate
+}
 class LevenshteinUtil {
 +calculateNormalizedSimilarity(a, b, normalizer) double
 }
@@ -243,6 +415,10 @@ class TextNormalizer {
 +normalize(text) String
 }
 MccScreeningController --> MccScreeningService : 依赖
+TimerPromptGeneratorController --> TimerPromptGenerator : 依赖
+TimerPromptGenerator --> MccScreeningService : 依赖
+TimerPromptGenerator --> DiagnosisRepository : 依赖
+TimerPromptGenerator --> PromptTemplateRepository : 依赖
 MccScreeningService --> DrgMccRepository : 使用
 MccScreeningService --> LevenshteinUtil : 使用
 MccScreeningService --> TextNormalizer : 使用
@@ -251,12 +427,16 @@ MccScreeningService --> MccCandidate : 创建
 
 **图表来源**
 - [MccScreeningController.java:47-57](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L47-L57)
+- [TimerPromptGeneratorController.java:17-26](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L17-L26)
 - [MccScreeningService.java:33-44](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L33-L44)
+- [TimerPromptGenerator.java:133-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L133-L135)
 - [MccCandidate.java:13-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java#L13-L135)
 
 **章节来源**
 - [MccScreeningController.java:1-478](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L478)
+- [TimerPromptGeneratorController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L1-L100)
 - [MccScreeningService.java:1-447](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L447)
+- [TimerPromptGenerator.java:1-2130](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L1-L2130)
 
 ## 性能考虑
 
@@ -268,12 +448,23 @@ MccScreeningService --> MccCandidate : 创建
 2. **规范化缓存**：预计算并缓存MCC名称的规范化形式
 3. **原子更新**：支持字典热刷新而不需要停机
 
+### 定时任务性能优化
+
+**新增** 定时任务采用了多项性能优化措施：
+
+1. **分页查询**：每次只处理20个患者，避免内存溢出
+2. **串行处理**：每个患者内部串行生成四种Prompt，避免数据库连接竞争
+3. **延迟控制**：每个患者处理后延迟500ms，每页处理后延迟2秒
+4. **异常容错**：单个患者失败不影响整体任务执行
+5. **性能监控**：实时统计处理进度、成功率和性能指标
+
 ### 性能指标
 
 | 指标 | 目标 | 实现方式 |
 |------|------|----------|
 | 单患者MCC筛选时间 | ≤500ms | 字典预加载、缓存优化 |
-| 并发处理能力 | 支持多线程 | 不可变对象、原子操作 |
+| 每页处理时间 | ≤10秒 | 分页控制、延迟优化 |
+| 并发处理能力 | 支持多线程 | 串行策略、原子操作 |
 | 内存使用 | ≤200MB | 分批加载、内存监控 |
 | 相似度计算 | <10ms/对 | 预规范化、算法优化 |
 
@@ -283,6 +474,7 @@ MccScreeningService --> MccCandidate : 创建
 2. **不可变对象**：使用Collections.unmodifiableList确保线程安全
 3. **原子引用**：使用AtomicReference支持热刷新
 4. **流式处理**：使用Java Stream API优化数据处理
+5. **数据库优化**：使用saveAndFlush立即刷新，减少连接占用
 
 ## 故障排除指南
 
@@ -316,23 +508,42 @@ MccScreeningService --> MccCandidate : 创建
 - 检查MCC_EXCEPT字段的分隔符（逗号、分号、空格）
 - 验证编码匹配的大小写处理
 
-#### 3. 性能问题
+#### 3. 定时任务性能问题
 
-**问题表现**：MCC筛选响应时间过长
+**问题表现**：定时任务执行缓慢或内存不足
 
 **可能原因**：
-- 字典缓存未正确加载
-- 数据库查询性能问题
-- 并发访问冲突
+- 分页大小设置不当
+- 延迟时间过短
+- 数据库连接池配置问题
 
 **解决方案**：
-- 检查字典缓存状态
-- 优化数据库索引
-- 调整并发处理参数
+- 调整pageSize参数（当前为20）
+- 增加延迟时间（当前为500ms/2s）
+- 优化数据库连接池配置
+- 检查服务器资源使用情况
+
+#### 4. MCC筛选Prompt生成失败
+
+**问题表现**：定时任务中MCC分析Prompt生成失败
+
+**可能原因**：
+- 患者诊断数据缺失
+- MCC字典未正确加载
+- Prompt模板不存在
+- 数据库连接异常
+
+**解决方案**：
+- 检查患者诊断数据完整性
+- 验证MCC字典加载状态
+- 确认Prompt模板存在且正确
+- 检查数据库连接状态
+- 查看详细错误日志
 
 **章节来源**
 - [MccScreeningService.java:74-99](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L74-L99)
 - [MccScreeningService.java:177-202](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L177-L202)
+- [TimerPromptGenerator.java:2122-2126](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L2122-L2126)
 
 ## 结论
 
@@ -344,6 +555,7 @@ MCC分析系统是一个功能完整、性能优异的医疗并发症分析平�
 2. **性能优异**：通过多层缓存和优化算法，确保快速响应
 3. **配置灵活**：支持运行时配置调整，适应不同临床需求
 4. **扩展性强**：模块化设计，便于功能扩展和维护
+5. **自动化程度高**：新增定时任务自动生成功能，大幅提高工作效率
 
 ### 技术特色
 
@@ -351,5 +563,17 @@ MCC分析系统是一个功能完整、性能优异的医疗并发症分析平�
 - **灵活的匹配策略**：支持多种匹配方式和排序规则
 - **完善的错误处理**：提供详细的日志记录和错误信息
 - **完整的测试覆盖**：通过TDD确保代码质量和可靠性
+- **定时任务集成**：自动化的批量Prompt生成功能
+- **性能监控**：实时统计和性能指标跟踪
 
-该系统为医疗机构提供了强大的MCC分析能力，有助于提高DRG分析的准确性和医疗决策的质量。
+### 新功能亮点
+
+**新增的定时任务MCC筛选Prompt自动生成功能**为系统带来了显著的价值：
+
+- **全自动化**：无需人工干预，每天自动为所有在院患者生成MCC分析Prompt
+- **批量处理**：支持分页批量处理，避免内存和数据库压力
+- **异常容错**：单个患者失败不影响整体任务执行
+- **性能优化**：串行处理策略确保数据一致性和系统稳定性
+- **接口完善**：提供完整的定时任务控制接口，支持手动触发和状态查询
+
+该系统为医疗机构提供了强大的MCC分析能力，有助于提高DRG分析的准确性和医疗决策的质量，同时通过自动化功能大幅提升了工作效率和系统可用性。
