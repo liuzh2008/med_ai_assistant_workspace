@@ -45,18 +45,18 @@
 - [MatchingResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/drg/MatchingResult.java)
 - [DrgFilter.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/DrgFilter.java)
 - [NameCollector.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/NameCollector.java)
+- [IcdMatcher.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/IcdMatcher.java)
+- [NameMatcher.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/NameMatcher.java)
 - [Stage2 DRG Analysis Verification Report.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md)
 - [Update Log.md](file://更新小结.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增DRG目录匹配功能，实现根据主要诊断和主要手术匹配DRG记录
-- 新增DrgMatchingService服务类和DrgMatchingController控制器
-- 新增GET /api/drg/catalog/match接口，支持DRG目录查询和匹配
-- 新增完整的DRG匹配服务架构，包括分流过滤、名称匹配、结果收集
-- 新增前端DRG费用卡片显示匹配结果功能
-- 新增matchDrgRecords API函数支持DRG记录匹配
+- 实现"诊断为主、手术为辅"差异化评分策略，优化DRG匹配逻辑
+- 新增PrimaryDiagnosisProcedureMatcher匹配过程DEBUG日志，增强调试能力
+- 添加心房颤动无手术场景测试用例，完善匹配策略验证
+- 更新DRG目录匹配接口文档和Javadoc注释，提升文档质量
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -91,6 +91,7 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **页面重构支持**：全新DRG分析页面设计，支持患者医疗信息卡片展示
 - **历史结果跟踪**：新增合并症或并发症分析历史结果卡片功能，允许医护人员查看和跟踪过去的分析结果
 - **DRG目录匹配**：新增基于主要诊断和主要手术的DRG目录匹配功能，提供精确的DRG记录查询和匹配能力
+- **差异化评分策略**：实现"诊断为主、手术为辅"的匹配评分策略，提升匹配准确性
 
 **章节来源**
 - [MedAiAssistantBackendApplication.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L1-L50)
@@ -130,6 +131,8 @@ DrgCatalogLoader[DRG目录加载器]
 PrimaryDiagnosisProcedureMatcher[主要诊断手术匹配器]
 DrgFilter[DRG分流过滤器]
 NameCollector[名称收集器]
+IcdMatcher[ICD精确匹配器]
+NameMatcher[名称相似度匹配器]
 end
 subgraph "数据访问层"
 DiagnosisRepository[诊断数据访问]
@@ -158,6 +161,8 @@ DrgMatchingService --> DrgCatalogLoader
 DrgMatchingService --> PrimaryDiagnosisProcedureMatcher
 PrimaryDiagnosisProcedureMatcher --> DrgFilter
 PrimaryDiagnosisProcedureMatcher --> NameCollector
+PrimaryDiagnosisProcedureMatcher --> IcdMatcher
+PrimaryDiagnosisProcedureMatcher --> NameMatcher
 DrgCatalogController --> DrgAiAnalysisController
 DrgAnalysisController --> DrgAnalysisResultRepository
 DrgAnalysisController --> DiagnosisRepository
@@ -552,6 +557,8 @@ ReturnResult --> End
    - 移除空白字符
    - 移除标点符号
    - 统一字符串格式
+
+**更新** 实现"诊断为主、手术为辅"差异化评分策略，新增DEBUG日志记录匹配过程
 
 **章节来源**
 - [DrgMatchingService.java:50-190](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java#L50-L190)
@@ -1041,6 +1048,8 @@ DRG目录匹配服务采用了多项性能优化措施：
 4. **名称标准化**：预处理诊断和手术名称，提高匹配效率
 5. **去重机制**：使用HashSet自动去除重复的匹配结果
 
+**更新** 实现"诊断为主、手术为辅"差异化评分策略，新增DEBUG日志记录匹配过程
+
 **章节来源**
 - [AIResponseController.java:30-528](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L30-L528)
 - [DrgCatalogLoader.java:31-49](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgCatalogLoader.java#L31-L49)
@@ -1080,6 +1089,11 @@ DRG目录匹配服务采用了多项性能优化措施：
    - 验证历史结果数据完整性
    - 确认Markdown渲染配置
 
+7. **DRG匹配日志问题**
+   - 检查DEBUG级别日志配置
+   - 验证匹配过程日志输出
+   - 确认"诊断为主"特殊标注日志
+
 ### 日志分析
 
 系统提供详细的日志记录机制，包括：
@@ -1088,6 +1102,7 @@ DRG目录匹配服务采用了多项性能优化措施：
 - 性能监控日志
 - 配置变更日志
 - DRG匹配过程日志
+- DEBUG级别匹配过程日志
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
@@ -1106,6 +1121,8 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 6. **页面重构支持**：全新的DRG分析页面设计，提升用户体验
 7. **历史结果跟踪**：新增合并症历史结果卡片功能，支持医护人员跟踪过去分析结果
 8. **DRG目录匹配**：新增基于主要诊断和主要手术的精确匹配功能，提供DRG费用信息查询能力
+9. **差异化评分策略**：实现"诊断为主、手术为辅"的匹配评分策略，提升匹配准确性
+10. **增强调试能力**：新增DEBUG日志记录匹配过程，便于问题排查和性能优化
 
 ### 技术创新
 
@@ -1120,8 +1137,10 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 - **DRG匹配服务**：实现完整的DRG目录匹配流程，包括分流过滤、精确匹配和结果收集
 - **原子目录加载**：使用AtomicReference实现DRG目录的原子替换，确保并发一致性
 - **性能优化**：采用内存缓存、分流过滤、名称标准化等技术提升匹配效率
+- **差异化评分**：实现"诊断为主、手术为辅"的匹配策略，提升匹配准确性
+- **DEBUG日志**：新增匹配过程DEBUG日志，增强系统可观测性
 
-该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能和DRG目录匹配功能进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯和实用。
+该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能和差异化评分策略进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确。
 
 **章节来源**
 - [Stage2 DRG Analysis Verification Report.md:1-163](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md#L1-L163)
