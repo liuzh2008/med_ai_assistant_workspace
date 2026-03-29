@@ -51,6 +51,8 @@
 - [DrgBatchMatchResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgBatchMatchResult.java)
 - [Stage2 DRG Analysis Verification Report.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md)
 - [Update Log.md](file://更新小结.md)
+- [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+- [DrgPromptController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java)
 </cite>
 
 ## 更新摘要
@@ -59,6 +61,10 @@
 - 新增PrimaryDiagnosisProcedureMatcher匹配过程DEBUG日志，增强调试能力
 - 添加心房颤动无手术场景测试用例，完善匹配策略验证
 - 更新DRG目录匹配接口文档和Javadoc注释，提升文档质量
+- **版本0.7.009新增**：修复开发/生产/测试环境下JpaTransactionManager反复输出DEBUG事务日志问题，统一设置为WARN级别
+- **版本0.7.008新增**：修复调度任务中AlertTask批量更新异常（Batch update returned unexpected row count），改进PromptsTaskUpdater去重和批量保存逻辑
+- **版本0.7.007新增**：定时任务集成DRG分析功能，自动为在院病人生成DRG分析Prompt
+- **版本0.7.006新增**：新增DRG分析Prompt生成后端接口（POST /api/drg/generate-prompt）
 - **版本0.7.005新增**：DRG分析按钮添加确认对话框，新增AI分析结果卡片，AI辅助页面过滤DRG专用Prompt记录
 - **版本0.7.004新增**：DRG分析页面新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
 - **版本0.7.003新增**：新增DRG批量组合匹配功能，遍历所有诊断×手术组合进行DRG分组计算，按权重降序展示汇总结果
@@ -83,11 +89,13 @@
 14. [HIV过滤功能](#hiv过滤功能)
 15. [双向严格分流策略](#双向严格分流策略)
 16. [首行标识检测](#首行标识检测)
-17. [后端API接口](#后端api接口)
-18. [部署架构](#部署架构)
-19. [性能优化特性](#性能优化特性)
-20. [故障排查指南](#故障排查指南)
-21. [总结](#总结)
+17. [定时任务集成DRG分析](#定时任务集成drg分析)
+18. [DRG分析Prompt生成接口](#drg分析prompt生成接口)
+19. [后端API接口](#后端api接口)
+20. [部署架构](#部署架构)
+21. [性能优化特性](#性能优化特性)
+22. [故障排查指南](#故障排查指南)
+23. [总结](#总结)
 
 ## 项目概述
 
@@ -107,6 +115,10 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **批量组合匹配**：支持遍历所有诊断×手术组合进行DRG分组计算，按权重降序展示汇总结果
 - **HIV过滤功能**：当患者无HIV相关诊断时，自动排除HIV相关DRG分组
 - **双向严格分流**：根据患者手术状态严格分流DRG匹配，确保匹配结果的临床准确性
+- **定时任务集成**：版本0.7.007新增定时任务集成DRG分析功能，自动为在院病人生成DRG分析Prompt
+- **Prompt生成接口**：版本0.7.006新增DRG分析Prompt生成后端接口（POST /api/drg/generate-prompt）
+- **用户交互优化**：版本0.7.005新增DRG分析按钮确认对话框、AI分析结果卡片和DRG专用Prompt过滤
+- **自动化分析**：版本0.7.004新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
 
 **章节来源**
 - [MedAiAssistantBackendApplication.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L1-L50)
@@ -138,9 +150,11 @@ DrgAnalysisController[DRG分析控制器]
 DrgMatchingController[DRG匹配控制器]
 DrgCatalogController[DRG目录控制器]
 DrgAiAnalysisController[DRG AI分析控制器]
+DrgPromptController[DRG Prompt控制器]
 DrgMatchingService[DRG匹配服务]
 DrgAnalysisResultRepository[DRG分析结果仓库]
 MccScreeningController[MCC筛查控制器]
+TimerPromptGenerator[定时任务生成器]
 end
 subgraph "DRG匹配组件层"
 DrgCatalogLoader[DRG目录加载器]
@@ -185,6 +199,8 @@ DrgAnalysisController --> DrgAnalysisResultRepository
 DrgAnalysisController --> DiagnosisRepository
 DrgAnalysisController --> SurgeryRepository
 DrgAnalysisController --> PromptResultRepository
+TimerPromptGenerator --> DrgPromptController
+TimerPromptGenerator --> DrgMatchingService
 MainServer --> Database
 MainServer --> Redis
 ExecutionServer --> Database
@@ -200,7 +216,7 @@ ExecutionServer --> Database
 1. **主服务器**：处理用户请求、API网关、任务调度
 2. **执行服务器**：执行AI模型调用、数据处理等耗时任务
 3. **AI服务层**：提供智能的AI响应处理能力
-4. **DRG分析服务层**：专门处理DRG分析相关的业务逻辑
+4. **DRG分析服务层**：专门处理DRG分析相关的业务逻辑，包括定时任务集成和Prompt生成
 5. **DRG匹配服务层**：提供基于主要诊断和主要手术的DRG目录匹配功能
 6. **配置管理层**：统一管理AI模型配置和系统参数
 
@@ -1141,6 +1157,157 @@ HasProcedures --> End
 **章节来源**
 - [DrgMatchingService.java:178-179](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java#L178-L179)
 
+## 定时任务集成DRG分析
+
+### 定时任务架构设计
+
+版本0.7.007新增的定时任务集成功能，实现了DRG分析的自动化处理。
+
+```mermaid
+classDiagram
+class TimerPromptGenerator {
++TaskScheduler taskScheduler
++AlertRuleService alertRuleService
++PatientStatusUpdateService patientStatusUpdateService
++DrgPromptController drgPromptController
++dailyPromptGeneration() void
++generateDrgPromptForPatient(patientId) boolean
++findInHospitalPatientsByPage(page, pageSize) Patient[]
+}
+class DrgPromptController {
++generateDrgPrompt(request) ResponseEntity~Map~
++buildDrgListText(batchResults) String
++buildPatientInfo(patient) String
+}
+class DrgMatchingService {
++batchMatchDrgRecords(diagnosisNames, procedureNames) DrgBatchMatchResult[]
++getDrgByCode(drgCode) Drg
+}
+class PromptRepository {
++saveAndFlush(prompt) Prompt
+}
+TimerPromptGenerator --> DrgPromptController : "调用DRG Prompt生成"
+TimerPromptGenerator --> DrgMatchingService : "使用DRG匹配服务"
+DrgPromptController --> DrgMatchingService : "依赖DRG匹配服务"
+DrgPromptController --> PromptRepository : "保存生成的Prompt"
+```
+
+**图表来源**
+- [TimerPromptGenerator.java:580-714](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L580-L714)
+- [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+
+### 定时任务执行流程
+
+系统实现了完整的定时任务执行流程，包括在院患者筛选、DRG分析生成和结果保存。
+
+```mermaid
+flowchart TD
+Start([定时任务启动]) --> CheckSequence[检查并同步Oracle序列]
+CheckSequence --> GetPatients[分页获取在院患者]
+GetPatients --> CheckDiagnoses{检查患者是否有诊断}
+CheckDiagnoses --> |无诊断| GenerateBasicPrompts[生成基础Prompt]
+CheckDiagnoses --> |有诊断| GenerateCompletePrompts[生成完整Prompt]
+GenerateBasicPrompts --> SaveBasicPrompts[保存基础Prompt]
+GenerateCompletePrompts --> GenerateDrgPrompt[生成DRG分析Prompt]
+GenerateDrgPrompt --> SaveDrgPrompt[保存DRG Prompt]
+SaveBasicPrompts --> NextPatient[下一个患者]
+SaveDrgPrompt --> NextPatient
+NextPatient --> |还有患者| GetPatients
+NextPatient --> |完成| LogResults[记录任务执行结果]
+LogResults --> End([定时任务结束])
+```
+
+**图表来源**
+- [TimerPromptGenerator.java:616-714](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L616-L714)
+
+### 定时任务特性
+
+1. **自动化执行**：每天7:00自动执行，无需人工干预
+2. **分页处理**：采用分页机制避免一次性加载大量数据
+3. **并发控制**：使用保守的并发策略，避免数据库压力过大
+4. **错误处理**：每个患者处理失败不影响整体任务执行
+5. **性能监控**：记录任务执行统计信息，包括处理时间、成功率等
+6. **序列同步**：在批量创建Prompt前检查并同步Oracle序列，防止ID冲突
+7. **条件生成**：只有在患者有诊断记录时才生成DRG分析Prompt
+
+**章节来源**
+- [TimerPromptGenerator.java:580-714](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L580-L714)
+
+## DRG分析Prompt生成接口
+
+### 接口架构设计
+
+版本0.7.006新增的DRG分析Prompt生成接口，提供了完整的DRG分析Prompt生成能力。
+
+```mermaid
+classDiagram
+class DrgPromptController {
++generateDrgPrompt(request) ResponseEntity~Map~
++buildDrgListText(batchResults) String
++buildPatientInfo(patient) String
+}
+class DrgMatchingService {
++batchMatchDrgRecords(diagnosisNames, procedureNames) DrgBatchMatchResult[]
++getDrgByCode(drgCode) Drg
+}
+class PromptRepository {
++save(prompt) Prompt
+}
+class PromptTemplateRepository {
++findByPromptTypeAndPromptName(type, name) PromptTemplate
+}
+class AIController {
++getPatientData(patientId, promptType, promptName) ResponseEntity~String~
+}
+DrgPromptController --> DrgMatchingService : "使用DRG匹配服务"
+DrgPromptController --> PromptRepository : "保存生成的Prompt"
+DrgPromptController --> PromptTemplateRepository : "获取Prompt模板"
+DrgPromptController --> AIController : "获取患者数据"
+```
+
+**图表来源**
+- [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+
+### Prompt生成流程
+
+系统实现了完整的DRG分析Prompt生成流程，包括数据获取、匹配计算和结果保存。
+
+```mermaid
+flowchart TD
+Start([接收DRG Prompt生成请求]) --> ValidateRequest[验证请求参数]
+ValidateRequest --> CheckPatient[检查患者是否存在]
+CheckPatient --> GetDiagnoses[获取患者诊断列表]
+GetDiagnoses --> GetSurgeries[获取患者手术列表]
+GetSurgeries --> BatchMatchDrg[调用DRG批量匹配]
+BatchMatchDrg --> CheckResults{检查匹配结果}
+CheckResults --> |无结果| ReturnError[返回错误信息]
+CheckResults --> |有结果| GetTemplate[获取Prompt模板]
+GetTemplate --> GetPatientData[获取患者完整数据]
+GetPatientData --> BuildPrompt[构建Prompt内容]
+BuildPrompt --> SavePrompt[保存到数据库]
+SavePrompt --> ReturnSuccess[返回成功响应]
+ReturnError --> End([结束])
+ReturnSuccess --> End
+```
+
+**图表来源**
+- [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+
+### 接口功能特性
+
+1. **参数验证**：验证patientId参数的有效性
+2. **患者检查**：确保患者存在且有效
+3. **数据获取**：获取患者的诊断和手术列表
+4. **DRG匹配**：调用批量匹配服务获取DRG结果
+5. **模板获取**：获取DRG分析专用Prompt模板
+6. **数据构建**：调用AIController获取完整患者数据
+7. **内容组合**：将患者数据和DRG匹配结果组合成Prompt
+8. **结果保存**：保存生成的Prompt到数据库
+9. **响应返回**：返回生成结果和提示信息
+
+**章节来源**
+- [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+
 ## 后端API接口
 
 ### 诊断相关API
@@ -1296,6 +1463,33 @@ DrgAiAnalysisController-->>Client : 返回生成和保存结果
 **图表来源**
 - [DrgAiAnalysisController.java:134-175](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java#L134-L175)
 
+### DRG Prompt生成API
+
+系统新增了DRG分析Prompt生成的后端接口，支持手动触发DRG分析。
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant DrgPromptController as DRG Prompt控制器
+participant DrgMatchingService as DRG匹配服务
+participant PromptRepository as Prompt仓库
+participant AIController as AI控制器
+Client->>DrgPromptController : POST /api/drg/generate-prompt
+DrgPromptController->>DrgPromptController : 验证请求参数
+DrgPromptController->>DrgPromptController : 检查患者存在性
+DrgPromptController->>DrgPromptController : 获取诊断和手术列表
+DrgPromptController->>DrgMatchingService : batchMatchDrgRecords
+DrgMatchingService-->>DrgPromptController : 返回DRG匹配结果
+DrgPromptController->>AIController : getPatientData
+AIController-->>DrgPromptController : 返回患者数据
+DrgPromptController->>PromptRepository : save
+PromptRepository-->>DrgPromptController : 返回保存结果
+DrgPromptController-->>Client : 返回生成结果
+```
+
+**图表来源**
+- [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
 - [SurgeryController.java:1-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L1-L223)
@@ -1303,6 +1497,7 @@ DrgAiAnalysisController-->>Client : 返回生成和保存结果
 - [DrgMatchingController.java:1-83](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgMatchingController.java#L1-L83)
 - [DrgAiAnalysisController.java:1-332](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java#L1-L332)
 - [AIController.java:272-400](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L400)
+- [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
 
 ## 部署架构
 
@@ -1381,6 +1576,17 @@ DRG目录匹配服务采用了多项性能优化措施：
 7. **HIV过滤优化**：提前检查患者诊断，避免不必要的DRG名称检查
 8. **双向分流优化**：通过Stream过滤减少匹配计算量
 
+### 定时任务性能优化
+
+定时任务集成功能采用了多项性能优化措施：
+
+1. **分页处理**：采用分页机制避免一次性加载大量在院患者数据
+2. **并发控制**：使用保守的并发策略，避免数据库连接竞争
+3. **延迟机制**：在处理每个患者后添加延迟，减少数据库压力
+4. **序列同步**：在批量创建Prompt前检查并同步Oracle序列，防止ID冲突
+5. **异常隔离**：单个患者处理失败不影响整体任务执行
+6. **性能监控**：记录任务执行统计信息，包括处理时间、成功率等
+
 **更新** 实现"诊断为主、手术为辅"差异化评分策略，新增DEBUG日志记录匹配过程
 
 **章节来源**
@@ -1434,6 +1640,17 @@ DRG目录匹配服务采用了多项性能优化措施：
    - **版本0.7.003新增**：验证笛卡尔积组合生成逻辑
    - **版本0.7.003新增**：确认去重和分数计算准确性
 
+9. **定时任务执行异常**
+   - **版本0.7.007新增**：检查定时任务配置和调度器状态
+   - **版本0.7.007新增**：验证在院患者筛选逻辑
+   - **版本0.7.007新增**：确认DRG Prompt生成和保存流程
+   - **版本0.7.007新增**：检查序列同步功能是否正常工作
+
+10. **DRG Prompt生成接口异常**
+    - **版本0.7.006新增**：检查请求参数验证逻辑
+    - **版本0.7.006新增**：验证DRG匹配服务调用
+    - **版本0.7.006新增**：确认Prompt模板获取和保存流程
+
 ### 日志分析
 
 系统提供详细的日志记录机制，包括：
@@ -1445,6 +1662,8 @@ DRG目录匹配服务采用了多项性能优化措施：
 - DEBUG级别匹配过程日志
 - **版本0.7.005新增**：AI分析结果卡片交互日志
 - **版本0.7.004新增**："主要诊断及操作分析"按钮点击日志
+- **版本0.7.007新增**：定时任务执行日志和统计信息
+- **版本0.7.006新增**：DRG Prompt生成接口调用日志
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
@@ -1471,6 +1690,10 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 14. **首行标识检测**：版本0.7.001新增首行"/"标识检测，支持识别特殊格式的DRG记录
 15. **确认对话框优化**：版本0.7.005新增DRG分析确认对话框，提升用户操作安全性
 16. **AI分析结果卡片**：版本0.7.005新增AI分析结果卡片，改善DRG分析结果展示体验
+17. **定时任务集成**：版本0.7.007新增定时任务集成DRG分析功能，自动为在院病人生成DRG分析Prompt
+18. **Prompt生成接口**：版本0.7.006新增DRG分析Prompt生成后端接口，支持手动触发DRG分析
+19. **用户交互优化**：版本0.7.005新增DRG分析按钮确认对话框、AI分析结果卡片和DRG专用Prompt过滤
+20. **自动化分析**：版本0.7.004新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
 
 ### 技术创新
 
@@ -1492,8 +1715,11 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 - **双向分流策略**：实现严格的患者手术状态匹配保证
 - **首行标识解析**：支持特殊格式DRG记录的智能识别
 - **用户交互优化**：新增确认对话框和结果卡片提升用户体验
+- **定时任务自动化**：实现DRG分析的自动化处理，减少人工干预
+- **Prompt生成接口**：提供灵活的DRG分析Prompt生成能力
+- **序列同步机制**：防止Oracle序列冲突，确保数据一致性
 
-该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能、差异化评分策略、批量组合匹配功能、HIV过滤功能、双向分流策略和首行标识检测进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确。
+该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能、差异化评分策略、批量组合匹配功能、HIV过滤功能、双向分流策略、首行标识检测、定时任务集成、Prompt生成接口、用户交互优化和自动化分析进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确。
 
 **章节来源**
 - [Stage2 DRG Analysis Verification Report.md:1-163](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md#L1-L163)
