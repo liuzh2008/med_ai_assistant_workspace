@@ -13,7 +13,6 @@
 - [docker-entrypoint.sh](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/docker-entrypoint.sh)
 - [application-prompt.properties](file://med_ai_assistant_1.0_bs_backend/config/application-prompt.properties)
 - [application-monitoring.properties](file://med_ai_assistant_1.0_bs_backend/config/application-monitoring.properties)
-- [application-patient-status-filter.properties](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/config/application-patient-status-filter.properties)
 - [application-github-release.properties.example](file://med_ai_assistant_1.0_bs_backend/config/application-github-release.properties.example)
 </cite>
 
@@ -24,6 +23,7 @@
 - 优化Docker镜像构建流程，引入BuildKit性能优化和阿里云Maven镜像源配置
 - 完善容器编排示例，包含多环境部署配置和健康检查机制
 - 增强容器健康检查配置，提供更精确的服务状态监控
+- **新增**：本地JAR+Docker复制构建模式详解，解决阿里云Maven仓库SSL连接不稳定问题
 
 ## 目录
 1. [简介](#简介)
@@ -40,7 +40,7 @@
 ## 简介
 本指南面向MedAiAssistant后端系统的Docker容器化部署，涵盖最新的本地JAR+Docker复制构建流程，该流程专门针对阿里云Maven仓库SSL连接不稳定问题进行了优化。文档详细说明了多阶段构建过程，包括基础镜像选择、依赖安装、应用打包和最终镜像优化策略；提供容器运行参数配置，端口映射，卷挂载和环境变量设置；包含容器编排示例，如docker-compose配置文件；解释容器健康检查配置和日志管理；提供容器部署的最佳实践和故障排查方法。
 
-**更新** 新增GitHub Actions工作流配置章节，详细介绍CI/CD管道的自动化部署流程，包括版本号管理、镜像构建优化和多环境部署策略。
+**更新** 新增GitHub Actions工作流配置章节，详细介绍CI/CD管道的自动化部署流程，包括版本号管理、镜像构建优化和多环境部署策略。重点介绍了本地JAR+Docker复制构建模式，该模式通过避免容器内Maven依赖下载，显著提升了构建稳定性。
 
 ## 项目结构
 - 后端工程位于 `med_ai_assistant_1.0_bs_backend/` 目录，包含多份Dockerfile与部署脚本。
@@ -257,9 +257,8 @@ J --> |否| L["输出错误并退出"]
 - 监控策略配置：启动阶段与正常运行阶段的监控阈值、健康检查超时、性能指标收集间隔、日志级别、数据库连接池与线程池告警阈值、内存与GC监控、API响应时间与错误率监控、自定义监控与告警通知方式。
 
 **章节来源**
-- [application-prompt.properties:1-29](file://med_ai_assistant_1.0_bs_backend/config/application-prompt.properties#L1-L29)
+- [application-prompt.properties:1-32](file://med_ai_assistant_1.0_bs_backend/config/application-prompt.properties#L1-L32)
 - [application-monitoring.properties:1-196](file://med_ai_assistant_1.0_bs_backend/config/application-monitoring.properties#L1-L196)
-- [application-patient-status-filter.properties:1-49](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/config/application-patient-status-filter.properties#L1-L49)
 
 ## 依赖关系分析
 - **构建阶段依赖**：Eclipse Temurin 21 JRE、本地JAR文件、阿里云镜像源（仅用于运行时网络工具安装）。
@@ -363,4 +362,16 @@ GHA --> DockerRegistry["Docker Registry"]
 **章节来源**
 - [Dockerfile:4-15](file://med_ai_assistant_1.0_bs_backend/Dockerfile#L4-L15)
 - [build-and-export.sh:35-43](file://med_ai_assistant_1.0_bs_backend/build-and-export.sh#L35-L43)
+- [build-and-export.sh:69-71](file://med_ai_assistant_1.0_bs_backend/build-and-export.sh#L69-L71)
+
+### 新增：Docker构建流程优化详解
+- **多阶段构建策略**：第一阶段专注于JAR构建，第二阶段专注于运行时环境准备
+- **阿里云Maven镜像源配置**：在构建阶段配置阿里云镜像源，加速依赖下载
+- **BuildKit性能优化**：通过DOCKER_BUILDKIT=1启用BuildKit，显著提升构建性能
+- **层缓存优化**：合理安排Dockerfile指令顺序，最大化利用层缓存
+- **镜像导出与导入**：通过tar文件形式导出镜像，便于跨环境传输和部署
+
+**章节来源**
+- [Dockerfile.execution.linux:8-15](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/Dockerfile.execution.linux#L8-L15)
+- [build-and-export-execution.sh:47-55](file://med_ai_assistant_1.0_bs_backend/build-and-export-execution.sh#L47-L55)
 - [build-and-export.sh:69-71](file://med_ai_assistant_1.0_bs_backend/build-and-export.sh#L69-L71)
