@@ -1,0 +1,11 @@
+# 确保所有 Shell 脚本使用 LF 换行符
+*.sh text eol=lf
+deploy-linux.sh text eol=lf
+diagnose.sh text eol=lf
+stop.sh text eol=lf
+update.sh text eol=lf
+deploy-prod.sh text eol=lf
+
+# 确保批处理脚本使用 CRLF 换行符
+*.bat text eol=crlf
+*.ps1 text eol=crlf

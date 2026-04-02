@@ -1,0 +1,86 @@
+name: Release Frontend
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build Docker image
+        run: |
+          docker build -t med-ai-assistant-frontend:latest .
+          docker pull nginx:1.25-alpine
+
+      - name: Create release archive
+        run: |
+          mkdir -p release
+          # 创建部署包目录结构
+          mkdir -p deploy-package/docker
+          # 复制构建产物
+          cp -r dist deploy-package/
+          # 复制部署配置文件
+          cp Dockerfile deploy-package/
+          cp docker-compose.yml deploy-package/
+          cp .env.production deploy-package/
+          cp nginx.conf deploy-package/ 2>/dev/null || echo "nginx.conf not found, skipping"
+          cp nginx.main.conf deploy-package/ 2>/dev/null || echo "nginx.main.conf not found, skipping"
+          cp nginx-proxy.conf deploy-package/ 2>/dev/null || echo "nginx-proxy.conf not found, skipping"
+          cp package.json deploy-package/
+          # 复制部署脚本（如果存在）
+          cp deploy/deploy-from-package.sh deploy-package/ 2>/dev/null || echo "deploy-from-package.sh not found, skipping"
+          cp deploy/auto-deploy-frontend.sh deploy-package/ 2>/dev/null || echo "auto-deploy-frontend.sh not found, skipping"
+          cp deploy/restore-frontend.sh deploy-package/ 2>/dev/null || echo "restore-frontend.sh not found, skipping"
+          cp deploy/med_ai_assistant_1.0_bs_vue/deploy-linux.sh deploy-package/ 2>/dev/null || echo "deploy-linux.sh not found, skipping"
+          # 保存Docker镜像
+          docker save -o deploy-package/medai-images.tar med-ai-assistant-frontend:latest nginx:1.25-alpine
+          echo "Docker images saved to medai-images.tar"
+          # 打包
+          cd deploy-package
+          zip -r -9 ../release/med_ai_assistant_frontend-${{ steps.get_version.outputs.VERSION }}.zip .
+          cd ..
+
+      - name: Create Release in medai-builds
+        uses: softprops/action-gh-release@v1
+        with:
+          repository: liuzh2008/medai-builds
+          token: ${{ secrets.BUILD_REPO_TOKEN }}
+          tag_name: frontend-v${{ steps.get_version.outputs.VERSION }}
+          name: 前端构建 v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            自动构建的前端静态文件
+
+            - 版本：${{ steps.get_version.outputs.VERSION }}
+            - 构建时间：${{ github.event.head_commit.timestamp }}
+            - 提交：${{ github.sha }}
+          files: |
+            release/med_ai_assistant_frontend-${{ steps.get_version.outputs.VERSION }}.zip

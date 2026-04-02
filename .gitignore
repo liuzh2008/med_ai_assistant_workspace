@@ -1,6 +1,42 @@
-# IDE配置
-.vscode/
+.DS_Store
+node_modules
+/dist
 
-# 子项目（独立Git仓库）
-med_ai_assistant_1.0_bs_backend/
-med_ai_assistant_1.0_bs_vue/
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Deployment directories and files
+/deploy/**/dist/
+/deploy/**/node_modules/
+/deploy/**/medai-images.tar
+
+# Docker image archives
+medai-images.tar
+
+# Compressed files
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# Build output logs
+build_output*.log
