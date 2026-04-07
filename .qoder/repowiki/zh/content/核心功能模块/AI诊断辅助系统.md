@@ -35,15 +35,28 @@
 - [AIController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [PromptResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java)
 - [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [MedicalRecordController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java)
+- [RepeatOperationQueryService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationQueryService.java)
+- [RepeatOperationController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/RepeatOperationController.java)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md)
+- [PromptTemplate.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java)
+- [UpdatePromptTemplateDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java)
+- [DepartmentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java)
+- [SqlExecutionService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java)
+- [HospitalConfigTestController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java)
+- [ResponseCacheUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ResponseCacheUtil.java)
+- [ClobManager.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java)
+- [待办事项接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/待办事项接口.md)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增GET /api/ai/latestPromptResult接口，提供最新的AI提示结果访问能力
-- 支持外部系统集成和AI生成医疗洞察的自动化检索
-- 前端新增getLatestPromptResult API函数，用于获取指定患者和模板的最新分析结果
-- 与DRG分析组件集成，支持合并症或并发症分析的自动化检索
-- 完善AI免责声明包装机制，确保所有AI相关内容都带有合规声明
+- 新增科室特殊情况补充信息功能，增强AI提示模板系统的灵活性和临床相关性
+- 优化后端todo项查询系统，实现去重算法提升用户体验
+- 修复数据库缓存问题，解决Hibernate缓存导致的状态验证失败问题
+- 新增CLOB内存管理工具，防止内存泄漏和性能问题
+- 增强SQL执行缓存清理和监控功能
 
 ## 目录
 1. [简介](#简介)
@@ -60,15 +73,19 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 新增GET /api/ai/latestPromptResult接口，提供最新的AI提示结果访问能力，支持外部系统集成和AI生成医疗洞察的自动化检索。前端新增getLatestPromptResult API函数，与DRG分析组件深度集成，支持合并症或并发症分析的自动化检索。完善AI免责声明包装机制，确保所有AI相关内容都带有合规声明。
+**最新更新** 新增科室特殊情况补充信息功能，增强AI提示模板系统的灵活性和临床相关性；优化后端todo项查询系统，实现去重算法提升用户体验；修复数据库缓存问题，解决Hibernate缓存导致的状态验证失败问题；新增CLOB内存管理工具，防止内存泄漏和性能问题；增强SQL执行缓存清理和监控功能。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
-- 配置与控制器：AI模型配置类、执行服务器控制器、MCC筛查控制器等
+- 配置与控制器：AI模型配置类、执行服务器控制器、MCC筛查控制器、重复手术查询控制器等
 - 前端AI服务：aiService.js提供统一的AI服务调用接口，drg.js提供DRG/MCC分析API
 - 模板管理：PromptTemplates.vue、PromptTemplateEditDialog.vue等模板管理组件
 - MCC分析模块：完整的MCC预筛选、相似度计算、Prompt生成功能
-- **最新提示结果接口**：GET /api/ai/latestPromptResult提供AI结果的自动化访问
+- **科室特殊情况补充信息**：新增SPECIAL_CONTENT字段支持科室特定模板的个性化配置
+- **优化的待办事项查询**：实现按病历ID去重算法，提升用户界面体验
+- **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题
+- **CLOB内存管理**：新增ClobManager工具类，优化大文本处理性能
+- **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
 - **AI OCR数据采集**：监护仪呼吸机AI OCR数据采集完整技术方案
@@ -81,6 +98,11 @@ Exec["执行服务器<br/>LLM调用与加密处理"]
 MCC["MCC分析服务<br/>预筛选与Prompt生成"]
 OCRAPI["OCR数据采集服务<br/>设备屏幕识别与数据处理"]
 LatestAPI["最新提示结果接口<br/>GET /api/ai/latestPromptResult"]
+TodoOptimization["待办事项优化<br/>去重算法与查询优化"]
+CacheFix["缓存修复<br/>Hibernate缓存问题解决"]
+ClobManager["CLOB内存管理<br/>防止内存泄漏"]
+SqlCache["SQL执行缓存<br/>动态清理与监控"]
+SpecialContent["科室特殊内容<br/>SPECIAL_CONTENT字段"]
 end
 subgraph "前端应用"
 VueApp["Vue.js 应用<br/>AI对话界面"]
@@ -92,6 +114,7 @@ TopMenu["顶部菜单组件<br/>TopMenu.vue"]
 OCRDash["OCR数据看板<br/>实时监控界面"]
 DrgAnalysis["DRG分析组件<br/>DrgAnalysis.vue"]
 LatestAPIFront["最新提示结果API<br/>getLatestPromptResult"]
+TodoFront["待办事项界面<br/>优化后的查询结果"]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
@@ -108,6 +131,11 @@ Main --> Exec
 Main --> MCC
 Main --> OCRAPI
 Main --> LatestAPI
+Main --> TodoOptimization
+Main --> CacheFix
+Main --> ClobManager
+Main --> SqlCache
+Main --> SpecialContent
 Exec --> LLM
 Main --> DB
 MCC --> MCCDB
@@ -120,6 +148,7 @@ PromptTemplates --> AIService
 PromptEditor --> AIService
 TopMenu --> AIService
 OCRDash --> Main
+TodoFront --> TodoOptimization
 ExternalSystem --> LatestAPI
 ```
 
@@ -129,6 +158,10 @@ ExternalSystem --> LatestAPI
 - [MccScreeningController.java:33-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L33-L35)
 - [监护仪呼吸机AI OCR数据采集方案.md:375-416](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L375-L416)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-61](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L61)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:1-136](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L1-L136)
@@ -151,8 +184,12 @@ ExternalSystem --> LatestAPI
 - **顶部菜单组件**：支持触屏/桌面设备差异化交互，修复Android平板上的菜单点击问题。
 - **AI OCR数据采集系统**：实现医疗设备屏幕的自动OCR识别和数据数字化处理，支持多品牌设备的参数提取。
 - **最新提示结果接口**：提供GET /api/ai/latestPromptResult端点，支持外部系统自动化检索AI生成的医疗洞察。
+- **优化的待办事项查询**：实现按medicalRecordId去重算法，同一病历ID只保留最新的一条记录。
+- **数据库缓存修复**：解决Hibernate自动刷新机制导致的CLOB字段处理异常问题。
+- **CLOB内存管理**：新增ClobManager工具类，优化Clob对象的内存管理，防止内存泄漏。
+- **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理。
 
-**最新更新** 新增GET /api/ai/latestPromptResult接口，提供最新的AI提示结果访问能力，支持外部系统集成和AI生成医疗洞察的自动化检索。前端新增getLatestPromptResult API函数，与DRG分析组件深度集成，支持合并症或并发症分析的自动化检索。
+**最新更新** 新增科室特殊情况补充信息功能，增强AI提示模板系统的灵活性和临床相关性；优化后端todo项查询系统，实现去重算法提升用户体验；修复数据库缓存问题，解决Hibernate缓存导致的状态验证失败问题；新增CLOB内存管理工具，防止内存泄漏和性能问题；增强SQL执行缓存清理和监控功能。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
@@ -169,6 +206,10 @@ ExternalSystem --> LatestAPI
 - [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 - [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
@@ -178,6 +219,10 @@ ExternalSystem --> LatestAPI
 - **前端应用**：通过AI服务模块统一调用后端AI接口，提供用户友好的对话界面和模板管理功能。
 - **AI OCR数据采集系统**：独立的OCR识别服务，专门处理医疗设备屏幕数据的自动采集和数字化，与主系统通过REST API和WebSocket集成。
 - **最新提示结果接口**：提供标准化的API端点，支持外部系统自动化集成，实现AI生成医疗洞察的统一访问。
+- **优化的待办事项查询**：实现去重算法，提升用户界面体验，避免重复显示同一病历的多个待办事项。
+- **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题，提高系统稳定性。
+- **CLOB内存管理**：优化大文本处理性能，防止内存泄漏和系统性能下降。
+- **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理。
 
 ```mermaid
 graph TB
@@ -185,38 +230,48 @@ A["主服务器"] --> B["执行服务器"]
 A --> C["OCR数据采集服务"]
 A --> D["MCC分析服务"]
 A --> E["最新提示结果接口"]
+A --> F["待办事项优化服务"]
+A --> G["缓存修复服务"]
+A --> H["CLOB内存管理"]
+A --> I["SQL执行缓存"]
 B --> F["LLM服务"]
-A --> G["数据库"]
-B --> G
-C --> H["OCR数据库"]
-C --> I["医疗设备"]
-D --> J["MCC字典库"]
-E --> K["外部系统集成"]
-B --> L["回调服务"]
-A --> M["对外API"]
-M --> A
+A --> J["数据库"]
+B --> J
+C --> K["OCR数据库"]
+C --> L["医疗设备"]
+D --> M["MCC字典库"]
+E --> N["外部系统集成"]
+F --> O["去重算法"]
+G --> P["Hibernate缓存修复"]
+H --> Q["内存管理"]
+I --> R["缓存清理与监控"]
+B --> S["回调服务"]
+A --> T["对外API"]
+T --> A
 subgraph "前端应用"
-N["Vue.js 应用"]
-O["AI服务模块"]
-P["DRG/MCC分析API"]
-Q["对话界面组件"]
-R["模板管理组件"]
-S["顶部菜单组件"]
-T["OCR数据看板"]
-U["DRG分析组件"]
-V["最新提示结果API"]
+U["Vue.js 应用"]
+V["AI服务模块"]
+W["DRG/MCC分析API"]
+X["对话界面组件"]
+Y["模板管理组件"]
+Z["顶部菜单组件"]
+AA["OCR数据看板"]
+BB["DRG分析组件"]
+CC["最新提示结果API"]
+DD["优化后的待办事项界面"]
 end
-N --> O
-N --> P
-P --> M
-O --> M
-Q --> N
-R --> O
-S --> N
-T --> N
-U --> P
 U --> V
-K --> E
+U --> W
+W --> T
+V --> T
+X --> U
+Y --> V
+Z --> U
+AA --> U
+BB --> W
+BB --> CC
+DD --> F
+N --> E
 ```
 
 **图表来源**
@@ -225,6 +280,10 @@ K --> E
 - [MccScreeningController.java:33-35](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L33-L35)
 - [监护仪呼吸机AI OCR数据采集方案.md:375-416](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L375-L416)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
 
 ## 详细组件分析
 
@@ -707,13 +766,24 @@ ReturnCache --> Stats
   - 配置管理：GET /api/drg/mcc/config，获取相似度阈值、TopK设置等
   - 字典管理：POST /api/drg/mcc/reload，重新加载MCC字典
   - Prompt生成：POST /api/drg/mcc/generate-prompt，生成并保存MCC分析Prompt
-- 调用示例
+- **待办事项服务（优化后）**
+  - 按患者ID查询：GET /api/medicalrecords/patient/{patientId}/todos，自动去重同一病历ID的多个待办
+  - 按日期和科室查询：GET /api/medicalrecords/todos/by-date-department，支持日期范围和科室过滤
+  - 去重算法：按medicalRecordId分组，每组只保留createdTime最大的最新记录
+  - 兼容性：medicalRecordId为null的记录不参与去重，直接保留
+- **数据库缓存服务**
+  - 缓存清理：POST /api/hospital-config/clear-cache，支持按医院ID和数据库类型清理
+  - 缓存统计：GET /api/hospital-config/cache-stats，获取缓存使用统计信息
+  - SQL执行缓存：增强缓存清理和监控功能
+- **调用示例**
   - 流式调用：POST `/api/ai/stream-response-post`，Content-Type: application/json
   - 非流式调用：POST `/api/ai/response`，请求体包含model与messages
   - 健康检查：GET `/api/health/ai-status`
   - MCC候选筛选：POST `/api/drg/mcc/screen`，请求体包含患者诊断列表
   - 生成Prompt：POST `/api/drg/mcc/generate-prompt`，请求体包含patientId和mccResults
   - **最新提示结果**：GET `/api/ai/latestPromptResult?patientId=123&promptName=诊断分析`
+  - **优化的待办查询**：GET `/api/medicalrecords/patient/990500001204401_1/todos`
+  - **缓存清理**：POST `/api/hospital-config/clear-cache?hospitalId=cdwyy&databaseType=his`
 - **模板管理API**
   - 获取模板列表：GET `/api/ai/promptTemplates`
   - 获取模板详情：GET `/api/ai/promptTemplate`
@@ -730,7 +800,7 @@ ReturnCache --> Stats
   - **自动化检索**：支持外部系统定时拉取最新的AI生成医疗洞察
   - **合规保障**：所有AI内容自动附加免责声明，确保法律合规
 
-**最新更新** 新增GET /api/ai/latestPromptResult接口，提供最新的AI提示结果访问能力，支持外部系统集成和AI生成医疗洞察的自动化检索。前端新增getLatestPromptResult API函数，与DRG分析组件深度集成，支持合并症或并发症分析的自动化检索。
+**最新更新** 新增优化的待办事项查询API，实现按medicalRecordId去重算法；新增数据库缓存清理和监控API；增强SQL执行缓存功能；新增科室特殊情况补充信息支持。
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -740,6 +810,9 @@ ReturnCache --> Stats
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
 - [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [HospitalConfigTestController.java:450-481](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java#L450-L481)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
 
 ### 最新提示结果接口（新增功能）
 - 设计要点
@@ -782,6 +855,215 @@ FrontendAPI-->>ExternalSystem : "返回AI免责声明 + 数据"
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
 - [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
 
+### 优化的待办事项查询系统
+- 设计要点
+  - 实现按medicalRecordId去重算法，避免同一病历ID产生多个重复的待办事项
+  - 支持null ID记录的兼容性处理，不参与去重但直接保留
+  - 增强createdTime为空值的安全处理机制
+  - 保持向后兼容性，不影响现有业务逻辑
+- 关键算法
+  - 分组去重：按medicalRecordId进行分组，每组只保留createdTime最大的最新记录
+  - null ID处理：medicalRecordId为null的记录不参与分组，直接保留
+  - createdTime比较：createdTime为null时的特殊处理逻辑
+  - 合并结果：将null ID记录与去重后的非null ID记录合并返回
+- 前端集成
+  - 自动去重：优化后的查询结果不再显示重复的待办事项
+  - 性能提升：减少前端渲染负担，提升界面响应速度
+  - 用户体验：避免同一病历的多个待办事项重复显示
+
+```mermaid
+flowchart TD
+Start(["开始待办事项查询"]) --> QueryDB["查询数据库"]
+QueryDB --> NullCheck{"medicalRecordId 是否为null？"}
+NullCheck --> |是| KeepRecord["保留记录不参与去重"]
+NullCheck --> |否| GroupBy["按medicalRecordId分组"]
+GroupBy --> CompareTime["比较createdTime"]
+CompareTime --> SelectLatest["选择createdTime最大的记录"]
+SelectLatest --> MergeResult["合并结果"]
+KeepRecord --> MergeResult
+MergeResult --> SortResult["按创建时间降序排序"]
+SortResult --> End(["返回优化后的待办事项列表"])
+```
+
+**最新更新** 新增按medicalRecordId去重算法，显著提升待办事项查询的用户体验，避免重复显示同一病历的多个待办事项。
+
+**图表来源**
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+
+**章节来源**
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [待办事项接口.md:70-368](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/待办事项接口.md#L70-L368)
+
+### 数据库缓存修复系统
+- 设计要点
+  - 解决Hibernate自动刷新机制导致的CLOB字段处理异常问题
+  - 采用只读事务配置，避免自动刷新冲突
+  - 增强CLOB内容提取方法，添加重试机制处理网络波动
+  - 保持向后兼容性，不改变现有业务逻辑
+- 关键修复
+  - 事务配置：添加readOnly = true到@Transaction注解
+  - CLOB重试：实现extractClobContentSafely方法，支持指数退避重试
+  - 异常处理：详细的错误日志记录和异常类型分类
+  - 性能优化：只读事务不会影响查询性能
+- 前端集成
+  - 透明修复：无需修改前端调用逻辑
+  - 稳定性提升：显著减少CLOB异常的发生频率
+  - 兼容性保证：保持现有业务流程不变
+
+```mermaid
+sequenceDiagram
+participant Service as "服务层"
+participant Hibernate as "Hibernate框架"
+participant Database as "数据库"
+participant ClobManager as "ClobManager"
+Service->>Hibernate : "查询请求只读事务"
+Hibernate->>Database : "执行查询"
+Database-->>Hibernate : "返回CLOB数据"
+Hibernate->>ClobManager : "提取CLOB内容"
+ClobManager->>ClobManager : "重试机制处理异常"
+alt "提取成功"
+ClobManager-->>Hibernate : "返回CLOB内容"
+else "提取失败重试中"
+ClobManager->>ClobManager : "指数退避重试"
+ClobManager-->>Hibernate : "最终返回CLOB内容或null"
+end
+Hibernate-->>Service : "返回查询结果"
+```
+
+**最新更新** 修复Hibernate自动刷新机制导致的CLOB字段处理异常问题，采用只读事务和CLOB重试机制双重保障。
+
+**图表来源**
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+
+**章节来源**
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:1-200](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L1-L200)
+
+### CLOB内存管理工具
+- 设计要点
+  - 优化Clob对象的内存管理，防止内存泄漏
+  - 实现Clob对象的生命周期跟踪和自动清理
+  - 提供内存使用统计和监控功能
+  - 实现内存限制和自动清理机制
+- 关键功能
+  - 对象跟踪：使用ConcurrentHashMap跟踪活跃的Clob对象
+  - 内存监控：实时监控Clob对象的内存使用情况
+  - 自动清理：实现内存限制触发的自动清理机制
+  - 安全释放：提供safeRelease方法确保Clob资源正确释放
+- 性能优化
+  - 内存限制：默认100MB最大内存限制
+  - 清理策略：当内存使用超过80%时清理一半的Clob对象
+  - 统计功能：提供详细的内存使用统计信息
+
+```mermaid
+flowchart TD
+Start(["创建Clob对象"]) --> CheckMemory["检查内存限制"]
+CheckMemory --> |内存充足| CreateClob["创建SerialClob对象"]
+CheckMemory --> |内存不足| CleanupOld["清理旧Clob对象"]
+CleanupOld --> CheckMemory
+CreateClob --> TrackClob["跟踪Clob对象"]
+TrackClob --> MonitorUsage["监控内存使用"]
+MonitorUsage --> MemoryCheck{"内存使用是否接近限制？"}
+MemoryCheck --> |否| End(["正常运行"])
+MemoryCheck --> |是| ForceCleanup["强制清理所有Clob对象"]
+ForceCleanup --> MonitorUsage
+```
+
+**最新更新** 新增ClobManager工具类，专门处理Clob对象的内存管理，防止内存泄漏和性能问题。
+
+**图表来源**
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+
+**章节来源**
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+
+### SQL执行缓存管理系统
+- 设计要点
+  - 增强SQL执行缓存清理和监控功能
+  - 支持按医院ID和数据库类型进行精细化缓存管理
+  - 提供缓存统计信息查询接口
+  - 实现动态缓存配置和管理
+- 关键功能
+  - 缓存清理：支持按条件清理特定缓存条目
+  - 缓存统计：提供详细的缓存使用情况统计
+  - 动态配置：支持运行时缓存配置的调整
+  - 错误处理：完善的异常处理和错误信息反馈
+- 前端集成
+  - 管理界面：提供缓存状态监控和管理功能
+  - 性能优化：通过缓存清理提升系统性能
+  - 故障排查：通过缓存统计信息进行问题诊断
+
+```mermaid
+sequenceDiagram
+participant Admin as "管理员"
+participant API as "缓存管理API"
+participant Service as "SqlExecutionService"
+participant Factory as "JdbcTemplateFactory"
+Admin->>API : "POST /api/hospital-config/clear-cache"
+API->>Service : "clearCache(hospitalId, databaseType)"
+Service->>Factory : "clearCache(hospitalId, databaseType)"
+Factory-->>Service : "缓存清理完成"
+Service-->>API : "清理结果"
+API-->>Admin : "清理成功响应"
+Admin->>API : "GET /api/hospital-config/cache-stats"
+API->>Service : "getCacheStats()"
+Service->>Factory : "getCacheStats()"
+Factory-->>Service : "缓存统计信息"
+Service-->>API : "统计结果"
+API-->>Admin : "缓存统计响应"
+```
+
+**最新更新** 增强SQL执行缓存清理和监控功能，支持动态配置管理，提供详细的缓存统计信息。
+
+**图表来源**
+- [HospitalConfigTestController.java:450-481](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java#L450-L481)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+
+**章节来源**
+- [HospitalConfigTestController.java:450-481](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java#L450-L481)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+
+### 科室特殊情况补充信息功能
+- 设计要点
+  - 新增SPECIAL_CONTENT字段支持科室特定模板的个性化配置
+  - 增强PromptTemplate模型和UpdatePromptTemplateDTO的数据结构
+  - 提供DepartmentDTO支持科室信息的标准化传输
+  - 实现科室特殊内容的动态加载和应用
+- 关键特性
+  - 字段扩展：PromptTemplate模型新增specialContent字段
+  - 数据传输：UpdatePromptTemplateDTO支持特殊内容配置
+  - 科室支持：DepartmentDTO提供标准化的科室信息结构
+  - 灵活配置：支持按科室定制的特殊内容模板
+- 前端集成
+  - 模板配置：支持科室特殊内容的模板配置界面
+  - 动态加载：根据用户科室动态加载相应的特殊内容
+  - 个性化体验：提升不同科室用户的使用体验
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant TemplateUI as "模板配置界面"
+participant Backend as "后端服务"
+participant DB as "数据库"
+User->>TemplateUI : "配置模板特殊内容"
+TemplateUI->>Backend : "POST /api/ai/prompt-templates"
+Backend->>DB : "更新PromptTemplate.specialContent"
+DB-->>Backend : "更新成功"
+Backend-->>TemplateUI : "配置保存成功"
+TemplateUI-->>User : "显示配置结果"
+```
+
+**最新更新** 新增科室特殊情况补充信息功能，通过SPECIAL_CONTENT字段增强AI提示模板系统的灵活性和临床相关性。
+
+**图表来源**
+- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
+- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
+- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
+
+**章节来源**
+- [PromptTemplate.java:1-127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L1-L127)
+- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
+- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
+
 ## 依赖关系分析
 - 组件耦合
   - 执行服务器控制器依赖AI模型配置类、专用RestTemplate、加密工具与回调服务
@@ -794,6 +1076,11 @@ FrontendAPI-->>ExternalSystem : "返回AI免责声明 + 数据"
   - **顶部菜单组件**依赖设备检测逻辑和路由导航
   - **AI OCR数据采集系统**独立部署，通过API与主系统集成
   - **最新提示结果接口**依赖PromptResultRepository和AIContentResponseWrapper
+  - **优化的待办事项查询**依赖MedicalRecordController的去重算法
+  - **数据库缓存修复**依赖Hibernate框架和ClobManager工具类
+  - **CLOB内存管理**提供独立的内存管理服务
+  - **SQL执行缓存**依赖JdbcTemplateFactory进行缓存管理
+  - **科室特殊情况补充信息**依赖PromptTemplate模型扩展
 - 外部依赖
   - LLM服务：通过RestTemplate调用，需配置URL与密钥
   - 数据库：存储加密临时数据、配置与回调记录
@@ -801,6 +1088,8 @@ FrontendAPI-->>ExternalSystem : "返回AI免责声明 + 数据"
   - PaddleOCR：提供医疗设备屏幕的OCR识别能力
   - **MCC字典库**：存储MCC诊断编码、名称、类型、排除规则等数据
   - **外部医疗系统**：通过标准化API访问AI生成的医疗洞察
+  - **Hibernate框架**：提供ORM功能和缓存管理
+  - **Oracle数据库**：支持CLOB字段和复杂的SQL操作
 - 潜在风险
   - LLM服务不稳定：通过熔断器与重试缓解
   - 连接池耗尽：通过专用连接池与超时配置控制
@@ -812,6 +1101,10 @@ FrontendAPI-->>ExternalSystem : "返回AI免责声明 + 数据"
   - **设备兼容性问题**：通过触屏/桌面差异化交互解决Android平板菜单问题
   - **OCR识别准确性**：通过模板管理和规则引擎保证数据质量
   - **外部系统集成风险**：通过标准化API和严格的参数验证确保系统稳定性
+  - **CLOB内存泄漏**：通过ClobManager工具类和内存限制机制防止
+  - **Hibernate缓存冲突**：通过只读事务和重试机制解决CLOB异常
+  - **待办事项重复显示**：通过去重算法解决同一病历的重复待办问题
+  - **缓存管理复杂性**：通过统一的缓存管理接口简化缓存操作
 
 ```mermaid
 graph TB
@@ -832,6 +1125,16 @@ RestTemplate --> LLM["LLM服务"]
 DB --> TempRepo["加密临时表Repository"]
 LatestAPI["最新提示结果接口"] --> PromptResultRepo["PromptResultRepository"]
 LatestAPI --> Disclaimer["AIContentResponseWrapper"]
+TodoOptimization["待办事项优化"] --> MedicalRecordController["MedicalRecordController"]
+TodoOptimization --> TodoRepo["TodoItemRepository"]
+CacheFix["缓存修复"] --> Hibernate["Hibernate框架"]
+CacheFix --> ClobManager["ClobManager工具类"]
+ClobManager --> MemoryStats["内存使用统计"]
+SqlCache["SQL执行缓存"] --> JdbcTemplateFactory["JdbcTemplateFactory"]
+SqlCache --> CacheStats["缓存统计信息"]
+SpecialContent["科室特殊内容"] --> PromptTemplate["PromptTemplate模型"]
+SpecialContent --> UpdatePromptTemplateDTO["UpdatePromptTemplateDTO"]
+SpecialContent --> DepartmentDTO["DepartmentDTO"]
 subgraph "前端依赖"
 DRGAPI["DRG/MCC分析API"] --> VueComp["Vue组件"]
 DRGAPI --> BackendAPI["后端MCC接口"]
@@ -846,6 +1149,7 @@ TopMenu --> Router["路由导航"]
 OCRAPI["OCR数据采集API"] --> OCRService["OCR服务端"]
 OCRAPI --> MainSystem["主系统集成"]
 LatestAPIFront["最新提示结果API"] --> ExternalSystem["外部医疗系统"]
+TodoFront["优化后的待办事项界面"] --> TodoOptimization
 end
 ```
 
@@ -860,6 +1164,13 @@ end
 - [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
+- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
+- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
@@ -872,6 +1183,13 @@ end
 - [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
+- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
+- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
 
 ## 性能考虑
 - 连接池与超时
@@ -894,6 +1212,25 @@ end
   - 参数验证：严格的必需参数检查，减少无效请求
   - 结果包装：AIContentResponseWrapper自动添加免责声明，无需额外处理
   - 错误处理：无结果时优雅返回null，避免异常传播
+- **待办事项查询性能优化**
+  - 去重算法：按medicalRecordId分组，每组只保留createdTime最大的最新记录
+  - null ID处理：medicalRecordId为null的记录不参与分组，直接保留
+  - createdTime比较：createdTime为null时的特殊处理逻辑
+  - 合并优化：将null ID记录与去重后的非null ID记录合并返回
+- **数据库缓存性能优化**
+  - 只读事务：避免Hibernate自动刷新机制，提高查询性能
+  - CLOB重试：指数退避重试机制处理网络波动
+  - 内存管理：ClobManager工具类防止内存泄漏
+  - 缓存清理：动态缓存清理和监控功能
+- **CLOB内存管理性能优化**
+  - 内存限制：默认100MB最大内存限制，防止内存泄漏
+  - 自动清理：当内存使用超过80%时清理一半的Clob对象
+  - 生命周期跟踪：使用ConcurrentHashMap跟踪活跃的Clob对象
+  - 安全释放：提供safeRelease方法确保Clob资源正确释放
+- **SQL执行缓存性能优化**
+  - 动态清理：支持按医院ID和数据库类型进行精细化缓存管理
+  - 统计监控：提供详细的缓存使用情况统计
+  - 性能优化：通过缓存清理提升系统整体性能
 - 监控与告警
   - 实时监控：调用成功率、响应时间阈值告警
   - 历史分析：每日趋势、错误模式分析，指导配置调优
@@ -905,6 +1242,11 @@ end
   - **MCC视图优化**：平铺视图和分组视图的性能差异对比
   - **API调用优化**：修复14个重复'/api/'前缀问题，统一API调用规范
   - **外部系统集成优化**：标准化API接口，支持批量查询和缓存机制
+  - **待办事项界面优化**：去重算法提升用户界面体验
+  - **数据库缓存优化**：只读事务和CLOB重试机制提升系统稳定性
+  - **CLOB内存管理优化**：内存限制和自动清理机制防止性能下降
+  - **模板管理性能**：树形结构渲染优化，表单验证实时处理
+  - **OCR系统性能**：边缘计算优化，模板匹配优化，数据流优化
 - **模板管理性能**
   - **树形结构渲染**：优化大量模板的渲染性能
   - **表单验证**：实时验证用户输入，减少无效提交
@@ -915,13 +1257,17 @@ end
   - **数据流优化**：异步处理和批量上传，减少网络延迟
   - **缓存策略**：本地缓存和断网续传，保证数据完整性
 
-**最新更新** 新增最新提示结果接口的性能优化措施，包括直接数据库查询、参数验证、结果包装和错误处理。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，支持平铺和分组两种展示模式。
+**最新更新** 新增待办事项查询去重算法、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能的性能优化措施。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，支持平铺和分组两种展示模式。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [执行服务器LLM调用优化敏捷迭代规划.md:229-281](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L229-L281)
 - [MccScreeningService.java:74-91](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L74-L91)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
 - [2026-03-25更新日志.md:7-8](file://med_ai_assistant_1.0_bs/更新小结.md#L7-L8)
 - [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
 - [监护仪呼吸机AI OCR数据采集方案.md:1340-1352](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1340-L1352)
@@ -941,6 +1287,11 @@ end
   - **MCC候选字段映射错误**：检查mccCode/mccName字段映射是否正确
   - **最新提示结果接口异常**：检查patientId和promptName参数是否正确传递
   - **外部系统集成失败**：验证标准化API接口的访问权限和参数格式
+  - **待办事项重复显示**：检查去重算法是否正确执行
+  - **数据库缓存异常**：验证Hibernate只读事务配置和CLOB重试机制
+  - **CLOB内存泄漏**：检查ClobManager工具类的内存使用情况
+  - **SQL执行缓存问题**：验证缓存清理和监控功能是否正常
+  - **科室特殊内容配置失败**：检查SPECIAL_CONTENT字段的配置和加载
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -957,6 +1308,12 @@ end
   - **验证MCC字段映射**：检查前端视图中mccCode/mccName字段显示
   - **验证最新提示结果接口**：检查数据库查询和AI免责声明包装
   - **测试外部系统集成**：验证标准化API的访问控制和数据格式
+  - **验证待办事项去重算法**：检查按medicalRecordId分组和createdTime比较逻辑
+  - **检查Hibernate缓存配置**：验证@Transaction注解的readOnly设置
+  - **测试CLOB重试机制**：验证extractClobContentSafely方法的重试逻辑
+  - **监控CLOB内存使用**：检查ClobManager的内存统计信息
+  - **验证SQL缓存清理功能**：测试按条件清理缓存的功能
+  - **检查科室特殊内容配置**：验证SPECIAL_CONTENT字段的加载和应用
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
@@ -967,8 +1324,13 @@ end
   - **AI OCR数据采集系统技术方案**
   - **MCC分析功能实现指南**
   - **最新提示结果接口技术文档**
+  - **待办事项查询去重算法实现**
+  - **数据库缓存修复技术方案**
+  - **CLOB内存管理工具使用指南**
+  - **SQL执行缓存管理功能说明**
+  - **科室特殊内容配置指南**
 
-**最新更新** 新增最新提示结果接口和外部系统集成的故障排查指南，包括参数验证、数据库查询、AI免责声明包装和访问控制等问题的排查步骤。
+**最新更新** 新增待办事项查询去重算法、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能的故障排查指南，包括去重算法验证、Hibernate缓存配置、CLOB内存使用监控和缓存清理功能测试等问题的排查步骤。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -976,11 +1338,18 @@ end
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
 - [2026-03-25更新日志.md:7-8](file://med_ai_assistant_1.0_bs/更新小结.md#L7-L8)
 - [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
+- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
+- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
 
 ## 结论
 系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的MCC分析功能模块进一步增强了系统的临床价值，提供了完整的MCC预筛选、相似度计算、排除规则检查、TopK筛选和Prompt生成保存能力。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 新增的MCC分析功能模块和最新提示结果接口是系统的重要扩展，包括完整的后端控制器、服务层、模型类和前端组件。新增MCC分析Prompt生成保存接口，支持根据病人ID和MCC筛选结果生成并保存Prompt到数据库。前端MCC预筛选使用真实患者数据，修复硬编码测试数据问题，MCC筛查结果按相似度降序排列，显示诊断编码、名称、MCC/CC类型。修复14个API路径重复'/api/'问题，统一API调用规范，修复MCC候选列表字段映射问题。**新增的GET /api/ai/latestPromptResult接口为外部系统集成提供了标准化的API入口，支持AI生成医疗洞察的自动化检索，进一步提升了系统的开放性和实用性。**
+**最新更新** 新增的MCC分析功能模块、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能是系统的重要扩展。新增的去重算法显著提升了待办事项查询的用户体验，避免重复显示同一病历的多个待办事项。数据库缓存修复解决了Hibernate缓存导致的状态验证失败问题，提高了系统稳定性。CLOB内存管理工具防止了内存泄漏和性能问题，SQL执行缓存管理功能提供了动态配置和监控能力。科室特殊情况补充信息功能增强了AI提示模板系统的灵活性和临床相关性。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -996,37 +1365,60 @@ end
   - **API调用配置**：统一的API路径规范，避免重复前缀问题
   - **最新提示结果接口配置**：参数验证规则和缓存策略配置
   - **外部系统集成配置**：访问权限控制和API版本管理
+  - **待办事项查询配置**：去重算法参数和性能优化配置
+  - **数据库缓存配置**：Hibernate事务配置和CLOB处理参数
+  - **CLOB内存管理配置**：内存限制和清理策略配置
+  - **SQL执行缓存配置**：缓存清理策略和监控参数
+  - **科室特殊内容配置**：SPECIAL_CONTENT字段的配置和加载策略
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.6.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复和AI OCR数据采集系统
+  - **版本管理**：版本号从0.4.071更新到0.6.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复、AI OCR数据采集系统、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能
   - **MCC字典部署**：独立部署MCC字典库，支持热重载和增量更新
   - **OCR系统部署**：独立部署OCR服务，与主系统通过API集成
   - **最新提示结果接口部署**：标准化API端点，支持外部系统访问
+  - **待办事项查询部署**：优化的去重算法部署，提升用户体验
+  - **数据库缓存部署**：Hibernate缓存修复部署，提高系统稳定性
+  - **CLOB内存管理部署**：ClobManager工具类部署，防止内存泄漏
+  - **SQL执行缓存部署**：缓存清理和监控功能部署，支持动态配置
+  - **科室特殊内容部署**：SPECIAL_CONTENT字段配置部署，增强模板灵活性
 - **UI优化建议**
   - **非流式响应**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理**：支持多种错误格式，提供清晰的错误信息反馈
   - **加载状态**：在AI响应期间提供适当的加载提示，改善用户体验
   - **模板交互**：优化补充信息输入对话框的用户体验，提供清晰的引导和帮助信息
-  - **设备适配**：完善触屏/桌面差异化交互，提升移动端用户体验
+  - **设备适ap**：完善触屏/桌面差异化交互，提升移动端用户体验
   - **OCR界面**：提供直观的设备管理和数据监控界面
   - **MCC视图优化**：优化平铺视图和分组视图的渲染性能
   - **API调用优化**：统一API路径规范，避免重复前缀问题
   - **字段映射优化**：确保MCC候选列表字段显示正确
   - **外部系统集成优化**：提供详细的API文档和集成示例
+  - **待办事项界面优化**：去重算法提升用户界面体验
+  - **数据库缓存优化**：只读事务和CLOB重试机制提升系统稳定性
+  - **CLOB内存管理优化**：内存限制和自动清理机制防止性能下降
+  - **模板管理最佳实践**：模板分类、表单验证、权限控制、数据备份、模板共享
+  - **OCR系统最佳实践**：设备模板管理、图像质量优化、数据校验机制、报警机制、性能监控
+  - **MCC分析最佳实践**：字典维护、相似度阈值、TopK筛选、排除规则、性能监控、用户培训
+  - **最新提示结果接口最佳实践**：参数验证、缓存策略、错误处理、性能监控、安全控制、外部系统集成
+  - **待办事项查询最佳实践**：去重算法、null ID处理、createdTime比较、合并结果、性能优化
+  - **数据库缓存最佳实践**：只读事务配置、CLOB重试机制、异常处理、性能优化、兼容性保证
+  - **CLOB内存管理最佳实践**：内存限制设置、自动清理策略、生命周期跟踪、安全释放、监控统计
+  - **SQL执行缓存最佳实践**：缓存清理策略、统计监控、动态配置、错误处理、性能优化
+  - **科室特殊内容最佳实践**：字段配置、数据加载、个性化体验、兼容性处理、维护策略
 - **模板管理最佳实践**
   - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
   - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
   - **权限控制**：根据用户角色限制模板的创建、编辑和删除权限
   - **数据备份**：定期备份模板配置，防止意外删除造成的数据丢失
   - **模板共享**：建立模板社区共享机制，促进模板的复用和优化
+  - **特殊内容管理**：合理配置SPECIAL_CONTENT字段，提升模板的临床相关性
 - **OCR系统最佳实践**
   - **设备模板管理**：建立完善的设备模板库，支持快速模板匹配
   - **图像质量优化**：确保摄像头安装位置和角度符合识别要求
   - **数据校验机制**：建立多层次的数据校验规则，保证数据准确性
   - **报警机制**：设置合理的报警阈值，及时发现异常情况
   - **性能监控**：实时监控OCR识别性能和系统运行状态
-- **MCC分析最佳实践**
+- **MCC分析最佳 practice**
   - **字典维护**：定期更新MCC字典，支持热重载和增量更新
   - **相似度阈值**：根据临床需求调整相似度阈值，平衡敏感性和特异性
   - **TopK筛选**：合理设置TopK数量，避免候选过多或过少
@@ -1040,8 +1432,33 @@ end
   - **性能监控**：监控接口的响应时间和调用频率
   - **安全控制**：实现访问权限控制和API版本管理
   - **外部系统集成**：提供详细的API文档和集成示例，支持批量查询和自动化集成
+- **待办事项查询最佳实践**
+  - **去重算法**：确保按medicalRecordId分组和createdTime比较逻辑正确
+  - **null ID处理**：正确处理medicalRecordId为null的记录
+  - **性能优化**：优化查询性能，避免重复显示同一病历的多个待办事项
+  - **用户体验**：提供清晰的待办事项展示和状态管理
+- **数据库缓存最佳实践**
+  - **事务配置**：正确配置Hibernate事务，避免自动刷新冲突
+  - **CLOB处理**：实现CLOB重试机制，处理网络波动导致的异常
+  - **异常处理**：建立完善的异常处理机制，确保系统稳定性
+  - **性能监控**：监控缓存使用情况和系统性能
+- **CLOB内存管理最佳实践**
+  - **内存限制**：合理设置内存限制，防止内存泄漏
+  - **自动清理**：实现智能的自动清理策略，保持系统性能
+  - **生命周期管理**：跟踪Clob对象的生命周期，确保正确释放
+  - **监控统计**：提供详细的内存使用统计信息
+- **SQL执行缓存最佳实践**
+  - **缓存清理**：实现按条件清理缓存的功能
+  - **统计监控**：提供详细的缓存使用统计信息
+  - **动态配置**：支持运行时缓存配置的调整
+  - **错误处理**：建立完善的错误处理机制
+- **科室特殊内容最佳实践**
+  - **字段配置**：合理配置SPECIAL_CONTENT字段，支持个性化模板
+  - **数据加载**：实现动态加载和应用科室特殊内容
+  - **兼容性处理**：确保与现有模板系统的兼容性
+  - **维护策略**：建立科室特殊内容的维护和更新策略
 
-**最新更新** 新增最新提示结果接口和外部系统集成的最佳实践，包括参数验证、缓存策略、错误处理、性能监控、安全控制和集成示例等方面。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
+**最新更新** 新增待办事项查询去重算法、数据库缓存修复、CLOB内存管理工具、SQL执行缓存管理功能和科室特殊内容配置的最佳实践，包括去重算法验证、Hibernate缓存配置、CLOB内存使用监控、缓存清理功能测试、SPECIAL_CONTENT字段配置和加载策略等方面。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
@@ -1059,4 +1476,11 @@ end
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
 - [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
+- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
+- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
+- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
+- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
+- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
+- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
 - [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
