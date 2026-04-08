@@ -53,24 +53,18 @@
 - [Update Log.md](file://更新小结.md)
 - [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 - [DrgPromptController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java)
+- [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
+- [drg.js](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js)
+- [PatientFeeController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 实现"诊断为主、手术为辅"差异化评分策略，优化DRG匹配逻辑
-- 新增PrimaryDiagnosisProcedureMatcher匹配过程DEBUG日志，增强调试能力
-- 添加心房颤动无手术场景测试用例，完善匹配策略验证
-- 更新DRG目录匹配接口文档和Javadoc注释，提升文档质量
-- **版本0.7.009新增**：修复开发/生产/测试环境下JpaTransactionManager反复输出DEBUG事务日志问题，统一设置为WARN级别
-- **版本0.7.008新增**：修复调度任务中AlertTask批量更新异常（Batch update returned unexpected row count），改进PromptsTaskUpdater去重和批量保存逻辑
-- **版本0.7.007新增**：定时任务集成DRG分析功能，自动为在院病人生成DRG分析Prompt
-- **版本0.7.006新增**：新增DRG分析Prompt生成后端接口（POST /api/drg/generate-prompt）
-- **版本0.7.005新增**：DRG分析按钮添加确认对话框，新增AI分析结果卡片，AI辅助页面过滤DRG专用Prompt记录
-- **版本0.7.004新增**：DRG分析页面新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
-- **版本0.7.003新增**：新增DRG批量组合匹配功能，遍历所有诊断×手术组合进行DRG分组计算，按权重降序展示汇总结果
-- **版本0.7.002新增**：新增DRG HIV过滤功能：当患者无HIV相关诊断时，排除HIV相关DRG分组
-- **版本0.7.001实现**：双向严格分流策略：患者无手术时只匹配无手术DRG，患者有手术时只匹配有手术DRG；新增首行"/"标识检测，支持识别MAINPROCEDURES首行为"/"的DRG记录
-- **版本0.6.090和0.6.089优化**：DRG匹配逻辑，实现"诊断为主、手术为辅"差异化评分策略
+- 新增严格标准推荐列表表格功能，支持单选、盈亏计算与排序
+- 实现AI分析结果中严格标准推荐列表的解析与展示
+- 新增严格的盈亏计算规则，支持绿色盈利与红色亏损状态显示
+- 增强DRG分析页面的临床决策支持能力
+- 优化严格标准推荐列表的表格样式与交互体验
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -80,22 +74,23 @@
 5. [响应式AI服务](#响应式ai服务)
 6. [重试机制设计](#重试机制设计)
 7. [DRG分析页面重构](#drg分析页面重构)
-8. [DRG目录匹配服务](#drg目录匹配服务)
-9. [患者医疗信息卡片](#患者医疗信息卡片)
-10. [诊断列表管理](#诊断列表管理)
-11. [手术列表管理](#手术列表管理)
-12. [合并症历史结果卡片](#合并症历史结果卡片)
-13. [DRG批量组合匹配功能](#drg批量组合匹配功能)
-14. [HIV过滤功能](#hiv过滤功能)
-15. [双向严格分流策略](#双向严格分流策略)
-16. [首行标识检测](#首行标识检测)
-17. [定时任务集成DRG分析](#定时任务集成drg分析)
-18. [DRG分析Prompt生成接口](#drg分析prompt生成接口)
-19. [后端API接口](#后端api接口)
-20. [部署架构](#部署架构)
-21. [性能优化特性](#性能优化特性)
-22. [故障排查指南](#故障排查指南)
-23. [总结](#总结)
+8. [严格标准推荐列表功能](#严格标准推荐列表功能)
+9. [DRG目录匹配服务](#drg目录匹配服务)
+10. [患者医疗信息卡片](#患者医疗信息卡片)
+11. [诊断列表管理](#诊断列表管理)
+12. [手术列表管理](#手术列表管理)
+13. [合并症历史结果卡片](#合并症历史结果卡片)
+14. [DRG批量组合匹配功能](#drg批量组合匹配功能)
+15. [HIV过滤功能](#hiv过滤功能)
+16. [双向严格分流策略](#双向严格分流策略)
+17. [首行标识检测](#首行标识检测)
+18. [定时任务集成DRG分析](#定时任务集成drg分析)
+19. [DRG分析Prompt生成接口](#drg分析prompt生成接口)
+20. [后端API接口](#后端api接口)
+21. [部署架构](#部署架构)
+22. [性能优化特性](#性能优化特性)
+23. [故障排查指南](#故障排查指南)
+24. [总结](#总结)
 
 ## 项目概述
 
@@ -113,12 +108,13 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **DRG目录匹配**：新增基于主要诊断和主要手术的DRG目录匹配功能，提供精确的DRG记录查询和匹配能力
 - **差异化评分策略**：实现"诊断为主、手术为辅"的匹配评分策略，提升匹配准确性
 - **批量组合匹配**：支持遍历所有诊断×手术组合进行DRG分组计算，按权重降序展示汇总结果
-- **HIV过滤功能**：当患者无HIV相关诊断时，自动排除HIV相关DRG分组
+- **HIV过滤功能**：当患者无HIV相关诊断时，排除HIV相关DRG分组
 - **双向严格分流**：根据患者手术状态严格分流DRG匹配，确保匹配结果的临床准确性
 - **定时任务集成**：版本0.7.007新增定时任务集成DRG分析功能，自动为在院病人生成DRG分析Prompt
 - **Prompt生成接口**：版本0.7.006新增DRG分析Prompt生成后端接口（POST /api/drg/generate-prompt）
 - **用户交互优化**：版本0.7.005新增DRG分析按钮确认对话框、AI分析结果卡片和DRG专用Prompt过滤
 - **自动化分析**：版本0.7.004新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
+- **严格标准推荐列表**：新增严格标准推荐列表表格，支持单选、盈亏计算与排序功能，提升临床决策支持能力
 
 **章节来源**
 - [MedAiAssistantBackendApplication.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L1-L50)
@@ -458,6 +454,7 @@ RetryUtil --> RetryableExceptions : "识别可重试异常"
 - **新增患者医疗信息卡片**：整合诊断和手术信息的可视化展示
 - **新增合并症历史结果卡片**：提供历史分析结果的集中展示和跟踪功能
 - **新增DRG费用卡片**：基于DRG目录匹配功能，显示匹配的DRG记录和费用信息
+- **新增严格标准推荐列表**：作为DRG分析结果的重要组成部分，提供临床决策支持
 - **版本0.7.005新增**：DRG分析按钮添加确认对话框，新增AI分析结果卡片，AI辅助页面过滤DRG专用Prompt记录
 - **版本0.7.004新增**：DRG分析页面新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
 
@@ -484,6 +481,11 @@ ResultType --> AllResults[全部结果]
 PatientCard --> DrgFeeCard[DRG费用卡片]
 DrgFeeCard --> MatchResults[匹配结果展示]
 DrgFeeCard --> FeeDetails[费用详情]
+PatientCard --> StrictRecommendCard[严格标准推荐列表卡片]
+StrictRecommendCard --> StrictTable[严格标准推荐表格]
+StrictTable --> SingleSelect[单选功能]
+StrictTable --> ProfitLossCalc[盈亏计算]
+StrictTable --> SortFunction[排序功能]
 PatientCard --> AnalysisButton["主要诊断及操作分析按钮"]
 AnalysisButton --> ConfirmationDialog[确认对话框]
 ConfirmationDialog --> AiAnalysisCard[AI分析结果卡片]
@@ -495,6 +497,134 @@ AiAnalysisCard --> PromptFilter[DRG专用Prompt过滤]
 
 **章节来源**
 - [Update Log.md:1-216](file://更新小结.md#L1-L216)
+
+## 严格标准推荐列表功能
+
+### 功能架构设计
+
+严格标准推荐列表是DRG分析系统增强的核心功能，为临床医生提供精准的DRG推荐和决策支持。
+
+```mermaid
+classDiagram
+class StrictRecommendCard {
++Recommendation[] strictRecommendations
++String selectedStrictRecommend
++Object selectedDrgProfitLoss
++parseStrictRecommendations(markdownContent) Recommendation[]
++calculateAllRowsProfitLoss() void
++getRowProfitLoss(row) Object
++handleStrictRecommendChange(row) void
++strictRecommendRowClassName(params) string
+}
+class Recommendation {
++String drgCode
++String drgName
++String matchedDiagnosis
++String matchedProcedure
++Number weight
++String insurancePayment
++Object profitLoss
++Number index
+}
+class ProfitLossCalculator {
++calculateProfitLossForDrg(drgCode) Promise~Object~
++calculateSelectedDrgProfitLoss(insuranceAmount) void
++formatProfitLoss(amount) string
++formatProfitLossRate(rate) string
+}
+class MarkdownParser {
++parseStrictRecommendations(markdownContent) Recommendation[]
++extractTableFromMarkdown(content) string[]
++validateTableFormat(lines) boolean
+}
+StrictRecommendCard --> Recommendation
+StrictRecommendCard --> ProfitLossCalculator
+StrictRecommendCard --> MarkdownParser
+Recommendation --> ProfitLossCalculator
+```
+
+**图表来源**
+- [DrgAnalysis.vue:71-119](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L71-L119)
+- [DrgAnalysis.vue:1176-1273](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1176-L1273)
+- [DrgAnalysis.vue:1294-1348](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1294-L1348)
+
+### 推荐列表解析流程
+
+系统实现了智能的Markdown表格解析机制，从AI分析结果中提取严格标准推荐列表。
+
+```mermaid
+flowchart TD
+Start([开始解析严格标准推荐]) --> CleanContent[移除<thinking>标签]
+CleanContent --> FindSection[查找"严格标准推荐列表"部分]
+FindSection --> CheckSection{找到部分?}
+CheckSection --> |否| ReturnEmpty[返回空列表]
+CheckSection --> |是| ExtractSection[提取部分内容]
+ExtractSection --> FindTable[查找Markdown表格]
+FindTable --> CheckTable{找到表格?}
+CheckTable --> |否| ReturnEmpty
+CheckTable --> |是| ParseHeader[解析表头行]
+ParseHeader --> SkipSeparator[跳过分隔行]
+SkipSeparator --> ParseDataRows[解析数据行]
+ParseDataRows --> ValidateColumns[验证列数]
+ValidateColumns --> MapFields[映射字段到对象]
+MapFields --> CalculateProfitLoss[计算盈亏数据]
+CalculateProfitLoss --> SortResults[按盈亏排序]
+SortResults --> ReturnResults[返回推荐列表]
+ReturnEmpty --> End([结束])
+ReturnResults --> End
+```
+
+**图表来源**
+- [DrgAnalysis.vue:1176-1273](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1176-L1273)
+
+### 盈亏计算规则
+
+系统实现了严格的盈亏计算规则，为每个推荐DRG提供准确的财务分析。
+
+```mermaid
+flowchart TD
+Start([开始盈亏计算]) --> CheckFeeData{检查费用数据}
+CheckFeeData --> |无费用| ReturnNull[返回null]
+CheckFeeData --> |有费用| ParseInsurance[解析保险支付]
+ParseInsurance --> CheckInsurance{保险支付有效?}
+CheckInsurance --> |无效| ReturnNull
+CheckInsurance --> |有效| CompareFees[比较总费用与保险支付]
+CompareFees --> LessThan70[总费用 < 保险支付*0.7]
+LessThan70 --> SetZero[设置盈亏为0，颜色为黑色]
+CompareFees --> Between70and100[保险支付*0.7 <= 总费用 < 保险支付]
+Between70and100 --> CalcLoss1[计算盈亏 = 保险支付 - 总费用，颜色绿色]
+CompareFees --> Between100and140[保险支付 <= 总费用 < 保险支付*1.4]
+Between100and140 --> CalcLoss2[计算盈亏 = 保险支付 - 总费用，颜色红色]
+CompareFees --> GreaterThanOrEqual140[总费用 >= 保险支付*1.4]
+GreaterThanOrEqual140 --> CalcLoss3[计算盈亏 = 总费用 - (总费用/保险支付-0.4)*保险支付，颜色红色]
+SetZero --> ReturnResult[返回结果]
+CalcLoss1 --> ReturnResult
+CalcLoss2 --> ReturnResult
+CalcLoss3 --> ReturnResult
+ReturnNull --> End([结束])
+ReturnResult --> End
+```
+
+**图表来源**
+- [DrgAnalysis.vue:1385-1426](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1385-L1426)
+
+### 表格功能特性
+
+严格标准推荐列表表格具备以下核心功能：
+
+1. **单选功能**：支持用户从推荐列表中选择单一DRG进行深入分析
+2. **盈亏显示**：实时显示每个DRG的盈亏金额和颜色编码（绿色盈利/红色亏损）
+3. **智能排序**：按盈亏金额自动降序排列，突出最优推荐
+4. **交互高亮**：选中行自动高亮显示，提升用户体验
+5. **数据验证**：确保只有有效的费用数据才会触发盈亏计算
+6. **格式化显示**：支持金额和百分比的格式化显示
+7. **响应式设计**：适配不同屏幕尺寸的设备
+
+**章节来源**
+- [DrgAnalysis.vue:71-119](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L71-L119)
+- [DrgAnalysis.vue:1176-1273](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1176-L1273)
+- [DrgAnalysis.vue:1294-1348](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1294-L1348)
+- [DrgAnalysis.vue:1385-1426](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1385-L1426)
 
 ## DRG目录匹配服务
 
@@ -672,7 +802,8 @@ SurgeryList --> SurgeryItem
 4. **唯一性规则**：确保主要诊断和主要手术的唯一性
 5. **自动排序**：按照时间或其他逻辑进行自动排序
 6. **DRG费用集成**：与DRG目录匹配功能集成，提供费用相关信息
-7. **版本0.7.005新增**：AI分析结果卡片集成，支持DRG专用Prompt过滤
+7. **严格标准推荐列表**：与新增的推荐列表功能集成，提供临床决策支持
+8. **版本0.7.005新增**：AI分析结果卡片集成，支持DRG专用Prompt过滤
 
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
@@ -1490,6 +1621,42 @@ DrgPromptController-->>Client : 返回生成结果
 **图表来源**
 - [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
 
+### 病人费用查询API
+
+系统提供DRG分析所需的病人费用查询API接口：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant PatientFeeController as 病人费用控制器
+participant PatientFeeService as 费用服务
+Client->>PatientFeeController : GET /api/drg/patient-fee/query
+PatientFeeController->>PatientFeeService : queryPatientFee
+PatientFeeService-->>PatientFeeController : 返回费用数据
+PatientFeeController-->>Client : 返回病人费用信息
+```
+
+**图表来源**
+- [PatientFeeController.java:172-203](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L172-L203)
+
+### 盈亏计算API
+
+系统提供DRG盈亏计算的API接口：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant PatientFeeController as 病人费用控制器
+participant PatientFeeService as 费用服务
+Client->>PatientFeeController : GET /api/drg/patient-fee/calculate-profit-loss
+PatientFeeController->>PatientFeeService : calculateProfitLoss
+PatientFeeService-->>PatientFeeController : 返回盈亏数据
+PatientFeeController-->>Client : 返回盈亏计算结果
+```
+
+**图表来源**
+- [PatientFeeController.java:203-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L203-L234)
+
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
 - [SurgeryController.java:1-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L1-L223)
@@ -1498,6 +1665,7 @@ DrgPromptController-->>Client : 返回生成结果
 - [DrgAiAnalysisController.java:1-332](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java#L1-L332)
 - [AIController.java:272-400](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L400)
 - [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+- [PatientFeeController.java:172-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L172-L234)
 
 ## 部署架构
 
@@ -1576,6 +1744,17 @@ DRG目录匹配服务采用了多项性能优化措施：
 7. **HIV过滤优化**：提前检查患者诊断，避免不必要的DRG名称检查
 8. **双向分流优化**：通过Stream过滤减少匹配计算量
 
+### 严格标准推荐列表性能优化
+
+严格标准推荐列表功能采用了多项性能优化措施：
+
+1. **智能解析**：使用正则表达式快速定位推荐列表部分
+2. **表格验证**：确保Markdown表格格式的有效性
+3. **缓存机制**：缓存解析后的推荐列表数据
+4. **延迟计算**：仅在需要时计算盈亏数据
+5. **排序优化**：使用高效的排序算法按盈亏金额排序
+6. **格式化缓存**：缓存格式化后的金额和百分比显示
+
 ### 定时任务性能优化
 
 定时任务集成功能采用了多项性能优化措施：
@@ -1630,26 +1809,37 @@ DRG目录匹配服务采用了多项性能优化措施：
    - 验证历史结果数据完整性
    - 确认Markdown渲染配置
 
-7. **DRG匹配日志问题**
+7. **严格标准推荐列表功能异常**
+   - **新增功能**：检查Markdown解析逻辑是否正确
+   - **新增功能**：验证盈亏计算规则是否符合预期
+   - **新增功能**：确认表格排序功能正常工作
+   - **新增功能**：检查单选功能的交互逻辑
+
+8. **DRG匹配日志问题**
    - 检查DEBUG级别日志配置
    - 验证匹配过程日志输出
    - 确认"诊断为主"特殊标注日志
 
-8. **批量匹配功能异常**
+9. **批量匹配功能异常**
    - **版本0.7.003新增**：检查诊断和手术列表数据格式
    - **版本0.7.003新增**：验证笛卡尔积组合生成逻辑
    - **版本0.7.003新增**：确认去重和分数计算准确性
 
-9. **定时任务执行异常**
-   - **版本0.7.007新增**：检查定时任务配置和调度器状态
-   - **版本0.7.007新增**：验证在院患者筛选逻辑
-   - **版本0.7.007新增**：确认DRG Prompt生成和保存流程
-   - **版本0.7.007新增**：检查序列同步功能是否正常工作
+10. **定时任务执行异常**
+    - **版本0.7.007新增**：检查定时任务配置和调度器状态
+    - **版本0.7.007新增**：验证在院患者筛选逻辑
+    - **版本0.7.007新增**：确认DRG Prompt生成和保存流程
+    - **版本0.7.007新增**：检查序列同步功能是否正常工作
 
-10. **DRG Prompt生成接口异常**
+11. **DRG Prompt生成接口异常**
     - **版本0.7.006新增**：检查请求参数验证逻辑
     - **版本0.7.006新增**：验证DRG匹配服务调用
     - **版本0.7.006新增**：确认Prompt模板获取和保存流程
+
+12. **病人费用查询异常**
+    - **新增功能**：检查HIS系统连接状态
+    - **新增功能**：验证费用数据格式
+    - **新增功能**：确认盈亏计算接口调用
 
 ### 日志分析
 
@@ -1664,6 +1854,9 @@ DRG目录匹配服务采用了多项性能优化措施：
 - **版本0.7.004新增**："主要诊断及操作分析"按钮点击日志
 - **版本0.7.007新增**：定时任务执行日志和统计信息
 - **版本0.7.006新增**：DRG Prompt生成接口调用日志
+- **新增功能**：严格标准推荐列表解析日志
+- **新增功能**：盈亏计算过程日志
+- **新增功能**：表格交互操作日志
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
@@ -1694,6 +1887,7 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 18. **Prompt生成接口**：版本0.7.006新增DRG分析Prompt生成后端接口，支持手动触发DRG分析
 19. **用户交互优化**：版本0.7.005新增DRG分析按钮确认对话框、AI分析结果卡片和DRG专用Prompt过滤
 20. **自动化分析**：版本0.7.004新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
+21. **严格标准推荐列表**：新增严格标准推荐列表表格功能，支持单选、盈亏计算与排序，显著提升临床决策支持能力
 
 ### 技术创新
 
@@ -1718,8 +1912,12 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 - **定时任务自动化**：实现DRG分析的自动化处理，减少人工干预
 - **Prompt生成接口**：提供灵活的DRG分析Prompt生成能力
 - **序列同步机制**：防止Oracle序列冲突，确保数据一致性
+- **严格标准推荐列表**：实现智能的Markdown表格解析和盈亏计算
+- **智能排序算法**：按盈亏金额自动降序排列推荐列表
+- **单选交互设计**：提供直观的DRG选择体验
+- **颜色编码系统**：使用绿色盈利和红色亏损的颜色编码
 
-该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能、差异化评分策略、批量组合匹配功能、HIV过滤功能、双向分流策略、首行标识检测、定时任务集成、Prompt生成接口、用户交互优化和自动化分析进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确。
+该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能、差异化评分策略、批量组合匹配功能、HIV过滤功能、双向分流策略、首行标识检测、定时任务集成、Prompt生成接口、用户交互优化、自动化分析和严格标准推荐列表功能进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确，特别是在临床决策支持方面提供了显著的增强。
 
 **章节来源**
 - [Stage2 DRG Analysis Verification Report.md:1-163](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md#L1-L163)
