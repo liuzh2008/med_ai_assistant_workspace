@@ -8,15 +8,22 @@
 - [EMR病历内容同步API接口文档.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/数据同步/EMR病历内容同步API接口文档.md)
 - [2026-04-09.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md)
 - [EMR病历内容同步实现方案.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/医院数据同步/EMR病历内容同步实现方案.md)
+- [MCC分析Prompt模板优化接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/MCC分析Prompt模板优化接口.md)
+- [update-diagnosis-analysis-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/update-diagnosis-analysis-prompt-template.sql)
+- [diagnosis-template.json](file://med_ai_assistant_1.0_bs_backend/memory-bank/templates/prompt-templates/diagnosis-template.json)
+- [2026-03-30.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-03-30.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
+- 新增诊断分析Prompt模板优化章节，详细介绍新增的4个规则类别
+- 更新MCC分析Prompt模板优化接口文档，补充最新的优化内容
 - 新增EMR病历内容同步机制章节，详细介绍并发安全设计和重试机制
 - 更新EMR同步API接口文档，补充并发冲突处理和重试机制说明
 - 新增JPA批处理优化章节，说明saveAndFlush替代save的改进
 - 新增唯一约束冲突修复章节，详细说明ORA-00001问题的解决方案
 - 新增EMR_CONTENT表脏数据清理章节，记录4条NULL数据的诊断与处理
+- 新增JSON字段名大小写对齐修复章节，解决EMR病历内容显示问题
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -31,11 +38,14 @@
 10. [性能优化](#性能优化)
 11. [监控与告警](#监控与告警)
 12. [部署配置](#部署配置)
-13. [EMR病历内容同步机制](#emr病历内容同步机制)
-14. [JPA批处理优化](#jpa批处理优化)
-15. [唯一约束冲突修复](#唯一约束冲突修复)
-16. [EMR_CONTENT表脏数据清理](#emr_content表脏数据清理)
-17. [总结](#总结)
+13. [诊断分析Prompt模板优化](#诊断分析prompt模板优化)
+14. [MCC分析Prompt模板优化](#mcc分析prompt模板优化)
+15. [EMR病历内容同步机制](#emr病历内容同步机制)
+16. [JPA批处理优化](#jpa批处理优化)
+17. [唯一约束冲突修复](#唯一约束冲突修复)
+18. [EMR_CONTENT表脏数据清理](#emr_content表脏数据清理)
+19. [JSON字段名大小写对齐修复](#json字段名大小写对齐修复)
+20. [总结](#总结)
 
 ## 项目概述
 
@@ -605,6 +615,114 @@ END
 **章节来源**
 - [application.properties:127-134](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties#L127-L134)
 
+## 诊断分析Prompt模板优化
+
+### 新增规则类别
+
+2026年4月9日对诊断分析Prompt模板进行了重大优化，新增了4个重要的规则类别：
+
+#### 诊断命名规范
+
+- **具体诊断优先**: 诊断名称必须使用最具体的临床诊断术语，禁止使用笼统的上位概念
+- **分型/分期标注**: 编码后需标注疾病分型/分期
+- **器官多病变分离**: 同一器官/系统存在多个独立病变时，每个病变必须单独列为一条诊断
+- **排序规则**: 主要诊断优先、急危重症优先、并发症优先于基础疾病
+
+#### "待查"标注规则
+
+- **严格标注条件**: 仅当诊断依据不充分、需要进一步检查才能确认时，才在诊断名称中标注"待查"
+- **充分依据不标注**: 当已有充分客观依据支持诊断成立时，诊断名称中不加"待查"
+- **补充说明**: 可在补充说明中注明待完善的检查
+
+#### 心律失常拆分规则
+
+- **独立诊断原则**: 每种独立的心律失常必须单独列为一条诊断
+- **禁止合并诊断**: 禁止将多种心律失常合并为"心律失常"或"动态心电图提示心律失常"等笼统诊断
+- **具体类型优先**: 如"偶发室性早搏"、"偶发房性早搏"、"短阵房性心动过速"应分别列出
+
+#### 随机血糖判读规范
+
+- **随机血糖标准**: 当无法确认血糖为空腹采集时，一律按随机血糖标准判读
+- **严格诊断标准**: 随机血糖≥11.1 mmol/L方可考虑糖尿病诊断
+- **禁止空腹标准**: 禁止在不确定采集条件的情况下按空腹血糖标准作出诊断
+- **建议完善检查**: 若血糖值升高但未达到诊断标准，在"下一步建议"中提醒完善相关检查
+
+### 模板更新内容
+
+诊断分析模板现已包含完整的质量控制要求：
+
+- **禁止出现**: 无客观依据的主观判断
+- **必须验证**: 对矛盾数据需标注
+- **数据冲突点**: 可信度评估、建议复核项目
+- **特殊情况诊断**: 临床考虑、辅助检查结果满足等
+
+**章节来源**
+- [update-diagnosis-analysis-prompt-template.sql:58-125](file://med_ai_assistant_1.0_bs_backend/sql-scripts/update-diagnosis-analysis-prompt-template.sql#L58-L125)
+- [diagnosis-template.json:1-47](file://med_ai_assistant_1.0_bs_backend/memory-bank/templates/prompt-templates/diagnosis-template.json#L1-L47)
+
+## MCC分析Prompt模板优化
+
+### 优化背景
+
+2026年3月30日对MCC（严重并发症）分析Prompt模板进行了重大优化，解决原模板筛查过于严格的问题。
+
+### 优化内容
+
+#### 放宽排除标准
+
+- **必须排除**: 与主要诊断完全相同的并发症或合并症
+- **明显矛盾**: 与病人实际情况明显矛盾的诊断（如男性病人的妊娠相关并发症）
+- **谨慎排除**: 与主要诊断高度相似且临床意义重复的诊断
+- **保留原则**: 相关但不完全相同的诊断应保留（如冠心病与动脉硬化）
+
+#### 明确排除原则
+
+1. **必须排除的情况**:
+   - 与主要诊断完全相同的并发症或合并症
+   - 与病人实际情况明显矛盾的诊断
+
+2. **谨慎排除的情况**:
+   - 与主要诊断高度相似且临床意义重复的诊断
+   - 注意：相关但不完全相同的诊断应保留
+
+3. **保留原则**:
+   - 对边界情况或相关性较高的诊断，建议保留并给出可能性评估
+
+#### 临床指导原则
+
+- **宁可多保留，不要漏掉**: 强调"宁可多保留，不要漏掉"的临床原则
+- **关注临床相关性**: 从临床实际角度出发，判断并发症是否与患者病情存在合理的病理生理联系
+- **编码提示**: 诊断名称中包含并发症或合并症列表中该诊断所属的类型
+
+### 新增管理接口
+
+系统新增了专门的MCC分析Prompt模板管理接口：
+
+```mermaid
+sequenceDiagram
+participant Admin as 管理员
+participant API as 管理接口
+participant Service as 服务层
+participant DB as 数据库
+Admin->>API : POST /api/admin/prompt-templates/mcc-analysis
+API->>Service : validateAndProcess()
+Service->>Service : 参数校验
+Service->>DB : 查询模板记录
+Service->>DB : 更新Prompt内容
+Service->>DB : 记录更新时间
+Service->>DB : 刷新缓存
+DB-->>Service : 更新结果
+Service-->>API : 成功响应
+API-->>Admin : JSON响应
+```
+
+**图表来源**
+- [MCC分析Prompt模板优化接口.md:72-79](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/MCC分析Prompt模板优化接口.md#L72-L79)
+
+**章节来源**
+- [2026-03-30.md:10-51](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-03-30.md#L10-L51)
+- [MCC分析Prompt模板优化接口.md:1-115](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/MCC分析Prompt模板优化接口.md#L1-L115)
+
 ## EMR病历内容同步机制
 
 ### 并发安全设计
@@ -776,6 +894,38 @@ WHERE SOURCE_TABLE IS NULL AND SOURCE_ID IS NULL;
 - [2026-04-09.md:67-70](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md#L67-L70)
 - [EmrSyncService.java:441-462](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java#L441-L462)
 
+## JSON字段名大小写对齐修复
+
+### 问题描述
+
+2026年4月9日发现EMR病历内容显示为空的问题，根因为JSON字段名大小写不匹配：
+
+- `EmrRecordListDTO`的ID字段（大写）序列化后为`ID`，前端使用`row.id`（小写）读取为undefined
+- `EmrRecordContentDTO`的CONTENT字段（大写）序列化后为`CONTENT`，前端使用`response.data.content`（小写）读取为undefined
+
+### 修复方案
+
+为解决字段名大小写不匹配问题，系统为相关DTO类添加了@JsonProperty注解：
+
+#### EmrRecordListDTO修复
+
+- `@JsonProperty("id")`: 将ID序列化为小写id，与前端row.id对齐
+- `@JsonProperty("doc_TYPE_NAME")`: 保持原有大小写，与前端prop属性对齐
+- `@JsonProperty("doc_TITLE_TIME")`: 保持原有大小写，与前端row.doc_TITLE_TIME对齐
+
+#### EmrRecordContentDTO修复
+
+- `@JsonProperty("content")`: 将CONTENT序列化为小写content，与前端response.data.content对齐
+
+### 影响范围
+
+- 仅影响JSON序列化输出，不改变数据库查询逻辑
+- 向下兼容，前端无需修改
+- 修复后生产环境可正常显示EMR病历内容
+
+**章节来源**
+- [2026-04-09.md:10-40](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md#L10-L40)
+
 ## 总结
 
 MedAiAssistant项目展现了现代医疗AI系统的完整架构和实现方案。通过采用Spring Boot、Oracle数据库、AI集成等技术栈，系统实现了：
@@ -789,6 +939,7 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构和实现方案�
 5. **自动化部署**: 提供完整的CI/CD和自动化部署方案
 6. **丰富功能**: 新增EMR病历内容显示、患者画像功能增强和页面布局重构
 7. **并发安全**: 实现了完善的并发控制和重试机制，确保数据一致性
+8. **诊断优化**: 新增4个诊断分析规则类别，提升诊断准确性
 
 ### 技术亮点
 
@@ -800,6 +951,7 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构和实现方案�
 - **用户界面**: 优化的患者画像界面和响应式布局设计
 - **并发控制**: 基于TOCTOU竞态条件修复的并发安全设计
 - **异常处理**: 完善的重试机制和错误恢复策略
+- **诊断规范**: 新增的4个诊断分析规则类别，提升诊断质量
 
 ### 功能创新
 
@@ -809,12 +961,24 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构和实现方案�
 - **数据加载优化**: 提升了多数据源并行加载的性能表现
 - **并发安全**: 实现了基于saveAndFlush的JPA批处理优化
 - **数据一致性**: 通过重试机制确保高并发场景下的数据一致性
+- **诊断规范化**: 新增的4个诊断分析规则类别，提升诊断准确性
+- **MCC分析优化**: 放宽MCC排除标准，减少临床漏诊
 
 ### 质量保证
 
 - **唯一约束冲突修复**: 通过并发安全设计和重试机制解决ORA-00001问题
 - **脏数据清理**: 诊断并清理了4条EMR_CONTENT表的NULL脏数据
+- **字段名对齐**: 修复JSON字段名大小写不匹配问题
 - **异常处理**: 完善的异常捕获和重试逻辑，确保系统稳定性
 - **性能监控**: 实时监控同步性能和数据一致性
+
+### 诊断分析优化成果
+
+本次更新在诊断分析方面取得了显著成果：
+
+- **诊断命名规范**: 确保诊断名称的准确性和具体性
+- **"待查"标注规则**: 严格控制"待查"诊断的标注，避免过度使用
+- **心律失常拆分**: 提高心律失常诊断的精确性
+- **随机血糖判读**: 规范随机血糖的判读标准，避免误诊
 
 该项目为医疗机构提供了智能化的AI辅助诊断解决方案，具有良好的扩展性和维护性，适合在各种医疗环境中部署和使用。
