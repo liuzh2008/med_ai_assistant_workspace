@@ -18,11 +18,16 @@
 - [TimerPromptGeneratorPerformanceTest.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/TimerPromptGeneratorPerformanceTest.java)
 - [TimerPromptGeneratorWardRoundTask1Test.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/TimerPromptGeneratorWardRoundTask1Test.java)
 - [TimerPromptGeneratorWardRoundTask2Test.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/TimerPromptGeneratorWardRoundTask2Test.java)
+- [PatientDiagnosis.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PatientDiagnosis.java)
+- [MccScreeningProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/MccScreeningProperties.java)
+- [MccScreeningServiceCodeMatchTest.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/MccScreeningServiceCodeMatchTest.java)
+- [MccScreeningServiceExclusionTest.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/MccScreeningServiceExclusionTest.java)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增MCC分析Prompt模板优化接口章节，支持管理员更新合并症或并发症分析模板
+- 优化MCC分析触发条件，将诊断文本非空作为唯一触发条件
+- 使ICD10编码变为可选，提升系统灵活性和鲁棒性
 - 更新排除规则标准，放宽MCC筛选的严格性，强调"宁可多保留，不要漏掉"的临床原则
 - 新增管理员权限的Prompt模板管理接口，提供更灵活的模板更新机制
 - 更新核心组件部分，添加Prompt模板管理功能
@@ -47,6 +52,8 @@
 MCC分析系统是MedAi Assistant项目中的一个重要组成部分，专注于医疗诊断中的并发症分析。该系统通过智能匹配患者的诊断信息与MCC（严重并发症）字典，为医生提供准确的并发症候选列表，辅助DRG（疾病诊断相关分组）分析和医疗决策。
 
 系统基于Spring Boot框架构建，采用了现代化的软件工程实践，包括TDD（测试驱动开发）、微服务架构和高性能的数据处理算法。核心功能包括MCC预筛选、相似度计算、排除规则检查和Prompt生成等。**最新更新**在定时任务中集成了MCC筛选Prompt自动生成功能，为所有在院患者自动生成诊断分析、诊疗计划、病情小结和MCC分析四种Prompt，同时新增了管理员权限的Prompt模板优化功能，进一步提升系统的灵活性和准确性。
+
+**重大优化**：系统现在采用诊断文本非空作为MCC分析的唯一触发条件，使ICD10编码变为可选，显著提升了系统的鲁棒性和适应性，减少了因ICD10编码缺失导致的分析失败。
 
 ## 项目结构
 
@@ -73,6 +80,7 @@ W[性能测试] --> X[单元测试覆盖]
 Y[MCC筛查服务] --> Z[字典缓存]
 AA[管理员模板管理] --> BB[模板优化接口]
 BB --> CC[Prompt内容更新]
+DD[诊断文本非空触发] --> EE[ICD10编码可选]
 end
 ```
 
@@ -121,6 +129,8 @@ MccScreeningController是系统的核心入口点，提供了完整的MCC预筛�
 
 MccScreeningService实现了复杂的匹配算法和数据处理逻辑：
 
+- **诊断文本非空触发**：仅当诊断名称非空时才进行MCC分析
+- **ICD10编码可选**：即使ICD10编码缺失也能正常进行分析
 - **双层匹配策略**：先进行ICD编码精确匹配，再进行名称相似度匹配
 - **智能缓存机制**：使用AtomicReference确保线程安全的字典缓存
 - **排除规则系统**：支持多分隔符的排除条件解析，现已放宽至"明显不可能"的标准
@@ -144,18 +154,19 @@ MccScreeningService实现了复杂的匹配算法和数据处理逻辑：
 
 - **MccCandidate**：MCC候选结果实体，包含编码、名称、类型、相似度等信息
 - **MccType**：并发症类型枚举，支持MCC、CC和NONE三种类型
-- **PatientDiagnosis**：患者诊断信息模型
+- **PatientDiagnosis**：患者诊断信息模型，**更新**诊断文本非空触发分析
 - **DrgMcc**：MCC字典实体
 - **PromptTemplate**：Prompt模板实体，支持模板内容的动态更新
 
 **章节来源**
 - [MccScreeningController.java:1-478](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L478)
 - [TimerPromptGeneratorController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L1-L100)
-- [MccScreeningService.java:1-447](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L447)
+- [MccScreeningService.java:1-493](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L493)
 - [TimerPromptGenerator.java:1-2142](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L1-L2142)
 - [MccCandidate.java:1-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/MccCandidate.java#L1-L135)
 - [MccType.java:1-26](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/enums/MccType.java#L1-L26)
 - [PromptTemplate.java:1-127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L1-L127)
+- [PatientDiagnosis.java:1-61](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PatientDiagnosis.java#L1-L61)
 
 ## 架构概览
 
@@ -193,6 +204,7 @@ CC[LevenshteinUtil] --> DD[文本规范化]
 CC --> EE[相似度算法]
 FF[TextNormalizer] --> GG[标准化处理]
 HH[SequenceConsistencyService] --> II[序列检查]
+JJ[诊断文本非空检查] --> KK[ICD10编码可选]
 end
 A --> C
 C --> J
@@ -210,7 +222,7 @@ S --> X
 **图表来源**
 - [MccScreeningController.java:33-57](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L33-L57)
 - [TimerPromptGeneratorController.java:14-26](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L14-L26)
-- [MccScreeningService.java:30-447](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L30-L447)
+- [MccScreeningService.java:30-493](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L30-L493)
 - [TimerPromptGenerator.java:106-136](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L106-L136)
 - [MCC分析Prompt模板优化接口.md:1-115](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/MCC分析Prompt模板优化接口.md#L1-L115)
 
@@ -224,31 +236,35 @@ S --> X
 flowchart TD
 A[开始：患者诊断列表] --> B[加载MCC字典缓存]
 B --> C{遍历诊断}
-C --> D[CODE精确匹配检查]
-D --> E{命中?}
-E --> |是| F[生成候选 similarity=1.0<br/>matchType=CODE_MATCH]
-E --> |否| G[名称规范化]
-G --> H[计算Levenshtein相似度]
-H --> I{≥阈值?}
-I --> |是| J[排除规则检查 - 放宽标准]
-I --> |否| K[丢弃]
-J --> L{排除?}
-L --> |是| M[生成候选 excluded=true]
-L --> |否| N[生成候选 excluded=false]
-F --> O[收集候选]
-M --> O
-N --> O
-O --> P[按诊断分组]
-P --> Q[排序: 相似度↓, MCC优先]
-Q --> R{Top-K启用?}
-R --> |是| S[截断到K个]
-R --> |否| T[完整列表]
-S --> U[输出结果]
-T --> U
+C --> D[诊断文本非空检查]
+D --> E{非空?}
+E --> |否| F[跳过诊断]
+E --> |是| G[CODE精确匹配检查]
+G --> H{命中?}
+H --> |是| I[生成候选 similarity=1.0<br/>matchType=CODE_MATCH]
+H --> |否| J[名称规范化]
+J --> K[计算Levenshtein相似度]
+K --> L{≥阈值?}
+L --> |是| M[排除规则检查 - 放宽标准]
+L --> |否| N[丢弃]
+M --> O{排除?}
+O --> |是| P[生成候选 excluded=true]
+O --> |否| Q[生成候选 excluded=false]
+I --> R[收集候选]
+P --> R
+Q --> R
+F --> S[继续下一个诊断]
+R --> T[按诊断分组]
+T --> U[排序: 相似度↓, MCC优先]
+U --> V{Top-K启用?}
+V --> |是| W[截断到K个]
+V --> |否| X[完整列表]
+W --> Y[输出结果]
+X --> Y
 ```
 
 **图表来源**
-- [MccScreeningService.java:388-445](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L388-L445)
+- [MccScreeningService.java:397-491](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L397-L491)
 
 ### Prompt生成流程
 
@@ -275,7 +291,7 @@ Note over Client,Repo : Prompt生成和保存完成
 ```
 
 **图表来源**
-- [MccScreeningController.java:233-341](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L233-L341)
+- [MccScreeningController.java:262-385](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L262-L385)
 
 ### 配置管理系统
 
@@ -316,7 +332,7 @@ Service->>Service : 记录生成日志
 
 ## 定时任务中的MCC筛选Prompt自动生成
 
-**新增章节** 系统在定时任务中集成了MCC筛选Prompt自动生成功能，为所有在院患者自动生成诊断分析、诊疗计划、病情小结和MCC分析四种Prompt。
+**新增章节** 系统在定时任务中集成了MCC筛选Prompt自动生动生成功能，为所有在院患者自动生成诊断分析、诊疗计划、病情小结和MCC分析四种Prompt。
 
 ### 自动生成功能概述
 
@@ -508,12 +524,6 @@ Controller-->>Admin : 返回成功响应
 - **isActive**: 是否激活
 - **版本控制**: 支持模板版本追踪
 
-**章节来源**
-- [MCC分析Prompt模板优化接口.md:1-115](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/MCC分析Prompt模板优化接口.md#L1-L115)
-- [DRG分析接口.md:1809-1851](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG分析接口.md#L1809-L1851)
-- [PromptTemplate.java:1-127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L1-L127)
-- [PromptTemplateRepository.java:1-36](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptTemplateRepository.java#L1-L36)
-
 ## 依赖关系分析
 
 ```mermaid
@@ -582,6 +592,21 @@ class TextNormalizer {
 class SequenceConsistencyService {
 +verifyAndSyncSequences() void
 }
+class PatientDiagnosis {
++String icdCode
++String diagnosisName
++boolean hasIcdCode()
++boolean hasDiagnosisName()
+}
+class MccScreeningProperties {
++double getSimilarityThreshold()
++boolean isExclusionCheckEnabled()
++int getMaxCandidates()
++boolean isTopKEnabled()
++int getTopKDiag()
++boolean isCacheEnabled()
++String getReloadCron()
+}
 MccScreeningController --> MccScreeningService : 依赖
 TimerPromptGeneratorController --> TimerPromptGenerator : 依赖
 TimerPromptGenerator --> MccScreeningService : 依赖
@@ -594,6 +619,8 @@ MccScreeningService --> DrgMccRepository : 使用
 MccScreeningService --> LevenshteinUtil : 使用
 MccScreeningService --> TextNormalizer : 使用
 MccScreeningService --> MccCandidate : 创建
+MccScreeningService --> PatientDiagnosis : 使用
+MccScreeningService --> MccScreeningProperties : 使用
 ```
 
 **图表来源**
@@ -606,7 +633,7 @@ MccScreeningService --> MccCandidate : 创建
 **章节来源**
 - [MccScreeningController.java:1-478](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L478)
 - [TimerPromptGeneratorController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java#L1-L100)
-- [MccScreeningService.java:1-447](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L447)
+- [MccScreeningService.java:1-493](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L493)
 - [TimerPromptGenerator.java:1-2142](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L1-L2142)
 
 ## 性能考虑
@@ -766,6 +793,21 @@ MccScreeningService --> MccCandidate : 创建
 - 清理模板缓存状态
 - 增加超时时间
 
+#### 7. 诊断文本非空触发条件问题
+
+**问题表现**：MCC分析无法正常触发
+
+**可能原因**：
+- 患者诊断名称为空
+- 诊断数据格式不正确
+- **新增** ICD10编码缺失导致分析失败
+
+**解决方案**：
+- 检查患者诊断数据的完整性
+- 验证诊断名称字段非空
+- **新增** 系统现在支持ICD10编码可选，即使缺失也能正常分析
+- 查看日志中的诊断跳过信息
+
 **章节来源**
 - [MccScreeningService.java:74-99](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L74-L99)
 - [MccScreeningService.java:177-202](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L177-L202)
@@ -785,6 +827,7 @@ MCC分析系统是一个功能完整、性能优异的医疗并发症分析平�
 5. **自动化程度高**：新增定时任务自动生成功能，大幅提高工作效率
 6. **测试覆盖全面**：通过单元测试、集成测试和性能测试确保系统稳定性
 7. **管理灵活**：新增管理员模板管理功能，支持动态优化MCC分析规则
+8. **鲁棒性强**：**重大优化**诊断文本非空作为唯一触发条件，ICD10编码可选，显著提升系统适应性
 
 ### 技术特色
 
@@ -796,6 +839,8 @@ MCC分析系统是一个功能完整、性能优异的医疗并发症分析平�
 - **性能监控**：实时统计和性能指标跟踪
 - **序列一致性保证**：防止数据库主键冲突问题
 - **模板动态管理**：支持Prompt模板的在线更新和优化
+- **诊断文本非空触发**：**新增**系统现在仅依赖诊断文本进行分析
+- **ICD10编码可选**：**新增**即使缺失也能正常进行MCC分析
 
 ### 新功能亮点
 
@@ -824,5 +869,12 @@ MCC分析系统是一个功能完整、性能优异的医疗并发症分析平�
 - **保留相关诊断**：如冠心病患者的动脉硬化等边界情况
 - **强调临床原则**：从病理生理联系角度判断诊断的相关性
 - **减少漏诊风险**：通过"宁可多保留，不要漏掉"原则降低临床漏诊
+
+**重大优化的触发条件**显著提升了系统的鲁棒性：
+
+- **诊断文本非空触发**：系统现在仅依赖诊断文本进行MCC分析，不再强制要求ICD10编码
+- **ICD10编码可选**：即使ICD10编码缺失，系统仍能正常进行MCC分析
+- **减少分析失败**：显著降低了因ICD10编码缺失导致的分析失败率
+- **提升适应性**：系统能够适应更多样化的数据格式和来源
 
 该系统为医疗机构提供了强大的MCC分析能力，有助于提高DRG分析的准确性和医疗决策的质量，同时通过自动化功能和灵活的模板管理大幅提升了工作效率和系统可用性。系统的测试驱动开发方法和全面的测试覆盖确保了代码质量和长期维护的便利性。

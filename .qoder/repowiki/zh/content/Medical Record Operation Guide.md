@@ -22,17 +22,25 @@
 - [病历记录管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/病历记录管理接口.md)
 - [病历记录时间格式调整接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/病历记录时间格式调整接口.md)
 - [待办事项接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/待办事项接口.md)
+- [EMR病历内容查询接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md)
+- [EmrRecordListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java)
+- [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
+- [emr-content-query.json](file://med_ai_assistant_1.0_bs_backend/sql/hospital-Local/emr-content-query.json)
 - [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [EmrSyncService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java)
+- [EmrContentRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java)
+- [2026-04-09.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md)
+- [DatabaseCleanupUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/DatabaseCleanupUtil.java)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增病历编辑防丢失功能章节，详细介绍localStorage草稿自动保存机制
-- 新增浏览器离开保护和标签页隐藏保护功能说明
-- 新增草稿恢复机制和过期清理功能
-- 更新病历记录操作流程，增加防丢失保护环节
-- 新增保存状态指示器和用户提示机制
-- 扩展操作按钮功能表格，包含新增的防丢失保护功能
+- 新增EMR病历内容同步模块的数据库约束处理能力增强章节
+- 更新EMR病历内容同步API接口文档，包含并发安全和重试机制说明
+- 新增JPA批处理优化和TOCTOU竞态条件修复的技术实现细节
+- 扩展数据库约束冲突处理机制，包含自动重试和清理策略
+- 更新EMR病历内容查询接口的JSON字段名大小写对齐详细说明章节
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -63,6 +71,8 @@
 - **分布式部署**：支持主服务器和执行服务器分离架构
 - **稳定构建系统**：经过多次修复的前端构建系统，确保开发环境稳定
 - **防丢失保护**：新增的病历编辑防丢失功能，确保用户数据安全
+- **JSON字段名对齐**：完善的JSON字段名大小写对齐机制，解决生产环境显示问题
+- **高并发数据同步**：增强的EMR病历内容同步模块，具备数据库约束处理能力和自动重试机制
 
 ## 系统架构
 
@@ -79,6 +89,7 @@ TodoUI[待办事项界面]
 SmartInput[智录系统界面]
 BuildSystem[构建系统]
 DraftProtection[防丢失保护系统]
+EMRFieldAlignment[EMR字段对齐系统]
 end
 subgraph "API网关层"
 Gateway[API Gateway]
@@ -94,6 +105,7 @@ Medical[病历管理模块]
 Voice[语音识别模块]
 Todo[待办事项模块]
 SmartInput[智录系统模块]
+EmrSync[EMR同步服务模块]
 end
 subgraph "核心服务层"
 PromptSvc[Prompt执行引擎]
@@ -102,11 +114,13 @@ TaskScheduler[任务调度器]
 MemoryBank[内存银行]
 VoiceEngine[语音识别引擎]
 TodoEngine[待办事项引擎]
+DatabaseCleanup[数据库清理引擎]
 end
 subgraph "数据访问层"
 Repo[Repository层]
 CacheRepo[缓存Repository]
 TempRepo[临时数据Repository]
+EmrRepo[EMR内容Repository]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库)]
@@ -141,12 +155,14 @@ Encrypt --> MemoryBank
 Medical --> DataSvc
 Voice --> VoiceEngine
 Todo --> TodoEngine
+EmrSync --> DatabaseCleanup
 PromptSvc --> Repo
 DataSvc --> Repo
 MemoryBank --> CacheRepo
 CacheRepo --> Redis
 Repo --> MySQL
 Repo --> Oracle
+EmrRepo --> Oracle
 CacheRepo --> Redis
 Encrypt --> ExecServer
 PromptSvc --> AIService
@@ -154,6 +170,8 @@ Voice --> VoiceService
 Todo --> TodoService
 Medical --> LocalStorage
 DraftProtection --> LocalStorage
+EMRFieldAlignment --> JSON
+DatabaseCleanup --> CleanupUtil
 ```
 
 **图表来源**
@@ -289,6 +307,24 @@ string content3
 int sort_order
 string category
 }
+EMR_CONTENT {
+long id PK
+string patient_id FK
+string pati_id
+int visit_id
+string pati_name
+string dept_code
+string dept_name
+string doc_type_name
+timestamp record_date
+clob content
+string create_userid
+string create_by
+timestamp modified_on
+int delete_mark
+string source_table
+string source_id
+}
 PATIENTS ||--o{ MEDICAL_RECORDS : "has"
 PATIENTS ||--o{ DIAGNOSIS : "has"
 PATIENTS ||--o{ LAB_RESULT : "has"
@@ -297,10 +333,12 @@ PATIENTS ||--o{ PROMPTS : "analyzed by"
 PATIENTS ||--o{ TODO_ITEM : "has"
 PATIENTS ||--o{ VOICE_RECOGNITION_LOG : "has"
 PATIENTS ||--o{ SMART_INPUT_DICT : "has"
+PATIENTS ||--o{ EMR_CONTENT : "has"
 PROMPTS ||--|| PROMPT_RESULTS : "generates"
 PROMPT_TEMPLATE ||--o{ PROMPTS : "uses"
 USERS ||--o{ USER_DEPARTMENT : "belongs to"
 DEPARTMENT ||--o{ USER_DEPARTMENT : "contains"
+EMR_CONTENT ||--|| EMR_CONTENT : "de-duplication by (source_table, source_id)"
 ```
 
 **图表来源**
@@ -320,6 +358,7 @@ DEPARTMENT ||--o{ USER_DEPARTMENT : "contains"
 | 病情小结 | 患者病情的阶段性总结 | 每日或定期生成 |
 | 查房记录 | 医生查房时的临床观察记录 | 包含体征、诊断、治疗计划 |
 | 病程记录 | 患者住院期间的详细医疗记录 | 连续性的病情变化记录 |
+| EMR病历记录 | 来自医院HIS系统的电子病历 | 直接同步的原始病历内容，具备高并发处理能力 |
 
 #### 病历记录操作流程
 
@@ -335,7 +374,8 @@ SelectAction --> |查询| QueryRecord[查询记录]
 SelectAction --> |删除| DeleteRecord[删除记录]
 CreateRecord --> DraftProtection[防丢失保护检查]
 EditRecord --> DraftProtection
-DraftProtection --> ValidateData[验证输入数据]
+DraftProtection --> FieldAlignment[JSON字段名对齐检查]
+FieldAlignment --> ValidateData[验证输入数据]
 ValidateData --> |有效| SaveRecord[保存记录]
 ValidateData --> |无效| ShowError[显示错误信息]
 SaveRecord --> UpdateUI[更新界面显示]
@@ -346,6 +386,151 @@ AuthError --> End
 
 **图表来源**
 - [架构图.md:185-232](file://med_ai_assistant_1.0_bs_backend/doc/other/ARCHITECTURE_DIAGRAMS.md#L185-L232)
+
+### EMR病历内容同步模块
+
+**新增功能**：系统现在提供增强的EMR病历内容同步模块，具备高并发场景下的数据库约束处理能力和自动重试机制。
+
+#### 数据库约束处理能力增强
+
+**TOCTOU竞态条件修复**：
+- **问题背景**：原始使用`findBySourceTableAndSourceId()`方法，在高并发场景下存在TOCTOU（Time-Of-Check-Time-Of-Use）竞态条件
+- **竞态条件分析**：查询到记录不存在后，另一线程可能先完成INSERT，导致当前线程再次INSERT时触发唯一约束冲突（ORA-00001）
+- **修复方案**：改用返回List的查询方法`findAllBySourceTableAndSourceId()`，并在`DataIntegrityViolationException`触发时捕获并执行重试
+
+**JPA批处理冲突修复**：
+- **问题背景**：原始使用`save()`会导致JPA将SQL延迟到批量flush阶段执行，多条UPDATE语句并发提交时相互冲突
+- **修复方案**：将所有`save()`替换为`saveAndFlush()`，使每条记录立即提交SQL，异常精准对应当前记录，便于调试和重试
+
+#### 并发安全的数据同步流程
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant EmrSync as EMR同步服务
+participant Oracle as Oracle数据库
+participant MainServer as 主服务器数据库
+participant EntityManager as 实体管理器
+Client->>EmrSync : 调用insertEmrContentToMainServer()
+EmrSync->>Oracle : 查询EMR病历数据
+Oracle-->>EmrSync : 返回Oracle查询结果
+loop 对每条记录进行处理
+EmrSync->>MainServer : findAllBySourceTableAndSourceId()
+alt 记录存在
+EmrSync->>MainServer : updateEmrContent()
+EmrSync->>EntityManager : saveAndFlush()
+alt 唯一约束冲突
+EmrSync->>EntityManager : entityManager.clear()
+EmrSync->>MainServer : findAllBySourceTableAndSourceId()
+EmrSync->>MainServer : saveAndFlush()
+end
+else 记录不存在
+EmrSync->>MainServer : convertToEmrContent()
+EmrSync->>EntityManager : saveAndFlush()
+alt 唯一约束冲突
+EmrSync->>EntityManager : entityManager.clear()
+EmrSync->>MainServer : findAllBySourceTableAndSourceId()
+EmrSync->>MainServer : updateEmrContent()
+EmrSync->>MainServer : saveAndFlush()
+end
+end
+end
+EmrSync-->>Client : 返回处理结果
+```
+
+**图表来源**
+- [EmrSyncService.java:235-364](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java#L235-L364)
+
+#### 数据库约束冲突自动重试机制
+
+**UPDATE路径重试机制**：
+1. 调用`entityManager.clear()`清除Hibernate Session脏状态，避免游离态对象污染
+2. 重新执行`findAllBySourceTableAndSourceId()`获取最新数据库状态
+3. 在新对象上更新字段并重新执行`saveAndFlush()`
+4. 若重试仍失败则跳过当前记录并记录warn日志
+
+**INSERT路径重试机制**：
+1. 调用`entityManager.clear()`清除Hibernate Session脏状态
+2. 重新查询获取由并发线程已INSERT的记录
+3. 降级为UPDATE操作执行`saveAndFlush()`
+4. 若重试仍失败则跳过当前记录并记录warn日志
+
+#### 数据库清理工具
+
+**DatabaseCleanupUtil**：
+- 提供`handleIntegrityConstraintViolation()`方法处理数据完整性约束冲突
+- 支持多种策略：检查记录存在性、清理冲突记录、直接重试操作
+- 提供批量清理孤立数据记录的功能
+- 记录详细的错误日志和建议
+
+#### EMR病历内容同步API
+
+**接口设计说明**：
+
+**JSON字段名大小写对齐**：为了解决生产环境中的关键显示问题，系统实现了完整的JSON字段名大小写对齐机制。
+
+- **EmrRecordListDTO使用@JsonProperty("id")**：将后端ID字段序列化为小写id，与前端row.id对齐
+- **EmrRecordListDTO使用@JsonProperty("doc_TYPE_NAME")**：保持原有大小写，与前端prop属性对齐
+- **EmrRecordListDTO使用@JsonProperty("doc_TITLE_TIME")**：保持原有大小写，与前端row.doc_TITLE_TIME对齐
+- **EmrRecordContentDTO使用@JsonProperty("content")**：将后端CONTENT字段序列化为小写content，与前端response.data.content对齐
+- **此修复解决了生产环境下因JSON字段名大小写不匹配导致前端无法正确读取数据的问题**
+
+**接口实现细节**：
+
+**获取患者EMR病历记录列表**：
+- **接口路径**: `GET /api/medicalrecords/emr-list`
+- **功能说明**: 根据患者ID查询EMR病历记录列表，返回病历的基本信息
+- **数据来源**: EMR_CONTENT表，仅返回未删除的记录（DELETEMARK=0）
+- **响应格式**: ResponseEntity<List<EmrRecordListDTO>>
+- **字段映射**: id（小写）、doc_TYPE_NAME、doc_TITLE_TIME
+
+**获取EMR病历记录详细内容**：
+- **接口路径**: `GET /api/medicalrecords/emr-content/{id}`
+- **功能说明**: 根据记录ID获取EMR病历记录的详细内容（CONTENT字段）
+- **数据来源**: EMR_CONTENT表
+- **响应格式**: ResponseEntity<EmrRecordContentDTO>
+- **字段映射**: content（小写）
+
+#### 生产环境显示问题修复方案
+
+**问题背景**：在生产环境中，由于JSON字段名大小写不匹配，导致前端无法正确读取和显示EMR病历内容。
+
+**解决方案**：
+1. **字段名对齐策略**：使用@JsonProperty注解确保JSON字段名与前端期望完全一致
+2. **大小写一致性**：统一使用小写字段名（如id、content）以符合前端约定
+3. **保留特殊字段**：对于doc_TYPE_NAME、doc_TITLE_TIME等特殊字段，保持原有大小写格式
+4. **测试验证**：通过单元测试和集成测试验证字段名对齐的正确性
+
+**修复效果**：
+- 解决了生产环境中的关键显示问题
+- 提升了前端数据绑定的稳定性
+- 增强了跨平台兼容性
+- 改善了用户体验
+
+#### 病历记录操作流程（带JSON字段名对齐保护）
+
+```mermaid
+sequenceDiagram
+participant User as 用户
+participant MR as 病历编辑组件
+participant API as EMR查询接口
+participant JSON as JSON序列化
+participant Browser as 浏览器
+User->>MR : 开始编辑病历
+MR->>API : 调用EMR病历查询接口
+API->>JSON : 序列化DTO对象
+JSON->>JSON : 应用@JsonProperty注解
+JSON-->>API : 返回字段名对齐的JSON
+API-->>MR : 返回格式化后的病历数据
+MR->>MR : 验证字段名对齐
+MR->>MR : 更新界面显示
+User->>Browser : 点击离开/刷新
+Browser->>MR : beforeunload事件
+MR->>Browser : 显示离开确认提示
+```
+
+**图表来源**
+- [EMR病历内容查询接口.md:105-109](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md#L105-L109)
 
 #### 病历编辑防丢失保护机制
 
@@ -576,11 +761,11 @@ SuggestionBox --> AutoApply
 
 #### 获取病历记录列表
 
-- **路径**: `/api/medicalrecords/emr-by-patient`
+- **路径**: `/api/medicalrecords/emr-list`
 - **方法**: GET
 - **参数**: `patientId` (必需)
-- **响应**: EmrContent对象数组
-- **特点**: 自动过滤已删除记录，按时间降序排列
+- **响应**: EmrRecordListDTO对象数组
+- **特点**: 自动过滤已删除记录，按时间降序排列，字段名大小写对齐
 
 #### 新增病历记录
 
@@ -602,6 +787,28 @@ SuggestionBox --> AutoApply
 - **方法**: GET
 - **参数**: `patientId` (必需)
 - **响应**: 格式化后的病历记录字符串
+
+### EMR病历内容查询API
+
+#### 获取EMR病历记录列表
+
+- **路径**: `/api/medicalrecords/emr-list`
+- **方法**: GET
+- **参数**: `patientId` (必需)
+- **响应**: EmrRecordListDTO对象数组
+- **字段说明**:
+  - `id`: 小写字段名，对应后端ID字段
+  - `doc_TYPE_NAME`: 保持原有大小写，对应文档类型名称
+  - `doc_TITLE_TIME`: 保持原有大小写，对应文档标题时间
+
+#### 获取EMR病历记录详细内容
+
+- **路径**: `/api/medicalrecords/emr-content/{id}`
+- **方法**: GET
+- **参数**: `id` (路径参数)
+- **响应**: EmrRecordContentDTO对象
+- **字段说明**:
+  - `content`: 小写字段名，对应后端CONTENT字段
 
 ### 语音识别API
 
@@ -916,6 +1123,57 @@ VoiceData --> VoiceDB
 - **异常容错**：解析失败的草稿也会被自动清理
 - **内存优化**：定期清理过期数据，避免localStorage空间膨胀
 
+### EMR病历内容查询数据管理
+
+**新增功能**：系统现在提供完整的EMR病历内容查询数据管理机制。
+
+#### JSON字段名对齐策略
+
+系统实现了完整的JSON字段名大小写对齐策略：
+
+- **字段名映射**：
+  - 后端ID字段 → 前端id（小写）
+  - 后端CONTENT字段 → 前端content（小写）
+  - 文档类型字段保持原有大小写（doc_TYPE_NAME）
+  - 文档标题时间字段保持原有大小写（doc_TITLE_TIME）
+
+- **序列化配置**：使用@JsonProperty注解确保字段名对齐
+- **兼容性保证**：解决生产环境中的显示问题
+- **测试验证**：通过单元测试验证字段名对齐的正确性
+
+#### 数据同步机制
+
+系统支持EMR病历内容的实时同步：
+
+- **数据源**：EMR_CONTENT表，通过EmrSyncService从医院HIS系统（Oracle）同步
+- **同步策略**：增量同步，已存在的记录会更新，新记录会插入
+- **去重策略**：采用SOURCE_TABLE + SOURCE_ID组合作为去重标识
+- **软删除处理**：自动过滤DELETEMARK≠0的记录
+
+#### 数据库约束处理机制
+
+**新增功能**：系统现在提供完整的数据库约束处理机制，确保高并发场景下的数据一致性。
+
+**TOCTOU竞态条件修复**：
+- 使用`findAllBySourceTableAndSourceId()`方法替代`findBySourceTableAndSourceId()`
+- 在并发场景下，通过List查询支持重试机制
+- 避免查询到空结果后，其他线程先插入导致的唯一约束冲突
+
+**JPA批处理优化**：
+- 将`save()`替换为`saveAndFlush()`，避免JPA批处理延迟执行
+- 每条记录立即提交SQL，异常精准对应当前记录
+- 便于调试和重试操作
+
+**自动重试机制**：
+- UPDATE路径：约束冲突时清除Session后重新查询并更新
+- INSERT路径：约束冲突时降级为UPDATE操作
+- 使用`entityManager.clear()`确保持久化上下文一致性
+
+**数据库清理工具**：
+- 提供`handleIntegrityConstraintViolation()`方法处理约束冲突
+- 支持记录存在性检查、清理冲突记录、直接重试操作
+- 记录详细的错误日志和处理建议
+
 ## AI辅助功能
 
 系统集成了先进的AI辅助诊断功能，通过机器学习和自然语言处理技术为医生提供智能化的医疗决策支持。
@@ -1048,6 +1306,11 @@ TodoEngine-->>Doctor : 显示生成的待办事项
 | 待办事项 | 生成成功率 | <85% | 警告 |
 | 防丢失保护 | 草稿保存成功率 | <95% | 警告 |
 | 防丢失保护 | 草稿恢复成功率 | <90% | 警告 |
+| JSON字段对齐 | 字段名匹配率 | <100% | 危险 |
+| EMR病历查询 | 查询成功率 | <95% | 警告 |
+| EMR同步 | 并发冲突率 | >1% | 警告 |
+| 数据库约束 | 约束冲突率 | >0.1% | 警告 |
+| JPA批处理 | 批处理延迟 | >500ms | 警告 |
 
 #### 监控配置
 
@@ -1083,6 +1346,9 @@ ServiceCheck --> |缓存| Cache[Redis连接]
 ServiceCheck --> |语音识别| VoiceService[语音识别服务]
 ServiceCheck --> |待办事项| TodoService[待办事项服务]
 ServiceCheck --> |防丢失保护| DraftProtection[防丢失保护系统]
+ServiceCheck --> |JSON字段对齐| FieldAlignment[JSON字段对齐系统]
+ServiceCheck --> |EMR同步| EmrSync[EMR同步服务]
+ServiceCheck --> |数据库清理| DatabaseCleanup[数据库清理工具]
 MainServer --> AIService[AI模型服务]
 ExecServer --> Encryption[加密服务]
 Database --> DataSources[数据源检查]
@@ -1090,6 +1356,9 @@ Cache --> CacheOps[缓存操作检查]
 VoiceService --> VoiceEngine[语音引擎]
 TodoService --> TodoEngine[待办引擎]
 DraftProtection --> LocalStorage[localStorage检查]
+FieldAlignment --> JSONValidation[JSON验证]
+EmrSync --> ConstraintHandling[约束处理]
+DatabaseCleanup --> CleanupValidation[清理验证]
 AIService --> ModelStatus{模型状态}
 Encryption --> EncStatus{加密状态}
 DataSources --> DSStatus{数据源状态}
@@ -1104,6 +1373,12 @@ VEStatus --> OverallStatus
 TEStatus --> OverallStatus
 OverallStatus --> DraftStatus{防丢失状态}
 DraftStatus --> OverallStatus
+FieldAlignment --> JSONStatus{JSON状态}
+OverallStatus --> JSONStatus
+EmrSync --> ConstraintStatus{约束状态}
+OverallStatus --> ConstraintStatus
+DatabaseCleanup --> CleanupStatus{清理状态}
+OverallStatus --> CleanupStatus
 ```
 
 **图表来源**
@@ -1166,6 +1441,30 @@ DraftStatus --> OverallStatus
 | 标签页隐藏保护失效 | 标签页隐藏时未保存 | 检查visibilitychange事件监听，验证document.hidden状态，确认保存时机 |
 | 草稿清理异常 | 过期草稿未被清理 | 检查清理策略逻辑，验证时间计算准确性，确认异常处理机制 |
 | 保存状态指示器异常 | 状态标签显示不正确 | 检查状态更新逻辑，验证消息提示机制，确认UI更新时机 |
+
+#### JSON字段名对齐问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 字段名不匹配 | 前端无法读取数据 | 检查@JsonProperty注解配置，验证字段名映射关系 |
+| 大小写不一致 | 字段名大小写不符合预期 | 检查字段名大小写策略，确认小写字段名的使用 |
+| JSON序列化失败 | DTO对象序列化异常 | 检查DTO类的字段定义，验证Jackson注解的正确性 |
+| 前端显示异常 | 病历内容无法正确显示 | 检查前端数据绑定逻辑，验证字段名对齐的正确性 |
+| EMR病历查询失败 | EMR内容查询接口异常 | 检查EMR病历查询逻辑，验证字段名对齐和数据映射 |
+
+#### EMR病历内容同步问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 并发冲突 | UPDATE操作触发唯一约束冲突 | 检查saveAndFlush()使用，验证entityManager.clear()调用 |
+| TOCTOU竞态条件 | 查询后插入时触发冲突 | 检查findAllBySourceTableAndSourceId()使用，验证重试逻辑 |
+| JPA批处理延迟 | 批量操作异常定位困难 | 检查save() vs saveAndFlush()使用，确认异常堆栈准确性 |
+| 数据库约束冲突 | 约束冲突重试失败 | 检查DatabaseCleanupUtil使用，验证清理策略有效性 |
+| EMR同步性能问题 | 高并发场景下性能下降 | 检查索引使用，验证查询优化，确认连接池配置 |
 
 #### 前端构建系统问题
 
@@ -1254,20 +1553,56 @@ DraftStatus --> OverallStatus
    tail -f logs/main/localstorage-monitor.log
    ```
 
-7. **前端构建日志**:
+7. **JSON字段对齐日志**:
    ```bash
-   # 查看前端构建日志
-   cd med_ai_assistant_1.0_bs_vue
-   npm run serve
+   # 查看JSON序列化日志
+   tail -f logs/main/json-field-alignment.log
    
-   # 检查构建错误
-   npm run build
+   # 检查字段名对齐成功率
+   tail -f logs/main/json-field-alignment.log | grep "field_alignment"
    
-   # 清理缓存后重新安装
-   npm cache clean --force
-   rm -rf node_modules
-   npm install
+   # 检查EMR病历查询日志
+   tail -f logs/main/emr-content-query.log
    ```
+
+8. **EMR同步日志**:
+   ```bash
+   # 查看EMR同步日志
+   tail -f logs/main/emr-sync.log
+   
+   # 检查并发冲突率
+   tail -f logs/main/emr-sync.log | grep "constraint_conflict"
+   
+   # 检查重试成功率
+   tail -f logs/main/emr-sync.log | grep "retry_success"
+   ```
+
+9. **数据库约束处理日志**:
+   ```bash
+   # 查看数据库清理日志
+   tail -f logs/main/database-cleanup.log
+   
+   # 检查约束冲突处理成功率
+   tail -f logs/main/database-cleanup.log | grep "constraint_handled"
+   
+   # 检查JPA批处理性能
+   tail -f logs/main/jpa-batch.log | grep "batch_flush_time"
+   ```
+
+10. **前端构建日志**:
+    ```bash
+    # 查看前端构建日志
+    cd med_ai_assistant_1.0_bs_vue
+    npm run serve
+    
+    # 检查构建错误
+    npm run build
+    
+    # 清理缓存后重新安装
+    npm cache clean --force
+    rm -rf node_modules
+    npm install
+    ```
 
 ## 前端构建系统稳定性
 
@@ -1283,6 +1618,7 @@ HotReload[热重载]
 Proxy[代理配置]
 ESLint[ESLint检查]
 DraftProtection[防丢失保护]
+FieldAlignment[字段对齐检查]
 end
 subgraph "构建配置"
 VueCLI[Vue CLI配置]
@@ -1311,6 +1647,7 @@ NPM --> DevServer
 Dist --> Assets
 Assets --> IndexHTML
 DraftProtection --> LocalStorage
+FieldAlignment --> JSONValidation
 ```
 
 **图表来源**
@@ -1441,31 +1778,48 @@ FixLint --> RunLint
    - 新增hasUnsavedChanges()统一脏检查方法，区分新增和编辑状态
    - 为12个防丢失相关方法添加完整JSDoc注释
 
-2. **医学记录操作指南全面重构**
-   - 新增病历编辑防丢失功能详细说明和操作指南
+2. **EMR病历内容同步模块数据库约束处理能力增强**
+   - **新增TOCTOU竞态条件修复**：使用`findAllBySourceTableAndSourceId()`替代`findBySourceTableAndSourceId()`
+   - **新增JPA批处理优化**：将所有`save()`替换为`saveAndFlush()`，避免批处理延迟执行
+   - **新增自动重试机制**：约束冲突时自动重试，支持UPDATE和INSERT路径
+   - **新增数据库清理工具**：提供`handleIntegrityConstraintViolation()`方法处理约束冲突
+   - **新增并发安全保证**：使用`entityManager.clear()`确保持久化上下文一致性
+   - **新增性能监控指标**：监控并发冲突率、约束冲突率、批处理延迟等指标
+
+3. **EMR病历内容查询接口JSON字段名大小写对齐**
+   - 新增完整的JSON字段名大小写对齐机制，解决生产环境中的关键显示问题
+   - 实现EmrRecordListDTO和EmrRecordContentDTO的字段名对齐策略
+   - 使用@JsonProperty注解确保字段名与前端期望完全一致
+   - 修复生产环境下因JSON字段名大小写不匹配导致前端无法正确读取数据的问题
+   - 新增字段名对齐的详细技术实现说明和测试验证
+
+4. **医学记录操作指南全面重构**
+   - 新增EMR病历内容同步模块的数据库约束处理能力增强章节
    - 扩展操作按钮功能表格，包含新增的防丢失保护功能
    - 补充浏览器兼容性配置指南和网络环境要求
-   - 更新数据管理机制说明，增加localStorage使用说明
+   - 更新数据管理机制说明，增加localStorage使用说明和JSON字段名对齐说明
+   - 新增生产环境显示问题修复方案和解决方案
+   - 新增高并发场景下的数据同步可靠性保障说明
 
-3. **前端构建系统稳定性增强**
+5. **前端构建系统稳定性增强**
    - **修复package.json语法错误导致的开发服务器启动失败问题**
    - 优化构建配置，提升开发环境稳定性
    - 增强前端依赖管理，确保依赖版本兼容性
    - 改进热重载机制，提升开发体验
 
-4. **语音识别功能增强**
+6. **语音识别功能增强**
    - 修复生产环境语音识别上传413错误
    - 优化Nginx client_max_body_size配置
    - 同步后端multipart配置
    - 新增语音识别与LLM整理解耦功能
 
-5. **待办事项生成功能完善**
+7. **待办事项生成功能完善**
    - 新增根据日期和科室获取待办事项接口
    - 新增根据患者ID获取待办事项列表接口
    - 新增根据病历记录ID获取待办事项接口
    - 完善待办事项状态管理和跟踪功能
 
-6. **系统稳定性提升**
+8. **系统稳定性提升**
    - 修复Android平板上"AI辅助"子菜单点击后立即收起的问题
    - 新增触屏/桌面设备差异化交互
    - 优化浏览器兼容性配置
@@ -1607,7 +1961,7 @@ NotifyUsers --> End([发布完成])
 
 ## 总结
 
-医疗AI助手系统是一个功能完备、架构清晰、安全可靠的综合性医疗信息系统。通过智能化的AI辅助诊断、高效的病历管理、安全的数据加密、完善的监控告警机制、新增的病历编辑防丢失功能、以及经过修复的稳定前端构建系统，系统为医护人员提供了强大的技术支持。
+医疗AI助手系统是一个功能完备、架构清晰、安全可靠的综合性医疗信息系统。通过智能化的AI辅助诊断、高效的病历管理、安全的数据加密、完善的监控告警机制、新增的病历编辑防丢失功能、新增的EMR病历内容同步模块数据库约束处理能力、新增的JSON字段名大小写对齐机制、以及经过修复的稳定前端构建系统，系统为医护人员提供了强大的技术支持。
 
 ### 系统优势
 
@@ -1620,6 +1974,10 @@ NotifyUsers --> End([发布完成])
 7. **兼容性**: 支持多种设备和浏览器，提供良好的用户体验
 8. **稳定性**: 经过多次修复的前端构建系统，确保开发环境稳定可靠
 9. **数据安全**: 新增的病历编辑防丢失功能，确保用户数据不会因意外情况而丢失
+10. **显示稳定性**: 新增的JSON字段名大小写对齐机制，彻底解决生产环境中的关键显示问题
+11. **高并发可靠性**: 新增的EMR病历内容同步模块具备数据库约束处理能力和自动重试机制，显著提升高并发场景下的数据同步可靠性
+12. **数据库约束处理**: 新增的TOCTOU竞态条件修复、JPA批处理优化、自动重试机制，确保数据一致性
+13. **监控告警增强**: 新增的性能监控指标，包括并发冲突率、约束冲突率、批处理延迟等关键指标
 
 ### 未来发展
 
@@ -1631,5 +1989,9 @@ NotifyUsers --> End([发布完成])
 6. **智能化升级**: 持续引入新的AI技术，提升系统的智能化水平
 7. **构建系统优化**: 持续改进前端构建系统，提升开发效率和稳定性
 8. **数据保护增强**: 持续改进防丢失保护机制，提供更可靠的数据安全保障
+9. **显示稳定性提升**: 持续优化JSON字段名对齐机制，确保跨平台显示的一致性
+10. **EMR系统集成**: 持续优化EMR病历内容查询接口，提升与医院HIS系统的集成度
+11. **高并发处理能力**: 持续优化数据库约束处理和JPA批处理机制，提升系统在高并发场景下的稳定性
+12. **监控告警完善**: 持续完善监控告警机制，提供更全面的系统状态可视化
 
-通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的病历编辑防丢失功能证明了团队对用户数据安全和体验的高度重视，为后续的开发和维护奠定了坚实的基础。
+通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的病历编辑防丢失功能、JSON字段名对齐机制、EMR病历内容同步模块的数据库约束处理能力增强、以及高并发可靠性保障，证明了团队对用户数据安全和系统稳定性的高度重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在高并发场景下的数据同步可靠性方面取得了显著提升。

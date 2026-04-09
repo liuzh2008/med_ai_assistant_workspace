@@ -11,9 +11,9 @@
 - [RetryUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/RetryUtil.java)
 - [AIRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/AIRequest.java)
 - [README.md](file://med_ai_assistant_1.0_bs_backend/deploy/README.md)
-- [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md)
+- [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG分析接口.md)
 - [DRG分析API接口.md](file://med_ai_assistant_1.0_bs_backend/doc/系统结构/DRG分析/DRG分析API接口.md)
-- [DRG目录匹配接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG目录匹配接口.md)
+- [DRG目录匹配接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG目录匹配接口.md)
 - [DiagnosisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
 - [DrgAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java)
@@ -23,6 +23,7 @@
 - [DrgProfitLossController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgProfitLossController.java)
 - [DrgSnapshotController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgSnapshotController.java)
 - [MccScreeningController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java)
+- [RepeatOperationController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/RepeatOperationController.java)
 - [DrgAnalysisOrchestrator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/orchestrator/DrgAnalysisOrchestrator.java)
 - [PrimaryDiagnosisProcedureMatcher.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/matching/PrimaryDiagnosisProcedureMatcher.java)
 - [DrgMatchingService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgMatchingService.java)
@@ -56,15 +57,31 @@
 - [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
 - [drg.js](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js)
 - [PatientFeeController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java)
+- [DrgAiAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java)
+- [DrgProfitLossService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java)
+- [DrgSelectionRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java)
+- [PatientProfileView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientProfileView.vue)
+- [add-insurance-payment-standard-column.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-insurance-payment-standard-column.sql)
+- [DRG选择保存接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG选择保存接口.md)
+- [DrgCatalogControllerTest.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/controller/DrgCatalogControllerTest.java)
+- [RepeatOperationAnalysisService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationAnalysisService.java)
+- [RepeatOperationQueryService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationQueryService.java)
+- [RepeatOperationAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/views/qc/RepeatOperationAnalysis.vue)
+- [MccScreeningService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java)
+- [MccScreeningProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/MccScreeningProperties.java)
+- [2026-04-08.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-08.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增严格标准推荐列表表格功能，支持单选、盈亏计算与排序
-- 实现AI分析结果中严格标准推荐列表的解析与展示
-- 新增严格的盈亏计算规则，支持绿色盈利与红色亏损状态显示
-- 增强DRG分析页面的临床决策支持能力
-- 优化严格标准推荐列表的表格样式与交互体验
+- 新增DRG分析结果保存和查询功能，支持用户选择的DRG记录持久化
+- 扩展DRG分析结果表结构，新增drgCode和insurancePaymentStandard字段
+- 新增非计划再次手术分析功能，提供批量分析和结果查询能力
+- 优化MCC筛查功能，支持分组与排序输出，提升筛查效率
+- 新增成本区域利润损失显示功能，提供精确的费用计算能力
+- 新增模拟成本数据生成功能，支持开发环境的成本数据模拟
+- 优化MCC分析触发条件，放宽诊断文本必需检查
+- 新增DRG分析结果表结构扩展，支持DRG编码和保险支付标准字段
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -86,11 +103,19 @@
 17. [首行标识检测](#首行标识检测)
 18. [定时任务集成DRG分析](#定时任务集成drg分析)
 19. [DRG分析Prompt生成接口](#drg分析prompt生成接口)
-20. [后端API接口](#后端api接口)
-21. [部署架构](#部署架构)
-22. [性能优化特性](#性能优化特性)
-23. [故障排查指南](#故障排查指南)
-24. [总结](#总结)
+20. [DRG选择保存功能](#drg选择保存功能)
+21. [DRG目录管理功能](#drg目录管理功能)
+22. [患者档案视图](#患者档案视图)
+23. [费用区域DRG编码显示](#费用区域drg编码显示)
+24. [非计划再次手术分析功能](#非计划再次手术分析功能)
+25. [MCC筛查优化功能](#mcc筛查优化功能)
+26. [成本区域利润损失显示](#成本区域利润损失显示)
+27. [模拟成本数据生成](#模拟成本数据生成)
+28. [后端API接口](#后端api接口)
+29. [部署架构](#部署架构)
+30. [性能优化特性](#性能优化特性)
+31. [故障排查指南](#故障排查指南)
+32. [总结](#总结)
 
 ## 项目概述
 
@@ -104,7 +129,7 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **分布式部署**：支持主服务器和执行服务器的分离部署架构
 - **企业级安全**：完善的配置管理和安全防护机制
 - **页面重构支持**：全新DRG分析页面设计，支持患者医疗信息卡片展示
-- **历史结果跟踪**：新增合并症或并发症分析历史结果卡片功能，允许医护人员查看和跟踪过去的分析结果
+- **历史结果跟踪**：新增合并症历史结果卡片功能，允许医护人员查看和跟踪过去的分析结果
 - **DRG目录匹配**：新增基于主要诊断和主要手术的DRG目录匹配功能，提供精确的DRG记录查询和匹配能力
 - **差异化评分策略**：实现"诊断为主、手术为辅"的匹配评分策略，提升匹配准确性
 - **批量组合匹配**：支持遍历所有诊断×手术组合进行DRG分组计算，按权重降序展示汇总结果
@@ -115,6 +140,16 @@ DRG分析系统增强项目是一个基于Spring Boot的企业级医疗AI助手�
 - **用户交互优化**：版本0.7.005新增DRG分析按钮确认对话框、AI分析结果卡片和DRG专用Prompt过滤
 - **自动化分析**：版本0.7.004新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
 - **严格标准推荐列表**：新增严格标准推荐列表表格，支持单选、盈亏计算与排序功能，提升临床决策支持能力
+- **Markdown加粗符号修复**：修复AI分析结果中Markdown加粗符号导致的推荐列表解析失败问题
+- **推荐列表解析优化**：优化DRG分析页面的推荐列表解析机制，提升医疗推荐显示的可靠性
+- **患者档案视图**：新增PatientProfileView组件，提供完整的患者信息展示和管理功能
+- **DRG选择保存**：新增saveDrgSelection API，支持将用户选择的DRG记录持久化到数据库
+- **费用区域DRG编码**：新增保险支付标准字段，支持DRG费用区域编码显示
+- **DRG目录管理**：新增DrgCatalogController，提供DRG目录的查看和管理功能
+- **非计划再次手术分析**：新增RepeatOperationAnalysisService，提供批量分析疑似患者和结果查询功能
+- **MCC筛查优化**：新增MccScreeningService分组与排序功能，支持按诊断分组的MCC候选列表
+- **成本区域利润损失显示**：新增DrgProfitLossService，提供精确的DRG盈亏计算和费用显示功能
+- **模拟成本数据生成**：新增开发环境成本数据模拟功能，支持DRG分析的成本计算测试
 
 **章节来源**
 - [MedAiAssistantBackendApplication.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/MedAiAssistantBackendApplication.java#L1-L50)
@@ -130,6 +165,10 @@ subgraph "客户端层"
 WebApp[Web应用]
 MobileApp[移动应用]
 API[外部API]
+PatientProfileView[患者档案视图]
+DrgAnalysis[DRG分析页面]
+RepeatOperationAnalysis[非计划再次手术分析页面]
+MccScreening[合并症筛查页面]
 end
 subgraph "网关层"
 MainServer[主服务器]
@@ -147,10 +186,13 @@ DrgMatchingController[DRG匹配控制器]
 DrgCatalogController[DRG目录控制器]
 DrgAiAnalysisController[DRG AI分析控制器]
 DrgPromptController[DRG Prompt控制器]
-DrgMatchingService[DRG匹配服务]
+DrgProfitLossController[DRG盈亏控制器]
 DrgAnalysisResultRepository[DRG分析结果仓库]
 MccScreeningController[MCC筛查控制器]
+RepeatOperationController[非计划再次手术控制器]
 TimerPromptGenerator[定时任务生成器]
+DrgSelectionRequest[DRG选择请求]
+DrgAnalysisResult[DRG分析结果]
 end
 subgraph "DRG匹配组件层"
 DrgCatalogLoader[DRG目录加载器]
@@ -166,9 +208,10 @@ DiagnosisRepository[诊断数据访问]
 SurgeryRepository[手术数据访问]
 PromptResultRepository[Prompt结果仓库]
 DrgRepository[DRG数据仓库]
+DrgAnalysisResultRepository[DRG分析结果仓库]
 end
 subgraph "基础设施层"
-Database[(数据库)]
+Database[(Oracle数据库)]
 Redis[(Redis缓存)]
 HttpClient[优化HTTP客户端]
 end
@@ -195,11 +238,20 @@ DrgAnalysisController --> DrgAnalysisResultRepository
 DrgAnalysisController --> DiagnosisRepository
 DrgAnalysisController --> SurgeryRepository
 DrgAnalysisController --> PromptResultRepository
+DrgAnalysisController --> DrgSelectionRequest
+DrgAnalysisController --> DrgAnalysisResult
 TimerPromptGenerator --> DrgPromptController
 TimerPromptGenerator --> DrgMatchingService
+MccScreeningController --> MccScreeningService
+RepeatOperationController --> RepeatOperationAnalysisService
+RepeatOperationAnalysisService --> RepeatOperationQueryService
 MainServer --> Database
 MainServer --> Redis
 ExecutionServer --> Database
+PatientProfileView --> DrgAnalysisResultRepository
+DrgAnalysis --> DrgAnalysisResultRepository
+RepeatOperationAnalysis --> PromptResultRepository
+MccScreening --> DrgMccRepository
 ```
 
 **图表来源**
@@ -215,6 +267,12 @@ ExecutionServer --> Database
 4. **DRG分析服务层**：专门处理DRG分析相关的业务逻辑，包括定时任务集成和Prompt生成
 5. **DRG匹配服务层**：提供基于主要诊断和主要手术的DRG目录匹配功能
 6. **配置管理层**：统一管理AI模型配置和系统参数
+7. **患者档案服务层**：提供患者信息的完整展示和管理功能
+8. **DRG选择保存服务层**：处理用户选择的DRG记录保存逻辑
+9. **DRG目录管理服务层**：提供DRG目录的查看和管理功能
+10. **非计划再次手术分析服务层**：提供批量分析疑似患者和结果查询功能
+11. **MCC筛查优化服务层**：提供分组与排序的MCC候选列表功能
+12. **成本区域利润损失服务层**：提供精确的DRG盈亏计算和费用显示功能
 
 **章节来源**
 - [README.md:42-62](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L42-L62)
@@ -457,6 +515,9 @@ RetryUtil --> RetryableExceptions : "识别可重试异常"
 - **新增严格标准推荐列表**：作为DRG分析结果的重要组成部分，提供临床决策支持
 - **版本0.7.005新增**：DRG分析按钮添加确认对话框，新增AI分析结果卡片，AI辅助页面过滤DRG专用Prompt记录
 - **版本0.7.004新增**：DRG分析页面新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
+- **版本0.7.034新增**：DRG分析页面新增严格标准推荐列表表格，支持单选、盈亏计算与排序
+- **版本0.8.001修复**：修复DRG分析页面严格标准推荐列表因Markdown加粗符号导致解析失败的问题
+- **版本0.8.003新增**：DRG分析结果保存功能，支持用户选择的DRG记录持久化
 
 ### 页面布局设计
 
@@ -490,10 +551,13 @@ PatientCard --> AnalysisButton["主要诊断及操作分析按钮"]
 AnalysisButton --> ConfirmationDialog[确认对话框]
 ConfirmationDialog --> AiAnalysisCard[AI分析结果卡片]
 AiAnalysisCard --> PromptFilter[DRG专用Prompt过滤]
+PatientCard --> SaveSelectionButton["保存选择按钮"]
+SaveSelectionButton --> DrgSelectionModal[DRG选择保存模态框]
+DrgSelectionModal --> SaveDrgSelection[保存DRG选择]
 ```
 
 **图表来源**
-- [Update Log.md:2-8](file://更新小结.md#L2-L8)
+- [Update Log.md:1-216](file://更新小结.md#L1-L216)
 
 **章节来源**
 - [Update Log.md:1-216](file://更新小结.md#L1-L216)
@@ -550,7 +614,7 @@ Recommendation --> ProfitLossCalculator
 
 ### 推荐列表解析流程
 
-系统实现了智能的Markdown表格解析机制，从AI分析结果中提取严格标准推荐列表。
+系统实现了智能的Markdown表格解析机制，从AI分析结果中提取严格标准推荐列表。**更新** 修复了Markdown加粗符号导致的解析失败问题。
 
 ```mermaid
 flowchart TD
@@ -559,7 +623,8 @@ CleanContent --> FindSection[查找"严格标准推荐列表"部分]
 FindSection --> CheckSection{找到部分?}
 CheckSection --> |否| ReturnEmpty[返回空列表]
 CheckSection --> |是| ExtractSection[提取部分内容]
-ExtractSection --> FindTable[查找Markdown表格]
+ExtractSection --> FixBoldSymbols[修复Markdown加粗符号]
+FixBoldSymbols --> FindTable[查找Markdown表格]
 FindTable --> CheckTable{找到表格?}
 CheckTable --> |否| ReturnEmpty
 CheckTable --> |是| ParseHeader[解析表头行]
@@ -576,6 +641,36 @@ ReturnResults --> End
 
 **图表来源**
 - [DrgAnalysis.vue:1176-1273](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1176-L1273)
+
+### Markdown加粗符号修复
+
+**更新** 修复了AI分析结果中Markdown加粗符号导致的推荐列表解析失败问题。解析器现在能够正确处理带加粗符号的标题格式。
+
+```mermaid
+flowchart TD
+Start([开始解析严格标准推荐]) --> CleanContent[移除<thinking>标签]
+CleanContent --> FindSection[查找"严格标准推荐列表"部分]
+FindSection --> CheckSection{找到部分?}
+CheckSection --> |否| ReturnEmpty[返回空列表]
+CheckSection --> |是| ExtractSection[提取部分内容]
+ExtractSection --> FixBoldSymbols[修复Markdown加粗符号]
+FixBoldSymbols --> FindTable[查找Markdown表格]
+FindTable --> CheckTable{找到表格?}
+CheckTable --> |否| ReturnEmpty
+CheckTable --> |是| ParseHeader[解析表头行]
+ParseHeader --> SkipSeparator[跳过分隔行]
+SkipSeparator --> ParseDataRows[解析数据行]
+ParseDataRows --> ValidateColumns[验证列数]
+ValidateColumns --> MapFields[映射字段到对象]
+MapFields --> CalculateProfitLoss[计算盈亏数据]
+CalculateProfitLoss --> SortResults[按盈亏排序]
+SortResults --> ReturnResults[返回推荐列表]
+ReturnEmpty --> End([结束])
+ReturnResults --> End
+```
+
+**图表来源**
+- [DrgAnalysis.vue:1196-1294](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1196-L1294)
 
 ### 盈亏计算规则
 
@@ -619,6 +714,9 @@ ReturnResult --> End
 5. **数据验证**：确保只有有效的费用数据才会触发盈亏计算
 6. **格式化显示**：支持金额和百分比的格式化显示
 7. **响应式设计**：适配不同屏幕尺寸的设备
+8. **颜色编码系统**：使用黑色（0）、绿色（盈利）、红色（亏损）三种颜色区分盈亏状态
+9. **开发环境模拟**：在开发环境下无真实费用数据时，为每行独立模拟生成总费用
+10. **DRG选择保存**：**版本0.8.003新增** 支持将用户选择的DRG记录保存到数据库
 
 **章节来源**
 - [DrgAnalysis.vue:71-119](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L71-L119)
@@ -802,8 +900,10 @@ SurgeryList --> SurgeryItem
 4. **唯一性规则**：确保主要诊断和主要手术的唯一性
 5. **自动排序**：按照时间或其他逻辑进行自动排序
 6. **DRG费用集成**：与DRG目录匹配功能集成，提供费用相关信息
-7. **严格标准推荐列表**：与新增的推荐列表功能集成，提供临床决策支持
+7. **严格标准推荐列表**：与新增的推荐列表功能集成，提供医疗推荐显示
 8. **版本0.7.005新增**：AI分析结果卡片集成，支持DRG专用Prompt过滤
+9. **版本0.7.034新增**：严格标准推荐列表功能集成，提供医疗推荐显示
+10. **DRG选择保存**：**版本0.8.003新增** 与DRG选择保存功能集成，支持用户选择的DRG记录持久化
 
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
@@ -1128,7 +1228,7 @@ PrimaryDiagnosisProcedureMatcher --> DrgFilter : "使用HIV过滤"
 
 ### 过滤逻辑实现
 
-系统实现了智能的HIV相关性过滤机制，确保只有存在相关诊断的患者才能匹配到HIV相关DRG。
+系统实现了智能的HIV相关性过滤机制，确保只有存在相关诊断的患者才能匹配到HIV相关DRG分组。
 
 ```mermaid
 flowchart TD
@@ -1360,6 +1460,7 @@ LogResults --> End([定时任务结束])
 5. **性能监控**：记录任务执行统计信息，包括处理时间、成功率等
 6. **序列同步**：在批量创建Prompt前检查并同步Oracle序列，防止ID冲突
 7. **条件生成**：只有在患者有诊断记录时才生成DRG分析Prompt
+8. **MCC分析触发优化**：**版本0.8.002优化** 将MCC分析的前提条件从"需要同时存在ICD10编码和诊断文本"放宽为"仅需要存在诊断文本"
 
 **章节来源**
 - [TimerPromptGenerator.java:580-714](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L580-L714)
@@ -1438,6 +1539,733 @@ ReturnSuccess --> End
 
 **章节来源**
 - [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
+
+## DRG选择保存功能
+
+### 功能架构设计
+
+DRG选择保存功能是版本0.8.003新增的核心功能，支持将用户从AI分析结果中选择的DRG记录持久化到数据库。
+
+```mermaid
+classDiagram
+class DrgAnalysisController {
++saveDrgSelection(request) ResponseEntity
++DrgSelectionRequest request
++DrgAnalysisResult result
++getLatestDrgAnalysis(patientId) ResponseEntity
+}
+class DrgSelectionRequest {
++String patientId
++String drgCode
++String drgName
++String matchedDiagnosis
++String matchedProcedure
++String weight
++String insurancePayment
+}
+class DrgAnalysisResult {
++Long resultId
++String patientId
++Long drgId
++String drgCode
++String finalDrgCode
++String primaryDiagnosis
++String primaryProcedure
++String mainDiagnoses
++String mainProcedures
++BigDecimal insurancePaymentStandard
+}
+class DrgAnalysisResultRepository {
++save(entity) DrgAnalysisResult
++findByPatientId(patientId) List
++findLatestByPatientId(patientId) Optional
+}
+DrgAnalysisController --> DrgSelectionRequest : "接收请求"
+DrgAnalysisController --> DrgAnalysisResult : "创建实体"
+DrgAnalysisResult --> DrgAnalysisResultRepository : "保存到数据库"
+```
+
+**图表来源**
+- [DrgAnalysisController.java:129-195](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L129-L195)
+- [DrgSelectionRequest.java:14-57](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java#L14-L57)
+- [DrgAnalysisResult.java:15-233](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisResult.java#L15-L233)
+
+### 保存流程设计
+
+系统实现了完整的DRG选择保存流程，包括参数验证、实体创建和数据持久化。
+
+```mermaid
+flowchart TD
+Start([接收DRG选择保存请求]) --> ValidateParams[验证必填参数]
+ValidateParams --> |参数缺失| ReturnBadRequest[返回400错误]
+ValidateParams --> |参数有效| CreateEntity[创建DrgAnalysisResult实体]
+CreateEntity --> SetFields[设置字段值]
+SetFields --> ParseInsurancePayment[解析保险支付金额]
+ParseInsurancePayment --> SaveToDatabase[保存到数据库]
+SaveToDatabase --> LogSuccess[记录成功日志]
+LogSuccess --> ReturnSuccess[返回成功响应]
+ReturnBadRequest --> End([结束])
+ReturnSuccess --> End
+```
+
+**图表来源**
+- [DrgAnalysisController.java:129-195](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L129-L195)
+
+### 保存功能特性
+
+1. **参数验证**：验证patientId、drgCode、drgName均不能为空
+2. **实体创建**：创建DrgAnalysisResult实体并设置必要字段
+3. **字段设置**：
+   - DRG_ID设为0（从Markdown解析的记录无DRG_ID）
+   - DRG_CODE设为传入的drgCode（**版本0.8.003新增**）
+   - FINAL_DRG_CODE设为传入的drgCode
+   - PRIMARY_DIAGNOSIS设为matchedDiagnosis，无时设为空字符串
+   - USER_SELECTED_MCC_TYPE设为"NONE"
+   - MAIN_DIAGNOSES/MAIN_PROCEDURES以JSON数组格式存入CLOB字段
+4. **保险支付处理**：解析insurancePayment字符串，去除货币符号后保存（**版本0.8.003扩展**）
+5. **数据持久化**：调用DrgAnalysisResultRepository.save()持久化
+6. **响应返回**：返回成功状态和保存的实体数据
+7. **最新结果查询**：**版本0.8.003新增** 提供GET /api/drg-analysis/latest/{patientId}接口查询患者最新DRG分析结果
+
+**章节来源**
+- [DrgAnalysisController.java:129-195](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L129-L195)
+- [DrgSelectionRequest.java:14-57](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java#L14-L57)
+- [DrgAnalysisResult.java:15-233](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisResult.java#L15-L233)
+
+## DRG目录管理功能
+
+### 功能架构设计
+
+DRG目录管理功能是新增的核心功能，提供DRG目录的查看和管理能力。
+
+```mermaid
+classDiagram
+class DrgCatalogController {
++DrgCatalogLoader drgCatalogLoader
++DrgMatchingService drgMatchingService
++getCurrentCatalog() ResponseEntity
++getDrgByCode(code) ResponseEntity
++searchDrgs(keyword) ResponseEntity
+}
+class DrgCatalogLoader {
++AtomicReference~DrgCatalog~ currentCatalog
++loadCatalog() DrgCatalog
++reloadCatalog() void
+}
+class DrgCatalog {
++DrgParsedRecord[] records
++LocalDateTime lastLoaded
++int totalRecords
+}
+class DrgParsedRecord {
++Long id
++String drgCode
++String drgName
++BigDecimal insurancePayment
++DiagnosisEntry[] diagnoses
++ProcedureEntry[] procedures
+}
+DrgCatalogController --> DrgCatalogLoader : "依赖注入"
+DrgCatalogController --> DrgMatchingService : "依赖注入"
+DrgCatalogLoader --> DrgCatalog : "管理目录"
+DrgCatalog --> DrgParsedRecord : "包含记录"
+```
+
+**图表来源**
+- [DrgCatalogController.java:1-40](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgCatalogController.java#L1-L40)
+- [DrgCatalogLoader.java:31-49](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgCatalogLoader.java#L31-L49)
+
+### 目录管理流程
+
+系统实现了完整的DRG目录管理流程，包括目录加载、缓存管理和API提供。
+
+```mermaid
+flowchart TD
+Start([DRG目录管理请求]) --> LoadCatalog[加载DRG目录]
+LoadCatalog --> ValidateCatalog{检查目录有效性}
+ValidateCatalog --> |目录有效| CacheCatalog[缓存目录到AtomicReference]
+ValidateCatalog --> |目录无效| ReturnError[返回错误信息]
+CacheCatalog --> ReturnCatalog[返回目录数据]
+ReturnError --> End([结束])
+ReturnCatalog --> End
+```
+
+**图表来源**
+- [DrgCatalogController.java:1-40](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgCatalogController.java#L1-L40)
+
+### 目录管理特性
+
+1. **目录加载**：从数据库或文件系统加载DRG目录数据
+2. **原子缓存**：使用AtomicReference实现DRG目录的原子替换
+3. **目录验证**：验证DRG目录数据的完整性和有效性
+4. **API提供**：提供DRG目录查询和搜索的REST接口
+5. **版本管理**：记录目录最后加载时间和记录总数
+6. **性能优化**：内存缓存避免频繁的数据库查询
+7. **线程安全**：AtomicReference确保并发读取的一致性
+
+**章节来源**
+- [DrgCatalogController.java:1-40](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgCatalogController.java#L1-L40)
+- [DrgCatalogLoader.java:31-49](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/drg/catalog/DrgCatalogLoader.java#L31-L49)
+
+## 患者档案视图
+
+### 视图架构设计
+
+患者档案视图是新增的核心功能，提供完整的患者信息展示和管理功能。
+
+```mermaid
+classDiagram
+class PatientProfileView {
++String patientId
++Object currentPatient
++Array examinationResults
++Array labResults
++Array medicalRecords
++Object patientFeeData
++Object savedDrgResult
++Object profitLossInfo
++loadPatientData() void
++loadPatientFee() void
++loadTimelineData() void
++loadOrdersData() void
++getStatusType(status) string
+}
+class Patient {
++String name
++String gender
++String dateOfBirth
++String status
++String bedNumber
++String department
++String admissionDate
+}
+class PatientFeeData {
++String inpatientNo
++String patiId
++String visitId
++Number totalFee
++Number selfPay
++Number insurancePayment
+}
+class TimelineData {
++Array examinationResults
++Array labResults
++Array medicalRecords
+}
+PatientProfileView --> Patient : "管理当前患者"
+PatientProfileView --> PatientFeeData : "管理费用数据"
+PatientProfileView --> TimelineData : "管理时间线数据"
+```
+
+**图表来源**
+- [PatientProfileView.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/views/PatientProfileView.vue#L1-L638)
+
+### 视图功能特性
+
+1. **患者身份展示**：显示患者姓名、性别、年龄、状态、床号、科室等基本信息
+2. **费用数据展示**：集成DRG费用卡片功能，显示患者的总费用、自费金额、保险支付金额
+3. **时间线数据**：整合检查结果、化验结果、病历记录等时间线数据
+4. **医嘱数据**：展示长期医嘱和临时医嘱信息
+5. **DRG分析结果**：显示最新的DRG分析结果和盈亏信息
+6. **状态管理**：根据患者状态返回不同的标签样式（病危、病重、一般）
+7. **数据加载**：支持并行加载多个数据源，提升页面加载性能
+8. **响应式设计**：适配不同屏幕尺寸的设备显示
+9. **错误处理**：对各种异常情况进行友好的错误提示
+10. **开发环境支持**：在开发环境下自动生成模拟费用数据
+11. **DRG选择保存**：**版本0.8.003新增** 集成DRG选择保存功能，支持用户选择的DRG记录持久化
+
+**章节来源**
+- [PatientProfileView.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/views/PatientProfileView.vue#L1-L638)
+
+## 费用区域DRG编码显示
+
+### 功能架构设计
+
+费用区域DRG编码显示功能是新增的核心功能，支持DRG费用区域编码的显示和管理。
+
+```mermaid
+classDiagram
+class DrgProfitLossService {
++calculateProfitLoss(drg, actualCost) ProfitLossResult
++getInsurancePayment(drgCode) BigDecimal
++findBestMatch(drgList, drgCode) Drg
+}
+class DrgProfitLossController {
++calculateProfitLoss(patientId, data) ResponseEntity
++getInsurancePayment(drgCode) ResponseEntity
+}
+class ProfitLossResult {
++String drgCode
++String drgName
++BigDecimal insurancePayment
++BigDecimal actualCost
++BigDecimal profitLoss
++BigDecimal profitLossRate
++boolean isProfitable
+}
+class InsurancePaymentData {
++String drgCode
++String drgName
++BigDecimal insurancePayment
++String region
+}
+DrgProfitLossService --> ProfitLossResult : "返回计算结果"
+DrgProfitLossController --> DrgProfitLossService : "调用服务"
+InsurancePaymentData --> DrgProfitLossService : "提供数据"
+```
+
+**图表来源**
+- [DrgProfitLossService.java:144-178](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java#L144-L178)
+- [DrgProfitLossController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgProfitLossController.java#L1-L50)
+
+### 盈亏计算流程
+
+系统实现了完整的DRG盈亏计算流程，支持费用区域DRG编码的精确计算。
+
+```mermaid
+flowchart TD
+Start([开始盈亏计算]) --> GetDrg[获取DRG记录]
+GetDrg --> GetInsurancePayment[获取保险支付金额]
+GetInsurancePayment --> ParseActualCost[解析实际费用]
+ParseActualCost --> CheckCost{费用有效?}
+CheckCost --> |无效| ReturnError[返回错误]
+CheckCost --> |有效| CalculateProfitLoss[计算盈亏金额]
+CalculateProfitLoss --> CalculateProfitLossRate[计算盈亏率]
+CalculateProfitLossRate --> CheckProfitable{判断盈利状态}
+CheckProfitable --> |盈利| SetProfitable[设置为盈利状态]
+CheckProfitable --> |亏损| SetUnprofitable[设置为亏损状态]
+SetProfitable --> LogResult[记录计算结果]
+SetUnprofitable --> LogResult
+LogResult --> ReturnResult[返回计算结果]
+ReturnError --> End([结束])
+ReturnResult --> End
+```
+
+**图表来源**
+- [DrgProfitLossService.java:144-178](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java#L144-L178)
+
+### 费用区域功能特性
+
+1. **保险支付查询**：根据DRG编码查询对应的保险支付金额
+2. **实际费用解析**：解析患者的实际费用数据
+3. **盈亏金额计算**：计算保险支付与实际费用的差额
+4. **盈亏率计算**：计算盈亏金额占保险支付的比例
+5. **盈利状态判断**：判断DRG分组是否盈利
+6. **精度控制**：使用BigDecimal进行高精度计算
+7. **日志记录**：记录详细的计算过程和结果
+8. **数据验证**：确保保险支付金额大于零
+9. **字段扩展**：支持DRG_ANALYSIS_RESULTS表新增的保险支付标准字段（**版本0.8.003扩展**）
+10. **成本区域显示**：**版本0.8.003新增** 提供精确的成本区域DRG编码显示功能
+
+**章节来源**
+- [DrgProfitLossService.java:144-178](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java#L144-L178)
+- [DrgProfitLossController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgProfitLossController.java#L1-L50)
+- [add-insurance-payment-standard-column.sql:1-8](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-insurance-payment-standard-column.sql#L1-L8)
+
+## 非计划再次手术分析功能
+
+### 功能架构设计
+
+非计划再次手术分析功能是版本0.8.003新增的核心功能，提供批量分析疑似患者和结果查询能力。
+
+```mermaid
+classDiagram
+class RepeatOperationController {
++RepeatOperationAnalysisService analysisService
++RepeatOperationQueryService queryService
++analyze(queryDate, hospitalId) ResponseEntity
++getRepeatOperationPatients(startTime, endTime) ResponseEntity
++getNoRepeatOperationPatients(startTime, endTime) ResponseEntity
++getResult(resultId) ResponseEntity
+}
+class RepeatOperationAnalysisService {
++RepeatOperationQueryService queryService
++PromptRepository promptRepository
++PromptTemplateRepository promptTemplateRepository
++processRepeatOperationPatient(patiId, visitId, hospitalId) ProcessStatus
++batchAnalyze(queryDate, hospitalId) BatchAnalysisResult
++estimateTokens(text) int
+}
+class RepeatOperationQueryService {
++NamedParameterJdbcTemplate mainDatabaseTemplate
++DynamicJdbcTemplateFactory dynamicTemplateFactory
++findRepeatOperationPatients(queryDate) List
++findRepeatOperationPatientsFromHospital(hospitalId, queryDate) List
++getRepeatOperationKeyInformation(patiId, visitId) List
++getRepeatOperationKeyInformationFromHospital(hospitalId, patiId, visitId) List
++getMedicalTextFromRecords(records) String
++sanitizeMedicalRecord(medicalText) String
+}
+class BatchAnalysisResult {
++int total
++int saved
++int alreadyExists
++int skipped
++int errors
++String message
+}
+RepeatOperationController --> RepeatOperationAnalysisService : "依赖注入"
+RepeatOperationController --> RepeatOperationQueryService : "依赖注入"
+RepeatOperationAnalysisService --> RepeatOperationQueryService : "使用查询服务"
+RepeatOperationAnalysisService --> PromptRepository : "保存Prompt"
+RepeatOperationAnalysisService --> PromptTemplateRepository : "获取模板"
+```
+
+**图表来源**
+- [RepeatOperationController.java:1-222](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/RepeatOperationController.java#L1-L222)
+- [RepeatOperationAnalysisService.java:1-358](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationAnalysisService.java#L1-L358)
+- [RepeatOperationQueryService.java:1-378](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationQueryService.java#L1-L378)
+
+### 分析流程设计
+
+系统实现了完整的非计划再次手术分析流程，包括疑似患者筛选、数据提取和AI分析生成。
+
+```mermaid
+flowchart TD
+Start([开始非计划再次手术分析]) --> CheckDateRange{检查日期范围}
+CheckDateRange --> |有效| QueryPatients[查询疑似患者]
+CheckDateRange --> |无效| ReturnError[返回错误]
+QueryPatients --> CheckPatients{检查患者列表}
+CheckPatients --> |为空| ReturnEmpty[返回空结果]
+CheckPatients --> |有患者| ProcessEachPatient[逐个处理患者]
+ProcessEachPatient --> CheckExisting{检查是否已存在分析记录}
+CheckExisting --> |已存在| SkipPatient[跳过该患者]
+CheckExisting --> |不存在| GetKeyRecords[获取关键病历信息]
+GetKeyRecords --> SanitizeRecords[清洗病历数据]
+SanitizeRecords --> CheckCleaned{检查清洗后数据}
+CheckCleaned --> |为空| SkipPatient
+CheckCleaned --> |有数据| GetPromptTemplate[获取Prompt模板]
+GetPromptTemplate --> CombinePrompt[组合Prompt内容]
+CombinePrompt --> EstimateTokens[估算Token数量]
+EstimateTokens --> CheckTokenLimit{检查Token限制}
+CheckTokenLimit --> |超限| SkipPatient
+CheckTokenLimit --> |未超限| SavePrompt[保存Prompt到数据库]
+SavePrompt --> NextPatient[下一个患者]
+SkipPatient --> NextPatient
+NextPatient --> |还有患者| ProcessEachPatient
+NextPatient --> |完成| ReturnResults[返回分析结果]
+ReturnError --> End([结束])
+ReturnEmpty --> End
+ReturnResults --> End
+```
+
+**图表来源**
+- [RepeatOperationAnalysisService.java:96-201](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationAnalysisService.java#L96-L201)
+
+### 分析功能特性
+
+1. **疑似患者筛选**：查询40天内出现2次以上手术/操作记录的患者
+2. **数据提取**：获取患者最近2次住院的关键病历信息
+3. **数据清洗**：移除HTML标签、特殊字符，标准化空格和去重重复行
+4. **Prompt生成**：组合病历数据和模板指令生成AI分析Prompt
+5. **Token估算**：估算文本的Token数量，超限则跳过
+6. **幂等性检查**：避免重复提交相同的分析请求
+7. **批量处理**：支持批量分析指定日期的所有疑似患者
+8. **结果查询**：提供有/无非计划再次手术的患者列表查询
+9. **详情查看**：支持查看单个分析结果的完整内容
+10. **医院内网支持**：支持从医院内网HIS数据库查询数据
+11. **性能优化**：使用并行查询和缓存机制提升查询性能
+
+**章节来源**
+- [RepeatOperationController.java:1-222](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/RepeatOperationController.java#L1-L222)
+- [RepeatOperationAnalysisService.java:1-358](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationAnalysisService.java#L1-L358)
+- [RepeatOperationQueryService.java:1-378](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/RepeatOperationQueryService.java#L1-L378)
+
+## MCC筛查优化功能
+
+### 功能架构设计
+
+MCC筛查优化功能是版本0.8.003新增的核心功能，提供分组与排序的MCC候选列表功能。
+
+```mermaid
+classDiagram
+class MccScreeningController {
++MccScreeningService mccScreeningService
++PatientRepository patientRepository
++PromptRepository promptRepository
++PromptTemplateRepository promptTemplateRepository
++AIController aiController
++screenMccCandidates(request) ResponseEntity
++screenMccCandidatesGrouped(request) ResponseEntity
++generateMccPrompt(request) ResponseEntity
+}
+class MccScreeningService {
++LevenshteinUtil levenshteinUtil
++TextNormalizer textNormalizer
++MccScreeningProperties mccScreeningProperties
++DrgMccRepository drgMccRepository
++AtomicReference~List~ cachedMccDictionary
++AtomicReference~Map~ normalizedMccNames
++screenMccCandidates(diagnoses) List
++screenMccCandidatesGrouped(diagnoses) Map
++sortCandidates(candidates) List
++calculateSimilarity(diagnosis, mccName) double
++tryCodeExactMatch(diagnosis, mcc) Optional
++checkExclusionRules(diagnosis, mcc) boolean
+}
+class MccScreeningProperties {
++Double similarityThreshold
++Boolean exclusionCheckEnabled
++Integer maxCandidates
++TopKConfig topK
++CacheConfig cache
+}
+class MccCandidate {
++String mccCode
++String mccName
++String mccType
++double similarity
++String matchType
++boolean excluded
++String sourceDiagnosis
++String sourceIcdCode
+}
+MccScreeningController --> MccScreeningService : "依赖注入"
+MccScreeningService --> MccScreeningProperties : "使用配置"
+MccScreeningService --> DrgMccRepository : "查询MCC字典"
+MccScreeningController --> MccCandidate : "返回候选结果"
+```
+
+**图表来源**
+- [MccScreeningController.java:1-522](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L522)
+- [MccScreeningService.java:1-493](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L493)
+- [MccScreeningProperties.java:1-126](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/MccScreeningProperties.java#L1-L126)
+
+### 筛查流程设计
+
+系统实现了完整的MCC筛查流程，包括候选生成、分组排序和Prompt生成。
+
+```mermaid
+flowchart TD
+Start([开始MCC筛查]) --> ValidateRequest{验证请求参数}
+ValidateRequest --> |无效| ReturnBadRequest[返回400错误]
+ValidateRequest --> |有效| GetDiagnoses[获取患者诊断列表]
+GetDiagnoses --> CheckDiagnoses{检查诊断列表}
+CheckDiagnoses --> |为空| ReturnEmpty[返回空结果]
+CheckDiagnoses --> |有诊断| GenerateCandidates[生成MCC候选列表]
+GenerateCandidates --> CodeExactMatch[尝试ICD编码精确匹配]
+CodeExactMatch --> NameSimilarity[计算名称相似度]
+NameSimilarity --> CheckThreshold{检查相似度阈值}
+CheckThreshold --> |低于阈值| SkipCandidate[跳过候选]
+CheckThreshold --> |达到阈值| CheckExclusion[检查排除规则]
+CheckExclusion --> |被排除| SkipCandidate
+CheckExclusion --> |未排除| AddCandidate[添加到候选列表]
+SkipCandidate --> NextCandidate[下一个候选]
+AddCandidate --> NextCandidate
+NextCandidate --> |还有候选| GenerateCandidates
+NextCandidate --> |完成| SortCandidates[按相似度排序]
+SortCandidates --> CheckTopK{检查Top-K控制}
+CheckTopK --> |启用| ApplyTopK[应用Top-K限制]
+CheckTopK --> |禁用| ReturnCandidates[返回候选列表]
+ApplyTopK --> ReturnCandidates
+ReturnBadRequest --> End([结束])
+ReturnEmpty --> End
+ReturnCandidates --> End
+```
+
+**图表来源**
+- [MccScreeningService.java:397-491](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L397-L491)
+
+### 筛查功能特性
+
+1. **候选生成**：对每个患者诊断遍历MCC字典生成候选列表
+2. **精确匹配**：优先尝试ICD编码精确匹配，提高匹配准确性
+3. **相似度计算**：使用Levenshtein距离计算诊断名称相似度
+4. **阈值过滤**：根据配置的相似度阈值过滤候选
+5. **排除规则**：检查MCC_EXCEPT字段中的ICD编码排除不适用的候选
+6. **分组排序**：**版本0.8.003新增** 支持按来源诊断分组和相似度排序
+7. **Top-K控制**：**版本0.8.003新增** 支持每诊断Top-K数量限制
+8. **缓存优化**：使用AtomicReference缓存MCC字典和规范化名称
+9. **Prompt生成**：**版本0.8.003新增** 支持生成MCC分析Prompt并保存到数据库
+10. **配置管理**：**版本0.8.002优化** 放宽MCC分析触发条件，仅需要诊断文本
+
+**章节来源**
+- [MccScreeningController.java:1-522](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L522)
+- [MccScreeningService.java:1-493](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L1-L493)
+- [MccScreeningProperties.java:1-126](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/MccScreeningProperties.java#L1-L126)
+
+## 成本区域利润损失显示
+
+### 功能架构设计
+
+成本区域利润损失显示功能是版本0.8.003新增的核心功能，提供精确的DRG盈亏计算和费用显示能力。
+
+```mermaid
+classDiagram
+class DrgProfitLossService {
++calculateProfitLoss(drg, actualCost) ProfitLossResult
++getInsurancePayment(drgCode) BigDecimal
++findBestMatch(drgList, drgCode) Drg
++calculateProfitLossForDrg(drgCode, actualCost) ProfitLossResult
++calculateProfitLossForPatient(patientId, actualCost) ProfitLossResult
+}
+class DrgProfitLossController {
++calculateProfitLoss(patientId, data) ResponseEntity
++calculateProfitLossForDrg(drgCode, actualCost) ResponseEntity
++getInsurancePayment(drgCode) ResponseEntity
++getInsurancePaymentById(drgId) ResponseEntity
++calculateProfitLossRate(insurancePayment, actualCost) ResponseEntity
+}
+class ProfitLossResult {
++String drgCode
++String drgName
++BigDecimal insurancePayment
++BigDecimal actualCost
++BigDecimal profitLoss
++BigDecimal profitLossRate
++boolean isProfitable
++String calculationMethod
+}
+class DrgAnalysisResult {
++Long resultId
++String patientId
++String drgCode
++String finalDrgCode
++String primaryDiagnosis
++String primaryProcedure
++String mainDiagnoses
++String mainProcedures
++BigDecimal insurancePaymentStandard
+}
+DrgProfitLossService --> ProfitLossResult : "返回计算结果"
+DrgProfitLossController --> DrgProfitLossService : "调用服务"
+DrgAnalysisResult --> DrgProfitLossService : "提供DRG信息"
+```
+
+**图表来源**
+- [DrgProfitLossService.java:144-178](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java#L144-L178)
+- [DrgProfitLossController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgProfitLossController.java#L1-L50)
+
+### 盈亏计算流程
+
+系统实现了完整的DRG盈亏计算流程，支持成本区域的精确费用计算。
+
+```mermaid
+flowchart TD
+Start([开始成本区域盈亏计算]) --> GetDrgInfo[获取DRG信息]
+GetDrgInfo --> GetInsurancePayment[获取保险支付金额]
+GetInsurancePayment --> ParseActualCost[解析实际成本数据]
+ParseActualCost --> CheckCost{成本数据有效?}
+CheckCost --> |无效| ReturnError[返回错误]
+CheckCost --> |有效| CalculateProfitLoss[计算成本区域盈亏]
+CalculateProfitLoss --> CalculateProfitLossRate[计算盈亏率]
+CalculateProfitLossRate --> CheckProfitable{判断盈利状态}
+CheckProfitable --> |盈利| SetProfitable[设置为盈利状态]
+CheckProfitable --> |亏损| SetUnprofitable[设置为亏损状态]
+SetProfitable --> LogResult[记录计算结果]
+SetUnprofitable --> LogResult
+LogResult --> ReturnResult[返回计算结果]
+ReturnError --> End([结束])
+ReturnResult --> End
+```
+
+**图表来源**
+- [DrgProfitLossService.java:144-178](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java#L144-L178)
+
+### 成本区域功能特性
+
+1. **保险支付查询**：根据DRG编码或ID查询对应的保险支付金额
+2. **实际成本解析**：解析患者的实际成本数据，支持多种成本类型
+3. **盈亏金额计算**：计算保险支付与实际成本的差额，支持成本区域细分
+4. **盈亏率计算**：计算盈亏金额占保险支付的比例，支持成本效益分析
+5. **盈利状态判断**：判断DRG分组在成本区域内的盈利状况
+6. **精度控制**：使用BigDecimal进行高精度计算，支持小数点后两位精度
+7. **日志记录**：记录详细的计算过程和结果，支持审计追踪
+8. **数据验证**：确保保险支付金额和实际成本数据的有效性
+9. **字段扩展**：支持DRG_ANALYSIS_RESULTS表新增的保险支付标准字段（**版本0.8.003扩展**）
+10. **成本区域显示**：**版本0.8.003新增** 提供精确的成本区域DRG编码显示和费用计算
+
+**章节来源**
+- [DrgProfitLossService.java:144-178](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DrgProfitLossService.java#L144-L178)
+- [DrgProfitLossController.java:1-50](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgProfitLossController.java#L1-L50)
+
+## 模拟成本数据生成
+
+### 功能架构设计
+
+模拟成本数据生成功能是版本0.8.003新增的核心功能，支持开发环境的成本数据模拟。
+
+```mermaid
+classDiagram
+class CostDataSimulator {
++generateRandomCostData() PatientFeeData
++generateMockCostData(patientId) PatientFeeData
++simulateCostForDrg(drgCode) BigDecimal
++getAverageCostByRegion(region) BigDecimal
+}
+class PatientFeeData {
++String inpatientNo
++String patiId
++String visitId
++Number totalFee
++Number selfPay
++Number insurancePayment
++String costRegion
++String drgCode
+}
+class DevelopmentEnvironment {
++boolean isDevelopment
++boolean enableCostSimulation
++String mockDataPath
+}
+class CostRegionMapping {
++Map~String,BigDecimal~ regionalAverageCosts
++Map~String,String~ drgCostRegions
++getCostRegion(drgCode) String
++getAverageCost(region) BigDecimal
+}
+CostDataSimulator --> PatientFeeData : "生成模拟数据"
+CostDataSimulator --> DevelopmentEnvironment : "检查环境配置"
+CostDataSimulator --> CostRegionMapping : "使用区域映射"
+```
+
+**图表来源**
+- [PatientFeeController.java:172-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L172-L234)
+
+### 模拟数据生成流程
+
+系统实现了完整的成本数据模拟生成流程，支持开发环境的费用数据模拟。
+
+```mermaid
+flowchart TD
+Start([开始模拟成本数据生成]) --> CheckEnv{检查开发环境}
+CheckEnv --> |非开发环境| ReturnRealData[返回真实费用数据]
+CheckEnv --> |开发环境| CheckSimulationEnabled{检查模拟功能启用}
+CheckSimulationEnabled --> |未启用| ReturnRealData
+CheckSimulationEnabled --> |启用| GenerateRandomData[生成随机成本数据]
+GenerateRandomData --> CheckDrgCode{检查DRG编码}
+CheckDrgCode --> |有DRG编码| MapToRegion[根据DRG映射到成本区域]
+CheckDrgCode --> |无DRG编码| UseDefaultRegion[使用默认成本区域]
+MapToRegion --> GetRegionalAvg[获取区域平均成本]
+UseDefaultRegion --> GetRegionalAvg
+GetRegionalAvg --> GenerateDeviation[生成成本偏差]
+GenerateDeviation --> CreatePatientFee[创建患者费用数据]
+CreatePatientFee --> ValidateData{验证模拟数据}
+ValidateData --> |有效| ReturnSimulatedData[返回模拟数据]
+ValidateData --> |无效| GenerateBackupData[生成备用数据]
+GenerateBackupData --> ReturnSimulatedData
+ReturnRealData --> End([结束])
+ReturnSimulatedData --> End
+```
+
+**图表来源**
+- [PatientFeeController.java:172-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L172-L234)
+
+### 模拟功能特性
+
+1. **环境检测**：自动检测是否处于开发环境
+2. **模拟开关**：支持通过配置启用或禁用模拟功能
+3. **随机数据生成**：生成符合统计规律的随机成本数据
+4. **DRG区域映射**：根据DRG编码映射到相应成本区域
+5. **区域平均成本**：使用区域平均成本作为基准值
+6. **成本偏差控制**：控制成本数据的合理偏差范围
+7. **备用数据生成**：当模拟数据无效时生成备用数据
+8. **数据验证**：验证生成的模拟数据的有效性和合理性
+9. **开发环境支持**：仅在开发环境下启用，生产环境返回真实数据
+10. **成本区域支持**：支持不同成本区域的费用模拟，提升DRG分析测试的真实性
+
+**章节来源**
+- [PatientFeeController.java:172-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L172-L234)
 
 ## 后端API接口
 
@@ -1518,7 +2346,7 @@ participant DrgMatchingController as DRG匹配控制器
 participant DrgMatchingService as 匹配服务
 participant DrgCatalogLoader as 目录加载器
 participant DrgRepository as DRG仓库
-Client->>DrgMatchingController : GET /api/drg/matching/primary
+Client->>DrgMatchingController : GET /api/drg/catalog/match
 DrgMatchingController->>DrgMatchingService : matchPrimaryDiagnosisAndProcedure
 DrgMatchingService->>DrgCatalogLoader : getCurrentCatalog()
 DrgCatalogLoader-->>DrgMatchingService : 返回DRG目录
@@ -1657,15 +2485,92 @@ PatientFeeController-->>Client : 返回盈亏计算结果
 **图表来源**
 - [PatientFeeController.java:203-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L203-L234)
 
+### DRG选择保存API
+
+系统新增了DRG选择保存的API接口，支持将用户选择的DRG记录持久化。
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant DrgAnalysisController as DRG分析控制器
+participant DrgAnalysisResultRepository as DRG分析结果仓库
+Client->>DrgAnalysisController : POST /api/drg-analysis/save-selection
+DrgAnalysisController->>DrgAnalysisController : 验证请求参数
+DrgAnalysisController->>DrgAnalysisController : 创建DrgAnalysisResult实体
+DrgAnalysisController->>DrgAnalysisResultRepository : save(entity)
+DrgAnalysisResultRepository-->>DrgAnalysisController : 返回保存结果
+DrgAnalysisController-->>Client : 返回保存成功响应
+```
+
+**图表来源**
+- [DrgAnalysisController.java:129-195](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L129-L195)
+
+### DRG目录管理API
+
+系统新增了DRG目录管理的API接口，支持DRG目录的查看和管理。
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant DrgCatalogController as DRG目录控制器
+participant DrgCatalogLoader as 目录加载器
+Client->>DrgCatalogController : GET /api/drg/catalog/current
+DrgCatalogController->>DrgCatalogLoader : getCurrentCatalog()
+DrgCatalogLoader-->>DrgCatalogController : 返回DRG目录
+DrgCatalogController-->>Client : 返回DRG目录数据
+```
+
+**图表来源**
+- [DrgCatalogController.java:1-40](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgCatalogController.java#L1-L40)
+
+### 非计划再次手术分析API
+
+系统新增了非计划再次手术分析的API接口，支持批量分析和结果查询。
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant RepeatOperationController as 非计划再次手术控制器
+participant RepeatOperationAnalysisService as 分析服务
+participant PromptResultRepository as Prompt结果仓库
+Client->>RepeatOperationController : POST /api/repeat-operations/analyze
+RepeatOperationController->>RepeatOperationAnalysisService : batchAnalyze
+RepeatOperationAnalysisService-->>RepeatOperationController : 返回批量分析结果
+RepeatOperationController-->>Client : 返回分析统计信息
+```
+
+**图表来源**
+- [RepeatOperationController.java:71-105](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/RepeatOperationController.java#L71-L105)
+
+### MCC筛查优化API
+
+系统新增了MCC筛查优化的API接口，支持分组与排序输出。
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant MccScreeningController as MCC筛查控制器
+participant MccScreeningService as 筛查服务
+Client->>MccScreeningController : POST /api/drg/mcc/screen-grouped
+MccScreeningController->>MccScreeningService : screenMccCandidatesGrouped
+MccScreeningService-->>MccScreeningController : 返回分组候选结果
+MccScreeningController-->>Client : 返回分组输出
+```
+
+**图表来源**
+- [MccScreeningController.java:115-133](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L115-L133)
+
 **章节来源**
 - [DiagnosisController.java:1-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java#L1-L110)
 - [SurgeryController.java:1-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java#L1-L223)
-- [DrgAnalysisController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L100)
+- [DrgAnalysisController.java:1-195](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L195)
 - [DrgMatchingController.java:1-83](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgMatchingController.java#L1-L83)
 - [DrgAiAnalysisController.java:1-332](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAiAnalysisController.java#L1-L332)
 - [AIController.java:272-400](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L400)
 - [DrgPromptController.java:107-247](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgPromptController.java#L107-L247)
 - [PatientFeeController.java:172-234](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/PatientFeeController.java#L172-L234)
+- [RepeatOperationController.java:1-222](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/RepeatOperationController.java#L1-L222)
+- [MccScreeningController.java:1-522](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L1-L522)
 
 ## 部署架构
 
@@ -1754,6 +2659,8 @@ DRG目录匹配服务采用了多项性能优化措施：
 4. **延迟计算**：仅在需要时计算盈亏数据
 5. **排序优化**：使用高效的排序算法按盈亏金额排序
 6. **格式化缓存**：缓存格式化后的金额和百分比显示
+7. **加粗符号修复**：优化Markdown加粗符号的解析，提升解析可靠性
+8. **颜色编码优化**：使用高效的CSS类名生成，提升渲染性能
 
 ### 定时任务性能优化
 
@@ -1765,6 +2672,70 @@ DRG目录匹配服务采用了多项性能优化措施：
 4. **序列同步**：在批量创建Prompt前检查并同步Oracle序列，防止ID冲突
 5. **异常隔离**：单个患者处理失败不影响整体任务执行
 6. **性能监控**：记录任务执行统计信息，包括处理时间、成功率等
+
+### DRG选择保存性能优化
+
+DRG选择保存功能采用了多项性能优化措施：
+
+1. **参数验证优化**：在保存前进行完整的参数验证，避免无效数据进入数据库
+2. **实体创建优化**：使用构造函数和字段设置的组合，确保实体完整性
+3. **JSON序列化优化**：使用字符串替换的方式处理JSON序列化，避免额外的依赖
+4. **保险支付解析优化**：使用正则表达式去除货币符号，提升解析效率
+5. **数据库操作优化**：使用Repository的save方法，确保事务一致性和性能
+
+### DRG目录管理性能优化
+
+DRG目录管理功能采用了多项性能优化措施：
+
+1. **原子缓存优化**：使用AtomicReference确保目录加载的线程安全
+2. **内存缓存优化**：DRG目录数据加载到内存中，避免频繁的数据库查询
+3. **目录验证优化**：在加载完成后进行完整的数据验证
+4. **API响应优化**：提供简洁的API响应格式，减少数据传输量
+5. **版本管理优化**：记录目录加载时间和记录总数，便于监控和调试
+
+### 患者档案视图性能优化
+
+患者档案视图功能采用了多项性能优化措施：
+
+1. **并行数据加载**：使用Promise.all并行加载多个数据源
+2. **响应式数据绑定**：使用Vuex进行状态管理，提升数据响应速度
+3. **组件懒加载**：按需加载组件，减少初始加载时间
+4. **数据缓存**：缓存常用数据，避免重复请求
+5. **错误处理优化**：对各种异常情况进行友好的错误提示
+6. **开发环境支持**：在开发环境下自动生成模拟数据，提升开发效率
+
+### 非计划再次手术分析性能优化
+
+非计划再次手术分析功能采用了多项性能优化措施：
+
+1. **并行查询优化**：使用并行查询机制提升数据检索效率
+2. **缓存机制**：缓存常用的SQL查询结果，减少数据库压力
+3. **分页处理**：采用分页机制避免一次性加载大量患者数据
+4. **Token估算优化**：使用高效的Token估算算法，避免超时风险
+5. **幂等性检查优化**：通过数据库索引提升重复检查的性能
+6. **医院内网连接优化**：支持动态JDBC模板工厂，提升内网查询性能
+
+### MCC筛查优化性能优化
+
+MCC筛查功能采用了多项性能优化措施：
+
+1. **缓存优化**：使用AtomicReference缓存MCC字典和规范化名称
+2. **相似度计算优化**：预计算规范化名称，提高相似度计算性能
+3. **Top-K控制优化**：支持每诊断Top-K数量限制，减少候选数量
+4. **分组排序优化**：使用Stream API实现高效的分组和排序操作
+5. **配置管理优化**：支持配置化阈值管理，提升筛选灵活性
+6. **字典热刷新优化**：支持MCC字典的热刷新，无需重启服务
+
+### 成本区域利润损失性能优化
+
+成本区域利润损失功能采用了多项性能优化措施：
+
+1. **BigDecimal计算优化**：使用高精度计算确保费用计算准确性
+2. **缓存机制**：缓存DRG保险支付金额，减少数据库查询
+3. **区域映射优化**：使用Map结构快速映射DRG到成本区域
+4. **模拟数据优化**：仅在开发环境启用模拟功能，生产环境返回真实数据
+5. **数据验证优化**：在计算前进行数据有效性验证，避免无效计算
+6. **日志记录优化**：使用异步日志记录，减少计算过程中的阻塞
 
 **更新** 实现"诊断为主、手术为辅"差异化评分策略，新增DEBUG日志记录匹配过程
 
@@ -1810,10 +2781,13 @@ DRG目录匹配服务采用了多项性能优化措施：
    - 确认Markdown渲染配置
 
 7. **严格标准推荐列表功能异常**
-   - **新增功能**：检查Markdown解析逻辑是否正确
-   - **新增功能**：验证盈亏计算规则是否符合预期
-   - **新增功能**：确认表格排序功能正常工作
-   - **新增功能**：检查单选功能的交互逻辑
+   - **版本0.7.034新增**：检查Markdown解析逻辑是否正确
+   - **版本0.7.034新增**：验证盈亏计算规则是否符合预期
+   - **版本0.7.034新增**：确认表格排序功能正常工作
+   - **版本0.7.034新增**：检查单选功能的交互逻辑
+   - **版本0.8.001修复**：检查Markdown加粗符号解析修复是否生效
+   - **版本0.8.001修复**：验证推荐列表解析失败问题是否解决
+   - **版本0.8.003新增**：检查DRG选择保存功能是否正常工作
 
 8. **DRG匹配日志问题**
    - 检查DEBUG级别日志配置
@@ -1830,6 +2804,7 @@ DRG目录匹配服务采用了多项性能优化措施：
     - **版本0.7.007新增**：验证在院患者筛选逻辑
     - **版本0.7.007新增**：确认DRG Prompt生成和保存流程
     - **版本0.7.007新增**：检查序列同步功能是否正常工作
+    - **版本0.8.002优化**：检查MCC分析触发条件优化是否生效
 
 11. **DRG Prompt生成接口异常**
     - **版本0.7.006新增**：检查请求参数验证逻辑
@@ -1837,9 +2812,50 @@ DRG目录匹配服务采用了多项性能优化措施：
     - **版本0.7.006新增**：确认Prompt模板获取和保存流程
 
 12. **病人费用查询异常**
-    - **新增功能**：检查HIS系统连接状态
-    - **新增功能**：验证费用数据格式
-    - **新增功能**：确认盈亏计算接口调用
+    - **版本0.8.003新增**：检查HIS系统连接状态
+    - **版本0.8.003新增**：验证费用数据格式
+    - **版本0.8.003新增**：确认盈亏计算接口调用
+
+13. **DRG选择保存功能异常**
+    - **版本0.8.003新增**：检查请求参数验证逻辑
+    - **版本0.8.003新增**：验证DrgAnalysisResult实体创建
+    - **版本0.8.003新增**：确认数据库保存操作
+    - **版本0.8.003新增**：检查保险支付金额解析
+
+14. **DRG目录管理功能异常**
+    - **版本0.8.003新增**：检查DrgCatalogLoader是否正确加载目录
+    - **版本0.8.003新增**：验证AtomicReference缓存机制
+    - **版本0.8.003新增**：确认API接口响应格式
+
+15. **患者档案视图异常**
+    - **版本0.8.003新增**：检查患者数据加载逻辑
+    - **版本0.8.003新增**：验证费用数据获取
+    - **版本0.8.003新增**：确认时间线数据整合
+
+16. **费用区域DRG编码显示异常**
+    - **版本0.8.003新增**：检查保险支付标准字段
+    - **版本0.8.003新增**：验证盈亏计算逻辑
+    - **版本0.8.003新增**：确认字段扩展是否生效
+
+17. **非计划再次手术分析异常**
+    - **版本0.8.003新增**：检查疑似患者筛选逻辑
+    - **版本0.8.003新增**：验证病历数据提取和清洗
+    - **版本0.8.003新增**：确认Prompt生成和保存流程
+
+18. **MCC筛查优化异常**
+    - **版本0.8.003新增**：检查候选生成逻辑
+    - **版本0.8.003新增**：验证分组与排序功能
+    - **版本0.8.003新增**：确认Top-K控制功能
+
+19. **成本区域利润损失异常**
+    - **版本0.8.003新增**：检查DRG保险支付查询
+    - **版本0.8.003新增**：验证成本数据解析
+    - **版本0.8.003新增**：确认盈亏计算准确性
+
+20. **模拟成本数据异常**
+    - **版本0.8.003新增**：检查开发环境检测逻辑
+    - **版本0.8.003新增**：验证模拟数据生成算法
+    - **版本0.8.003新增**：确认成本区域映射功能
 
 ### 日志分析
 
@@ -1854,9 +2870,19 @@ DRG目录匹配服务采用了多项性能优化措施：
 - **版本0.7.004新增**："主要诊断及操作分析"按钮点击日志
 - **版本0.7.007新增**：定时任务执行日志和统计信息
 - **版本0.7.006新增**：DRG Prompt生成接口调用日志
-- **新增功能**：严格标准推荐列表解析日志
-- **新增功能**：盈亏计算过程日志
-- **新增功能**：表格交互操作日志
+- **版本0.7.034新增**：严格标准推荐列表解析日志
+- **版本0.7.034新增**：盈亏计算过程日志
+- **版本0.7.034新增**：表格交互操作日志
+- **版本0.8.001修复**：Markdown加粗符号解析修复日志
+- **版本0.8.001修复**：推荐列表解析机制优化日志
+- **版本0.7.034新增**：DRG选择保存功能日志
+- **版本0.7.034新增**：DRG目录管理功能日志
+- **版本0.7.034新增**：患者档案视图功能日志
+- **版本0.7.034新增**：费用区域DRG编码显示功能日志
+- **版本0.8.003新增**：非计划再次手术分析功能日志
+- **版本0.8.003新增**：MCC筛查优化功能日志
+- **版本0.8.003新增**：成本区域利润损失功能日志
+- **版本0.8.003新增**：模拟成本数据生成功能日志
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
@@ -1888,6 +2914,16 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 19. **用户交互优化**：版本0.7.005新增DRG分析按钮确认对话框、AI分析结果卡片和DRG专用Prompt过滤
 20. **自动化分析**：版本0.7.004新增"主要诊断及操作分析"按钮，一键生成DRG分析Prompt并提交AI分析
 21. **严格标准推荐列表**：新增严格标准推荐列表表格功能，支持单选、盈亏计算与排序，显著提升临床决策支持能力
+22. **Markdown加粗符号修复**：**版本0.8.001修复** 修复了AI分析结果中Markdown加粗符号导致的推荐列表解析失败问题
+23. **推荐列表解析优化**：**版本0.8.001修复** 优化了DRG分析页面推荐列表解析机制，提升医疗推荐显示的可靠性
+24. **DRG选择保存功能**：**版本0.8.003新增** 支持将用户选择的DRG记录持久化到数据库，提供完整的DRG选择管理
+25. **DRG目录管理功能**：**版本0.8.003新增** 提供DRG目录的查看和管理能力，支持DRG数据的维护和查询
+26. **患者档案视图**：**版本0.8.003新增** 提供完整的患者信息展示和管理功能，集成费用数据和DRG分析结果
+27. **费用区域DRG编码显示**：**版本0.8.003新增** 支持DRG费用区域编码的显示和管理，提供精确的费用计算能力
+28. **非计划再次手术分析**：**版本0.8.003新增** 提供批量分析疑似患者和结果查询功能，支持质控人员工作
+29. **MCC筛查优化**：**版本0.8.003新增** 支持分组与排序输出，提升MCC候选列表的筛查效率
+30. **成本区域利润损失显示**：**版本0.8.003新增** 提供精确的DRG盈亏计算和费用显示功能
+31. **模拟成本数据生成**：**版本0.8.003新增** 支持开发环境的成本数据模拟，提升DRG分析测试的真实性
 
 ### 技术创新
 
@@ -1916,9 +2952,20 @@ DRG分析系统增强项目展现了现代企业级应用开发的最佳实践�
 - **智能排序算法**：按盈亏金额自动降序排列推荐列表
 - **单选交互设计**：提供直观的DRG选择体验
 - **颜色编码系统**：使用绿色盈利和红色亏损的颜色编码
+- **加粗符号修复**：**版本0.8.001修复** 优化Markdown加粗符号解析，提升解析可靠性
+- **解析机制优化**：**版本0.8.001修复** 优化推荐列表解析机制，提升显示可靠性
+- **DRG选择保存**：**版本0.8.003新增** 实现DRG选择的完整生命周期管理
+- **DRG目录管理**：**版本0.8.003新增** 提供DRG数据的完整管理能力
+- **患者档案视图**：**版本0.8.003新增** 实现患者信息的综合展示和管理
+- **费用区域显示**：**版本0.8.003新增** 提供精确的DRG费用区域编码显示
+- **非计划再次手术分析**：**版本0.8.003新增** 实现批量分析和结果查询功能
+- **MCC筛查优化**：**版本0.8.003新增** 实现分组与排序的MCC候选列表
+- **成本区域利润损失**：**版本0.8.003新增** 实现精确的DRG盈亏计算
+- **模拟成本数据生成**：**版本0.8.003新增** 实现开发环境的成本数据模拟
 
-该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能、差异化评分策略、批量组合匹配功能、HIV过滤功能、双向分流策略、首行标识检测、定时任务集成、Prompt生成接口、用户交互优化、自动化分析和严格标准推荐列表功能进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确，特别是在临床决策支持方面提供了显著的增强。
+该系统为DRG分析场景提供了强大的技术支撑，能够有效提升医疗数据分析的效率和准确性，为企业决策提供可靠的数据基础。新的页面重构设计、历史结果跟踪功能、DRG目录匹配功能、差异化评分策略、批量组合匹配功能、HIV过滤功能、双向分流策略、首行标识检测、定时任务集成、Prompt生成接口、用户交互优化、自动化分析、严格标准推荐列表功能、Markdown加粗符号修复、DRG选择保存功能、DRG目录管理功能、患者档案视图功能、费用区域DRG编码显示功能、非计划再次手术分析功能、MCC筛查优化功能、成本区域利润损失显示功能和模拟成本数据生成功能进一步提升了用户体验，使得DRG分析过程更加直观、高效、可追溯、实用且准确，特别是在临床决策支持方面提供了显著的增强。
 
 **章节来源**
 - [Stage2 DRG Analysis Verification Report.md:1-163](file://med_ai_assistant_1.0_bs_backend/doc/其他/阶段2-DRG分析功能完成验证.md#L1-L163)
-- [Update Log.md:1-216](file://更新小结.md#L1-L216)
+- [Update Log.md:1-86](file://更新小结.md#L1-L86)
+- [2026-04-08.md:30-54](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-08.md#L30-L54)
