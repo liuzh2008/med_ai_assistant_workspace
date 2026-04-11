@@ -7,6 +7,9 @@
 - [UserLookup.vue](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue)
 - [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 - [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
+- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
+- [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [main.js](file://med_ai_assistant_1.0_bs_vue/src/main.js)
 - [App.vue](file://med_ai_assistant_1.0_bs_vue/src/App.vue)
 - [router/index.js](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
@@ -15,10 +18,10 @@
 
 ## 更新摘要
 **所做更改**
-- 新增AIResults组件的去换行符复制功能说明
-- 更新Prompt轮询服务组件的状态管理机制
-- 增强用户体验相关的功能描述
-- 完善组件间依赖关系分析
+- 新增PatientSummary组件的详细功能分析，包括住院时长计算、颜色编码状态显示、待办事项集成、Markdown渲染增强等功能
+- 更新核心组件章节，增加PatientSummary组件的完整功能说明
+- 增强架构概览，反映新增的患者管理功能模块
+- 完善依赖分析，包含新增的API接口和工具函数
 
 ## 目录
 1. [简介](#简介)
@@ -33,7 +36,7 @@
 
 ## 简介
 
-这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.7.030-0.7.031）增强了AI结果处理能力和轮询服务稳定性，显著提升了用户体验。
+这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.015）增强了AI结果处理能力、轮询服务稳定性，并新增了PatientSummary组件的多项功能增强，显著提升了用户体验和医疗信息管理能力。
 
 ## 项目结构
 
@@ -160,6 +163,33 @@ PromptExecutor 提供了完整的Prompt轮询服务管理功能：
 - 详细的状态跟踪
 - 用户友好的操作反馈
 
+### 患者病情小结组件
+
+**更新** PatientSummary 是患者信息管理的核心组件，经过重大功能增强：
+
+**主要功能特性：**
+- 住院时长自动计算（入院日期到当前日期）
+- 颜色编码状态显示（病危、病重、普通）
+- 待办事项集成显示（最近2条）
+- 增强的Markdown渲染支持
+- 思维过程折叠显示
+- 多层次内容来源优先级
+
+**新增功能亮点：**
+- **住院时长计算**：自动计算患者住院天数，显示入院日期和住院时长
+- **颜色编码状态**：根据患者状态自动应用颜色编码（红色：病危，橙色：病重，绿色：普通）
+- **待办事项集成**：从后端API获取患者待办事项，支持智能内容清理
+- **Markdown增强渲染**：支持`<thinking>`标签的折叠显示，提供思维过程透明度
+- **颜色标识系统**：自动高亮异常值（红色）、正常值（绿色）、待处理项（橙色）
+
+**内容来源优先级：**
+1. 新API获取的最新病情小结内容
+2. AI生成的病情小结、查房记录或入院记录总结
+3. 患者基本信息中的病情摘要
+
+**章节来源**
+- [PatientSummary.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L1-L638)
+
 ## 架构概览
 
 ```mermaid
@@ -175,19 +205,25 @@ F[TopMenu<br/>导航菜单]
 G[UserLookup<br/>用户查询]
 H[AIResults<br/>AI结果处理]
 I[PromptExecutor<br/>轮询服务管理]
-J[App<br/>根组件]
+J[PatientSummary<br/>患者病情小结]
+K[App<br/>根组件]
 end
 subgraph "业务功能层"
-K[AI诊断系统]
-L[患者管理系统]
-M[服务器维护]
-N[用户设置]
-O[轮询服务监控]
+L[AI诊断系统]
+M[患者管理系统]
+N[服务器维护]
+O[用户设置]
+P[轮询服务监控]
+Q[待办事项管理]
+R[病历记录管理]
 end
 subgraph "基础设施层"
-P[API接口层]
-Q[工具函数库]
-R[数据配置]
+S[API接口层]
+T[工具函数库]
+U[数据配置]
+V[Markdown渲染引擎]
+W[DOM净化器]
+X[颜色编码系统]
 end
 A --> E
 A --> F
@@ -195,19 +231,26 @@ A --> G
 A --> H
 A --> I
 A --> J
-F --> K
+A --> K
 F --> L
 F --> M
 F --> N
 F --> O
-E --> P
 F --> P
-G --> P
-H --> P
-I --> P
-J --> P
-A --> Q
-A --> R
+F --> Q
+F --> R
+E --> S
+F --> S
+G --> S
+H --> S
+I --> S
+J --> S
+J --> V
+J --> W
+J --> X
+K --> S
+A --> T
+A --> U
 ```
 
 **图表来源**
@@ -490,6 +533,139 @@ Component->>Component : refreshServiceStatus()
 - [PromptExecutor.vue:800-825](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue#L800-L825)
 - [PromptExecutor.vue:942-967](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue#L942-L967)
 
+### PatientSummary 组件深度分析
+
+**更新** PatientSummary 组件经过重大功能增强，成为患者信息管理的核心组件：
+
+#### 组件架构图
+
+```mermaid
+classDiagram
+class PatientSummary {
++Object patient
++Boolean loadingSummary
++String latestSummaryContent
++Array latestTodos
++prompts() Array
++latestMedicalSummary() Object
++hospitalStayInfo() Object
++statusClass() String
++enhanceHtmlWithColors(html) String
++parseWithThinking(text) String
++formatMarkdown(content) String
++formatTime(time) String
++cleanTodoContent(content) String
++mounted() void
++beforeUnmount() void
++watch.patient.patientId(newVal, oldVal) void
+}
+class HospitalStayInfo {
++String admissionDate
++Number days
++String status
++statusClass() String
+}
+class TodoItem {
++Number id
++String todoItem
++String createdAt
+}
+class MarkdownEnhancement {
++String thinkingBlock
++String colorHighlight
++String contentClean
+}
+PatientSummary --> HospitalStayInfo : "计算"
+PatientSummary --> TodoItem : "获取"
+PatientSummary --> MarkdownEnhancement : "增强"
+```
+
+**图表来源**
+- [PatientSummary.vue:72-157](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L72-L157)
+
+#### 住院时长计算算法
+
+```mermaid
+flowchart TD
+AdmissionDate[入院时间] --> ParseDate[解析入院日期]
+ParseDate --> GetCurrentDate[获取当前时间]
+GetCurrentDate --> CalculateDays[计算天数差]
+CalculateDays --> FormatDays[格式化天数]
+FormatDays --> ReturnInfo[返回住院信息]
+ReturnInfo --> Display[显示在界面]
+```
+
+**图表来源**
+- [PatientSummary.vue:135-145](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L135-L145)
+
+#### 颜色编码状态系统
+
+```mermaid
+flowchart TD
+PatientStatus[患者状态] --> CheckCritical{"包含'病危'?"}
+CheckCritical --> |是| CriticalClass["返回'status-critical'"]
+CheckCritical --> |否| CheckSerious{"包含'病重'?"}
+CheckSerious --> |是| SeriousClass["返回'status-serious'"]
+CheckSerious --> |否| NormalClass["返回'status-normal'"]
+CriticalClass --> Render[渲染红色字体]
+SeriousClass --> Render[渲染橙色字体]
+NormalClass --> Render[渲染绿色字体]
+```
+
+**图表来源**
+- [PatientSummary.vue:151-156](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L151-L156)
+
+#### 待办事项集成流程
+
+```mermaid
+sequenceDiagram
+participant Component as PatientSummary
+participant API as 患者API
+participant Store as Vuex Store
+Component->>Store : fetchPrompts(患者ID)
+Store-->>Component : AI提示词列表
+Component->>API : getLatestMedicalSummary(患者ID)
+API-->>Component : 最新病情小结内容
+Component->>API : getTodosByPatientId(患者ID)
+API-->>Component : 待办事项列表
+Component->>Component : 清理待办内容
+Component->>Component : 显示最近2条待办
+```
+
+**图表来源**
+- [PatientSummary.vue:341-408](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L341-L408)
+
+#### Markdown增强渲染系统
+
+**新增功能亮点：**
+- **思维过程折叠**：支持`<thinking>`标签的折叠显示，提供透明的AI思维过程
+- **颜色标识系统**：自动高亮异常值（红色）、正常值（绿色）、待处理项（橙色）
+- **智能内容清理**：自动移除待办事项中的病人基本信息行
+- **多层内容来源**：优先显示最新API内容，其次显示AI生成内容，最后显示基本信息
+
+**技术实现流程：**
+
+```mermaid
+flowchart TD
+InputContent[原始内容] --> CheckType{检查内容类型}
+CheckType --> |字符串| ProcessString[处理字符串内容]
+CheckType --> |对象| ExtractContent[提取对象内容]
+CheckType --> |空值| ReturnEmpty[返回空内容]
+ProcessString --> ParseThinking[解析<thinking>标签]
+ParseThinking --> CleanContent[清理待办内容]
+CleanContent --> ColorHighlight[应用颜色高亮]
+ColorHighlight --> SanitizeHTML[DOMPurify净化]
+SanitizeHTML --> OutputHTML[输出安全HTML]
+ExtractContent --> ParseThinking
+ReturnEmpty --> OutputHTML
+```
+
+**图表来源**
+- [PatientSummary.vue:168-284](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L168-L284)
+
+**章节来源**
+- [PatientSummary.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L1-L638)
+
 ## 依赖分析
 
 ### 技术栈依赖关系
@@ -511,6 +687,7 @@ CryptoJS[Crypto JS 4.2.0]
 Eruda[Eruda 3.4.3]
 Marked[Marked 16.1.1]
 Editor[MD Editor V3 5.7.1]
+DOMPurify[DOMPurify 3.2.6]
 end
 subgraph "开发工具"
 Babel[Babel Core 7.12.16]
@@ -526,6 +703,7 @@ Vue --> CryptoJS
 Vue --> Eruda
 Vue --> Marked
 Vue --> Editor
+Vue --> DOMPurify
 Vue --> Babel
 Vue --> ESLint
 Vue --> CLI
@@ -550,6 +728,8 @@ subgraph "业务组件"
 ServerLogViewer[ServerLogViewer.vue]
 AIResults[AIResults.vue]
 PromptExecutor[PromptExecutor.vue]
+PatientSummary[PatientSummary.vue]
+PatientTabs[PatientTabs.vue]
 AIComponents[AI相关组件]
 PatientComponents[患者相关组件]
 UserComponents[用户相关组件]
@@ -565,6 +745,8 @@ MainLayout --> UserLookup
 MainLayout --> ServerLogViewer
 MainLayout --> AIResults
 MainLayout --> PromptExecutor
+MainLayout --> PatientSummary
+MainLayout --> PatientTabs
 MainLayout --> AIComponents
 MainLayout --> PatientComponents
 MainLayout --> UserComponents
@@ -573,6 +755,8 @@ UserLookup --> API
 ServerLogViewer --> API
 AIResults --> API
 PromptExecutor --> API
+PatientSummary --> API
+PatientTabs --> API
 AIComponents --> API
 PatientComponents --> API
 UserComponents --> API
@@ -588,6 +772,29 @@ MainLayout --> Router
 **章节来源**
 - [package.json:1-56](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L56)
 
+### API接口依赖关系
+
+**更新** 新增的PatientSummary组件依赖以下API接口：
+
+```mermaid
+graph TD
+PatientSummary[PatientSummary.vue] --> GetLatestMedicalSummary[getLatestMedicalSummary]
+PatientSummary --> GetTodosByPatientId[getTodosByPatientId]
+GetLatestMedicalSummary --> MedicalRecordsAPI[医疗记录API]
+GetTodosByPatientId --> TodoAPI[待办事项API]
+MedicalRecordsAPI --> BackendAPI[后端服务]
+TodoAPI --> BackendAPI
+BackendAPI --> Database[数据库]
+BackendAPI --> AIEngine[AI引擎]
+```
+
+**图表来源**
+- [patient.js:472-476](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L472-L476)
+- [patient.js:591-593](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L591-L593)
+
+**章节来源**
+- [patient.js:1-616](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L1-L616)
+
 ## 性能考虑
 
 ### 内存管理优化
@@ -596,6 +803,7 @@ MainLayout --> Router
 2. **懒加载机制**：路由组件采用动态导入，减少初始包体积
 3. **事件监听清理**：组件卸载时自动清理所有事件监听器
 4. **AI结果处理优化**：去换行符复制功能使用高效的正则表达式处理
+5. **患者数据缓存**：PatientSummary 组件实现智能的数据缓存和清理机制
 
 ### 渲染性能优化
 
@@ -603,6 +811,7 @@ MainLayout --> Router
 2. **防抖处理**：输入框的搜索功能使用防抖，避免频繁请求
 3. **条件渲染**：根据用户权限动态渲染菜单项
 4. **组件复用**：AIResults组件的复制功能支持多次复用
+5. **Markdown渲染优化**：PatientSummary组件的增强渲染系统支持内容缓存
 
 ### 网络请求优化
 
@@ -610,6 +819,15 @@ MainLayout --> Router
 2. **缓存策略**：合理使用浏览器缓存和HTTP缓存头
 3. **错误重试**：网络异常时提供自动重试机制
 4. **轮询服务优化**：PromptExecutor实现了智能的轮询服务管理
+5. **API请求合并**：PatientSummary组件支持多个API请求的并发处理
+
+### 患者数据管理优化
+
+**更新** PatientSummary组件的性能优化措施：
+- **智能数据加载**：只在患者ID变化时重新加载数据
+- **内容缓存**：缓存最新的病情小结和待办事项
+- **防抖处理**：对频繁的患者切换操作进行防抖处理
+- **内存清理**：组件卸载时自动清理全局函数和事件监听器
 
 ## 故障排除指南
 
@@ -670,12 +888,42 @@ MainLayout --> Router
 - 验证API接口响应
 - 查看错误日志信息
 
+#### 患者病情小结问题
+
+**更新** **问题**：住院时长计算不准确
+- 检查入院时间格式
+- 验证日期解析逻辑
+- 确认时区设置
+
+**问题**：颜色编码状态显示异常
+- 检查患者状态数据
+- 验证状态匹配逻辑
+- 确认CSS样式加载
+
+**问题**：待办事项显示不完整
+- 检查API接口连通性
+- 验证待办事项数据格式
+- 确认内容清理逻辑
+
+**问题**：Markdown渲染错误
+- 检查内容格式
+- 验证DOMPurify配置
+- 确认标记语言语法
+
+**问题**：思维过程折叠功能失效
+- 检查全局函数注册
+- 验证事件监听器
+- 确认DOM元素存在
+
 **章节来源**
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
 - [UserLookup.vue:49-51](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue#L49-L51)
 - [AIResults.vue:525-543](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L525-L543)
 - [PromptExecutor.vue:800-825](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue#L800-L825)
+- [PatientSummary.vue:135-145](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L135-L145)
+- [PatientSummary.vue:151-156](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L151-L156)
+- [PatientSummary.vue:341-408](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L341-L408)
 
 ## 结论
 
@@ -686,8 +934,15 @@ MainLayout --> Router
 3. **状态管理**：完善的Vuex状态管理模式
 4. **用户体验**：丰富的交互功能和友好的界面设计
 5. **性能优化**：多项性能优化措施确保流畅体验
-6. **功能增强**：最新版本显著提升了AI结果处理和轮询服务稳定性
+6. **功能增强**：最新版本显著提升了AI结果处理、轮询服务稳定性和患者信息管理能力
 
-通过ServerLogViewer、TopMenu、UserLookup、AIResults和PromptExecutor等核心组件的协同工作，整个应用形成了一个功能完整、易于维护的医疗AI助手平台。特别是AIResults组件的去换行符复制功能和PromptExecutor组件的增强状态管理，都显著提升了用户的操作效率和系统稳定性。
+通过ServerLogViewer、TopMenu、UserLookup、AIResults、PromptExecutor和**新增的PatientSummary**等核心组件的协同工作，整个应用形成了一个功能完整、易于维护的医疗AI助手平台。特别是PatientSummary组件的住院时长计算、颜色编码状态显示、待办事项集成和Markdown渲染增强等功能，都显著提升了用户的操作效率和系统稳定性。
 
-建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理和轮询服务监控方面持续改进。
+**更新** PatientSummary组件作为患者信息管理的核心，其增强功能包括：
+- **智能化的住院时长计算**：自动计算患者住院天数，提供准确的医疗统计信息
+- **直观的颜色编码状态显示**：通过视觉化的方式快速识别患者病情严重程度
+- **集成的待办事项管理**：统一管理患者的医疗任务和提醒事项
+- **增强的Markdown渲染系统**：支持思维过程透明度和智能内容高亮
+- **多层次的内容来源优先级**：确保显示最准确、最新的患者信息
+
+建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控和患者信息管理方面持续改进。

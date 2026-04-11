@@ -1,9 +1,12 @@
+<docs>
 # 医学记录操作指南
 
 <cite>
 **本文档引用的文件**
 - [更新小结.md](file://更新小结.md)
 - [更新日志 2026-04-03.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-03.md)
+- [更新日志 2026-04-09.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-09.md)
+- [更新日志 2026-04-10.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-10.md)
 - [API文档.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md)
 - [架构图.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
 - [主服务器部署指南.md](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/README.md)
@@ -27,20 +30,25 @@
 - [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
 - [emr-content-query.json](file://med_ai_assistant_1.0_bs_backend/sql/hospital-Local/emr-content-query.json)
 - [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
+- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [EmrSyncService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java)
 - [EmrContentRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java)
+- [EmrRecordService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java)
+- [MedicalRecordController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java)
 - [2026-04-09.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md)
 - [DatabaseCleanupUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/DatabaseCleanupUtil.java)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增EMR病历内容同步模块的数据库约束处理能力增强章节
-- 更新EMR病历内容同步API接口文档，包含并发安全和重试机制说明
-- 新增JPA批处理优化和TOCTOU竞态条件修复的技术实现细节
-- 扩展数据库约束冲突处理机制，包含自动重试和清理策略
-- 更新EMR病历内容查询接口的JSON字段名大小写对齐详细说明章节
+- 新增首次病程记录模板入院记录替代逻辑章节
+- 增强AI结果页面和病情小结页面的thinking标签折叠功能
+- 改进EMR记录选择错误调试信息
+- 修复JSON字段名大小写对齐问题
+- 更新病历记录操作流程，包含新增的替代逻辑和折叠功能
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -73,6 +81,8 @@
 - **防丢失保护**：新增的病历编辑防丢失功能，确保用户数据安全
 - **JSON字段名对齐**：完善的JSON字段名大小写对齐机制，解决生产环境显示问题
 - **高并发数据同步**：增强的EMR病历内容同步模块，具备数据库约束处理能力和自动重试机制
+- **思维过程折叠**：新增的thinking标签折叠功能，提升AI结果可读性
+- **入院记录替代**：首次病程记录模板的智能入院记录替代逻辑
 
 ## 系统架构
 
@@ -90,6 +100,8 @@ SmartInput[智录系统界面]
 BuildSystem[构建系统]
 DraftProtection[防丢失保护系统]
 EMRFieldAlignment[EMR字段对齐系统]
+ThinkingFold[Thinking折叠功能]
+FirstCourseSubstitute[首次病程记录替代逻辑]
 end
 subgraph "API网关层"
 Gateway[API Gateway]
@@ -171,6 +183,8 @@ Todo --> TodoService
 Medical --> LocalStorage
 DraftProtection --> LocalStorage
 EMRFieldAlignment --> JSON
+ThinkingFold --> DOMPurify
+FirstCourseSubstitute --> PromptUtils
 DatabaseCleanup --> CleanupUtil
 ```
 
@@ -358,7 +372,36 @@ EMR_CONTENT ||--|| EMR_CONTENT : "de-duplication by (source_table, source_id)"
 | 病情小结 | 患者病情的阶段性总结 | 每日或定期生成 |
 | 查房记录 | 医生查房时的临床观察记录 | 包含体征、诊断、治疗计划 |
 | 病程记录 | 患者住院期间的详细医疗记录 | 连续性的病情变化记录 |
+| 首次病程记录 | 患者入院后首次病程记录 | 基于入院记录和AI生成内容生成 |
 | EMR病历记录 | 来自医院HIS系统的电子病历 | 直接同步的原始病历内容，具备高并发处理能力 |
+
+#### 首次病程记录模板入院记录替代逻辑
+
+**新增功能**：当用户选择"首次病程记录"模板时，系统会自动检查病人资料中是否包含入院记录。如果病人资料中没有入院记录，系统将自动从PromptResult中查找AI生成的入院记录作为替代数据源。
+
+**实现机制**：
+1. **并行获取AI入院记录**：在Promise.all中额外并行调用getLatestPromptResult获取AI生成的入院记录
+2. **入院记录替代处理**：当病人资料中入院记录为空且AI结果有内容时，自动替换入院记录段落
+3. **缺失处理**：当病人资料和AI结果均无入院记录时，弹出ElMessage警告提示并返回失败，取消Prompt生成
+4. **智能JSDoc注释**：为新增逻辑添加详细的JSDoc块注释
+
+**处理流程**：
+
+```mermaid
+flowchart TD
+Start([选择首次病程记录模板]) --> CheckData{检查病人资料}
+CheckData --> |包含入院记录| UseOriginal[使用原始入院记录]
+CheckData --> |缺少入院记录| CheckAI{检查AI结果}
+CheckAI --> |AI有入院记录| ReplaceData[替换入院记录段落]
+CheckAI --> |AI也无入院记录| ShowWarning[显示警告并取消生成]
+UseOriginal --> GeneratePrompt[生成首次病程记录]
+ReplaceData --> GeneratePrompt
+ShowWarning --> End([操作结束])
+GeneratePrompt --> End
+```
+
+**图表来源**
+- [promptUtils.js:151-186](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L151-L186)
 
 #### 病历记录操作流程
 
@@ -375,7 +418,8 @@ SelectAction --> |删除| DeleteRecord[删除记录]
 CreateRecord --> DraftProtection[防丢失保护检查]
 EditRecord --> DraftProtection
 DraftProtection --> FieldAlignment[JSON字段名对齐检查]
-FieldAlignment --> ValidateData[验证输入数据]
+FieldAlignment --> ThinkingFold[Thinking折叠功能检查]
+ThinkingFold --> ValidateData[验证输入数据]
 ValidateData --> |有效| SaveRecord[保存记录]
 ValidateData --> |无效| ShowError[显示错误信息]
 SaveRecord --> UpdateUI[更新界面显示]
@@ -753,6 +797,41 @@ SuggestionBox --> AutoApply
 | 治疗方案 | 常见疾病的治疗方案模板 | 治疗方案的标准化表述 |
 | 诊断模板 | 各种诊断的标准化模板 | 诊断内容的规范化生成 |
 
+### Thinking标签折叠功能
+
+**新增功能**：为AI结果页面和病情小结页面添加了<thinking>...</thinking>标签内容折叠处理功能。
+
+#### AI结果页面Thinking折叠
+
+**实现机制**：
+1. **占位符策略**：先提取thinking块 → 解析主体markdown → 替换占位符为折叠HTML结构
+2. **全局函数注册**：在mounted中注册全局window.toggleThinking函数，beforeUnmount中清理
+3. **DOMPurify配置**：白名单配置允许onclick、id、class、style属性
+4. **样式穿透**：使用:deep()穿透scoped样式，确保v-html渲染内容样式生效
+
+**交互效果**：
+- 默认折叠隐藏思维过程，显示💭"显示思维过程"提示
+- 点击可展开查看完整思维链内容，再次点击收起
+- 不含thinking标签的内容不受影响
+
+#### 病情小结页面Thinking折叠
+
+**实现机制**：
+1. **DOMPurify库导入**：导入DOMPurify库进行HTML清理
+2. **辅助方法封装**：新增parseWithThinking辅助方法，封装thinking折叠+markdown解析+DOMPurify清理
+3. **统一处理逻辑**：formatMarkdown方法中所有marked.parse()调用替换为parseWithThinking()
+4. **全局函数管理**：同样注册全局window.toggleThinking函数，添加beforeUnmount清理钩子
+5. **统一图标风格**：统一使用💭图标，与AIResults.vue保持一致
+
+**交互效果**：
+- 默认折叠隐藏思维过程，显示💭"显示思维过程"提示
+- 点击可展开查看完整思维链内容，再次点击收起
+- 不含thinking标签的内容不受影响
+
+**图表来源**
+- [AIResults.vue:342-382](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L342-L382)
+- [PatientSummary.vue:128-173](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L128-L173)
+
 ## API接口规范
 
 系统提供完整的RESTful API接口，支持病历记录管理、AI诊断、用户管理、语音识别、待办事项等功能。
@@ -880,9 +959,6 @@ SuggestionBox --> AutoApply
   "max_tokens": 2048
 }
 ```
-
-**图表来源**
-- [API文档.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L1-L800)
 
 ### Prompt模板管理API
 
@@ -1174,6 +1250,29 @@ VoiceData --> VoiceDB
 - 支持记录存在性检查、清理冲突记录、直接重试操作
 - 记录详细的错误日志和处理建议
 
+#### EMR记录选择错误调试信息增强
+
+**新增功能**：当在EMR记录列表中选择某条记录时，如果发生任何错误，系统会在调试信息中详细输出完整的错误信息。
+
+**后端增强**：
+- **EmrRecordService.java**：添加详细的日志记录，包括请求开始时间、记录ID、耗时
+- **MedicalRecordController.java**：记录请求开始时间和操作时间戳
+- **getStackTrace()方法**：将异常堆栈转换为字符串
+
+**前端增强**：
+- **MedicalRecords.vue**：增强handleEMRRecordClick方法的错误调试信息
+- **详细错误对象**：包含错误类型、错误消息、完整堆栈跟踪、时间戳、操作耗时
+- **网络错误区分**：区分服务器响应错误vs网络请求错误
+
+**调试日志格式**：
+- 后端日志前缀：`[EMR记录详情]`
+- 前端日志前缀：`[EMR记录详情]`
+- 包含上下文：recordId、patientId、docType、耗时、时间戳
+
+**图表来源**
+- [EmrRecordService.java:239-264](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java#L239-L264)
+- [MedicalRecordController.java:244-271](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L244-L271)
+
 ## AI辅助功能
 
 系统集成了先进的AI辅助诊断功能，通过机器学习和自然语言处理技术为医生提供智能化的医疗决策支持。
@@ -1225,6 +1324,7 @@ MaxTokens --> Consultation
 | 治疗方案 | 治疗计划制定 | "为该患者制定个性化的治疗方案..." |
 | 病情小结 | 病情总结报告 | "总结患者三天内的病情变化和治疗效果..." |
 | 查房记录 | 医生查房记录 | "记录今日查房时患者的体征和病情观察..." |
+| 首次病程记录 | 患者入院后首次病程记录 | "根据入院记录和辅助检查，撰写首次病程记录..." |
 
 #### 模板参数
 
@@ -1311,6 +1411,8 @@ TodoEngine-->>Doctor : 显示生成的待办事项
 | EMR同步 | 并发冲突率 | >1% | 警告 |
 | 数据库约束 | 约束冲突率 | >0.1% | 警告 |
 | JPA批处理 | 批处理延迟 | >500ms | 警告 |
+| Thinking折叠 | 折叠功能可用性 | <100% | 警告 |
+| 首次病程记录 | 替代逻辑成功率 | <95% | 警告 |
 
 #### 监控配置
 
@@ -1349,6 +1451,8 @@ ServiceCheck --> |防丢失保护| DraftProtection[防丢失保护系统]
 ServiceCheck --> |JSON字段对齐| FieldAlignment[JSON字段对齐系统]
 ServiceCheck --> |EMR同步| EmrSync[EMR同步服务]
 ServiceCheck --> |数据库清理| DatabaseCleanup[数据库清理工具]
+ServiceCheck --> |Thinking折叠| ThinkingFold[Thinking折叠功能]
+ServiceCheck --> |首次病程记录| FirstCourseSubstitute[首次病程记录替代逻辑]
 MainServer --> AIService[AI模型服务]
 ExecServer --> Encryption[加密服务]
 Database --> DataSources[数据源检查]
@@ -1359,6 +1463,8 @@ DraftProtection --> LocalStorage[localStorage检查]
 FieldAlignment --> JSONValidation[JSON验证]
 EmrSync --> ConstraintHandling[约束处理]
 DatabaseCleanup --> CleanupValidation[清理验证]
+ThinkingFold --> DOMPurifyValidation[DOMPurify验证]
+FirstCourseSubstitute --> PromptUtilsValidation[PromptUtils验证]
 AIService --> ModelStatus{模型状态}
 Encryption --> EncStatus{加密状态}
 DataSources --> DSStatus{数据源状态}
@@ -1372,13 +1478,10 @@ COStatus --> OverallStatus
 VEStatus --> OverallStatus
 TEStatus --> OverallStatus
 OverallStatus --> DraftStatus{防丢失状态}
-DraftStatus --> OverallStatus
-FieldAlignment --> JSONStatus{JSON状态}
-OverallStatus --> JSONStatus
-EmrSync --> ConstraintStatus{约束状态}
-OverallStatus --> ConstraintStatus
-DatabaseCleanup --> CleanupStatus{清理状态}
-OverallStatus --> CleanupStatus
+OverallStatus --> JSONStatus{JSON状态}
+OverallStatus --> ConstraintStatus{约束状态}
+OverallStatus --> ThinkingStatus{Thinking状态}
+OverallStatus --> FirstCourseStatus{首次病程状态}
 ```
 
 **图表来源**
@@ -1465,6 +1568,42 @@ OverallStatus --> CleanupStatus
 | JPA批处理延迟 | 批量操作异常定位困难 | 检查save() vs saveAndFlush()使用，确认异常堆栈准确性 |
 | 数据库约束冲突 | 约束冲突重试失败 | 检查DatabaseCleanupUtil使用，验证清理策略有效性 |
 | EMR同步性能问题 | 高并发场景下性能下降 | 检查索引使用，验证查询优化，确认连接池配置 |
+
+#### Thinking折叠功能问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 折叠功能失效 | thinking标签无法折叠 | 检查parseMarkdown方法，验证占位符替换逻辑 |
+| 样式不生效 | 折叠样式显示异常 | 检查:deep()样式穿透，验证DOMPurify白名单配置 |
+| 全局函数冲突 | window.toggleThinking函数冲突 | 检查mounted和beforeUnmount钩子，确认函数注册清理 |
+| 内容显示异常 | thinking内容无法正确显示 | 检查marked.parse()调用，验证HTML结构生成 |
+| 交互效果异常 | 折叠展开交互不响应 | 检查onclick事件绑定，验证元素选择器有效性 |
+
+#### 首次病程记录替代逻辑问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 替代逻辑不生效 | AI入院记录未自动替换 | 检查isFirstCourseRecord标志位，验证getLatestPromptResult调用 |
+| 并行查询失败 | getLatestPromptResult调用异常 | 检查Promise.all并行处理，验证错误捕获机制 |
+| 占位符替换失败 | '无入院记录数据'占位符未替换 | 检查字符串替换逻辑，验证正则表达式匹配 |
+| 警告提示异常 | ElMessage警告未显示 | 检查ElMessage调用，验证错误处理流程 |
+| 生成取消异常 | Prompt生成未取消 | 检查返回逻辑，验证错误状态传播 |
+
+#### EMR记录选择错误调试信息问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 调试信息缺失 | 无详细错误日志 | 检查handleEMRRecordClick方法，验证错误对象构建 |
+| 日志格式异常 | 日志输出格式不正确 | 检查日志前缀和上下文信息，验证格式化字符串 |
+| 网络错误区分失败 | 服务器响应错误和网络请求错误混淆 | 检查error.response vs error.request判断逻辑 |
+| 用户提示不友好 | 错误提示信息不包含记录ID | 检查错误消息构建，验证记录ID包含逻辑 |
+| 前端日志异常 | 前端console.error未输出 | 检查前端日志配置，验证错误处理流程 |
 
 #### 前端构建系统问题
 
@@ -1589,7 +1728,43 @@ OverallStatus --> CleanupStatus
    tail -f logs/main/jpa-batch.log | grep "batch_flush_time"
    ```
 
-10. **前端构建日志**:
+10. **Thinking折叠日志**:
+    ```bash
+    # 查看Thinking折叠日志
+    tail -f logs/main/thinking-fold.log
+    
+    # 检查折叠功能可用性
+    tail -f logs/main/thinking-fold.log | grep "fold_function"
+    
+    # 检查DOMPurify使用情况
+    tail -f logs/main/dompurify-validation.log
+    ```
+
+11. **首次病程记录日志**:
+    ```bash
+    # 查看首次病程记录日志
+    tail -f logs/main/first-course-substitute.log
+    
+    # 检查替代逻辑成功率
+    tail -f logs/main/first-course-substitute.log | grep "substitute_success"
+    
+    # 检查AI入院记录查询
+    tail -f logs/main/ai-admission-query.log
+    ```
+
+12. **EMR记录选择日志**:
+    ```bash
+    # 查看EMR记录选择日志
+    tail -f logs/main/emr-record-selection.log
+    
+    # 检查错误调试信息
+    tail -f logs/main/emr-record-selection.log | grep "debug_info"
+    
+    # 检查网络错误分类
+    tail -f logs/main/emr-record-selection.log | grep "network_error"
+    ```
+
+13. **前端构建日志**:
     ```bash
     # 查看前端构建日志
     cd med_ai_assistant_1.0_bs_vue
@@ -1619,6 +1794,8 @@ Proxy[代理配置]
 ESLint[ESLint检查]
 DraftProtection[防丢失保护]
 FieldAlignment[字段对齐检查]
+ThinkingFold[Thinking折叠功能]
+FirstCourseSubstitute[首次病程记录替代逻辑]
 end
 subgraph "构建配置"
 VueCLI[Vue CLI配置]
@@ -1648,6 +1825,8 @@ Dist --> Assets
 Assets --> IndexHTML
 DraftProtection --> LocalStorage
 FieldAlignment --> JSONValidation
+ThinkingFold --> DOMPurifyValidation
+FirstCourseSubstitute --> PromptUtilsValidation
 ```
 
 **图表来源**
@@ -1660,7 +1839,7 @@ FieldAlignment --> JSONValidation
 
 **核心配置项**:
 - **name**: "med_ai_assistant_1.0_bs" - 项目名称
-- **version**: "0.6.082" - 当前版本号
+- **version**: "0.8.010" - 当前版本号（最新版本）
 - **private**: true - 私有项目，不发布到npm
 - **scripts**: 
   - serve: vue-cli-service serve - 启动开发服务器
@@ -1764,66 +1943,59 @@ FixLint --> RunLint
 
 系统采用持续集成和持续部署的开发模式，版本更新记录详细记录了每次迭代的功能改进和问题修复。
 
-### 最新版本 (v0.7.025)
+### 最新版本 (v0.8.010)
 
 #### 主要更新内容
 
-1. **病历编辑防丢失功能全面上线**
-   - 新增localStorage草稿自动保存机制，支持新增记录和编辑记录的差异化保存策略
-   - 新增浏览器关闭/刷新时的beforeunload离开保护，防止意外关闭导致的数据丢失
-   - 新增标签页隐藏时的自动保存保护，利用visibilitychange事件监听
-   - 新增草稿恢复机制，支持编辑草稿和新增草稿的智能恢复
-   - 新增7天过期草稿自动清理功能，保持localStorage空间整洁
-   - 新增保存状态指示器，提供实时的保存状态反馈
-   - 新增hasUnsavedChanges()统一脏检查方法，区分新增和编辑状态
-   - 为12个防丢失相关方法添加完整JSDoc注释
+1. **首次病程记录模板入院记录替代逻辑**
+   - **新增功能**：当用户选择"首次病程记录"模板时，系统会自动检查病人资料中是否包含入院记录
+   - **智能替代**：如果病人资料中没有入院记录，系统将自动从PromptResult中查找AI生成的入院记录作为替代数据源
+   - **并行获取**：在Promise.all中额外并行调用getLatestPromptResult获取AI生成的入院记录
+   - **替代处理**：当病人资料中入院记录为空且AI结果有内容时，自动替换入院记录段落
+   - **缺失处理**：当病人资料和AI结果均无入院记录时，弹出ElMessage警告提示并返回失败，取消Prompt生成
+   - **JSDoc完善**：为新增逻辑添加详细的JSDoc块注释
 
-2. **EMR病历内容同步模块数据库约束处理能力增强**
-   - **新增TOCTOU竞态条件修复**：使用`findAllBySourceTableAndSourceId()`替代`findBySourceTableAndSourceId()`
-   - **新增JPA批处理优化**：将所有`save()`替换为`saveAndFlush()`，避免批处理延迟执行
-   - **新增自动重试机制**：约束冲突时自动重试，支持UPDATE和INSERT路径
-   - **新增数据库清理工具**：提供`handleIntegrityConstraintViolation()`方法处理约束冲突
-   - **新增并发安全保证**：使用`entityManager.clear()`确保持久化上下文一致性
-   - **新增性能监控指标**：监控并发冲突率、约束冲突率、批处理延迟等指标
+2. **增强AI结果页面和病情小结页面的Thinking折叠功能**
+   - **AIResults.vue增强**：在parseMarkdown方法中增加thinking标签识别和折叠处理逻辑
+   - **占位符策略**：先提取thinking块 → 解析主体markdown → 替换占位符为折叠HTML结构
+   - **全局函数管理**：在mounted中注册全局window.toggleThinking函数，beforeUnmount中清理
+   - **DOMPurify配置**：白名单配置允许onclick、id、class、style属性
+   - **样式穿透**：使用:deep()穿透scoped样式，确保v-html渲染内容样式生效
+   - **PatientSummary.vue增强**：导入DOMPurify库，新增parseWithThinking辅助方法
+   - **统一处理**：formatMarkdown方法中所有marked.parse()调用替换为parseWithThinking()
+   - **统一图标**：统一使用💭图标，与AIResults.vue保持一致
 
-3. **EMR病历内容查询接口JSON字段名大小写对齐**
-   - 新增完整的JSON字段名大小写对齐机制，解决生产环境中的关键显示问题
-   - 实现EmrRecordListDTO和EmrRecordContentDTO的字段名对齐策略
-   - 使用@JsonProperty注解确保字段名与前端期望完全一致
-   - 修复生产环境下因JSON字段名大小写不匹配导致前端无法正确读取数据的问题
-   - 新增字段名对齐的详细技术实现说明和测试验证
+3. **改进EMR记录选择错误调试信息**
+   - **前端增强**：增强handleEMRRecordClick方法的错误调试信息
+   - **详细错误对象**：包含错误类型、错误消息、完整堆栈跟踪、时间戳、操作耗时
+   - **网络错误区分**：区分服务器响应错误（error.response）vs网络请求错误（error.request）
+   - **用户友好提示**：包含记录ID的错误提示，便于定位问题
+   - **后端增强**：EmrRecordService和MedicalRecordController添加详细日志记录
+   - **调试格式**：统一的日志前缀和上下文信息格式
 
-4. **医学记录操作指南全面重构**
-   - 新增EMR病历内容同步模块的数据库约束处理能力增强章节
-   - 扩展操作按钮功能表格，包含新增的防丢失保护功能
-   - 补充浏览器兼容性配置指南和网络环境要求
-   - 更新数据管理机制说明，增加localStorage使用说明和JSON字段名对齐说明
-   - 新增生产环境显示问题修复方案和解决方案
-   - 新增高并发场景下的数据同步可靠性保障说明
+4. **修复JSON字段名大小写对齐问题**
+   - **EmrRecordListDTO修复**：添加@JsonProperty注解确保字段名对齐
+   - **EmrRecordContentDTO修复**：添加@JsonProperty("content")注解
+   - **字段映射**：ID字段序列化为小写id，CONTENT字段序列化为小写content
+   - **生产环境修复**：解决前后端JSON字段名大小写不匹配问题
 
-5. **前端构建系统稳定性增强**
-   - **修复package.json语法错误导致的开发服务器启动失败问题**
-   - 优化构建配置，提升开发环境稳定性
-   - 增强前端依赖管理，确保依赖版本兼容性
-   - 改进热重载机制，提升开发体验
+5. **医学记录操作指南全面更新**
+   - **新增替代逻辑章节**：详细说明首次病程记录模板的智能替代机制
+   - **增强折叠功能说明**：详细描述Thinking标签折叠的实现原理和使用方法
+   - **改进调试信息说明**：说明EMR记录选择错误调试信息的增强功能
+   - **更新操作流程**：包含新增的替代逻辑和折叠功能的操作流程
+   - **新增故障排查章节**：针对新增功能的故障排查指南
 
-6. **语音识别功能增强**
-   - 修复生产环境语音识别上传413错误
-   - 优化Nginx client_max_body_size配置
-   - 同步后端multipart配置
-   - 新增语音识别与LLM整理解耦功能
+6. **前端构建系统稳定性增强**
+   - **修复package.json语法错误**：解决导致开发服务器启动失败的问题
+   - **优化构建配置**：提升开发环境稳定性
+   - **增强依赖管理**：确保依赖版本兼容性
+   - **改进热重载机制**：提升开发体验
 
-7. **待办事项生成功能完善**
-   - 新增根据日期和科室获取待办事项接口
-   - 新增根据患者ID获取待办事项列表接口
-   - 新增根据病历记录ID获取待办事项接口
-   - 完善待办事项状态管理和跟踪功能
-
-8. **系统稳定性提升**
-   - 修复Android平板上"AI辅助"子菜单点击后立即收起的问题
-   - 新增触屏/桌面设备差异化交互
-   - 优化浏览器兼容性配置
-   - 改进语音识别按钮逻辑，支持选中文本替换
+7. **系统监控指标完善**
+   - **新增Thinking折叠监控**：监控折叠功能可用性
+   - **新增首次病程记录监控**：监控替代逻辑成功率
+   - **新增EMR记录选择监控**：监控错误调试信息有效性
 
 #### 版本升级指南
 
@@ -1859,70 +2031,37 @@ cd ../deploy/main-linux-oracle
 
 ### 历史版本特性
 
+#### v0.8.009 - Thinking折叠功能
+- **新增功能**：为AI结果页面和病情小结页面添加<thinking>标签内容折叠处理功能
+- **实现机制**：占位符策略 + DOMPurify清理 + 全局函数管理
+- **交互效果**：默认折叠隐藏思维过程，点击展开查看完整内容
+
+#### v0.8.008 - EMR记录选择错误调试信息增强
+- **新增功能**：当在EMR记录列表中选择某条记录时，详细输出完整的错误信息
+- **后端增强**：EmrRecordService和MedicalRecordController添加详细日志记录
+- **前端增强**：MedicalRecords.vue增强handleEMRRecordClick方法的错误调试信息
+- **用户友好**：包含记录ID的错误提示，便于定位问题
+
+#### v0.8.007 - EMR病历内容同步修复
+- **修复问题**：EMR_CONTENT表UPDATE操作触发唯一约束冲突（ORA-00001）
+- **修复方案**：将save()替换为saveAndFlush()，新增重试逻辑
+- **竞态条件修复**：使用findAllBySourceTableAndSourceId()替代findBySourceTableAndSourceId()
+
+#### v0.8.006 - JSON字段名大小写对齐修复
+- **修复问题**：生产环境下EMR病历内容显示为空的问题
+- **修复方案**：为DTO类添加@JsonProperty注解确保字段名对齐
+- **影响范围**：仅影响JSON序列化输出，不改变数据库查询逻辑
+
+#### v0.7.025 - 病历编辑防丢失功能
+- **新增功能**：localStorage草稿自动保存机制
+- **智能恢复**：支持编辑草稿和新增草稿的智能恢复
+- **过期清理**：7天过期草稿自动清理功能
+- **保存状态**：实时的保存状态反馈
+
 #### v0.6.082 - 前端构建系统修复
-- 修复DRG AI分析保存Prompt时userId、sortNumber为空导致的ORA-01400错误
-- 修复全局JSON响应中文编码问题（WebConfig添加UTF-8 MessageConverter）
-- **修复前端package.json语法错误导致启动失败**
-
-#### v0.6.081 - 非计划再次手术分析
-- 改造非计划再次手术分析模块接入医院内网数据源
-- DynamicJdbcTemplateFactory升级为HikariCP连接池
-- RepeatOperation模块支持医院内网直连查询
-- 修复Spring多构造函数注入歧义问题
-- 修复前端正则表达式ESLint错误
-
-#### v0.6.080 - DRG AI分析
-- 新增DRG AI分析功能，支持自动DRG匹配和分析
-- 优化DRG分析算法，提升匹配准确率
-- 新增DRG分析结果可视化展示
-- 完善DRG分析历史记录管理
-
-#### v0.6.079 - Prompt模板优化
-- 修复未执行Prompt列表不显示已提交Prompt的问题（后端合并查询）
-- 优化未执行Prompt点击交互，跳过无效API调用并显示提示信息
-
-#### v0.6.078 - 语音识别配置修复
-- 修复生产环境语音识别上传413错误（Nginx client_max_body_size + 后端multipart配置同步）
-
-#### v0.6.077 - 医学记录操作指南重构
-- 病历记录操作指南全面重构：新增语音识别功能、待办事项生成功能、智录系统详细说明；添加操作按钮功能表格；补充浏览器兼容性配置指南；更新数据管理机制说明；前后端版本号从0.5.076更新至0.5.077
-
-#### v0.6.076 - 语音识别Docker容器修复
-- 修复生产环境语音识别Docker容器DNS解析失败（extra_hosts映射内网API代理+firewalld永久策略）
-
-#### v0.6.075 - 设备兼容性优化
-- 修复Android平板上"AI辅助"子菜单点击后立即收起的问题
-- 新增触屏/桌面设备差异化交互
-- 优化移动端用户体验
-
-#### v0.6.074 - OCR数据采集方案
-- 新增监护仪呼吸机AI OCR数据采集完整技术方案文档
-- 更新未完成功能列表
-
-#### v0.6.073 - Prompt模板增强
-- AI辅助界面Prompt模板新增补充信息输入对话框（"请会诊记录"、"日常对话"模板支持用户输入补充信息）
-- 支持"请会诊记录"、"日常对话"模板用户输入补充信息
-- 优化Prompt模板的交互体验
-
-#### v0.6.072 - AI对话优化
-- 修复AI对话UI无内容显示问题
-- 优化aiService.js非流式响应回调时序
-- 改进语音识别与LLM整理功能解耦
-
-#### v0.6.071 - 语音识别解耦
-- 语音识别完成后不再自动调用LLM整理
-- 用户可手动点击"文字整理"按钮触发
-- 优化语音识别按钮逻辑，支持选中文本替换
-
-#### v0.6.070 - 语音识别配置外化
-- 修改VoiceFileRecognitionController配置
-- 新增VoiceRecognitionProperties配置类
-- 支持通过配置文件切换ASR服务提供商
-
-#### v0.6.069 - 自动部署功能
-- 创建POST /api/deploy/auto-deploy-backend接口
-- 实现后端一键自动部署功能
-- 添加完整的错误处理和日志记录
+- **修复问题**：package.json语法错误导致启动失败
+- **优化配置**：提升前端构建系统稳定性
+- **增强依赖管理**：确保依赖版本兼容性
 
 ### 版本管理策略
 
@@ -1961,7 +2100,7 @@ NotifyUsers --> End([发布完成])
 
 ## 总结
 
-医疗AI助手系统是一个功能完备、架构清晰、安全可靠的综合性医疗信息系统。通过智能化的AI辅助诊断、高效的病历管理、安全的数据加密、完善的监控告警机制、新增的病历编辑防丢失功能、新增的EMR病历内容同步模块数据库约束处理能力、新增的JSON字段名大小写对齐机制、以及经过修复的稳定前端构建系统，系统为医护人员提供了强大的技术支持。
+医疗AI助手系统是一个功能完备、架构清晰、安全可靠的综合性医疗信息系统。通过智能化的AI辅助诊断、高效的病历管理、安全的数据加密、完善的监控告警机制、新增的病历编辑防丢失功能、新增的EMR病历内容同步模块数据库约束处理能力、新增的JSON字段名大小写对齐机制、新增的首次病程记录模板入院记录替代逻辑、新增的Thinking折叠功能、以及经过修复的稳定前端构建系统，系统为医护人员提供了强大的技术支持。
 
 ### 系统优势
 
@@ -1978,6 +2117,9 @@ NotifyUsers --> End([发布完成])
 11. **高并发可靠性**: 新增的EMR病历内容同步模块具备数据库约束处理能力和自动重试机制，显著提升高并发场景下的数据同步可靠性
 12. **数据库约束处理**: 新增的TOCTOU竞态条件修复、JPA批处理优化、自动重试机制，确保数据一致性
 13. **监控告警增强**: 新增的性能监控指标，包括并发冲突率、约束冲突率、批处理延迟等关键指标
+14. **智能替代逻辑**: 首次病程记录模板的智能入院记录替代机制，提升病历生成的完整性
+15. **思维过程可视化**: Thinking折叠功能提升AI结果的可读性和用户体验
+16. **错误调试增强**: EMR记录选择错误的详细调试信息，便于问题定位和解决
 
 ### 未来发展
 
@@ -1993,5 +2135,7 @@ NotifyUsers --> End([发布完成])
 10. **EMR系统集成**: 持续优化EMR病历内容查询接口，提升与医院HIS系统的集成度
 11. **高并发处理能力**: 持续优化数据库约束处理和JPA批处理机制，提升系统在高并发场景下的稳定性
 12. **监控告警完善**: 持续完善监控告警机制，提供更全面的系统状态可视化
+13. **智能功能扩展**: 基于新增的替代逻辑和折叠功能，进一步扩展智能辅助功能
+14. **用户体验优化**: 持续改进用户界面和交互体验，提升系统易用性
 
-通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的病历编辑防丢失功能、JSON字段名对齐机制、EMR病历内容同步模块的数据库约束处理能力增强、以及高并发可靠性保障，证明了团队对用户数据安全和系统稳定性的高度重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在高并发场景下的数据同步可靠性方面取得了显著提升。
+通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的首次病程记录模板入院记录替代逻辑、Thinking折叠功能、EMR记录选择错误调试信息增强、JSON字段名大小写对齐修复、以及高并发可靠性保障，证明了团队对用户数据安全和系统稳定性的高度重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在高并发场景下的数据同步可靠性方面取得了显著提升。
