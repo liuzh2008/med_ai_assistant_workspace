@@ -2,25 +2,50 @@
 
 <cite>
 **本文档引用的文件**
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
-- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
-- [insert-first-course-record-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-first-course-record-prompt-template.sql)
-- [insert-admission-record-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-admission-record-prompt-template.sql)
+- [2026-04-09.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md)
+- [2026-04-10.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-10.md)
+- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
+- [PromptRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptRepository.java)
+- [PromptPollingService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/PromptPollingService.java)
+- [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+- [EmrRecordService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java)
+- [EmrSyncService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrSyncService.java)
+- [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
+- [EmrRecordListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java)
+- [MedicalRecordController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java)
 - [ExecutionServerController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java)
 - [PromptService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/PromptService.java)
+- [AIController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [SequenceConsistencyService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java)
+- [OrderSyncService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/OrderSyncService.java)
+- [LongTermOrder.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/LongTermOrder.java)
+- [insert-patient-summary-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-patient-summary-prompt-template.sql)
+- [insert-first-course-record-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-first-course-record-prompt-template.sql)
+- [insert-admission-record-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-admission-record-prompt-template.sql)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [TodoView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [待办事项接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/待办事项接口.md)
-- [2026-04-10.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-10.md)
+- [EMR病历内容查询接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md)
+- [API_DOCUMENTATION.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md)
+- [LogViewerController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/LogViewerController.java)
+- [ServerLogViewer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue)
+- [package.json](file://med_ai_assistant_1.0_bs_vue/package.json)
+- [.dockerignore](file://med_ai_assistant_1.0_bs_backend/.dockerignore)
+- [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增剪贴板API降级机制章节，详细介绍现代Clipboard API与document.execCommand降级方案
-- 增强PatientSummary组件功能，新增住院时长统计、Markdown颜色标识系统、待办事项列表展示
-- 新增Oracle SQL脚本模板章节，包含首次病程记录和入院记录Prompt模板
-- 修复生产环境systemPrompt读取问题，改进执行服务器和主服务器的系统prompt加载机制
-- 改进诊断数据查询逻辑，优化待办事项接口的去重过滤和排序机制
+- 新增版本0.8.016-0.8.020的变更记录，涵盖EMR查询修复、数据一致性增强、定时任务配置控制、临时文件清理等关键改进
+- 修复EMR记录详情查询返回多条结果导致的IncorrectResultSizeDataAccessException异常
+- 增强Prompt数据一致性检查机制，修复软删除误判和ResultId回填问题
+- 新增开发环境定时任务配置控制功能，支持禁用定时Prompt生成任务
+- 清理AI工具临时文件，优化项目维护性
+- 修复生产环境systemPrompt文件读取失败问题
+- 改进EMR内容同步机制，增强并发安全设计
+- 优化Prompt生成和查询逻辑，提升系统稳定性
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -2886,6 +2911,100 @@ TodoView->>TodoView : 格式化显示
 - [TodoView.vue:1-111](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue#L1-L111)
 - [patient.js:602-615](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L602-L615)
 
+## 版本0.8.016-0.8.020关键变更
+
+### EMR记录详情查询修复
+
+**版本号**：0.8.016
+
+**变更内容**：
+- **修复IncorrectResultSizeDataAccessException异常**：EmrContentRepository.findContentById返回类型从String改为List<String>
+- **新增排序机制**：添加ORDER BY modifiedOn DESC NULLS LAST排序，优先返回最新修改记录
+- **增强错误处理**：EmrRecordService.getEmrRecordContentById适配List返回类型，多条记录时记录WARN日志
+
+**影响范围**：
+- 修复了EMR记录详情查询返回多条结果的问题
+- 提升了数据查询的稳定性和准确性
+- 增强了异常情况下的错误处理能力
+
+**章节来源**
+- [2026-04-11.md:64-78](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md#L64-L78)
+
+### Prompt数据一致性检查增强
+
+**版本号**：0.8.017
+
+**变更内容**：
+- **修复软删除误判问题**：修改PromptRepository.findIncompleteCompleted()查询，移除AND pr.deleted = 0条件
+- **增强补偿机制**：在PromptPollingService.checkDataConsistency()中增加用户软删除场景处理
+- **清理临时文件**：删除.qoder/目录下的review_diff.txt、promptresult_fix_diff.txt、PromptPollingService.diff等临时文件
+
+**影响范围**：
+- 防止了用户软删除PromptResult导致的循环重置问题
+- 提升了数据一致性检查的准确性
+- 优化了项目维护性
+
+**章节来源**
+- [2026-04-11.md:1-31](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md#L1-L31)
+
+### 开发环境定时任务配置控制
+
+**版本号**：0.8.018
+
+**变更内容**：
+- **新增定时任务控制**：在TimerPromptGenerator.dailyPromptGeneration()和generateNoonWardRoundPrompts()方法中添加启用状态检查
+- **新增配置项**：scheduling.timer.enabled，默认开发环境为false（禁用）
+- **环境隔离**：开发环境默认禁用定时任务，生产环境保持启用
+
+**影响范围**：
+- 支持开发环境的定时任务禁用
+- 提供了更灵活的任务调度控制
+- 避免了开发环境的定时任务干扰
+
+**章节来源**
+- [2026-04-11.md:34-44](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md#L34-L44)
+
+### Prompt数据一致性检查ResultId回填修复
+
+**版本号**：0.8.019
+
+**变更内容**：
+- **修复软删除场景处理**：增强checkDataConsistency()方法，区分数据真正丢失和用户软删除场景
+- **新增三路径修复逻辑**：
+  1. 数据真正丢失：PromptResult表完全无记录 → 重置为"已提交"状态
+  2. 用户软删除：所有PromptResult已软删除 → 不重置状态，回填ResultId
+  3. ResultId未关联：存在未删除的PromptResult → 直接回填ResultId
+- **增强状态更新**：updatePromptStatusInNewTransaction()方法补充ResultId关联逻辑
+
+**影响范围**：
+- 解决了软删除场景下的数据一致性问题
+- 避免了重复检测和资源浪费
+- 提升了系统整体稳定性
+
+**章节来源**
+- [2026-04-11.md:47-61](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md#L47-L61)
+
+### EMR查询修复、数据一致性增强、定时任务配置控制、临时文件清理
+
+**版本号**：0.8.020
+
+**变更内容**：
+- **EMR查询修复**：修复EMR记录详情查询返回多条结果导致的IncorrectResultSizeDataAccessException异常
+- **数据一致性增强**：增强Prompt数据一致性检查机制，修复软删除误判和ResultId回填问题
+- **定时任务配置控制**：新增开发环境定时任务配置控制功能
+- **临时文件清理**：清理AI工具临时文件，优化项目维护性
+- **systemPrompt读取修复**：修复生产环境systemPrompt文件读取失败问题
+- **EMR内容同步增强**：改进EMR内容同步机制，增强并发安全设计
+- **Prompt生成优化**：优化Prompt生成和查询逻辑，提升系统稳定性
+
+**影响范围**：
+- 全面提升了系统的稳定性和可靠性
+- 改善了开发和运维体验
+- 增强了系统的可维护性
+
+**章节来源**
+- [2026-04-11.md:64-78](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md#L64-L78)
+
 ## 经验教训与预防措施
 
 ### 技术经验总结
@@ -2930,46 +3049,25 @@ TodoView->>TodoView : 格式化显示
 
 ## 总结
 
-MedAiAssistant项目在2026年4月10日的这次更新中，展现了系统在多个方面的重大进步和技术创新。通过新增剪贴板API降级机制、增强PatientSummary组件功能、新增Oracle SQL脚本模板、修复生产环境systemPrompt读取问题、改进诊断数据查询逻辑等重要更新，系统在功能完整性、用户体验、数据一致性、系统稳定性等方面都达到了新的高度。
+MedAiAssistant项目在版本0.8.016-0.8.020期间经历了重大技术升级和功能完善，特别是在数据一致性保障、系统稳定性提升、开发体验优化等方面取得了显著进展。
 
 ### 核心技术突破
 
-#### 剪贴板API降级机制
+#### EMR查询修复
 
-系统实现了完整的剪贴板API降级机制，确保在各种环境下都能正常复制内容：
-- **现代API优先**：优先使用现代Clipboard API，提供更好的用户体验
-- **优雅降级**：自动降级到document.execCommand方案，兼容HTTP环境
-- **错误处理**：完善的错误处理和用户反馈机制
+系统成功修复了EMR记录详情查询返回多条结果的关键问题，通过修改Repository返回类型和添加排序机制，有效避免了IncorrectResultSizeDataAccessException异常，提升了系统的数据查询稳定性。
 
-#### PatientSummary组件功能增强
+#### Prompt数据一致性增强
 
-PatientSummary组件实现了多项重要功能增强：
-- **住院时长统计**：智能计算并显示患者的住院时长信息
-- **Markdown颜色标识**：突出显示异常值、正常值和待处理信息
-- **待办事项列表**：紧凑展示患者的待办事项，提升信息密度
-- **状态样式系统**：根据患者状态动态调整显示样式
+通过增强Prompt数据一致性检查机制，系统现在能够准确区分数据真正丢失、用户软删除和ResultId未关联三种场景，采用三路径修复逻辑，避免了循环重置和资源浪费问题。
 
-#### Oracle SQL脚本模板
+#### 开发环境定时任务控制
 
-系统新增了完整的Oracle SQL脚本模板系统：
-- **首次病程记录模板**：标准化的首次病程记录Prompt模板
-- **入院记录模板**：规范化的入院记录Prompt模板
-- **自动去重机制**：防止重复插入和ID冲突
-- **错误处理**：完善的异常捕获和事务管理
+新增的定时任务配置控制功能，为开发环境提供了更灵活的任务调度管理，支持禁用定时任务，避免了开发环境的定时任务干扰，提升了开发效率。
 
-#### systemPrompt读取问题修复
+#### 临时文件清理
 
-系统修复了生产环境中的systemPrompt读取问题：
-- **统一读取逻辑**：主服务器和执行服务器使用一致的读取机制
-- **错误处理**：完善的异常捕获和默认值回退机制
-- **状态监控**：详细的日志记录和状态监控
-
-#### 诊断数据查询逻辑改进
-
-系统优化了待办事项数据查询逻辑：
-- **去重过滤**：按medicalRecordId分组，保留最新记录
-- **排序优化**：按床号和创建时间进行智能排序
-- **兼容性处理**：支持遗留数据的兼容处理
+系统清理了AI工具产生的临时文件，包括review_diff.txt、promptresult_fix_diff.txt、PromptPollingService.diff等文件，优化了项目维护性，减少了不必要的文件占用。
 
 ### 系统架构优势
 
@@ -3006,6 +3104,6 @@ PatientSummary组件实现了多项重要功能增强：
 
 ### 总体评价
 
-MedAiAssistant项目在2026年4月10日的这次更新中，不仅在功能上实现了重大突破，更在用户体验、安全性、可访问性、数据一致性等方面达到了新的高度。通过一系列的技术创新和架构优化，系统为医疗机构提供了更加智能化、稳定化、人性化的AI辅助诊断解决方案。这些改进为系统的长期发展奠定了坚实的基础，展现了MedAiAssistant项目作为医疗AI领域标杆产品的强大实力和广阔前景。
+MedAiAssistant项目在0.8.016-0.8.020版本期间，展现了系统在多个方面的重大进步和技术创新。通过一系列的技术创新和架构优化，系统在功能完整性、用户体验、数据一致性、系统稳定性等方面都达到了新的高度。这些改进为系统的长期发展奠定了坚实的基础，展现了MedAiAssistant项目作为医疗AI领域标杆产品的强大实力和广阔前景。
 
 该系统在数据一致性保障、用户体验优化、技术架构创新等方面的表现，为整个医疗AI行业树立了新的标杆，具有重要的示范意义和推广价值。随着功能的不断完善和技术的持续演进，MedAiAssistant必将在提升医疗服务质量、降低医疗成本、改善患者体验等方面发挥更大的作用。

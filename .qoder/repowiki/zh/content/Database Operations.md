@@ -13,7 +13,19 @@
 - [状态转换历史表脚本.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-status-transition-history-table.sql)
 - [ENCRYPTED_DATA_TEMP唯一约束脚本.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-request-id-unique-constraint.sql)
 - [数据库初始化脚本.sql](file://med_ai_assistant_1.0_bs_backend/init.sql)
+- [Oracle数据库PGA内存超限错误修复-2026年03月14日.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md)
+- [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md)
+- [SequenceConsistencyService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java)
+- [2026-03-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-03-14.md)
+- [2026-04-10.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-10.md)
 </cite>
+
+## 更新摘要
+**变更内容**
+- 新增Oracle数据库PGA内存超限错误修复配置章节
+- 增强序列一致性检查服务，新增LONGTERMORDERS表序列检查
+- 添加LONGTERMORDERS表ORA-00001主键冲突修复方案
+- 更新数据库故障排除指南，包含内存管理和序列同步相关内容
 
 ## 目录
 1. [简介](#简介)
@@ -29,6 +41,8 @@
 ## 简介
 
 本文档全面介绍了MedAiAssistant项目的数据库操作体系，涵盖了Oracle和MySQL双数据库支持、DRG数据分析、数据同步、状态管理等核心数据库功能。项目采用分层架构设计，通过存储过程、序列、触发器等数据库特性实现高性能的数据处理和状态管理。
+
+**更新** 新增Oracle数据库PGA内存超限错误修复配置、序列一致性检查服务增强、LONGTERMORDERS表ORA-00001主键冲突修复等关键变更。
 
 ## 项目结构
 
@@ -48,12 +62,17 @@ B --> B7[同步日志表.sql]
 B --> B8[状态转换历史表.sql]
 B --> B9[ENCRYPTED_DATA_TEMP唯一约束.sql]
 C[init.sql] --> C1[数据库初始化脚本]
+D[doc/问题修复/] --> D1[Oracle数据库PGA内存超限错误修复-2026年03月14日.md]
+D --> D2[LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md]
+E[src/main/java/com/example/medaiassistant/service/] --> E1[SequenceConsistencyService.java]
+F[doc/更新日志/] --> F1[2026-03-14.md]
+F --> F2[2026-04-10.md]
 end
 ```
 
 **图表来源**
 - [DRG数据导入SQL Developer操作指南.md:1-246](file://med_ai_assistant_1.0_bs_backend/doc/数据库操作/DRG数据导入SQL Developer操作指南.md#L1-L246)
-- [DRG分析结果表创建脚本.sql:1-188](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-drg-analysis-results-table.sql#L1-L188)
+- [Oracle IDENTITY策略支持脚本.sql:1-741](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L1-L741)
 
 **章节来源**
 - [DRG数据导入SQL Developer操作指南.md:1-246](file://med_ai_assistant_1.0_bs_backend/doc/数据库操作/DRG数据导入SQL Developer操作指南.md#L1-L246)
@@ -162,7 +181,7 @@ VARCHAR2 PRIMARY_DIAGNOSIS
 VARCHAR2 PRIMARY_PROCEDURE
 }
 SYNC_LOG ||--o{ STATUS_TRANSITION_HISTORY : "记录同步状态"
-DRG_ANALYSIS_RESULTS ||--o{ STATUS_TRANSITION_HISTORY : "关联状态历史"
+DRG_ANALYSIS_RESULTS ||--o{ STATUS_TRANSION_HISTORY : "关联状态历史"
 ```
 
 **图表来源**
@@ -173,6 +192,43 @@ DRG_ANALYSIS_RESULTS ||--o{ STATUS_TRANSITION_HISTORY : "关联状态历史"
 - [DRG分析结果表创建脚本.sql:1-188](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-drg-analysis-results-table.sql#L1-L188)
 - [DRG分析输入快照表.sql:1-58](file://med_ai_assistant_1.0_bs_backend/sql-scripts/drg_analysis_input_snapshot.sql#L1-L58)
 - [DRG分析输入快照存储过程.sql:1-119](file://med_ai_assistant_1.0_bs_backend/sql-scripts/gen_drg_input_snapshot_procedure.sql#L1-L119)
+
+### 序列一致性检查服务
+
+**新增** 序列一致性检查服务是项目新增的关键数据库维护组件，负责自动检测和修复Oracle数据库序列不同步问题：
+
+```mermaid
+classDiagram
+class SequenceConsistencyService {
++verifyAndSyncSequences()
++syncSequence(tableName, columnName, sequenceName)
+-jdbcTemplate : JdbcTemplate
+-logger : Logger
+}
+class 序列检查流程 {
++检查表数据最大ID
++获取序列当前值
++计算序列差距
++自动修复序列
+}
+SequenceConsistencyService --> 序列检查流程 : "执行"
+```
+
+**图表来源**
+- [SequenceConsistencyService.java:9-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L9-L32)
+
+#### 支持的序列检查表
+
+| 表名称 | 主键列 | 序列名 | 触发器名称 | 用途 |
+|--------|--------|--------|------------|------|
+| PROMPTS | PROMPTID | PROMPTS_PROMPTID_SEQ | PROMPTS_PROMPTID_TRIG | Prompt记录主键生成 |
+| PROMPTRESULT | RESULTID | PROMPTRESULT_RESULTID_SEQ | - | Prompt结果主键生成 |
+| DIAGNOSIS | DIAGNOSISID | DIAGNOSIS_SEQ | - | 诊断记录主键生成 |
+| MEDICAL_RECORDS | RECORD_ID | MEDICAL_RECORDS_RECORD_ID_1SEQ | - | 病历记录主键生成 |
+| LONGTERMORDERS | ORDERID | LONGTERMORDERS_ORDERID_SEQ | LONGTERMORDERS_ORDERID_TRIG | 长期医嘱主键生成 |
+
+**章节来源**
+- [SequenceConsistencyService.java:1-147](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L1-L147)
 
 ## 架构概览
 
@@ -190,16 +246,20 @@ C[DRG分析结果表]
 D[DRG分析输入快照表]
 E[状态转换历史表]
 F[同步日志表]
+G[序列一致性检查服务]
+H[PGA内存监控]
+I[LONGTERMORDERS表]
+J[LONGTERMORDERS序列]
 end
 subgraph "MySQL数据库"
-G[初始化数据库]
-H[系统配置表]
-I[版本管理表]
+K[初始化数据库]
+L[系统配置表]
+M[版本管理表]
 end
 end
 subgraph "存储过程层"
-J[DRG分析输入快照存储过程]
-K[序列和触发器管理]
+N[DRG分析输入快照存储过程]
+O[序列和触发器管理]
 end
 A --> B
 B --> C
@@ -209,11 +269,18 @@ B --> F
 B --> G
 B --> H
 B --> I
-J --> D
-K --> C
-K --> D
-K --> E
-K --> F
+B --> J
+B --> K
+B --> L
+B --> M
+N --> D
+O --> C
+O --> D
+O --> E
+O --> F
+O --> G
+O --> I
+O --> J
 ```
 
 **图表来源**
@@ -331,6 +398,78 @@ stateDiagram-v2
 **章节来源**
 - [状态转换历史表脚本.sql:1-50](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-status-transition-history-table.sql#L1-L50)
 
+### Oracle数据库PGA内存超限错误修复
+
+**新增** Oracle数据库PGA内存超限错误是项目遇到的重要数据库性能问题，需要专门的修复和预防措施：
+
+```mermaid
+flowchart TD
+A[PGA内存超限错误] --> B{错误类型}
+B --> |ORA-04036| C[内存限制超限]
+B --> |系统响应缓慢| D[内存使用异常]
+C --> E[检查内存配置]
+E --> F[调整PGA_AGGREGATE_LIMIT]
+F --> G[重启Oracle容器]
+G --> H[验证修复效果]
+D --> I[监控高内存占用进程]
+I --> J[优化应用程序内存使用]
+J --> K[实施预防措施]
+```
+
+**图表来源**
+- [Oracle数据库PGA内存超限错误修复-2026年03月14日.md:9-13](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md#L9-L13)
+
+#### PGA内存问题诊断和修复
+
+| 诊断步骤 | 检查命令 | 预期结果 | 问题识别 |
+|----------|----------|----------|----------|
+| 检查PGA配置 | `SHOW PARAMETER PGA` | 显示当前PGA设置 | 识别内存限制问题 |
+| 查看高内存占用进程 | `SELECT ... FROM V$PROCESS` | 显示BG00进程占用 | 识别异常内存占用 |
+| 验证内存使用 | `SELECT ... FROM V$SESSION` | 显示会话内存使用 | 评估整体内存压力 |
+| 检查Oracle版本限制 | `SELECT * FROM V$VERSION` | 显示Free版本限制 | 确认版本兼容性 |
+
+**章节来源**
+- [Oracle数据库PGA内存超限错误修复-2026年03月14日.md:1-173](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md#L1-L173)
+
+### LONGTERMORDERS表ORA-00001主键冲突修复
+
+**新增** LONGTERMORDERS表的ORA-00001主键冲突问题是由于序列不同步导致的，需要专门的诊断和修复方案：
+
+```mermaid
+sequenceDiagram
+participant A as 应用程序
+participant B as 数据库
+participant C as 序列检查服务
+participant D as DBA
+A->>B : 插入长期医嘱记录
+B->>B : 检查主键约束
+B-->>A : 返回ORA-00001错误
+A->>C : 调用序列检查
+C->>B : 查询序列值和表最大ID
+B-->>C : 返回序列和ID信息
+C->>B : 修复序列不同步
+B-->>C : 返回修复结果
+C-->>A : 返回修复状态
+A->>B : 重新插入记录
+B-->>A : 插入成功
+```
+
+**图表来源**
+- [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md:48-82](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md#L48-L82)
+
+#### 序列不同步诊断流程
+
+| 诊断阶段 | 检查内容 | 诊断工具 | 预期结果 |
+|----------|----------|----------|----------|
+| 初步诊断 | 错误日志分析 | 数据库日志 | 确认ORA-00001错误 |
+| 约束类型确认 | 约束定义查询 | `ALL_CONSTRAINTS` | 识别主键约束 |
+| 触发器检查 | 触发器定义查询 | `ALL_TRIGGERS` | 确认序列自动生成 |
+| 序列状态检查 | 序列值对比 | `SELECT ... FROM DUAL` | 发现序列落后 |
+| 历史数据对比 | 表最大ID查询 | `SELECT MAX(ORDERID)` | 确定修复目标 |
+
+**章节来源**
+- [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md:1-127](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md#L1-L127)
+
 ## 依赖关系分析
 
 系统数据库组件之间的依赖关系如下：
@@ -349,12 +488,18 @@ H[序列管理表] --> A
 H --> B
 H --> C
 H --> F
+I[LONGTERMORDERS表] --> J[LONGTERMORDERS序列]
 end
 subgraph "存储过程依赖"
-I[DRG分析输入快照存储过程] --> B
-I --> D
-J[数据验证存储过程] --> A
-J --> F
+K[DRG分析输入快照存储过程] --> B
+K --> D
+L[数据验证存储过程] --> A
+L --> F
+end
+subgraph "服务依赖"
+M[序列一致性检查服务] --> H
+M --> I
+N[PGA内存监控服务] --> O[Oracle数据库实例]
 end
 ```
 
@@ -380,6 +525,8 @@ J --> K[并发控制]
 K --> L[冲突解决]
 M[数据删除] --> N[软删除标记]
 N --> O[历史记录保留]
+P[序列检查] --> Q[自动修复不同步]
+Q --> R[预防ORA-00001错误]
 ```
 
 **图表来源**
@@ -424,6 +571,34 @@ I --> J
 **图表来源**
 - [DRG分析输入快照存储过程.sql:38-92](file://med_ai_assistant_1.0_bs_backend/sql-scripts/gen_drg_input_snapshot_procedure.sql#L38-L92)
 
+### PGA内存性能优化
+
+**新增** 针对Oracle数据库PGA内存超限问题的性能优化策略：
+
+```mermaid
+flowchart TD
+A[PGA内存监控] --> B{内存使用率}
+B --> |< 70%| C[正常运行]
+B --> |70%-85%| D[预警状态]
+B --> |85%-95%| E[警告状态]
+B --> |> 95%| F[紧急状态]
+C --> G[优化建议]
+D --> G
+E --> H[内存回收]
+F --> I[系统重启]
+G --> J[调整应用程序]
+H --> K[清理临时对象]
+I --> L[检查数据库配置]
+J --> M[分批处理大数据]
+K --> M
+L --> N[调整PGA_AGGREGATE_LIMIT]
+M --> O[监控效果]
+N --> O
+```
+
+**图表来源**
+- [Oracle数据库PGA内存超限错误修复-2026年03月14日.md:102-133](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md#L102-L133)
+
 ## 故障排除指南
 
 ### 常见数据库问题及解决方案
@@ -435,6 +610,8 @@ I --> J
 | CLOB字段过大 | ORA-12899 | 值超出VARCHAR2长度限制 | 修改字段类型为CLOB |
 | 序列缓存不足 | ORA-08004 | 序列缓存耗尽 | 调整序列缓存大小 |
 | 触发器失效 | PL/SQL-00936 | 触发器语法错误 | 重新创建触发器 |
+| **PGA内存超限** | **ORA-04036** | **数据库实例PGA内存使用超过限制** | **调整PGA_AGGREGATE_LIMIT参数** |
+| **序列不同步** | **ORA-00001** | **主键序列值落后于表中最大ID** | **执行序列自动修复服务** |
 
 ### 数据库连接问题
 
@@ -460,12 +637,62 @@ MON-->>CP : 返回监控数据
 **图表来源**
 - [数据库初始化脚本.sql:28-32](file://med_ai_assistant_1.0_bs_backend/init.sql#L28-L32)
 
+### PGA内存超限故障排除
+
+**新增** 针对Oracle数据库PGA内存超限问题的详细故障排除流程：
+
+```mermaid
+flowchart TD
+A[收到ORA-04036错误] --> B[检查内存使用情况]
+B --> C{内存使用率}
+C --> |高| D[检查高内存占用进程]
+C --> |正常| E[检查数据库配置]
+D --> F{发现BG00进程}
+F --> |是| G[调整PGA_AGGREGATE_LIMIT]
+F --> |否| H[检查其他进程]
+G --> I[重启Oracle容器]
+H --> J[优化应用程序内存使用]
+I --> K[验证修复效果]
+J --> K
+K --> L{问题解决?}
+L --> |是| M[恢复正常运行]
+L --> |否| N[深入分析原因]
+```
+
+**图表来源**
+- [Oracle数据库PGA内存超限错误修复-2026年03月14日.md:25-40](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md#L25-L40)
+
+### 序列不同步故障排除
+
+**新增** 针对LONGTERMORDERS表序列不同步问题的诊断和修复流程：
+
+```mermaid
+flowchart TD
+A[长期医嘱导入失败] --> B[检查错误日志]
+B --> C{错误类型确认}
+C --> |ORA-00001主键冲突| D[诊断序列不同步]
+C --> |其他错误| E[常规故障排除]
+D --> F[查询序列状态]
+F --> G{序列落后?}
+G --> |是| H[执行序列修复]
+G --> |否| I[检查其他原因]
+H --> J[验证修复结果]
+I --> K[检查数据导入流程]
+J --> L[恢复正常导入]
+K --> M[优化导入流程]
+```
+
+**图表来源**
+- [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md:41-47](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md#L41-L47)
+
 **章节来源**
-- [Oracle IDENTITY策略主键NULL插入错误修复.md:135-182](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库IDENTITY策略主键NULL插入错误修复.md#L135-L182)
+- [Oracle数据库IDENTITY策略主键NULL插入错误修复.md:135-182](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库IDENTITY策略主键NULL插入错误修复.md#L135-L182)
 
 ## 结论
 
 MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整性。通过精心设计的表结构、存储过程和索引策略，系统实现了高效的数据处理能力和强大的状态管理功能。
+
+**更新** 本次更新显著增强了数据库系统的稳定性和可靠性，主要体现在：
 
 ### 主要优势
 
@@ -474,6 +701,8 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 3. **完整的状态管理**：提供详细的状态转换历史和同步日志记录
 4. **数据完整性保障**：通过约束、触发器和存储过程确保数据一致性
 5. **性能优化策略**：多层次索引和序列管理优化查询性能
+6. **内存管理优化**：针对Oracle PGA内存超限问题提供专门的修复和预防方案
+7. **序列自动修复**：通过SequenceConsistencyService自动检测和修复序列不同步问题
 
 ### 技术特色
 
@@ -481,5 +710,18 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 - **自动化程度高**：通过序列和触发器实现自动化的主键生成和数据填充
 - **监控完善**：提供完整的数据库健康状态监控和性能指标
 - **故障恢复**：具备完善的错误处理和恢复机制
+- **预防性维护**：通过定期序列检查和内存监控预防数据库问题
+
+### 新增功能价值
+
+**Oracle数据库PGA内存超限错误修复**：
+- 提供了针对Oracle Free版本内存限制的专业解决方案
+- 建立了完整的内存监控和预防机制
+- 确保了系统在资源受限环境下的稳定运行
+
+**序列一致性检查服务增强**：
+- 新增LONGTERMORDERS表序列检查，完善了序列管理范围
+- 通过自动修复避免了ORA-00001主键冲突问题
+- 提升了批量数据导入的可靠性和效率
 
 该数据库操作体系为整个MedAiAssistant系统的稳定运行奠定了坚实的基础，为后续的功能扩展和性能优化提供了良好的架构支撑。

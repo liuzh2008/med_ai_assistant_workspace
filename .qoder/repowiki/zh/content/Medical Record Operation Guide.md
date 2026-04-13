@@ -1,3 +1,11 @@
+基于我对代码的分析，我现在可以更新EMR病历内容查询接口文档。根据代码分析，主要的变更包括：
+
+1. **IncorrectResultSizeDataAccessException修复**：Repository层返回List而非Optional，避免重复ID记录导致的异常
+2. **按修改时间降序取最新记录**：在findContentById方法中使用ORDER BY e.modifiedOn DESC NULLS LAST
+3. **List返回机制**：两个接口都使用List返回，确保在存在重复记录时的稳定性
+
+现在我将更新文档：
+
 <docs>
 # 医学记录操作指南
 
@@ -49,6 +57,8 @@
 - 改进EMR记录选择错误调试信息
 - 修复JSON字段名大小写对齐问题
 - 更新病历记录操作流程，包含新增的替代逻辑和折叠功能
+- **新增**：修复IncorrectResultSizeDataAccessException问题，实现List返回和按修改时间降序取最新记录的机制
+- **更新**：EMR病历内容查询接口文档，反映版本0.8.020中的关键改进
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -83,6 +93,7 @@
 - **高并发数据同步**：增强的EMR病历内容同步模块，具备数据库约束处理能力和自动重试机制
 - **思维过程折叠**：新增的thinking标签折叠功能，提升AI结果可读性
 - **入院记录替代**：首次病程记录模板的智能入院记录替代逻辑
+- **重复ID记录处理**：修复IncorrectResultSizeDataAccessException，实现按修改时间降序取最新记录的机制
 
 ## 系统架构
 
@@ -431,14 +442,75 @@ AuthError --> End
 **图表来源**
 - [架构图.md:185-232](file://med_ai_assistant_1.0_bs_backend/doc/other/ARCHITECTURE_DIAGRAMS.md#L185-L232)
 
-### EMR病历内容同步模块
+### EMR病历内容查询接口
 
-**新增功能**：系统现在提供增强的EMR病历内容同步模块，具备高并发场景下的数据库约束处理能力和自动重试机制。
+**更新**：版本0.8.020中修复了IncorrectResultSizeDataAccessException问题，实现了更加稳定的List返回机制和按修改时间降序取最新记录的功能。
+
+#### IncorrectResultSizeDataAccessException修复机制
+
+**问题背景**：在存在重复ID记录的情况下，使用Optional返回可能导致IncorrectResultSizeDataAccessException异常，因为JPA无法确定应该返回多少条记录。
+
+**修复方案**：
+1. **List返回机制**：Repository层返回List而非Optional，确保在存在重复记录时能够正确处理
+2. **重复ID记录处理**：当检测到多条记录时，按modifiedOn降序排列，取第一条（最新记录）返回
+3. **日志记录**：检测到重复记录时记录WARN日志，便于后续数据清理追踪
+
+**实现细节**：
+- Repository层：`findContentById()`方法返回`List<String>`而非`Optional<String>`
+- Service层：`getEmrRecordContentById()`方法处理List结果，取第一条记录
+- 排序策略：`ORDER BY e.modifiedOn DESC NULLS LAST`确保按修改时间降序排列
+
+#### 按修改时间降序取最新记录机制
+
+**排序策略**：
+- 使用`ORDER BY e.modifiedOn DESC NULLS LAST`确保按修改时间降序排列
+- NULLS LAST确保NULL值排在最后，避免排序异常
+- 第一条记录即为最新修改的记录
+
+**业务逻辑**：
+1. 查询指定ID的所有EMR记录
+2. 按modifiedOn降序排列（NULL值排在最后）
+3. 取第一条记录作为最新内容返回
+4. 如有多条记录，记录WARN日志用于数据清理
+
+#### 接口实现细节
+
+**获取患者EMR病历记录列表**：
+- **接口路径**: `GET /api/medicalrecords/emr-list`
+- **功能说明**: 根据患者ID查询EMR病历记录列表，返回病历的基本信息
+- **数据来源**: EMR_CONTENT表，仅返回未删除的记录（DELETEMARK=0）
+- **响应格式**: ResponseEntity<List<EmrRecordListDTO>>
+- **字段映射**: id（小写）、doc_TYPE_NAME、doc_TITLE_TIME
+- **排序策略**: 按docTitleTime降序排列
+
+**获取EMR病历记录详细内容**：
+- **接口路径**: `GET /api/medicalrecords/emr-content/{id}`
+- **功能说明**: 根据记录ID获取EMR病历记录的详细内容（CONTENT字段）
+- **数据来源**: EMR_CONTENT表
+- **响应格式**: ResponseEntity<EmrRecordContentDTO>
+- **字段映射**: content（小写）
+- **重复ID处理**: 返回List，按modifiedOn降序取第一条最新记录
+
+#### JSON字段名大小写对齐
+
+**字段名映射策略**：
+- **EmrRecordListDTO**：
+  - `@JsonProperty("id")`：将后端ID字段序列化为小写id，与前端row.id对齐
+  - `@JsonProperty("doc_TYPE_NAME")`：保持原有大小写，与前端prop属性对齐
+  - `@JsonProperty("doc_TITLE_TIME")`：保持原有大小写，与前端row.doc_TITLE_TIME对齐
+- **EmrRecordContentDTO**：
+  - `@JsonProperty("content")`：将后端CONTENT字段序列化为小写content，与前端response.data.content对齐
+
+**修复效果**：
+- 解决了生产环境中的关键显示问题
+- 提升了前端数据绑定的稳定性
+- 增强了跨平台兼容性
+- 改善了用户体验
 
 #### 数据库约束处理能力增强
 
 **TOCTOU竞态条件修复**：
-- **问题背景**：原始使用`findBySourceTableAndSourceId()`方法，在高并发场景下存在TOCTOU（Time-Of-Check-Time-Of-Use）竞态条件
+- **问题背景**：原始使用`findBySourceTableAndSourceId()`方法，在高并发场景下存在TOCTOU竞态条件
 - **竞态条件分析**：查询到记录不存在后，另一线程可能先完成INSERT，导致当前线程再次INSERT时触发唯一约束冲突（ORA-00001）
 - **修复方案**：改用返回List的查询方法`findAllBySourceTableAndSourceId()`，并在`DataIntegrityViolationException`触发时捕获并执行重试
 
@@ -506,50 +578,6 @@ EmrSync-->>Client : 返回处理结果
 - 支持多种策略：检查记录存在性、清理冲突记录、直接重试操作
 - 提供批量清理孤立数据记录的功能
 - 记录详细的错误日志和建议
-
-#### EMR病历内容同步API
-
-**接口设计说明**：
-
-**JSON字段名大小写对齐**：为了解决生产环境中的关键显示问题，系统实现了完整的JSON字段名大小写对齐机制。
-
-- **EmrRecordListDTO使用@JsonProperty("id")**：将后端ID字段序列化为小写id，与前端row.id对齐
-- **EmrRecordListDTO使用@JsonProperty("doc_TYPE_NAME")**：保持原有大小写，与前端prop属性对齐
-- **EmrRecordListDTO使用@JsonProperty("doc_TITLE_TIME")**：保持原有大小写，与前端row.doc_TITLE_TIME对齐
-- **EmrRecordContentDTO使用@JsonProperty("content")**：将后端CONTENT字段序列化为小写content，与前端response.data.content对齐
-- **此修复解决了生产环境下因JSON字段名大小写不匹配导致前端无法正确读取数据的问题**
-
-**接口实现细节**：
-
-**获取患者EMR病历记录列表**：
-- **接口路径**: `GET /api/medicalrecords/emr-list`
-- **功能说明**: 根据患者ID查询EMR病历记录列表，返回病历的基本信息
-- **数据来源**: EMR_CONTENT表，仅返回未删除的记录（DELETEMARK=0）
-- **响应格式**: ResponseEntity<List<EmrRecordListDTO>>
-- **字段映射**: id（小写）、doc_TYPE_NAME、doc_TITLE_TIME
-
-**获取EMR病历记录详细内容**：
-- **接口路径**: `GET /api/medicalrecords/emr-content/{id}`
-- **功能说明**: 根据记录ID获取EMR病历记录的详细内容（CONTENT字段）
-- **数据来源**: EMR_CONTENT表
-- **响应格式**: ResponseEntity<EmrRecordContentDTO>
-- **字段映射**: content（小写）
-
-#### 生产环境显示问题修复方案
-
-**问题背景**：在生产环境中，由于JSON字段名大小写不匹配，导致前端无法正确读取和显示EMR病历内容。
-
-**解决方案**：
-1. **字段名对齐策略**：使用@JsonProperty注解确保JSON字段名与前端期望完全一致
-2. **大小写一致性**：统一使用小写字段名（如id、content）以符合前端约定
-3. **保留特殊字段**：对于doc_TYPE_NAME、doc_TITLE_TIME等特殊字段，保持原有大小写格式
-4. **测试验证**：通过单元测试和集成测试验证字段名对齐的正确性
-
-**修复效果**：
-- 解决了生产环境中的关键显示问题
-- 提升了前端数据绑定的稳定性
-- 增强了跨平台兼容性
-- 改善了用户体验
 
 #### 病历记录操作流程（带JSON字段名对齐保护）
 
@@ -799,7 +827,7 @@ SuggestionBox --> AutoApply
 
 ### Thinking标签折叠功能
 
-**新增功能**：为AI结果页面和病情小结页面添加了<thinking>...</thinking>标签内容折叠处理功能。
+**新增功能**：为AI结果页面和病情小结页面添加<thinking>...</thinking>标签内容折叠处理功能。
 
 #### AI结果页面Thinking折叠
 
@@ -888,6 +916,10 @@ SuggestionBox --> AutoApply
 - **响应**: EmrRecordContentDTO对象
 - **字段说明**:
   - `content`: 小写字段名，对应后端CONTENT字段
+- **特点**: 
+  - 支持重复ID记录处理
+  - 按modifiedOn降序取最新记录
+  - 返回List确保稳定性
 
 ### 语音识别API
 
@@ -1273,6 +1305,38 @@ VoiceData --> VoiceDB
 - [EmrRecordService.java:239-264](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java#L239-L264)
 - [MedicalRecordController.java:244-271](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L244-L271)
 
+#### IncorrectResultSizeDataAccessException修复机制
+
+**新增功能**：版本0.8.020中修复了IncorrectResultSizeDataAccessException问题，实现了更加稳定的List返回机制。
+
+**问题分析**：
+- **异常原因**：在存在重复ID记录的情况下，使用Optional返回可能导致IncorrectResultSizeDataAccessException
+- **异常场景**：JPA无法确定应该返回多少条记录，导致异常抛出
+- **影响范围**：EMR病历内容查询接口，特别是存在重复ID记录的场景
+
+**修复方案**：
+1. **List返回机制**：Repository层返回`List<String>`而非`Optional<String>`
+2. **重复ID处理**：当检测到多条记录时，按modifiedOn降序排列，取第一条（最新记录）
+3. **日志记录**：检测到重复记录时记录WARN日志，便于后续数据清理
+4. **排序策略**：使用`ORDER BY e.modifiedOn DESC NULLS LAST`确保按修改时间降序
+
+**实现细节**：
+- **Repository层**：`findContentById()`方法返回List<String>
+- **Service层**：`getEmrRecordContentById()`方法处理List结果
+- **排序策略**：`ORDER BY e.modifiedOn DESC NULLS LAST`
+- **异常处理**：捕获并处理NumberFormatException和Exception
+
+**业务逻辑**：
+1. 查询指定ID的所有EMR记录
+2. 按modifiedOn降序排列（NULL值排在最后）
+3. 取第一条记录作为最新内容返回
+4. 如有多条记录，记录WARN日志用于数据清理
+5. 返回EmrRecordContentDTO对象
+
+**图表来源**
+- [EmrContentRepository.java:114-125](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java#L114-L125)
+- [EmrRecordService.java:208-258](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java#L208-L258)
+
 ## AI辅助功能
 
 系统集成了先进的AI辅助诊断功能，通过机器学习和自然语言处理技术为医生提供智能化的医疗决策支持。
@@ -1413,6 +1477,8 @@ TodoEngine-->>Doctor : 显示生成的待办事项
 | JPA批处理 | 批处理延迟 | >500ms | 警告 |
 | Thinking折叠 | 折叠功能可用性 | <100% | 警告 |
 | 首次病程记录 | 替代逻辑成功率 | <95% | 警告 |
+| IncorrectResultSizeDataAccessException | 异常发生率 | >0 | 警告 |
+| 重复ID记录处理 | 处理成功率 | <100% | 警告 |
 
 #### 监控配置
 
@@ -1453,6 +1519,8 @@ ServiceCheck --> |EMR同步| EmrSync[EMR同步服务]
 ServiceCheck --> |数据库清理| DatabaseCleanup[数据库清理工具]
 ServiceCheck --> |Thinking折叠| ThinkingFold[Thinking折叠功能]
 ServiceCheck --> |首次病程记录| FirstCourseSubstitute[首次病程记录替代逻辑]
+ServiceCheck --> |IncorrectResultSizeDataAccessException| IRSDAE[异常处理机制]
+ServiceCheck --> |重复ID记录处理| DuplicateIDHandler[重复ID处理机制]
 MainServer --> AIService[AI模型服务]
 ExecServer --> Encryption[加密服务]
 Database --> DataSources[数据源检查]
@@ -1465,6 +1533,8 @@ EmrSync --> ConstraintHandling[约束处理]
 DatabaseCleanup --> CleanupValidation[清理验证]
 ThinkingFold --> DOMPurifyValidation[DOMPurify验证]
 FirstCourseSubstitute --> PromptUtilsValidation[PromptUtils验证]
+IRSDAE --> ListReturnMechanism[List返回机制]
+DuplicateIDHandler --> ModifiedOnSort[按修改时间排序]
 AIService --> ModelStatus{模型状态}
 Encryption --> EncStatus{加密状态}
 DataSources --> DSStatus{数据源状态}
@@ -1482,6 +1552,8 @@ OverallStatus --> JSONStatus{JSON状态}
 OverallStatus --> ConstraintStatus{约束状态}
 OverallStatus --> ThinkingStatus{Thinking状态}
 OverallStatus --> FirstCourseStatus{首次病程状态}
+OverallStatus --> IRSDAEStatus{异常处理状态}
+OverallStatus --> DuplicateIDStatus{重复ID状态}
 ```
 
 **图表来源**
@@ -1604,6 +1676,18 @@ OverallStatus --> FirstCourseStatus{首次病程状态}
 | 网络错误区分失败 | 服务器响应错误和网络请求错误混淆 | 检查error.response vs error.request判断逻辑 |
 | 用户提示不友好 | 错误提示信息不包含记录ID | 检查错误消息构建，验证记录ID包含逻辑 |
 | 前端日志异常 | 前端console.error未输出 | 检查前端日志配置，验证错误处理流程 |
+
+#### IncorrectResultSizeDataAccessException问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 异常发生 | 查询重复ID记录时抛出IncorrectResultSizeDataAccessException | 检查Repository层返回类型，验证List vs Optional的使用 |
+| 重复记录处理失败 | 多条记录时未正确取最新记录 | 检查modifiedOn排序逻辑，验证ORDER BY e.modifiedOn DESC NULLS LAST |
+| 日志记录异常 | 重复记录检测未记录WARN日志 | 检查contentList.size() > 1条件判断，验证日志记录逻辑 |
+| 业务逻辑异常 | 返回空内容而非最新记录 | 检查get(0)取值逻辑，验证第一条记录的正确性 |
+| 性能问题 | 按modifiedOn排序影响查询性能 | 检查数据库索引使用，验证排序字段的索引优化 |
 
 #### 前端构建系统问题
 
@@ -1764,7 +1848,19 @@ OverallStatus --> FirstCourseStatus{首次病程状态}
     tail -f logs/main/emr-record-selection.log | grep "network_error"
     ```
 
-13. **前端构建日志**:
+13. **IncorrectResultSizeDataAccessException日志**:
+    ```bash
+    # 查看异常处理日志
+    tail -f logs/main/irsd-ae-handler.log
+    
+    # 检查重复ID记录处理
+    tail -f logs/main/duplicate-id-handler.log | grep "duplicate_record"
+    
+    # 检查按修改时间排序
+    tail -f logs/main/modified-on-sort.log | grep "sort_by_modified_on"
+    ```
+
+14. **前端构建日志**:
     ```bash
     # 查看前端构建日志
     cd med_ai_assistant_1.0_bs_vue
@@ -1996,6 +2092,8 @@ FixLint --> RunLint
    - **新增Thinking折叠监控**：监控折叠功能可用性
    - **新增首次病程记录监控**：监控替代逻辑成功率
    - **新增EMR记录选择监控**：监控错误调试信息有效性
+   - **新增IncorrectResultSizeDataAccessException监控**：监控异常处理机制有效性
+   - **新增重复ID记录处理监控**：监控按修改时间排序功能
 
 #### 版本升级指南
 
@@ -2063,6 +2161,13 @@ cd ../deploy/main-linux-oracle
 - **优化配置**：提升前端构建系统稳定性
 - **增强依赖管理**：确保依赖版本兼容性
 
+#### v0.8.020 - IncorrectResultSizeDataAccessException修复
+- **新增功能**：修复IncorrectResultSizeDataAccessException问题
+- **List返回机制**：Repository层返回List而非Optional，确保重复ID记录处理稳定性
+- **按修改时间降序取最新记录**：使用ORDER BY e.modifiedOn DESC NULLS LAST确保取到最新内容
+- **异常处理增强**：改进异常捕获和日志记录机制
+- **监控指标新增**：新增IncorrectResultSizeDataAccessException监控指标
+
 ### 版本管理策略
 
 #### 版本号规则
@@ -2120,6 +2225,8 @@ NotifyUsers --> End([发布完成])
 14. **智能替代逻辑**: 首次病程记录模板的智能入院记录替代机制，提升病历生成的完整性
 15. **思维过程可视化**: Thinking折叠功能提升AI结果的可读性和用户体验
 16. **错误调试增强**: EMR记录选择错误的详细调试信息，便于问题定位和解决
+17. **异常处理稳定性**: 新增的IncorrectResultSizeDataAccessException修复机制，确保重复ID记录处理的稳定性
+18. **数据一致性保障**: 按修改时间降序取最新记录的机制，确保用户获取到最准确的病历内容
 
 ### 未来发展
 
@@ -2137,5 +2244,6 @@ NotifyUsers --> End([发布完成])
 12. **监控告警完善**: 持续完善监控告警机制，提供更全面的系统状态可视化
 13. **智能功能扩展**: 基于新增的替代逻辑和折叠功能，进一步扩展智能辅助功能
 14. **用户体验优化**: 持续改进用户界面和交互体验，提升系统易用性
+15. **异常处理机制完善**: 持续改进IncorrectResultSizeDataAccessException等异常处理机制，提升系统稳定性
 
-通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的首次病程记录模板入院记录替代逻辑、Thinking折叠功能、EMR记录选择错误调试信息增强、JSON字段名大小写对齐修复、以及高并发可靠性保障，证明了团队对用户数据安全和系统稳定性的高度重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在高并发场景下的数据同步可靠性方面取得了显著提升。
+通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的首次病程记录模板入院记录替代逻辑、Thinking折叠功能、EMR记录选择错误调试信息增强、JSON字段名大小写对齐修复、以及高并发可靠性保障，证明了团队对用户数据安全和系统稳定性的高度重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在高并发场景下的数据同步可靠性方面取得了显著提升。版本0.8.020中新增的IncorrectResultSizeDataAccessException修复机制，通过List返回和按修改时间降序取最新记录的实现，为系统提供了更加稳定和可靠的病历内容查询能力，确保用户能够在任何情况下都能获取到准确的病历信息。
