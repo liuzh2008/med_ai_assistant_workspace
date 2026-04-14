@@ -11,7 +11,8 @@
 - [执行服务器架构简化实施报告.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器架构简化实施报告.md)
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
-- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [2026-04-13更新日志.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
 - [2026-03-25更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-24更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
 - [2026-03-23更新日志.md](file://med_ai_assistant_1.0_bs/更新小结.md)
@@ -48,15 +49,21 @@
 - [ClobManager.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java)
 - [待办事项接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/待办事项接口.md)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
+- [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
+- [DiagnosisEditDialog.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DiagnosisEditDialog.vue)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增科室特殊情况补充信息功能，增强AI提示模板系统的灵活性和临床相关性
-- 优化后端todo项查询系统，实现去重算法提升用户体验
-- 修复数据库缓存问题，解决Hibernate缓存导致的状态验证失败问题
-- 新增CLOB内存管理工具，防止内存泄漏和性能问题
-- 增强SQL执行缓存清理和监控功能
+- 新增Streamed Text Processing Response System流式文本处理系统，支持实时LLM响应显示
+- 新增AI-Assisted Diagnostic Overview Card Component诊断概览卡片组件，提供诊断列表和详细分析功能
+- 优化MedicalRecords组件的文字整理功能，从非流式改为流式响应
+- 增强诊断解析工具函数，支持完整的诊断块提取和解析
+- 完善诊断编辑对话框的AI诊断列表刷新机制
 
 ## 目录
 1. [简介](#简介)
@@ -73,7 +80,7 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 新增科室特殊情况补充信息功能，增强AI提示模板系统的灵活性和临床相关性；优化后端todo项查询系统，实现去重算法提升用户体验；修复数据库缓存问题，解决Hibernate缓存导致的状态验证失败问题；新增CLOB内存管理工具，防止内存泄漏和性能问题；增强SQL执行缓存清理和监控功能。
+**最新更新** 新增Streamed Text Processing Response System流式文本处理系统，支持实时LLM响应显示；新增AI-Assisted Diagnostic Overview Card Component诊断概览卡片组件，提供诊断列表和详细分析功能；优化MedicalRecords组件的文字整理功能，从非流式改为流式响应；增强诊断解析工具函数，支持完整的诊断块提取和解析。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
@@ -81,6 +88,10 @@
 - 前端AI服务：aiService.js提供统一的AI服务调用接口，drg.js提供DRG/MCC分析API
 - 模板管理：PromptTemplates.vue、PromptTemplateEditDialog.vue等模板管理组件
 - MCC分析模块：完整的MCC预筛选、相似度计算、Prompt生成功能
+- **流式文本处理系统**：新增analyzeLLMStream函数和processRecognizedTextStream工具，支持实时LLM响应显示
+- **AI诊断概览卡片**：新增DiagnosisCard.vue组件，提供诊断列表和详细分析功能
+- **增强的诊断解析**：新增diagnosisParser.js工具，支持完整的诊断块提取和解析
+- **优化的文字整理**：MedicalRecords.vue中的processVoiceRecognitionText方法支持流式实时更新
 - **科室特殊情况补充信息**：新增SPECIAL_CONTENT字段支持科室特定模板的个性化配置
 - **优化的待办事项查询**：实现按病历ID去重算法，提升用户界面体验
 - **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题
@@ -115,6 +126,11 @@ OCRDash["OCR数据看板<br/>实时监控界面"]
 DrgAnalysis["DRG分析组件<br/>DrgAnalysis.vue"]
 LatestAPIFront["最新提示结果API<br/>getLatestPromptResult"]
 TodoFront["待办事项界面<br/>优化后的查询结果"]
+StreamSystem["流式文本处理系统<br/>analyzeLLMStream + processRecognizedTextStream"]
+DiagnosisCard["诊断概览卡片<br/>DiagnosisCard.vue"]
+DiagnosisParser["诊断解析工具<br/>diagnosisParser.js"]
+MedicalRecords["病历管理组件<br/>MedicalRecords.vue + voiceTextProcessor.js"]
+EndDevice[("医疗设备")]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
@@ -149,6 +165,9 @@ PromptEditor --> AIService
 TopMenu --> AIService
 OCRDash --> Main
 TodoFront --> TodoOptimization
+StreamSystem --> AIService
+DiagnosisCard --> DiagnosisParser
+MedicalRecords --> StreamSystem
 ExternalSystem --> LatestAPI
 ```
 
@@ -162,6 +181,7 @@ ExternalSystem --> LatestAPI
 - [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-61](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L61)
 - [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:1-136](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L1-L136)
@@ -185,11 +205,15 @@ ExternalSystem --> LatestAPI
 - **AI OCR数据采集系统**：实现医疗设备屏幕的自动OCR识别和数据数字化处理，支持多品牌设备的参数提取。
 - **最新提示结果接口**：提供GET /api/ai/latestPromptResult端点，支持外部系统自动化检索AI生成的医疗洞察。
 - **优化的待办事项查询**：实现按medicalRecordId去重算法，同一病历ID只保留最新的一条记录。
-- **数据库缓存修复**：解决Hibernate自动刷新机制导致的CLOB字段处理异常问题。
+- **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题。
 - **CLOB内存管理**：新增ClobManager工具类，优化Clob对象的内存管理，防止内存泄漏。
 - **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理。
+- **流式文本处理系统**：新增analyzeLLMStream函数和processRecognizedTextStream工具，支持Fetch API + ReadableStream消费NDJSON流，实现实时LLM响应显示。
+- **AI诊断概览卡片**：新增DiagnosisCard.vue组件，支持从AI结果中提取诊断列表，提供左右分栏布局和折叠/展开功能。
+- **诊断解析工具**：新增diagnosisParser.js工具，统一提取诊断名称和完整诊断块的逻辑，修复正则表达式问题。
+- **增强的文字整理**：MedicalRecords.vue中的processVoiceRecognitionText方法支持流式实时更新输入框，优化用户体验。
 
-**最新更新** 新增科室特殊情况补充信息功能，增强AI提示模板系统的灵活性和临床相关性；优化后端todo项查询系统，实现去重算法提升用户体验；修复数据库缓存问题，解决Hibernate缓存导致的状态验证失败问题；新增CLOB内存管理工具，防止内存泄漏和性能问题；增强SQL执行缓存清理和监控功能。
+**最新更新** 新增Streamed Text Processing Response System流式文本处理系统，支持实时LLM响应显示；新增AI-Assisted Diagnostic Overview Card Component诊断概览卡片组件，提供诊断列表和详细分析功能；优化MedicalRecords组件的文字整理功能，从非流式改为流式响应；增强诊断解析工具函数，支持完整的诊断块提取和解析。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
@@ -210,6 +234,7 @@ ExternalSystem --> LatestAPI
 - [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
 - [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
@@ -223,6 +248,9 @@ ExternalSystem --> LatestAPI
 - **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题，提高系统稳定性。
 - **CLOB内存管理**：优化大文本处理性能，防止内存泄漏和系统性能下降。
 - **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理。
+- **流式文本处理系统**：新增Fetch API + ReadableStream消费NDJSON流的机制，实现实时LLM响应显示。
+- **AI诊断概览卡片**：提供诊断列表和详细分析功能，支持折叠/展开和左右分栏布局。
+- **增强的诊断解析**：统一提取诊断名称和完整诊断块的逻辑，修复正则表达式问题。
 
 ```mermaid
 graph TB
@@ -234,44 +262,111 @@ A --> F["待办事项优化服务"]
 A --> G["缓存修复服务"]
 A --> H["CLOB内存管理"]
 A --> I["SQL执行缓存"]
+A --> J["流式文本处理系统"]
+A --> K["AI诊断概览卡片"]
+A --> L["诊断解析工具"]
 B --> F["LLM服务"]
-A --> J["数据库"]
-B --> J
-C --> K["OCR数据库"]
-C --> L["医疗设备"]
-D --> M["MCC字典库"]
-E --> N["外部系统集成"]
-F --> O["去重算法"]
-G --> P["Hibernate缓存修复"]
-H --> Q["内存管理"]
-I --> R["缓存清理与监控"]
-B --> S["回调服务"]
-A --> T["对外API"]
-T --> A
+A --> M["数据库"]
+B --> M
+C --> N["OCR数据库"]
+C --> O["医疗设备"]
+D --> P["MCC字典库"]
+E --> Q["外部系统集成"]
+F --> R["去重算法"]
+G --> S["Hibernate缓存修复"]
+H --> T["内存管理"]
+I --> U["缓存清理与监控"]
+B --> V["回调服务"]
+A --> W["对外API"]
+W --> A
 subgraph "前端应用"
-U["Vue.js 应用"]
-V["AI服务模块"]
-W["DRG/MCC分析API"]
-X["对话界面组件"]
-Y["模板管理组件"]
-Z["顶部菜单组件"]
-AA["OCR数据看板"]
-BB["DRG分析组件"]
-CC["最新提示结果API"]
-DD["优化后的待办事项界面"]
+X["Vue.js 应用"]
+Y["AI服务模块"]
+Z["DRG/MCC分析API"]
+AA["对话界面组件"]
+BB["模板管理组件"]
+CC["顶部菜单组件"]
+DD["OCR数据看板"]
+EE["DRG分析组件"]
+FF["最新提示结果API"]
+GG["优化后的待办事项界面"]
+HH["流式文本处理组件"]
+II["诊断卡片组件"]
+JJ["诊断解析工具"]
+KK["病历管理组件"]
+LL["语音识别文本处理"]
+MM["NDJSON流解析"]
+NN["实时响应显示"]
+OO["诊断列表提取"]
+PP["诊断块解析"]
+QQ["正则表达式修复"]
+RR["CRLF兼容处理"]
+SS["认证Token支持"]
+TT["超时控制"]
+UU["错误处理"]
+VV["流式更新"]
+WW["折叠/展开功能"]
+XX["左右分栏布局"]
+YY["详细分析显示"]
+ZZ["诊断编辑对话框"]
+AAA["AI诊断列表刷新"]
+BBB["诊断名称提取"]
+CCC["完整诊断块解析"]
+DDD["诊断依据显示"]
+EEE["鉴别诊断显示"]
+FFF["补充说明显示"]
 end
-U --> V
-U --> W
-W --> T
-V --> T
-X --> U
-Y --> V
-Z --> U
-AA --> U
-BB --> W
-BB --> CC
-DD --> F
-N --> E
+X --> Y
+X --> Z
+Z --> W
+Y --> W
+AA --> X
+BB --> Y
+CC --> X
+DD --> X
+EE --> Z
+EE --> FF
+GG --> F
+HH --> Y
+II --> JJ
+JJ --> OO
+JJ --> PP
+KK --> LL
+LL --> MM
+MM --> NN
+NN --> OO
+OO --> PPP["MedicalRecords.vue"]
+PPP --> VVV["processVoiceRecognitionText"]
+VVV --> WWW
+WWW --> XXX["流式fetch请求"]
+XXX --> YYY["NDJSON解析"]
+YYY --> ZZZ["CRLF兼容"]
+ZZZ --> AAAA["认证Token"]
+AAAA --> BBBB["超时控制"]
+BBBB --> CCCC["错误处理"]
+CCCC --> DDDD["流式更新"]
+DDDD --> EEEE["实时显示"]
+EEEE --> FFFF["用户界面"]
+FFFF --> GGGG["诊断卡片"]
+GGGG --> HHHH["诊断列表"]
+HHHH --> IIII["诊断详情"]
+IIII --> JJJJ["诊断依据"]
+JJJJ --> KKKK["鉴别诊断"]
+KKKK --> LLLL["补充说明"]
+LLLL --> MMMM["折叠/展开"]
+MMMM --> NNNN["左右分栏"]
+NNNN --> OOOO["详细分析"]
+OOOO --> PPPP["诊断编辑对话框"]
+PPPP --> QQQQ["AI诊断列表"]
+QQQQ --> RRRR["刷新机制"]
+RRRR --> SSSS["状态管理"]
+SSSS --> TTTT["用户交互"]
+UUUU["外部系统集成"]
+VVVV["标准化API"]
+WWWW["参数验证"]
+XXXX["缓存策略"]
+YYYY["错误处理"]
+ZZZZ["性能监控"]
 ```
 
 **图表来源**
@@ -284,6 +379,7 @@ N --> E
 - [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
 - [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 ## 详细组件分析
 
@@ -770,11 +866,19 @@ ReturnCache --> Stats
   - 按患者ID查询：GET /api/medicalrecords/patient/{patientId}/todos，自动去重同一病历ID的多个待办
   - 按日期和科室查询：GET /api/medicalrecords/todos/by-date-department，支持日期范围和科室过滤
   - 去重算法：按medicalRecordId分组，每组只保留createdTime最大的最新记录
-  - 兼容性：medicalRecordId为null的记录不参与去重，直接保留
+  - 兼容性：medicalRecordId为null的记录不参与去重
 - **数据库缓存服务**
   - 缓存清理：POST /api/hospital-config/clear-cache，支持按医院ID和数据库类型清理
   - 缓存统计：GET /api/hospital-config/cache-stats，获取缓存使用统计信息
   - SQL执行缓存：增强缓存清理和监控功能
+- **流式文本处理API**
+  - analyzeLLMStream：使用Fetch API + ReadableStream消费NDJSON流，支持实时响应显示
+  - processRecognizedTextStream：语音识别文本流式处理函数
+  - processVoiceRecognitionText：病历管理组件中的流式文本处理方法
+- **诊断解析API**
+  - extractDiagnosisNames：从AI结果中提取诊断名称列表
+  - extractDiagnosisBlocks：提取完整的诊断块信息
+  - 诊断卡片组件：DiagnosisCard.vue组件
 - **调用示例**
   - 流式调用：POST `/api/ai/stream-response-post`，Content-Type: application/json
   - 非流式调用：POST `/api/ai/response`，请求体包含model与messages
@@ -784,6 +888,11 @@ ReturnCache --> Stats
   - **最新提示结果**：GET `/api/ai/latestPromptResult?patientId=123&promptName=诊断分析`
   - **优化的待办查询**：GET `/api/medicalrecords/patient/990500001204401_1/todos`
   - **缓存清理**：POST `/api/hospital-config/clear-cache?hospitalId=cdwyy&databaseType=his`
+  - **流式文本处理**：analyzeLLMStream({content, onChunk, onComplete})
+  - **诊断解析**：extractDiagnosisNames(content) / extractDiagnosisBlocks(content)
+  - **模板管理API**：获取模板列表、详情、创建、更新、删除等
+  - **OCR数据采集API**：设备注册、数据上报、模板管理、实时数据查询
+  - **外部系统集成**：标准化API接口，支持外部系统自动化集成
 - **模板管理API**
   - 获取模板列表：GET `/api/ai/promptTemplates`
   - 获取模板详情：GET `/api/ai/promptTemplate`
@@ -800,7 +909,7 @@ ReturnCache --> Stats
   - **自动化检索**：支持外部系统定时拉取最新的AI生成医疗洞察
   - **合规保障**：所有AI内容自动附加免责声明，确保法律合规
 
-**最新更新** 新增优化的待办事项查询API，实现按medicalRecordId去重算法；新增数据库缓存清理和监控API；增强SQL执行缓存功能；新增科室特殊情况补充信息支持。
+**最新更新** 新增流式文本处理系统，支持实时LLM响应显示；新增AI诊断概览卡片组件，提供诊断列表和详细分析功能；优化MedicalRecords组件的文字整理功能；增强诊断解析工具函数，支持完整的诊断块提取和解析。
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -813,6 +922,7 @@ ReturnCache --> Stats
 - [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
 - [HospitalConfigTestController.java:450-481](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java#L450-L481)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 ### 最新提示结果接口（新增功能）
 - 设计要点
@@ -1064,6 +1174,272 @@ TemplateUI-->>User : "显示配置结果"
 - [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
 - [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
 
+### 流式文本处理响应系统
+- 设计要点
+  - 新增analyzeLLMStream函数，使用Fetch API + ReadableStream消费NDJSON流
+  - 支持实时LLM响应显示，提供onChunk回调获取增量内容
+  - 实现超时控制、错误处理和流式更新机制
+  - 支持认证Token传递和CRLF行结束符兼容
+- 关键特性
+  - 流式调用：analyzeLLMStream({content, onChunk, onComplete, onError})
+  - 实时更新：onChunk回调实时接收生成内容，逐字更新界面
+  - 完整解析：流结束后解析结构化内容（修改后记录、修改原因）
+  - 超时控制：默认300000ms超时时间，支持AbortController取消
+  - 错误处理：统一的错误处理机制，支持AbortError和网络错误
+- 前端集成
+  - MedicalRecords组件：processVoiceRecognitionText方法支持流式实时更新
+  - voiceTextProcessor工具：processRecognizedTextStream函数封装流式处理
+  - 诊断卡片组件：支持诊断列表的实时显示和交互
+  - 用户体验：LLM生成内容在输入框中实时逐步显示，优化用户体验
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant MedicalRecords as "MedicalRecords组件"
+participant VoiceProcessor as "voiceTextProcessor"
+participant AIService as "AI服务模块"
+participant LLM as "LLM服务"
+User->>MedicalRecords : "点击文字整理"
+MedicalRecords->>VoiceProcessor : "processRecognizedTextStream(text, {onChunk})"
+VoiceProcessor->>AIService : "analyzeLLMStream({content, onChunk, onComplete})"
+AIService->>LLM : "POST /api/ai/response (stream=true)"
+LLM-->>AIService : "NDJSON流响应"
+loop "流式处理"
+AIService->>VoiceProcessor : "onChunk(chunkText)"
+VoiceProcessor->>MedicalRecords : "实时更新输入框"
+MedicalRecords->>MedicalRecords : "accumulatedContent += chunkText"
+MedicalRecords-->>User : "输入框实时显示LLM内容"
+end
+AIService->>VoiceProcessor : "onComplete(fullContent)"
+VoiceProcessor->>MedicalRecords : "解析结构化内容"
+MedicalRecords->>MedicalRecords : "替换选中/全部文本"
+MedicalRecords-->>User : "显示整理完成"
+```
+
+**最新更新** 新增完整的流式文本处理响应系统，支持实时LLM响应显示，优化用户体验。
+
+**图表来源**
+- [ai.js:867-988](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L867-L988)
+- [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
+- [MedicalRecords.vue:2092-2210](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L2092-L2210)
+
+**章节来源**
+- [ai.js:867-988](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L867-L988)
+- [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
+- [MedicalRecords.vue:2092-2210](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L2092-L2210)
+
+### AI辅助诊断概览卡片组件
+- 设计要点
+  - 新增DiagnosisCard.vue组件，当Prompt标题包含"诊断分析"时自动展示
+  - 卡片左右分栏布局：左侧显示从AI结果中提取的诊断列表，右侧显示选中诊断的详细分析
+  - 诊断分析类Prompt的AI结果区域支持折叠/展开，默认折叠，减少页面信息量
+  - 支持诊断依据、鉴别诊断、补充说明等详细信息的显示
+- 关键特性
+  - 诊断列表：extractDiagnosisBlocks工具函数提取完整的诊断块信息
+  - 详细分析：支持诊断依据、鉴别诊断、补充说明等字段显示
+  - 折叠功能：默认折叠AI结果区域，减少页面信息量
+  - 交互设计：支持诊断列表的点击选择和详细信息的实时显示
+- 前端集成
+  - AIResults组件：自动检测诊断分析类Prompt并显示诊断卡片
+  - 诊断解析工具：diagnosisParser.js提供统一的诊断提取和解析逻辑
+  - 诊断编辑对话框：支持AI诊断列表的刷新和管理
+  - 用户体验：提供直观的诊断信息展示和交互功能
+
+```mermaid
+sequenceDiagram
+participant AIResults as "AIResults组件"
+participant DiagnosisCard as "DiagnosisCard组件"
+participant DiagnosisParser as "diagnosisParser工具"
+participant User as "用户"
+AIResults->>AIResults : "检测isDiagnosisAnalysis"
+alt "诊断分析类Prompt"
+AIResults->>DiagnosisCard : "渲染诊断卡片组件"
+DiagnosisCard->>DiagnosisParser : "extractDiagnosisBlocks(content)"
+DiagnosisParser-->>DiagnosisCard : "返回诊断块列表"
+DiagnosisCard->>DiagnosisCard : "初始化selectedIndex=0"
+DiagnosisCard->>User : "显示诊断列表"
+User->>DiagnosisCard : "点击诊断项"
+DiagnosisCard->>DiagnosisCard : "更新selectedIndex"
+DiagnosisCard->>User : "显示诊断详细信息"
+else "非诊断分析类Prompt"
+AIResults->>AIResults : "正常显示AI结果"
+end
+```
+
+**最新更新** 新增AI辅助诊断概览卡片组件，提供诊断列表和详细分析功能，支持折叠/展开和左右分栏布局。
+
+**图表来源**
+- [DiagnosisCard.vue:74-143](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L74-L143)
+- [diagnosisParser.js:78-131](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L78-L131)
+- [AIResults.vue:76-102](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L76-L102)
+
+**章节来源**
+- [DiagnosisCard.vue:74-143](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L74-L143)
+- [diagnosisParser.js:78-131](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L78-L131)
+- [AIResults.vue:76-102](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L76-L102)
+
+### 增强的诊断解析工具
+- 设计要点
+  - 新增diagnosisParser.js工具，统一提取诊断名称和完整诊断块的逻辑
+  - 修复正则表达式lookahead `(?=###|$)` 误匹配四级标题（####）导致诊断列表区块被截断为空的问题
+  - 支持多种诊断格式的灵活匹配，包括"诊断名称："和"诊断："等多种格式
+  - 提供完整的诊断块解析功能，包括诊断编号、名称、类别、依据、鉴别诊断、补充说明等字段
+- 关键特性
+  - 诊断名称提取：extractDiagnosisNames函数，支持去重和格式化
+  - 诊断块解析：extractDiagnosisBlocks函数，提取完整的诊断信息块
+  - 正则表达式修复：修复lookahead问题，确保正确的区块分割
+  - 字段提取：支持诊断编号、名称、类别、依据、鉴别诊断、补充说明等字段
+  - 兼容性处理：支持多种格式和边界情况的处理
+- 前端集成
+  - AIResults组件：使用extractDiagnosisNames提取AI诊断列表
+  - DiagnosisCard组件：使用extractDiagnosisBlocks提取诊断详细信息
+  - DiagnosisEditDialog组件：支持AI诊断列表的刷新和管理
+  - 用户体验：提供准确的诊断信息提取和显示功能
+
+```mermaid
+flowchart TD
+Start(["开始诊断解析"]) --> InputCheck{"输入内容检查"}
+InputCheck --> |为空或非字符串| ReturnEmpty["返回空数组"]
+InputCheck --> |有效内容| ExtractNames["extractDiagnosisNames提取诊断名称"]
+ExtractNames --> NameRegex["正则表达式匹配诊断名称"]
+NameRegex --> |匹配成功| AddToMatches["添加到匹配数组"]
+NameRegex --> |无匹配| FallbackRegex["尝试宽松匹配"]
+FallbackRegex --> |匹配成功| AddToMatches
+FallbackRegex --> |仍无匹配| Dedupe["去重并格式化"]
+AddToMatches --> Dedupe
+Dedupe --> ExtractBlocks["extractDiagnosisBlocks提取诊断块"]
+ExtractBlocks --> FindList["查找诊断列表区块"]
+FindList --> SplitBlocks["按诊断编号/名称分割诊断块"]
+SplitBlocks --> ParseBlock["parseDiagnosisBlock解析单个诊断块"]
+ParseBlock --> ExtractFields["提取诊断字段：编号、名称、类别、依据、鉴别诊断、补充说明"]
+ExtractFields --> ReturnResults["返回诊断结果"]
+ReturnEmpty --> End(["结束"])
+ReturnResults --> End
+```
+
+**最新更新** 新增完整的诊断解析工具，支持诊断名称和完整诊断块的提取，修复正则表达式问题，提供准确的诊断信息解析功能。
+
+**图表来源**
+- [diagnosisParser.js:27-60](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L27-L60)
+- [diagnosisParser.js:78-131](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L78-L131)
+- [diagnosisParser.js:139-201](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L139-L201)
+
+**章节来源**
+- [diagnosisParser.js:27-60](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L27-L60)
+- [diagnosisParser.js:78-131](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L78-L131)
+- [diagnosisParser.js:139-201](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L139-L201)
+
+### 优化的文字整理功能
+- 设计要点
+  - MedicalRecords.vue中的processVoiceRecognitionText方法从非流式改为流式响应
+  - 支持选区处理：有选中文本时仅整理选中部分，否则整理全部内容
+  - 实时更新：通过onChunk回调实时接收生成内容，逐字更新病历输入框
+  - 解析结构化内容：流结束后解析"### 修改后记录"和"### 修改原因"标记
+  - 光标位置管理：自动设置光标位置到替换后的文本末尾
+- 关键特性
+  - 选区检测：自动检测用户选择的文本片段
+  - 实时流式更新：accumulateContent累积内容，实时更新输入框
+  - 结构化解析：parseProcessedContent解析修改后记录和修改原因
+  - 错误恢复：出错时自动恢复原始内容和状态
+  - 用户体验：提供流畅的实时响应和准确的内容整理
+- 前端集成
+  - voiceTextProcessor工具：processRecognizedTextStream封装流式处理
+  - 流式fetch请求：analyzeLLMStream支持认证Token和超时控制
+  - NDJSON解析：兼容CRLF行结束符，支持isFinal消息处理
+  - 用户界面：提供加载状态和错误提示，优化交互体验
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant MedicalRecords as "MedicalRecords组件"
+participant VoiceProcessor as "voiceTextProcessor"
+participant AIService as "AI服务模块"
+participant LLM as "LLM服务"
+User->>MedicalRecords : "点击文字整理"
+MedicalRecords->>MedicalRecords : "检测选区状态"
+alt "有选中文本"
+MedicalRecords->>MedicalRecords : "保存选区前后文本"
+end
+MedicalRecords->>VoiceProcessor : "processRecognizedTextStream(textToProcess, {onChunk})"
+VoiceProcessor->>AIService : "analyzeLLMStream({content, onChunk, onComplete})"
+AIService->>LLM : "POST /api/ai/response (stream=true)"
+LLM-->>AIService : "NDJSON流响应"
+loop "流式处理"
+AIService->>VoiceProcessor : "onChunk(chunkText)"
+VoiceProcessor->>MedicalRecords : "实时更新输入框"
+MedicalRecords->>MedicalRecords : "accumulateContent += chunkText"
+MedicalRecords->>MedicalRecords : "更新输入框内容"
+end
+AIService->>VoiceProcessor : "onComplete(fullContent)"
+VoiceProcessor->>VoiceProcessor : "parseProcessedContent(fullContent)"
+VoiceProcessor->>MedicalRecords : "返回解析结果"
+MedicalRecords->>MedicalRecords : "替换选中/全部文本"
+MedicalRecords->>MedicalRecords : "设置光标位置"
+MedicalRecords-->>User : "显示整理完成"
+```
+
+**最新更新** 优化MedicalRecords组件的文字整理功能，从非流式改为流式响应，支持实时LLM响应显示，提升用户体验。
+
+**图表来源**
+- [MedicalRecords.vue:2092-2210](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L2092-L2210)
+- [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
+- [ai.js:867-988](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L867-L988)
+
+**章节来源**
+- [MedicalRecords.vue:2092-2210](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L2092-L2210)
+- [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
+- [ai.js:867-988](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L867-L988)
+
+### 诊断编辑对话框增强
+- 设计要点
+  - DiagnosisEditDialog.vue集成诊断解析工具，支持AI诊断列表的刷新
+  - 当Prompt标题以"诊断分析"开头时，自动获取AI结果内容并解析诊断名称
+  - 支持从store获取病人诊断数据，包含诊断ID、名称、编码等信息
+  - 提供诊断列表的显示和管理功能，支持与AI诊断的对比
+- 关键特性
+  - AI诊断刷新：自动检测诊断分析类Prompt并刷新AI诊断列表
+  - 病人诊断集成：从store获取现有病人诊断数据
+  - 状态管理：维护AI诊断和当前诊断的状态同步
+  - 用户交互：提供诊断列表的显示和操作功能
+- 前端集成
+  - 诊断解析工具：extractDiagnosisNames函数提取AI诊断名称
+  - Store集成：使用Vuex状态管理维护诊断数据
+  - 用户界面：提供诊断列表的显示和交互功能
+  - 错误处理：处理无AI结果或非诊断分析Prompt的情况
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant DiagnosisEditDialog as "诊断编辑对话框"
+participant Store as "Vuex Store"
+participant DiagnosisParser as "diagnosisParser工具"
+User->>DiagnosisEditDialog : "打开诊断编辑对话框"
+DiagnosisEditDialog->>DiagnosisEditDialog : "检查当前Prompt标题"
+alt "标题以'诊断分析'开头"
+DiagnosisEditDialog->>Store : "获取AI结果内容"
+Store-->>DiagnosisEditDialog : "返回result.content"
+DiagnosisEditDialog->>DiagnosisParser : "extractDiagnosisNames(result.content)"
+DiagnosisParser-->>DiagnosisEditDialog : "返回AI诊断列表"
+DiagnosisEditDialog->>Store : "SET_AI_DIAGNOSIS(aiDiagnoses)"
+DiagnosisEditDialog->>Store : "获取病人诊断数据"
+Store-->>DiagnosisEditDialog : "返回diagnoses"
+DiagnosisEditDialog->>DiagnosisEditDialog : "SET_CURRENT_DIAGNOSIS"
+DiagnosisEditDialog-->>User : "显示诊断列表"
+else "非诊断分析Prompt"
+DiagnosisEditDialog-->>User : "显示警告信息"
+end
+```
+
+**最新更新** 增强诊断编辑对话框的AI诊断列表刷新机制，支持诊断分析类Prompt的自动检测和诊断数据的同步。
+
+**图表来源**
+- [DiagnosisEditDialog.vue:340-358](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DiagnosisEditDialog.vue#L340-L358)
+- [diagnosisParser.js:27-60](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L27-L60)
+
+**章节来源**
+- [DiagnosisEditDialog.vue:340-358](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DiagnosisEditDialog.vue#L340-L358)
+- [diagnosisParser.js:27-60](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L27-L60)
+
 ## 依赖关系分析
 - 组件耦合
   - 执行服务器控制器依赖AI模型配置类、专用RestTemplate、加密工具与回调服务
@@ -1081,6 +1457,11 @@ TemplateUI-->>User : "显示配置结果"
   - **CLOB内存管理**提供独立的内存管理服务
   - **SQL执行缓存**依赖JdbcTemplateFactory进行缓存管理
   - **科室特殊情况补充信息**依赖PromptTemplate模型扩展
+  - **流式文本处理系统**依赖Fetch API、ReadableStream和NDJSON解析
+  - **AI诊断概览卡片**依赖diagnosisParser工具和AIResults组件
+  - **增强的诊断解析**提供统一的诊断提取和解析功能
+  - **优化的文字整理**依赖voiceTextProcessor工具和analyzeLLMStream函数
+  - **诊断编辑对话框**集成诊断解析工具和Store状态管理
 - 外部依赖
   - LLM服务：通过RestTemplate调用，需配置URL与密钥
   - 数据库：存储加密临时数据、配置与回调记录
@@ -1090,6 +1471,10 @@ TemplateUI-->>User : "显示配置结果"
   - **外部医疗系统**：通过标准化API访问AI生成的医疗洞察
   - **Hibernate框架**：提供ORM功能和缓存管理
   - **Oracle数据库**：支持CLOB字段和复杂的SQL操作
+  - **Fetch API**：提供流式响应处理能力
+  - **ReadableStream**：支持NDJSON流的实时处理
+  - **marked**：提供Markdown解析功能
+  - **DOMPurify**：提供HTML安全过滤功能
 - 潜在风险
   - LLM服务不稳定：通过熔断器与重试缓解
   - 连接池耗尽：通过专用连接池与超时配置控制
@@ -1105,6 +1490,10 @@ TemplateUI-->>User : "显示配置结果"
   - **Hibernate缓存冲突**：通过只读事务和重试机制解决CLOB异常
   - **待办事项重复显示**：通过去重算法解决同一病历的重复待办问题
   - **缓存管理复杂性**：通过统一的缓存管理接口简化缓存操作
+  - **流式响应兼容性**：通过CRLF兼容处理和错误处理机制确保稳定性
+  - **诊断解析准确性**：通过正则表达式修复和字段提取优化提升准确性
+  - **诊断卡片渲染性能**：通过折叠/展开和左右分栏布局优化用户体验
+  - **文字整理实时性**：通过流式更新和光标管理提升交互体验
 
 ```mermaid
 graph TB
@@ -1135,6 +1524,24 @@ SqlCache --> CacheStats["缓存统计信息"]
 SpecialContent["科室特殊内容"] --> PromptTemplate["PromptTemplate模型"]
 SpecialContent --> UpdatePromptTemplateDTO["UpdatePromptTemplateDTO"]
 SpecialContent --> DepartmentDTO["DepartmentDTO"]
+StreamSystem["流式文本处理系统"] --> FetchAPI["Fetch API"]
+StreamSystem --> ReadableStream["ReadableStream"]
+StreamSystem --> NDJSON["NDJSON解析"]
+StreamSystem --> AIService["AI服务模块"]
+StreamSystem --> VoiceProcessor["voiceTextProcessor工具"]
+DiagnosisCard["AI诊断概览卡片"] --> DiagnosisParser["diagnosisParser工具"]
+DiagnosisCard --> AIResults["AIResults组件"]
+DiagnosisCard --> Marked["marked解析"]
+DiagnosisCard --> DOMPurify["DOMPurify过滤"]
+DiagnosisParser --> AIResults
+DiagnosisParser --> DiagnosisEditDialog["诊断编辑对话框"]
+DiagnosisParser --> Store["Vuex Store"]
+EnhancedText["增强的文字整理"] --> VoiceProcessor
+EnhancedText --> MedicalRecords["MedicalRecords组件"]
+EnhancedText --> AIService
+EnhancedText --> FetchAPI
+EnhancedText --> ReadableStream
+EnhancedText --> NDJSON
 subgraph "前端依赖"
 DRGAPI["DRG/MCC分析API"] --> VueComp["Vue组件"]
 DRGAPI --> BackendAPI["后端MCC接口"]
@@ -1150,6 +1557,7 @@ OCRAPI["OCR数据采集API"] --> OCRService["OCR服务端"]
 OCRAPI --> MainSystem["主系统集成"]
 LatestAPIFront["最新提示结果API"] --> ExternalSystem["外部医疗系统"]
 TodoFront["优化后的待办事项界面"] --> TodoOptimization
+EndDevice["医疗设备"]
 end
 ```
 
@@ -1158,7 +1566,7 @@ end
 - [MccScreeningController.java:42-56](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L42-L56)
 - [MccScreeningService.java:33-43](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L33-L43)
 - [AI模型配置类.java:29-68](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L68)
-- [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L9-L178)
+- [aiService.js:9-178](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L9-L178)
 - [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
 - [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
 - [TopMenu.vue:314-326](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L314-L326)
@@ -1171,6 +1579,7 @@ end
 - [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
 - [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
 - [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
@@ -1190,6 +1599,7 @@ end
 - [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
 - [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
 - [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 ## 性能考虑
 - 连接池与超时
@@ -1231,6 +1641,35 @@ end
   - 动态清理：支持按医院ID和数据库类型进行精细化缓存管理
   - 统计监控：提供详细的缓存使用情况统计
   - 性能优化：通过缓存清理提升系统整体性能
+- **流式文本处理性能优化**
+  - Fetch API优化：使用现代浏览器的Fetch API，支持流式响应
+  - ReadableStream处理：高效处理NDJSON流数据，减少内存占用
+  - 实时更新：通过onChunk回调实时更新界面，避免阻塞主线程
+  - 超时控制：默认300000ms超时时间，支持AbortController取消
+  - 错误处理：统一的错误处理机制，支持AbortError和网络错误
+  - CRLF兼容：兼容Windows系统的CRLF行结束符
+  - 认证Token：支持JWT认证Token的传递和验证
+- **AI诊断概览卡片性能优化**
+  - 折叠功能：默认折叠AI结果区域，减少DOM节点数量
+  - 左右分栏：优化布局渲染，提升大文本内容的显示性能
+  - 实时交互：支持诊断列表的点击选择，避免不必要的重渲染
+  - Markdown解析：使用marked库进行安全的HTML转换
+  - XSS防护：使用DOMPurify进行HTML内容的安全过滤
+- **诊断解析工具性能优化**
+  - 正则表达式优化：修复lookahead问题，确保正确的区块分割
+  - 字段提取：支持多种诊断格式的灵活匹配
+  - 兼容性处理：支持多种格式和边界情况的处理
+  - 去重算法：使用Set对象进行高效的去重操作
+- **文字整理功能性能优化**
+  - 选区处理：支持选区检测和局部文本整理，减少处理量
+  - 实时更新：通过accumulateContent累积内容，避免频繁DOM操作
+  - 结构化解析：parseProcessedContent函数优化内容解析性能
+  - 错误恢复：出错时自动恢复原始内容，避免数据丢失
+  - 光标管理：自动设置光标位置，提升用户体验
+- **诊断编辑对话框性能优化**
+  - 状态同步：维护AI诊断和当前诊断的状态同步，避免重复计算
+  - 用户交互：提供诊断列表的显示和操作功能，优化渲染性能
+  - 错误处理：处理无AI结果或非诊断分析Prompt的情况
 - 监控与告警
   - 实时监控：调用成功率、响应时间阈值告警
   - 历史分析：每日趋势、错误模式分析，指导配置调优
@@ -1247,17 +1686,13 @@ end
   - **CLOB内存管理优化**：内存限制和自动清理机制防止性能下降
   - **模板管理性能**：树形结构渲染优化，表单验证实时处理
   - **OCR系统性能**：边缘计算优化，模板匹配优化，数据流优化
-- **模板管理性能**
-  - **树形结构渲染**：优化大量模板的渲染性能
-  - **表单验证**：实时验证用户输入，减少无效提交
-  - **状态管理**：高效的组件状态更新和同步机制
-- **OCR系统性能**
-  - **边缘计算优化**：GPU加速OCR推理，提升识别速度
-  - **模板匹配优化**：基于锚点特征的快速模板识别
-  - **数据流优化**：异步处理和批量上传，减少网络延迟
-  - **缓存策略**：本地缓存和断网续传，保证数据完整性
+  - **流式响应性能**：Fetch API + ReadableStream优化，NDJSON解析优化
+  - **诊断卡片性能**：折叠/展开功能优化，左右分栏布局优化
+  - **诊断解析性能**：正则表达式优化，字段提取优化
+  - **文字整理性能**：选区处理优化，实时更新优化
+  - **诊断编辑性能**：状态同步优化，用户交互优化
 
-**最新更新** 新增待办事项查询去重算法、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能的性能优化措施。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，支持平铺和分组两种展示模式。
+**最新更新** 新增流式文本处理系统、AI诊断概览卡片组件、增强的诊断解析工具和优化的文字整理功能的性能优化措施。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，支持平铺和分组两种展示模式。优化流式响应处理，支持Fetch API + ReadableStream消费NDJSON流，实现实时LLM响应显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
@@ -1268,9 +1703,7 @@ end
 - [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
 - [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
-- [2026-03-25更新日志.md:7-8](file://med_ai_assistant_1.0_bs/更新小结.md#L7-L8)
-- [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
-- [监护仪呼吸机AI OCR数据采集方案.md:1340-1352](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1340-L1352)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 ## 故障排查指南
 - 常见问题
@@ -1292,6 +1725,11 @@ end
   - **CLOB内存泄漏**：检查ClobManager工具类的内存使用情况
   - **SQL执行缓存问题**：验证缓存清理和监控功能是否正常
   - **科室特殊内容配置失败**：检查SPECIAL_CONTENT字段的配置和加载
+  - **流式文本处理失败**：检查Fetch API、ReadableStream和NDJSON解析配置
+  - **AI诊断卡片显示异常**：验证diagnosisParser工具和组件集成
+  - **诊断解析工具错误**：检查正则表达式和字段提取逻辑
+  - **文字整理功能异常**：验证voiceTextProcessor工具和流式处理配置
+  - **诊断编辑对话框问题**：检查Store状态管理和诊断列表刷新
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -1314,6 +1752,11 @@ end
   - **监控CLOB内存使用**：检查ClobManager的内存统计信息
   - **验证SQL缓存清理功能**：测试按条件清理缓存的功能
   - **检查科室特殊内容配置**：验证SPECIAL_CONTENT字段的加载和应用
+  - **验证流式文本处理配置**：检查Fetch API、ReadableStream和NDJSON解析
+  - **测试AI诊断卡片组件**：验证诊断列表提取和详细信息显示
+  - **检查诊断解析工具**：验证正则表达式和字段提取的准确性
+  - **测试文字整理功能**：验证voiceTextProcessor工具和流式处理
+  - **验证诊断编辑对话框**：检查Store状态管理和诊断列表刷新
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
@@ -1329,27 +1772,24 @@ end
   - **CLOB内存管理工具使用指南**
   - **SQL执行缓存管理功能说明**
   - **科室特殊内容配置指南**
+  - **流式文本处理系统技术文档**
+  - **AI诊断概览卡片组件实现指南**
+  - **诊断解析工具使用指南**
+  - **文字整理功能优化指南**
+  - **诊断编辑对话框集成指南**
 
-**最新更新** 新增待办事项查询去重算法、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能的故障排查指南，包括去重算法验证、Hibernate缓存配置、CLOB内存使用监控和缓存清理功能测试等问题的排查步骤。
+**最新更新** 新增流式文本处理系统、AI诊断概览卡片组件、增强的诊断解析工具和优化的文字整理功能的故障排查指南，包括流式响应配置验证、AI诊断卡片组件测试、诊断解析工具准确性检查、文字整理功能测试和诊断编辑对话框状态管理等问题的排查步骤。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
 - [执行服务器架构简化实施报告.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器架构简化实施报告.md)
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
-- [2026-03-25更新日志.md:7-8](file://med_ai_assistant_1.0_bs/更新小结.md#L7-L8)
-- [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
-- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
-- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
-- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
-- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
-- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
-- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
-- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)
 
 ## 结论
 系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的MCC分析功能模块进一步增强了系统的临床价值，提供了完整的MCC预筛选、相似度计算、排除规则检查、TopK筛选和Prompt生成保存能力。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的时序优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 新增的MCC分析功能模块、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能是系统的重要扩展。新增的去重算法显著提升了待办事项查询的用户体验，避免重复显示同一病历的多个待办事项。数据库缓存修复解决了Hibernate缓存导致的状态验证失败问题，提高了系统稳定性。CLOB内存管理工具防止了内存泄漏和性能问题，SQL执行缓存管理功能提供了动态配置和监控能力。科室特殊情况补充信息功能增强了AI提示模板系统的灵活性和临床相关性。
+**最新更新** 新增的流式文本处理系统、AI诊断概览卡片组件、增强的诊断解析工具和优化的文字整理功能是系统的重要扩展。流式文本处理系统支持实时LLM响应显示，显著提升了用户体验；AI诊断概览卡片组件提供诊断列表和详细分析功能，支持折叠/展开和左右分栏布局；增强的诊断解析工具修复正则表达式问题，提供准确的诊断信息提取；优化的文字整理功能支持选区处理和实时更新，提升交互体验。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -1370,10 +1810,15 @@ end
   - **CLOB内存管理配置**：内存限制和清理策略配置
   - **SQL执行缓存配置**：缓存清理策略和监控参数
   - **科室特殊内容配置**：SPECIAL_CONTENT字段的配置和加载策略
+  - **流式文本处理配置**：Fetch API、ReadableStream和NDJSON解析的参数配置
+  - **AI诊断卡片配置**：诊断列表提取和详细信息显示的配置
+  - **诊断解析工具配置**：正则表达式和字段提取的参数配置
+  - **文字整理配置**：选区处理和实时更新的参数配置
+  - **诊断编辑对话框配置**：Store状态管理和诊断列表刷新的配置
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.6.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复、AI OCR数据采集系统、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能
+  - **版本管理**：版本号从0.4.071更新到0.8.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复、AI OCR数据采集系统、待办事项查询优化、数据库缓存修复、CLOB内存管理工具、SQL执行缓存管理功能、流式文本处理系统、AI诊断概览卡片组件、增强的诊断解析工具和优化的文字整理功能
   - **MCC字典部署**：独立部署MCC字典库，支持热重载和增量更新
   - **OCR系统部署**：独立部署OCR服务，与主系统通过API集成
   - **最新提示结果接口部署**：标准化API端点，支持外部系统访问
@@ -1382,6 +1827,11 @@ end
   - **CLOB内存管理部署**：ClobManager工具类部署，防止内存泄漏
   - **SQL执行缓存部署**：缓存清理和监控功能部署，支持动态配置
   - **科室特殊内容部署**：SPECIAL_CONTENT字段配置部署，增强模板灵活性
+  - **流式文本处理部署**：Fetch API、ReadableStream和NDJSON解析部署
+  - **AI诊断卡片部署**：DiagnosisCard组件和diagnosisParser工具部署
+  - **诊断解析工具部署**：diagnosisParser.js工具部署，修复正则表达式问题
+  - **文字整理部署**：MedicalRecords组件和voiceTextProcessor工具部署
+  - **诊断编辑对话框部署**：Store状态管理和诊断列表刷新功能部署
 - **UI优化建议**
   - **非流式响应**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理**：支持多种错误格式，提供清晰的错误信息反馈
@@ -1396,15 +1846,13 @@ end
   - **待办事项界面优化**：去重算法提升用户界面体验
   - **数据库缓存优化**：只读事务和CLOB重试机制提升系统稳定性
   - **CLOB内存管理优化**：内存限制和自动清理机制防止性能下降
-  - **模板管理最佳实践**：模板分类、表单验证、权限控制、数据备份、模板共享
-  - **OCR系统最佳实践**：设备模板管理、图像质量优化、数据校验机制、报警机制、性能监控
-  - **MCC分析最佳实践**：字典维护、相似度阈值、TopK筛选、排除规则、性能监控、用户培训
-  - **最新提示结果接口最佳实践**：参数验证、缓存策略、错误处理、性能监控、安全控制、外部系统集成
-  - **待办事项查询最佳实践**：去重算法、null ID处理、createdTime比较、合并结果、性能优化
-  - **数据库缓存最佳实践**：只读事务配置、CLOB重试机制、异常处理、性能优化、兼容性保证
-  - **CLOB内存管理最佳实践**：内存限制设置、自动清理策略、生命周期跟踪、安全释放、监控统计
-  - **SQL执行缓存最佳实践**：缓存清理策略、统计监控、动态配置、错误处理、性能优化
-  - **科室特殊内容最佳实践**：字段配置、数据加载、个性化体验、兼容性处理、维护策略
+  - **SQL执行缓存优化**：缓存清理策略和统计监控提升系统性能
+  - **科室特殊内容优化**：SPECIAL_CONTENT字段配置提升模板灵活性
+  - **流式响应优化**：Fetch API + ReadableStream优化，NDJSON解析优化
+  - **诊断卡片优化**：折叠/展开功能和左右分栏布局优化
+  - **诊断解析优化**：正则表达式修复和字段提取优化
+  - **文字整理优化**：选区处理和实时更新优化
+  - **诊断编辑优化**：状态同步和用户交互优化
 - **模板管理最佳实践**
   - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
   - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
@@ -1457,30 +1905,39 @@ end
   - **数据加载**：实现动态加载和应用科室特殊内容
   - **兼容性处理**：确保与现有模板系统的兼容性
   - **维护策略**：建立科室特殊内容的维护和更新策略
+- **流式文本处理最佳实践**
+  - **Fetch API配置**：正确配置Fetch API参数，支持流式响应
+  - **ReadableStream处理**：实现高效的NDJSON流数据处理
+  - **实时更新优化**：通过onChunk回调实现高效的实时更新
+  - **超时控制**：合理设置超时时间，支持AbortController取消
+  - **错误处理**：建立统一的错误处理机制
+  - **CRLF兼容**：确保兼容Windows系统的CRLF行结束符
+  - **认证Token**：正确传递和验证JWT认证Token
+- **AI诊断卡片最佳实践**
+  - **折叠功能**：合理配置折叠/展开功能，优化用户体验
+  - **左右分栏**：优化左右分栏布局，提升大文本内容显示性能
+  - **实时交互**：实现诊断列表的点击选择和详细信息显示
+  - **Markdown解析**：使用marked库进行安全的HTML转换
+  - **XSS防护**：使用DOMPurify进行HTML内容的安全过滤
+- **诊断解析工具最佳实践**
+  - **正则表达式优化**：修复lookahead问题，确保正确的区块分割
+  - **字段提取**：支持多种诊断格式的灵活匹配
+  - **兼容性处理**：处理多种格式和边界情况
+  - **去重算法**：使用Set对象进行高效的去重操作
+- **文字整理最佳实践**
+  - **选区处理**：支持选区检测和局部文本整理
+  - **实时更新**：通过accumulateContent累积内容，避免频繁DOM操作
+  - **结构化解析**：优化parseProcessedContent函数的性能
+  - **错误恢复**：实现自动恢复原始内容的机制
+  - **光标管理**：自动设置光标位置，提升用户体验
+- **诊断编辑对话框最佳实践**
+  - **状态同步**：维护AI诊断和当前诊断的状态同步
+  - **用户交互**：提供诊断列表的显示和操作功能
+  - **错误处理**：处理无AI结果或非诊断分析Prompt的情况
 
-**最新更新** 新增待办事项查询去重算法、数据库缓存修复、CLOB内存管理工具、SQL执行缓存管理功能和科室特殊内容配置的最佳实践，包括去重算法验证、Hibernate缓存配置、CLOB内存使用监控、缓存清理功能测试、SPECIAL_CONTENT字段配置和加载策略等方面。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
+**最新更新** 新增流式文本处理系统、AI诊断概览卡片组件、增强的诊断解析工具和优化的文字整理功能的最佳实践，包括Fetch API配置、ReadableStream处理、实时更新优化、超时控制、错误处理、CRLF兼容、认证Token传递、折叠功能、左右分栏布局、正则表达式优化、字段提取优化、选区处理优化、实时更新优化、状态同步优化、用户交互优化等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
-- [2026-03-25更新日志.md:1-8](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L8)
-- [2026-03-24更新日志.md:10-15](file://med_ai_assistant_1.0_bs/更新小结.md#L10-L15)
-- [2026-03-23更新日志.md:1-340](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L340)
-- [2026-03-21更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
-- [2026-03-20更新日志.md:1-21](file://med_ai_assistant_1.0_bs/更新小结.md#L1-L21)
-- [2026-03-08更新日志.md:28-36](file://med_ai_assistant_1.0_bs/更新小结.md#L28-L36)
-- [MccScreeningService.java:74-91](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/MccScreeningService.java#L74-L91)
-- [MccScreeningController.java:233-341](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java#L233-L341)
-- [drg.js:154-156](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L154-L156)
-- [DrgAnalysis.vue:109-127](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L109-L127)
-- [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
-- [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
-- [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
-- [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
-- [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
-- [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
-- [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
-- [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
-- [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
-- [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
-- [监护仪呼吸机AI OCR数据采集方案.md:1-800](file://med_ai_assistant_1.0_bs_backend/doc/迭代/AI OCR数据采集/监护仪呼吸机AI OCR数据采集方案.md#L1-L800)
+- [2026-04-13更新日志.md:3-40](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L40)

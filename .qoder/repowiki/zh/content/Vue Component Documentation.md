@@ -9,6 +9,10 @@
 - [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
 - [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
+- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/store/modules/ai.js)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [main.js](file://med_ai_assistant_1.0_bs_vue/src/main.js)
 - [App.vue](file://med_ai_assistant_1.0_bs_vue/src/App.vue)
@@ -18,10 +22,10 @@
 
 ## 更新摘要
 **所做更改**
-- 新增PatientSummary组件的详细功能分析，包括住院时长计算、颜色编码状态显示、待办事项集成、Markdown渲染增强等功能
-- 更新核心组件章节，增加PatientSummary组件的完整功能说明
-- 增强架构概览，反映新增的患者管理功能模块
-- 完善依赖分析，包含新增的API接口和工具函数
+- 新增Streamed Text Processing（流式文本处理）功能分析，包括processRecognizedTextStream的实现细节
+- 更新AI Results组件分析，重点说明思维过程折叠显示和去换行符复制功能
+- 增强AI服务架构说明，反映非流式请求的实现方式
+- 完善语音识别文本处理模块的技术实现分析
 
 ## 目录
 1. [简介](#简介)
@@ -34,9 +38,9 @@
 8. [故障排除指南](#故障排除指南)
 9. [结论](#结论)
 
-## 简介
+## 箦介
 
-这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.015）增强了AI结果处理能力、轮询服务稳定性，并新增了PatientSummary组件的多项功能增强，显著提升了用户体验和医疗信息管理能力。
+这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.015）增强了AI结果处理能力、轮询服务稳定性，并新增了Streamed Text Processing（流式文本处理）功能，显著提升了用户体验和医疗信息管理能力。
 
 ## 项目结构
 
@@ -134,18 +138,21 @@ UserLookup 提供用户信息查询功能：
 
 ### AI结果组件
 
-AIResults 是AI诊断结果展示的核心组件，新增了重要的去换行符复制功能：
+AIResults 是AI诊断结果展示的核心组件，新增了重要的去换行符复制功能和思维过程折叠显示：
 
 **主要功能特性：**
 - AI诊断结果的显示和编辑
 - 去换行符智能复制（版本0.7.030）
 - 诊断内容的添加、编辑和删除
 - Prompt详情查看和管理
+- 思维过程折叠显示（<thinking>标签）
+- Markdown增强渲染支持
 
 **新增功能亮点：**
-- 智能文本处理：自动去除换行符和空白字符
-- 剪贴板集成：一键复制处理后的文本
-- 用户友好提示：操作反馈和错误处理
+- **思维过程透明度**：支持<thinking>标签的折叠显示，提供AI思维过程的透明度
+- **智能文本处理**：自动去除换行符和空白字符
+- **剪贴板集成**：一键复制处理后的文本
+- **用户友好提示**：操作反馈和错误处理
 
 ### 轮询服务组件
 
@@ -179,7 +186,7 @@ PromptExecutor 提供了完整的Prompt轮询服务管理功能：
 - **住院时长计算**：自动计算患者住院天数，显示入院日期和住院时长
 - **颜色编码状态**：根据患者状态自动应用颜色编码（红色：病危，橙色：病重，绿色：普通）
 - **待办事项集成**：从后端API获取患者待办事项，支持智能内容清理
-- **Markdown增强渲染**：支持`<thinking>`标签的折叠显示，提供思维过程透明度
+- **Markdown增强渲染**：支持<thinking>标签的折叠显示，提供思维过程透明度
 - **颜色标识系统**：自动高亮异常值（红色）、正常值（绿色）、待处理项（橙色）
 
 **内容来源优先级：**
@@ -187,8 +194,25 @@ PromptExecutor 提供了完整的Prompt轮询服务管理功能：
 2. AI生成的病情小结、查房记录或入院记录总结
 3. 患者基本信息中的病情摘要
 
+### 流式文本处理组件
+
+**新增** voiceTextProcessor 提供了完整的语音识别文本流式处理功能：
+
+**主要功能特性：**
+- 语音识别文本的LLM整理
+- 流式处理支持（实时返回生成内容）
+- 结构化内容解析（修改后记录、修改原因）
+- 统一的处理接口，支持不同语音识别入口
+
+**技术实现亮点：**
+- **流式处理**：processRecognizedTextStream支持onChunk回调，实时返回生成内容
+- **模板组合**：自动组合语音识别内容与Prompt模板
+- **结构化解析**：解析"### 修改后记录"和"### 修改原因"标记
+- **错误处理**：完善的异常捕获和用户提示
+
 **章节来源**
 - [PatientSummary.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L1-L638)
+- [voiceTextProcessor.js:1-168](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L1-L168)
 
 ## 架构概览
 
@@ -206,24 +230,28 @@ G[UserLookup<br/>用户查询]
 H[AIResults<br/>AI结果处理]
 I[PromptExecutor<br/>轮询服务管理]
 J[PatientSummary<br/>患者病情小结]
-K[App<br/>根组件]
+K[VoiceTextProcessor<br/>流式文本处理]
+L[App<br/>根组件]
 end
 subgraph "业务功能层"
-L[AI诊断系统]
-M[患者管理系统]
-N[服务器维护]
-O[用户设置]
-P[轮询服务监控]
-Q[待办事项管理]
-R[病历记录管理]
+M[AI诊断系统]
+N[患者管理系统]
+O[服务器维护]
+P[用户设置]
+Q[轮询服务监控]
+R[待办事项管理]
+S[病历记录管理]
+T[语音识别处理]
 end
 subgraph "基础设施层"
-S[API接口层]
-T[工具函数库]
-U[数据配置]
-V[Markdown渲染引擎]
-W[DOM净化器]
-X[颜色编码系统]
+U[API接口层]
+V[工具函数库]
+W[数据配置]
+X[Markdown渲染引擎]
+Y[DOM净化器]
+Z[颜色编码系统]
+AA[流式处理服务]
+BB[AI服务类]
 end
 A --> E
 A --> F
@@ -232,25 +260,31 @@ A --> H
 A --> I
 A --> J
 A --> K
-F --> L
+A --> L
 F --> M
 F --> N
 F --> O
 F --> P
 F --> Q
 F --> R
-E --> S
 F --> S
-G --> S
-H --> S
-I --> S
-J --> S
-J --> V
+F --> T
+E --> U
+F --> U
+G --> U
+H --> U
+I --> U
+J --> U
+K --> U
 J --> W
 J --> X
-K --> S
-A --> T
-A --> U
+J --> Y
+J --> Z
+K --> AA
+K --> BB
+L --> U
+A --> V
+A --> W
 ```
 
 **图表来源**
@@ -472,6 +506,25 @@ Dialog->>Dialog : 关闭弹窗
 - 用户反馈：操作成功和失败的即时提示
 - 错误处理：完善的异常捕获和用户提示
 
+**思维过程折叠系统：**
+
+```mermaid
+flowchart TD
+InputContent[AI结果内容] --> CheckThinking{包含<thinking>标签?}
+CheckThinking --> |是| ExtractBlocks[提取所有thinking块]
+CheckThinking --> |否| DirectRender[直接渲染内容]
+ExtractBlocks --> CreatePlaceholder[创建占位符]
+CreatePlaceholder --> ParseMainContent[解析主体Markdown]
+ParseMainContent --> ReplacePlaceholder[替换占位符为折叠块]
+ReplacePlaceholder --> RenderThinkingBlock[渲染可折叠thinking块]
+DirectRender --> SanitizeHTML[DOMPurify净化]
+RenderThinkingBlock --> SanitizeHTML
+SanitizeHTML --> OutputHTML[输出安全HTML]
+```
+
+**图表来源**
+- [AIResults.vue:350-385](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L350-L385)
+
 **技术实现流程：**
 
 ```mermaid
@@ -487,10 +540,10 @@ Success --> End
 ```
 
 **图表来源**
-- [AIResults.vue:525-543](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L525-L543)
+- [AIResults.vue:562-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L611)
 
 **章节来源**
-- [AIResults.vue:525-543](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L525-L543)
+- [AIResults.vue:562-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L611)
 
 ### PromptExecutor 组件深度分析
 
@@ -638,7 +691,7 @@ Component->>Component : 显示最近2条待办
 #### Markdown增强渲染系统
 
 **新增功能亮点：**
-- **思维过程折叠**：支持`<thinking>`标签的折叠显示，提供透明的AI思维过程
+- **思维过程折叠**：支持<thinking>标签的折叠显示，提供透明的AI思维过程
 - **颜色标识系统**：自动高亮异常值（红色）、正常值（绿色）、待处理项（橙色）
 - **智能内容清理**：自动移除待办事项中的病人基本信息行
 - **多层内容来源**：优先显示最新API内容，其次显示AI生成内容，最后显示基本信息
@@ -665,6 +718,75 @@ ReturnEmpty --> OutputHTML
 
 **章节来源**
 - [PatientSummary.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L1-L638)
+
+### VoiceTextProcessor 组件深度分析
+
+**新增** voiceTextProcessor 提供了完整的语音识别文本流式处理功能：
+
+#### 组件架构图
+
+```mermaid
+classDiagram
+class VoiceTextProcessor {
++processRecognizedText(rawText, options) Promise~ProcessedContent~
++processRecognizedTextStream(rawText, options) Promise~ProcessedContent~
++parseProcessedContent(content) ParsedContent
+}
+class AIService {
++getAIResponseStream(modelName, temperature, promptText, onData) Promise~void~
+}
+class APIService {
++getPrompt(params) Promise~Response~
++analyzeLLM(params) Promise~string~
+}
+VoiceTextProcessor --> AIService : "使用"
+VoiceTextProcessor --> APIService : "使用"
+```
+
+**图表来源**
+- [voiceTextProcessor.js:34-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L34-L134)
+
+#### 流式处理工作流程
+
+```mermaid
+sequenceDiagram
+participant Component as 调用组件
+participant Processor as VoiceTextProcessor
+participant API as AI API
+participant Service as AIService
+Component->>Processor : processRecognizedTextStream(rawText, options)
+Processor->>API : getPrompt({promptType, promptName})
+API-->>Processor : Prompt模板内容
+Processor->>Processor : 组合原始文本和模板
+Processor->>Service : analyzeLLMStream(组合内容)
+Service->>Component : onChunk(实时数据块)
+Component->>Component : 更新UI显示
+Service->>Component : onComplete(完整内容)
+Processor->>Processor : parseProcessedContent(解析结构化内容)
+Component->>Component : 显示修改后记录和修改原因
+```
+
+**图表来源**
+- [voiceTextProcessor.js:115-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L115-L134)
+
+#### 结构化内容解析算法
+
+```mermaid
+flowchart TD
+RawContent[原始LLM响应] --> FindMarkers[查找标记位置]
+FindMarkers --> CheckBothMarkers{同时找到两个标记?}
+CheckBothMarkers --> |是| ExtractBoth[提取修改后记录和修改原因]
+CheckBothMarkers --> |否| ExtractSingle[提取完整内容作为修改后记录]
+ExtractBoth --> ReturnParsed[返回解析结果]
+ExtractSingle --> ReturnParsed
+ReturnParsed --> Output[输出结构化对象]
+```
+
+**图表来源**
+- [voiceTextProcessor.js:141-167](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L141-L167)
+
+**章节来源**
+- [voiceTextProcessor.js:1-168](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L1-L168)
 
 ## 依赖分析
 
@@ -730,6 +852,7 @@ AIResults[AIResults.vue]
 PromptExecutor[PromptExecutor.vue]
 PatientSummary[PatientSummary.vue]
 PatientTabs[PatientTabs.vue]
+VoiceTextProcessor[VoiceTextProcessor.vue]
 AIComponents[AI相关组件]
 PatientComponents[患者相关组件]
 UserComponents[用户相关组件]
@@ -747,6 +870,7 @@ MainLayout --> AIResults
 MainLayout --> PromptExecutor
 MainLayout --> PatientSummary
 MainLayout --> PatientTabs
+MainLayout --> VoiceTextProcessor
 MainLayout --> AIComponents
 MainLayout --> PatientComponents
 MainLayout --> UserComponents
@@ -757,6 +881,7 @@ AIResults --> API
 PromptExecutor --> API
 PatientSummary --> API
 PatientTabs --> API
+VoiceTextProcessor --> API
 AIComponents --> API
 PatientComponents --> API
 UserComponents --> API
@@ -774,26 +899,51 @@ MainLayout --> Router
 
 ### API接口依赖关系
 
-**更新** 新增的PatientSummary组件依赖以下API接口：
+**更新** 新增的VoiceTextProcessor组件依赖以下API接口：
 
 ```mermaid
 graph TD
-PatientSummary[PatientSummary.vue] --> GetLatestMedicalSummary[getLatestMedicalSummary]
-PatientSummary --> GetTodosByPatientId[getTodosByPatientId]
-GetLatestMedicalSummary --> MedicalRecordsAPI[医疗记录API]
-GetTodosByPatientId --> TodoAPI[待办事项API]
-MedicalRecordsAPI --> BackendAPI[后端服务]
-TodoAPI --> BackendAPI
+VoiceTextProcessor[VoiceTextProcessor.vue] --> GetPrompt[getPrompt]
+VoiceTextProcessor --> AnalyzeLLM[analyzeLLM]
+VoiceTextProcessor --> AnalyzeLLMStream[analyzeLLMStream]
+GetPrompt --> APIService[AI API服务]
+AnalyzeLLM --> APIService
+AnalyzeLLMStream --> APIService
+APIService --> AIService[AIService类]
+APIService --> BackendAPI[后端服务]
 BackendAPI --> Database[数据库]
 BackendAPI --> AIEngine[AI引擎]
 ```
 
 **图表来源**
-- [patient.js:472-476](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L472-L476)
-- [patient.js:591-593](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L591-L593)
+- [voiceTextProcessor.js:9-9](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L9-L9)
+- [ai.js:187-201](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L187-L201)
 
 **章节来源**
-- [patient.js:1-616](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js#L1-L616)
+- [ai.js:1-988](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L1-L988)
+
+### AI服务架构依赖关系
+
+**更新** AIService类提供了统一的AI服务访问接口：
+
+```mermaid
+graph TD
+AIService[AIService类] --> RequestWithToken[#requestWithToken]
+AIService --> GetAIResponseStream[getAIResponseStream]
+GetAIResponseStream --> FetchAPI[fetch('/api/ai/response')]
+FetchAPI --> ResponseHandler[响应处理]
+ResponseHandler --> OnDataCallback[onData回调]
+OnDataCallback --> Component[组件更新]
+AIService --> TokenAuth[Bearer Token认证]
+TokenAuth --> Store[Vuex Store]
+Store --> UserState[用户状态]
+```
+
+**图表来源**
+- [aiService.js:30-171](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L30-L171)
+
+**章节来源**
+- [aiService.js:1-280](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L1-L280)
 
 ## 性能考虑
 
@@ -804,6 +954,7 @@ BackendAPI --> AIEngine[AI引擎]
 3. **事件监听清理**：组件卸载时自动清理所有事件监听器
 4. **AI结果处理优化**：去换行符复制功能使用高效的正则表达式处理
 5. **患者数据缓存**：PatientSummary 组件实现智能的数据缓存和清理机制
+6. **流式处理优化**：VoiceTextProcessor的流式处理支持实时更新，避免内存累积
 
 ### 渲染性能优化
 
@@ -812,6 +963,7 @@ BackendAPI --> AIEngine[AI引擎]
 3. **条件渲染**：根据用户权限动态渲染菜单项
 4. **组件复用**：AIResults组件的复制功能支持多次复用
 5. **Markdown渲染优化**：PatientSummary组件的增强渲染系统支持内容缓存
+6. **思维过程折叠**：AIResults的<thinking>标签支持折叠显示，减少DOM节点数量
 
 ### 网络请求优化
 
@@ -820,6 +972,7 @@ BackendAPI --> AIEngine[AI引擎]
 3. **错误重试**：网络异常时提供自动重试机制
 4. **轮询服务优化**：PromptExecutor实现了智能的轮询服务管理
 5. **API请求合并**：PatientSummary组件支持多个API请求的并发处理
+6. **流式请求优化**：VoiceTextProcessor的流式处理支持实时数据传输
 
 ### 患者数据管理优化
 
@@ -828,6 +981,12 @@ BackendAPI --> AIEngine[AI引擎]
 - **内容缓存**：缓存最新的病情小结和待办事项
 - **防抖处理**：对频繁的患者切换操作进行防抖处理
 - **内存清理**：组件卸载时自动清理全局函数和事件监听器
+
+**更新** VoiceTextProcessor组件的性能优化：
+- **流式处理**：processRecognizedTextStream支持实时数据块处理
+- **模板缓存**：Prompt模板内容的缓存机制
+- **错误处理优化**：完善的异常捕获和用户提示
+- **内存管理**：及时清理临时数据和回调函数
 
 ## 故障排除指南
 
@@ -876,6 +1035,11 @@ BackendAPI --> AIEngine[AI引擎]
 - 验证数据绑定状态
 - 确认API接口可用性
 
+**问题**：思维过程折叠功能失效
+- 检查全局函数注册
+- 验证事件监听器
+- 确认DOM元素存在
+
 #### 轮询服务问题
 
 **问题**：轮询服务状态异常
@@ -910,20 +1074,33 @@ BackendAPI --> AIEngine[AI引擎]
 - 验证DOMPurify配置
 - 确认标记语言语法
 
-**问题**：思维过程折叠功能失效
-- 检查全局函数注册
-- 验证事件监听器
-- 确认DOM元素存在
+#### 流式文本处理问题
+
+**更新** **问题**：流式处理不响应
+- 检查网络连接和超时设置
+- 验证onChunk回调函数
+- 确认流式API接口可用性
+
+**问题**：结构化内容解析失败
+- 检查标记格式是否正确
+- 验证内容完整性
+- 确认解析算法逻辑
+
+**问题**：语音识别内容为空
+- 检查音频文件格式
+- 验证识别服务状态
+- 确认模板获取成功
 
 **章节来源**
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
 - [UserLookup.vue:49-51](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue#L49-L51)
-- [AIResults.vue:525-543](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L525-L543)
+- [AIResults.vue:562-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L611)
 - [PromptExecutor.vue:800-825](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue#L800-L825)
 - [PatientSummary.vue:135-145](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L135-L145)
 - [PatientSummary.vue:151-156](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L151-L156)
 - [PatientSummary.vue:341-408](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L341-L408)
+- [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
 
 ## 结论
 
@@ -936,13 +1113,12 @@ BackendAPI --> AIEngine[AI引擎]
 5. **性能优化**：多项性能优化措施确保流畅体验
 6. **功能增强**：最新版本显著提升了AI结果处理、轮询服务稳定性和患者信息管理能力
 
-通过ServerLogViewer、TopMenu、UserLookup、AIResults、PromptExecutor和**新增的PatientSummary**等核心组件的协同工作，整个应用形成了一个功能完整、易于维护的医疗AI助手平台。特别是PatientSummary组件的住院时长计算、颜色编码状态显示、待办事项集成和Markdown渲染增强等功能，都显著提升了用户的操作效率和系统稳定性。
+通过ServerLogViewer、TopMenu、UserLookup、AIResults、PromptExecutor、**新增的PatientSummary**和**新增的VoiceTextProcessor**等核心组件的协同工作，整个应用形成了一个功能完整、易于维护的医疗AI助手平台。特别是PatientSummary组件的住院时长计算、颜色编码状态显示、待办事项集成和Markdown渲染增强功能，以及VoiceTextProcessor组件的流式文本处理能力，都显著提升了用户的操作效率和系统稳定性。
 
-**更新** PatientSummary组件作为患者信息管理的核心，其增强功能包括：
-- **智能化的住院时长计算**：自动计算患者住院天数，提供准确的医疗统计信息
-- **直观的颜色编码状态显示**：通过视觉化的方式快速识别患者病情严重程度
-- **集成的待办事项管理**：统一管理患者的医疗任务和提醒事项
-- **增强的Markdown渲染系统**：支持思维过程透明度和智能内容高亮
-- **多层次的内容来源优先级**：确保显示最准确、最新的患者信息
+**更新** 新增的VoiceTextProcessor组件作为语音识别处理的核心，其增强功能包括：
+- **流式文本处理**：支持processRecognizedTextStream的实时数据块处理
+- **结构化内容解析**：自动提取修改后记录和修改原因
+- **统一处理接口**：支持不同语音识别入口的统一调用
+- **错误处理机制**：完善的异常捕获和用户提示
 
-建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控和患者信息管理方面持续改进。
+建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和语音识别处理方面持续改进。
