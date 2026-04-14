@@ -26,6 +26,7 @@
 - 更新AI Results组件分析，重点说明思维过程折叠显示和去换行符复制功能
 - 增强AI服务架构说明，反映非流式请求的实现方式
 - 完善语音识别文本处理模块的技术实现分析
+- 更新项目版本至0.8.025，反映最新的功能增强
 
 ## 目录
 1. [简介](#简介)
@@ -38,9 +39,11 @@
 8. [故障排除指南](#故障排除指南)
 9. [结论](#结论)
 
-## 箦介
+## 简介
 
-这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.015）增强了AI结果处理能力、轮询服务稳定性，并新增了Streamed Text Processing（流式文本处理）功能，显著提升了用户体验和医疗信息管理能力。
+这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.025）增强了AI结果处理能力、轮询服务稳定性，并新增了Streamed Text Processing（流式文本处理）功能，显著提升了用户体验和医疗信息管理能力。
+
+**更新** 项目版本已升级至0.8.025，反映了版本0.8.025和0.8.024的增强功能，包括AIResults组件的思维过程折叠功能和去换行符复制功能，以及新增的voiceTextProcessor.js流式文本处理组件。
 
 ## 项目结构
 
@@ -138,14 +141,14 @@ UserLookup 提供用户信息查询功能：
 
 ### AI结果组件
 
-AIResults 是AI诊断结果展示的核心组件，新增了重要的去换行符复制功能和思维过程折叠显示：
+AIResults 是AI诊断结果展示的核心组件，经过重大功能增强：
 
 **主要功能特性：**
 - AI诊断结果的显示和编辑
 - 去换行符智能复制（版本0.7.030）
 - 诊断内容的添加、编辑和删除
 - Prompt详情查看和管理
-- 思维过程折叠显示（<thinking>标签）
+- **思维过程折叠显示**（<thinking>标签）
 - Markdown增强渲染支持
 
 **新增功能亮点：**
@@ -153,6 +156,25 @@ AIResults 是AI诊断结果展示的核心组件，新增了重要的去换行�
 - **智能文本处理**：自动去除换行符和空白字符
 - **剪贴板集成**：一键复制处理后的文本
 - **用户友好提示**：操作反馈和错误处理
+
+**思维过程折叠系统：**
+
+```mermaid
+flowchart TD
+InputContent[AI结果内容] --> CheckThinking{包含<thinking>标签?}
+CheckThinking --> |是| ExtractBlocks[提取所有thinking块]
+CheckThinking --> |否| DirectRender[直接渲染内容]
+ExtractBlocks --> CreatePlaceholder[创建占位符]
+CreatePlaceholder --> ParseMainContent[解析主体Markdown]
+ParseMainContent --> ReplacePlaceholder[替换占位符为折叠块]
+ReplacePlaceholder --> RenderThinkingBlock[渲染可折叠thinking块]
+DirectRender --> SanitizeHTML[DOMPurify净化]
+RenderThinkingBlock --> SanitizeHTML
+SanitizeHTML --> OutputHTML[输出安全HTML]
+```
+
+**图表来源**
+- [AIResults.vue:408-448](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L408-L448)
 
 ### 轮询服务组件
 
@@ -523,7 +545,7 @@ SanitizeHTML --> OutputHTML[输出安全HTML]
 ```
 
 **图表来源**
-- [AIResults.vue:350-385](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L350-L385)
+- [AIResults.vue:408-448](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L408-L448)
 
 **技术实现流程：**
 
@@ -540,10 +562,10 @@ Success --> End
 ```
 
 **图表来源**
-- [AIResults.vue:562-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L611)
+- [AIResults.vue:625-674](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L625-L674)
 
 **章节来源**
-- [AIResults.vue:562-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L611)
+- [AIResults.vue:625-674](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L625-L674)
 
 ### PromptExecutor 组件深度分析
 
@@ -1095,7 +1117,7 @@ Store --> UserState[用户状态]
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
 - [UserLookup.vue:49-51](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue#L49-L51)
-- [AIResults.vue:562-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L611)
+- [AIResults.vue:625-674](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L625-L674)
 - [PromptExecutor.vue:800-825](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue#L800-L825)
 - [PatientSummary.vue:135-145](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L135-L145)
 - [PatientSummary.vue:151-156](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L151-L156)
@@ -1120,5 +1142,11 @@ Store --> UserState[用户状态]
 - **结构化内容解析**：自动提取修改后记录和修改原因
 - **统一处理接口**：支持不同语音识别入口的统一调用
 - **错误处理机制**：完善的异常捕获和用户提示
+
+**更新** 项目版本已升级至0.8.025，反映了版本0.8.025和0.8.024的增强功能，包括：
+- AIResults组件的思维过程折叠功能
+- 去换行符复制功能的完善
+- voiceTextProcessor.js流式文本处理组件的引入
+- 整体性能和稳定性的提升
 
 建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和语音识别处理方面持续改进。

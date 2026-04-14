@@ -19,15 +19,23 @@
 - [docker-compose.yml](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue/docker-compose.yml)
 - [更新小结.md](file://med_ai_assistant_1.0_bs_vue/更新小结.md)
 - [更新小结.md](file://更新小结.md)
+- [2026-04-14.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md)
+- [2026-04-13.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
+- [2026-04-02.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-02.md)
+- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+- [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
 </cite>
 
 ## 更新摘要
 **已进行的变更**
-- 更新了项目更新日志结构，整合了前端和后端的更新小结
-- 新增了版本发布历史记录，涵盖从0.7.018到0.8.023的完整版本演进
-- 更新了故障排除指南，增加了针对Profile依赖链断裂的解决方案
-- 完善了性能考虑章节，反映了最新的系统优化策略
-- 增强了测试和验证组件，包含了音频测试工具的详细说明
+- 更新了版本0.8.025和0.8.024的具体更新内容，重点反映了诊断编辑面板集成、流式响应改进等新功能
+- 新增了诊断编辑面板组件（DiagnosisEditPanel.vue）的详细功能说明和架构分析
+- 完善了AI对话流式响应改造的技术实现细节和用户体验改进
+- 增强了诊断概览卡片组件的功能描述和使用场景说明
+- 更新了版本发布历史，包含最新的前端版本演进记录
 
 ## 目录
 1. [简介](#简介)
@@ -414,6 +422,137 @@ Retry --> Success
 **章节来源**
 - [testAudio测试命令.txt](file://项目相关/test/testAudio测试命令.txt)
 
+### AI诊断编辑面板组件
+
+#### 诊断编辑面板（DiagnosisEditPanel）
+**更新** 新增了诊断编辑面板组件的详细功能说明
+
+诊断编辑面板是一个集成了诊断编辑、管理和查看功能的综合组件，采用左右两栏布局设计：
+
+```mermaid
+graph TB
+subgraph "诊断编辑面板布局"
+LeftPanel[左侧：AI诊断列表]
+RightPanel[右侧：标签页区域]
+Toolbar[底部工具栏]
+end
+subgraph "左侧面板功能"
+AITableView[AI诊断表格]
+AITableView --> Selection[多选功能]
+AITableView --> EditMode[双击编辑]
+AITableView --> Highlight[差异高亮]
+end
+subgraph "右侧标签页"
+DetailTab[诊断说明标签页]
+CurrentTab[目前诊断标签页]
+DetailTab --> Category[诊断类别]
+DetailTab --> Basis[诊断依据]
+DetailTab --> Differential[鉴别诊断]
+DetailTab --> Supplement[补充说明]
+end
+LeftPanel --> RightPanel
+LeftPanel --> Toolbar
+RightPanel --> DetailTab
+RightPanel --> CurrentTab
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+
+**核心功能特性**：
+- **AI诊断列表管理**：支持AI生成诊断的查看、编辑、删除
+- **诊断详情展示**：右侧标签页展示诊断的详细分析信息
+- **目前诊断管理**：支持对现有诊断的修改、保存、删除
+- **差异诊断高亮**：自动识别并高亮显示AI推荐的新诊断
+- **工具栏操作**：提供刷新、新增、插入、保存、删除等快捷操作
+
+**章节来源**
+- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+
+### AI对话流式响应组件
+
+#### 流式响应改造（AIResponse + aiService）
+**更新** 完善了AI对话流式响应的技术实现细节
+
+AI对话功能从一次性加载改为逐字流式显示，大幅减少响应等待时间感知：
+
+```mermaid
+sequenceDiagram
+participant User as 用户
+participant AIResponse as AIResponse组件
+participant AIService as AIService类
+participant aiService as aiService实例
+participant Backend as 后端AI服务
+User->>AIResponse : 发送消息
+AIResponse->>AIResponse : 组合历史对话
+AIResponse->>AIService : 调用getAIResponseStream
+AIService->>aiService : 发送流式请求
+aiService->>Backend : POST /api/ai/response
+Backend->>aiService : 返回NDJSON流
+loop 流式响应
+aiService->>AIService : onData回调(增量内容)
+AIService->>AIResponse : 更新UI显示
+AIResponse->>AIResponse : 实时渲染增量内容
+end
+aiService->>AIService : onData回调(最终内容)
+AIService->>AIResponse : 替换完整内容
+AIResponse->>User : 显示最终AI回复
+```
+
+**图表来源**
+- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+
+**技术实现要点**：
+- **NDJSON流处理**：使用ReadableStream消费后端返回的NDJSON格式数据
+- **增量内容渲染**：支持实时显示AI回复的增量内容
+- **超时控制**：集成AbortController实现300秒超时取消机制
+- **最终内容替换**：使用isFinal标识确保最终内容正确替换累积内容
+
+**章节来源**
+- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+
+### 诊断概览卡片组件
+
+#### 诊断卡片组件（DiagnosisCard）
+**更新** 新增了诊断概览卡片组件的功能描述
+
+诊断概览卡片组件提供简洁的诊断信息展示功能：
+
+```mermaid
+graph LR
+subgraph "诊断卡片布局"
+LeftCol[左侧诊断列表]
+RightCol[右侧诊断详情]
+end
+subgraph "左侧功能"
+ListItems[诊断列表项]
+ListItems --> ClickSelect[点击选择]
+ListItems --> AutoScroll[自动滚动]
+end
+subgraph "右侧功能"
+DetailSections[详情区域]
+DetailSections --> Category[诊断类别]
+DetailSections --> Basis[诊断依据]
+DetailSections --> Differential[鉴别诊断]
+DetailSections --> Supplement[补充说明]
+end
+LeftCol --> RightCol
+```
+
+**图表来源**
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+
+**功能特点**：
+- **左右分栏布局**：左侧显示诊断列表，右侧显示详细信息
+- **Markdown渲染**：支持诊断依据等内容的Markdown格式渲染
+- **自动换行支持**：优化长文本显示，避免内容溢出
+- **XSS安全过滤**：使用DOMPurify确保渲染内容的安全性
+
+**章节来源**
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+
 ## 依赖分析
 
 ### 技术栈依赖关系
@@ -603,18 +742,71 @@ InstanceSpecific --> KnowledgeBase
 
 ### 前端版本更新记录
 
+#### v0.8.024 - v0.8.025
+**更新** 新增了版本0.8.025和0.8.024的具体更新内容
+
+##### v0.8.024 - AI对话功能流式响应改造
+**新增功能**
+- aiService.js流式响应改造：将stream:false改为stream:true，使用ReadableStream + TextDecoder消费NDJSON流，支持isFinal标识防重复、AbortController超时取消（300秒）
+- AIResponse.vue适配流式交互：onData回调支持增量数据处理，新增isFinal检测用完整内容替换累积内容，移除不再需要的OpenAI格式兼容分支
+
+**用户体验改进**
+- AI对话功能从一次性加载改为逐字流式显示，大幅减少响应等待时间感知
+
+**变更文件**
+- 修改：`src/api/aiService.js`
+- 修改：`src/components/ai/AIResponse.vue`
+
+##### v0.8.025 - 诊断编辑面板内嵌 & 布局优化
+**新增功能**
+- 新建`DiagnosisEditPanel.vue`组件，将诊断编辑功能从浮窗（DiagnosisEditDialog）集成到AI结果页面内嵌面板
+- 面板布局：左侧AI诊断列表 + 右侧标签页（诊断说明/目前诊断），底部工具栏
+
+**问题修复**
+- 修复诊断数据初始化时序问题：`_initDiagnosisData`改为异步方法，确保`fetchDiagnoses`完成后再执行初始化逻辑
+
+**优化**
+- `DiagnosisCard.vue`高度自适应优化：移除`el-scrollbar`，改用`div`自然撑开，避免固定高度截断内容
+- 诊断名称支持自动换行，长文本不再溢出
+
+**变更文件**
+- 新增：`src/components/ai/DiagnosisEditPanel.vue`
+- 修改：`src/components/ai/DiagnosisCard.vue`
+
+#### v0.8.022 - AI辅助页面诊断卡片组件
+**新增功能**
+- 新增诊断概览卡片组件（DiagnosisCard.vue），当Prompt标题包含"诊断分析"时自动展示
+- 卡片左右分栏布局：左侧显示从AI结果中提取的诊断列表，右侧显示选中诊断的详细分析（诊断依据、鉴别诊断、补充说明等）
+- 诊断分析类Prompt的AI结果区域支持折叠/展开，默认折叠，减少页面信息量
+
+**代码重构**
+- 新增诊断解析工具函数（diagnosisParser.js），统一提取诊断名称和完整诊断块的逻辑
+- AIResults.vue和DiagnosisEditDialog.vue中的重复诊断提取代码替换为工具函数调用，消除约52行重复代码
+
+**Bug修复**
+- 修复diagnosisParser.js中正则表达式lookahead `(?=###|$)` 误匹配四级标题（####）导致诊断列表区块被截断为空的问题
+
+**变更文件**
+- 新增：`src/components/ai/DiagnosisCard.vue`
+- 新增：`src/utils/diagnosisParser.js`
+- 修改：`src/components/ai/AIResults.vue`
+- 修改：`src/components/patient/DiagnosisEditDialog.vue`
+
 #### v0.7.018 - v0.7.023
+**更新** 完善了之前的版本更新记录
+
+##### v0.7.018 - v0.7.023
 - 修复执行服务器Profile依赖链断裂问题
 - 恢复前端源码文件和构建脚本
 - 新增服务器日志查看功能
 - 集成eruda前端调试面板
 
-#### v0.7.020 - v0.7.022
+##### v0.7.020 - v0.7.022
 - 修复EMR病历同步唯一约束冲突
 - 优化病历记录修改接口
 - 改进音频测试工具
 
-#### v0.7.022 - v0.7.023
+##### v0.7.022 - v0.7.023
 - 完善前端构建流程
 - 修复bat文件编码问题
 
@@ -637,6 +829,9 @@ InstanceSpecific --> KnowledgeBase
 - 改进DRG分析页面体验
 
 **章节来源**
+- [2026-04-14.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md)
+- [2026-04-13.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
+- [2026-04-02.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-02.md)
 - [更新小结.md](file://med_ai_assistant_1.0_bs_vue/更新小结.md)
 - [更新小结.md](file://更新小结.md)
 
@@ -649,6 +844,12 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - 灵活的配置管理和多环境支持
 - 完善的监控和日志管理机制
 - 友好的开发者体验和工具链支持
+
+**更新亮点**：
+- **流式响应技术**：AI对话功能实现真正的流式响应，显著提升用户体验
+- **诊断编辑集成**：诊断编辑面板内嵌到AI结果页面，提供更直观的操作体验
+- **组件化架构**：诊断卡片和编辑面板等组件化设计，便于维护和扩展
+- **性能优化**：通过流式处理和组件优化，系统响应速度和资源利用率得到提升
 
 未来的发展方向将重点关注AI模型的持续优化、系统性能的进一步提升，以及用户体验的不断改善。
 
@@ -706,3 +907,36 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 代码审查和测试
    - 更新文档和示例
    - 正式发布和通知
+
+### 新功能使用指南
+
+#### 诊断编辑面板使用
+1. **打开诊断编辑面板**
+   - 在AI结果页面中查看诊断分析结果
+   - 点击"显示列表"按钮打开诊断编辑面板
+
+2. **编辑AI诊断**
+   - 双击AI诊断名称进入编辑模式
+   - 直接修改诊断文本
+   - 点击保存按钮确认修改
+
+3. **管理目前诊断**
+   - 在右侧"目前诊断"标签页查看现有诊断
+   - 选中诊断后点击"保存"按钮更新
+   - 使用"删除"按钮移除不需要的诊断
+
+#### 流式响应体验
+1. **AI对话交互**
+   - 在AI对话框中输入问题
+   - 等待AI逐步生成回复
+   - 实时看到AI的思考过程
+
+2. **性能优势**
+   - 响应延迟大幅降低
+   - 实时内容更新
+   - 更流畅的交互体验
+
+**章节来源**
+- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
