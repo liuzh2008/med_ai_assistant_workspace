@@ -6,14 +6,16 @@
 - [TopMenu.vue](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue)
 - [UserLookup.vue](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue)
 - [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 - [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
 - [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [PatientView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 - [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
 - [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
-- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/store/modules/ai.js)
-- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [main.js](file://med_ai_assistant_1.0_bs_vue/src/main.js)
 - [App.vue](file://med_ai_assistant_1.0_bs_vue/src/App.vue)
 - [router/index.js](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
@@ -22,11 +24,11 @@
 
 ## 更新摘要
 **所做更改**
-- 新增Streamed Text Processing（流式文本处理）功能分析，包括processRecognizedTextStream的实现细节
-- 更新AI Results组件分析，重点说明思维过程折叠显示和去换行符复制功能
-- 增强AI服务架构说明，反映非流式请求的实现方式
-- 完善语音识别文本处理模块的技术实现分析
-- 更新项目版本至0.8.025，反映最新的功能增强
+- 新增诊断编辑面板和诊断卡片组件的滚动优化、布局重构分析
+- 更新思维过程折叠显示功能的技术实现细节
+- 完善诊断解析工具函数的结构化信息提取机制
+- 增强AI Results组件与诊断组件的集成分析
+- 更新项目版本至0.8.025，反映最新的组件优化
 
 ## 目录
 1. [简介](#简介)
@@ -34,16 +36,17 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [依赖分析](#依赖分析)
-7. [性能考虑](#性能考虑)
-8. [故障排除指南](#故障排除指南)
-9. [结论](#结论)
+6. [诊断编辑与卡片组件优化](#诊断编辑与卡片组件优化)
+7. [依赖分析](#依赖分析)
+8. [性能考虑](#性能考虑)
+9. [故障排除指南](#故障排除指南)
+10. [结论](#结论)
 
 ## 简介
 
-这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.025）增强了AI结果处理能力、轮询服务稳定性，并新增了Streamed Text Processing（流式文本处理）功能，显著提升了用户体验和医疗信息管理能力。
+这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.8.025）增强了AI结果处理能力、轮询服务稳定性，并新增了诊断编辑面板和诊断卡片组件的滚动优化、布局重构等前端组件优化，显著提升了用户体验和医疗信息管理能力。
 
-**更新** 项目版本已升级至0.8.025，反映了版本0.8.025和0.8.024的增强功能，包括AIResults组件的思维过程折叠功能和去换行符复制功能，以及新增的voiceTextProcessor.js流式文本处理组件。
+**更新** 项目版本已升级至0.8.025，反映了版本0.8.025和0.8.024的增强功能，包括诊断编辑面板的左右两栏布局优化、诊断卡片组件的滚动区域重构、思维过程折叠显示的增强功能，以及新增的diagnosisParser.js结构化诊断信息提取工具。
 
 ## 项目结构
 
@@ -83,6 +86,8 @@ components --> user_components
 main_js --> store
 main_js --> api
 main_js --> utils
+views --> ai_components
+views --> patient_components
 ```
 
 **图表来源**
@@ -150,12 +155,14 @@ AIResults 是AI诊断结果展示的核心组件，经过重大功能增强：
 - Prompt详情查看和管理
 - **思维过程折叠显示**（<thinking>标签）
 - Markdown增强渲染支持
+- **诊断分析类Prompt的折叠显示**（展开/折叠按钮）
 
 **新增功能亮点：**
 - **思维过程透明度**：支持<thinking>标签的折叠显示，提供AI思维过程的透明度
 - **智能文本处理**：自动去除换行符和空白字符
 - **剪贴板集成**：一键复制处理后的文本
 - **用户友好提示**：操作反馈和错误处理
+- **诊断分析折叠**：针对诊断分析类型的AI结果提供专门的折叠显示功能
 
 **思维过程折叠系统：**
 
@@ -174,7 +181,49 @@ SanitizeHTML --> OutputHTML[输出安全HTML]
 ```
 
 **图表来源**
-- [AIResults.vue:408-448](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L408-L448)
+- [AIResults.vue:413-467](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L413-L467)
+
+### 诊断编辑面板组件
+
+**新增** DiagnosisEditPanel 提供了完整的诊断编辑功能，采用左右两栏布局设计：
+
+**主要功能特性：**
+- **左右两栏布局**：左侧AI诊断列表，右侧标签页区域
+- **AI诊断管理**：支持选择、编辑、新增、删除诊断
+- **诊断详情查看**：支持诊断类别、诊断依据、鉴别诊断、补充说明的详细查看
+- **目前诊断管理**：支持编辑、保存、删除当前诊断
+- **思维过程显示**：支持<thinking>标签的折叠显示
+- **滚动优化**：左右两栏均支持垂直滚动
+
+**布局优化亮点：**
+- **弹性布局**：使用Flexbox实现左右两栏的自适应布局
+- **滚动区域**：左侧诊断列表和右侧标签页内容区域均支持独立滚动
+- **响应式设计**：支持不同屏幕尺寸的自适应显示
+- **工具栏集成**：底部工具栏提供统一的操作入口
+
+**章节来源**
+- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
+
+### 诊断卡片组件
+
+**新增** DiagnosisCard 提供了卡片式的诊断展示和编辑功能：
+
+**主要功能特性：**
+- **卡片布局**：采用Element Plus卡片组件的左右两栏设计
+- **诊断列表**：左侧显示诊断列表，支持点击选择
+- **标签页详情**：右侧标签页显示诊断详情和目前诊断
+- **思维过程显示**：支持<thinking>标签的折叠显示
+- **滚动优化**：诊断列表区域支持垂直滚动
+- **状态高亮**：支持选中状态的视觉反馈
+
+**布局重构亮点：**
+- **卡片样式**：使用Element Plus的border-card类型，提供更好的视觉层次
+- **滚动区域**：诊断列表区域设置最大高度（60vh），超出部分自动滚动
+- **工具栏位置**：工具栏位于诊断列表下方，便于操作
+- **标签页集成**：右侧标签页支持诊断说明和目前诊断两个选项卡
+
+**章节来源**
+- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
 
 ### 轮询服务组件
 
@@ -232,10 +281,6 @@ PromptExecutor 提供了完整的Prompt轮询服务管理功能：
 - **结构化解析**：解析"### 修改后记录"和"### 修改原因"标记
 - **错误处理**：完善的异常捕获和用户提示
 
-**章节来源**
-- [PatientSummary.vue:1-638](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L1-L638)
-- [voiceTextProcessor.js:1-168](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L1-L168)
-
 ## 架构概览
 
 ```mermaid
@@ -250,30 +295,36 @@ E[ServerLogViewer<br/>日志查看器]
 F[TopMenu<br/>导航菜单]
 G[UserLookup<br/>用户查询]
 H[AIResults<br/>AI结果处理]
-I[PromptExecutor<br/>轮询服务管理]
-J[PatientSummary<br/>患者病情小结]
-K[VoiceTextProcessor<br/>流式文本处理]
-L[App<br/>根组件]
+I[DiagnosisEditPanel<br/>诊断编辑面板]
+J[DiagnosisCard<br/>诊断卡片组件]
+K[PromptExecutor<br/>轮询服务管理]
+L[PatientSummary<br/>患者病情小结]
+M[VoiceTextProcessor<br/>流式文本处理]
+N[App<br/>根组件]
 end
 subgraph "业务功能层"
-M[AI诊断系统]
-N[患者管理系统]
-O[服务器维护]
-P[用户设置]
-Q[轮询服务监控]
-R[待办事项管理]
-S[病历记录管理]
-T[语音识别处理]
+O[AI诊断系统]
+P[患者管理系统]
+Q[服务器维护]
+R[用户设置]
+S[轮询服务监控]
+T[待办事项管理]
+U[病历记录管理]
+V[语音识别处理]
+W[诊断编辑管理]
+X[思维过程显示]
 end
 subgraph "基础设施层"
-U[API接口层]
-V[工具函数库]
-W[数据配置]
-X[Markdown渲染引擎]
-Y[DOM净化器]
-Z[颜色编码系统]
-AA[流式处理服务]
-BB[AI服务类]
+Y[API接口层]
+Z[工具函数库]
+AA[数据配置]
+BB[Markdown渲染引擎]
+CC[DOM净化器]
+DD[颜色编码系统]
+EE[流式处理服务]
+FF[AI服务类]
+GG[诊断解析工具]
+HH[诊断数据管理]
 end
 A --> E
 A --> F
@@ -283,30 +334,32 @@ A --> I
 A --> J
 A --> K
 A --> L
-F --> M
-F --> N
+A --> M
+A --> N
 F --> O
 F --> P
 F --> Q
 F --> R
 F --> S
 F --> T
-E --> U
 F --> U
-G --> U
-H --> U
-I --> U
-J --> U
-K --> U
+F --> V
+H --> W
+H --> X
+I --> W
+I --> X
 J --> W
 J --> X
-J --> Y
-J --> Z
-K --> AA
-K --> BB
-L --> U
-A --> V
-A --> W
+L --> Y
+M --> EE
+M --> FF
+N --> Y
+A --> Z
+A --> AA
+I --> GG
+J --> GG
+H --> GG
+GG --> HH
 ```
 
 **图表来源**
@@ -545,7 +598,15 @@ SanitizeHTML --> OutputHTML[输出安全HTML]
 ```
 
 **图表来源**
-- [AIResults.vue:408-448](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L408-L448)
+- [AIResults.vue:413-467](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L413-L467)
+
+#### 诊断分析折叠功能
+
+**新增功能亮点：**
+- **折叠按钮**：针对诊断分析类型的Prompt提供专门的展开/折叠按钮
+- **状态管理**：使用resultCollapsed布尔值控制折叠状态
+- **条件渲染**：仅在诊断分析类型时显示折叠按钮
+- **用户体验**：减少长篇AI结果的视觉干扰
 
 **技术实现流程：**
 
@@ -562,10 +623,226 @@ Success --> End
 ```
 
 **图表来源**
-- [AIResults.vue:625-674](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L625-L674)
+- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
 
 **章节来源**
-- [AIResults.vue:625-674](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L625-L674)
+- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+
+### DiagnosisEditPanel 组件深度分析
+
+**新增** DiagnosisEditPanel 组件采用了全新的左右两栏布局设计，提供了完整的诊断编辑功能：
+
+#### 组件架构图
+
+```mermaid
+classDiagram
+class DiagnosisEditPanel {
++Array aiDiagnosis
++Array currentDiagnosis
++String content
++Map inputRefs
++Array selectedAIDiagnosis
++Array selectedCurrentDiagnosis
++Object selectedAIDiagnosisRow
++String activeTab
++Array diagnosisBlocks
++Object selectedDiagnosisBlock
++Array differentAIDiagnoses
++handleAISelectionChange(selection) void
++handleCurrentSelectionChange(selection) void
++handleAIRowClick(row) void
++isDifferentDiagnosis(row) boolean
++addNewDiagnosis() void
++refreshAIDiagnosis() void
++insertDiagnosis() Promise~void~
++saveDiagnosis() Promise~void~
++deleteDiagnosis() Promise~void~
++handleEdit(row) void
++setInputRef(el, row) void
++handleBlur(row) void
++renderMarkdown(text) string
+}
+class LayoutOptimization {
++FlexboxLayout leftCol
++FlexboxLayout rightCol
++ScrollAreas diagnosisTable
++ScrollAreas tabContent
++Toolbar toolbar
+}
+class ThinkingProcessDisplay {
++Array thinkingBlocks
++String thinkingPlaceholder
++String thinkingHtml
++toggleThinking(id) void
+}
+DiagnosisEditPanel --> LayoutOptimization : "使用"
+DiagnosisEditPanel --> ThinkingProcessDisplay : "支持"
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:140-569](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L140-L569)
+
+#### 布局优化系统
+
+**新增功能亮点：**
+- **弹性布局**：使用Flexbox实现左右两栏的自适应布局
+- **独立滚动**：左侧诊断列表和右侧标签页内容区域均支持独立滚动
+- **响应式设计**：支持不同屏幕尺寸的自适应显示
+- **工具栏集成**：底部工具栏提供统一的操作入口
+
+**布局实现流程：**
+
+```mermaid
+flowchart TD
+MainLayout[主布局容器] --> LeftColumn[左侧列<br/>12/24宽度]
+LeftColumn --> AITable[AI诊断表格<br/>flex: 1]
+LeftColumn --> Toolbar[工具栏<br/>底部固定]
+MainLayout --> RightColumn[右侧列<br/>12/24宽度]
+RightColumn --> Tabs[标签页<br/>border-card类型]
+Tabs --> DetailPane[诊断说明标签页]
+Tabs --> CurrentPane[目前诊断标签页]
+AITable --> ScrollOptimization[滚动优化<br/>max-height: 60vh<br/>overflow-y: auto]
+DetailPane --> DetailScroll[详情内容滚动<br/>min-height: 255px<br/>overflow-y: auto]
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:572-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L572-L716)
+
+#### 思维过程显示系统
+
+**新增功能亮点：**
+- **<thinking>标签支持**：自动检测和处理<thinking>标签
+- **折叠显示**：支持思维过程的展开/折叠显示
+- **占位符机制**：使用占位符避免marked二次解析问题
+- **全局切换函数**：注册window.toggleThinking全局函数
+
+**技术实现流程：**
+
+```mermaid
+flowchart TD
+ContentInput[AI结果内容] --> ExtractThinking[提取<thinking>块]
+ExtractThinking --> CreatePlaceholder[创建占位符]
+CreatePlaceholder --> ParseMarkdown[解析主体Markdown]
+ParseMarkdown --> ReplacePlaceholder[替换占位符为HTML]
+ReplacePlaceholder --> RenderThinkingBlock[渲染思维过程块]
+RenderThinkingBlock --> RegisterFunction[注册全局切换函数]
+RegisterFunction --> UserInteraction[用户点击切换]
+UserInteraction --> ToggleState[切换展开/折叠状态]
+ToggleState --> UpdateUI[更新UI状态]
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:563-567](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L563-L567)
+
+**章节来源**
+- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
+
+### DiagnosisCard 组件深度分析
+
+**新增** DiagnosisCard 组件提供了卡片式的诊断展示功能，采用了Element Plus的border-card样式：
+
+#### 组件架构图
+
+```mermaid
+classDiagram
+class DiagnosisCard {
++String content
++Array aiDiagnosis
++Array currentDiagnosis
++Number selectedIndex
++String activeTab
++Array selectedAIDiagnosis
++Array selectedCurrentDiagnosis
++Object selectedAIDiagnosisRow
++Map inputRefs
++Array diagnosisBlocks
++Object selectedBlock
++Array differentAIDiagnoses
++handleDiagnosisItemClick(idx) void
++handleCurrentSelectionChange(selection) void
++isDifferentDiagnosis(row) boolean
++refreshAIDiagnosis() void
++addNewDiagnosis() void
++insertDiagnosis() Promise~void~
++saveDiagnosis() Promise~void~
++deleteDiagnosis() Promise~void~
++handleEdit(row) void
++handleBlur(row) void
++setInputRef(el, row) void
++renderMarkdown(text) string
+}
+class CardLayout {
++Card diagnosisCard
++FlexLayout leftColumn
++FlexLayout rightColumn
++ScrollArea diagnosisScroll
++Toolbar toolbar
+}
+class SelectionSystem {
++Number selectedIndex
++String activeTab
++Array diagnosisBlocks
++Object selectedBlock
+}
+DiagnosisCard --> CardLayout : "使用"
+DiagnosisCard --> SelectionSystem : "管理"
+```
+
+**图表来源**
+- [DiagnosisCard.vue:124-467](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L124-L467)
+
+#### 卡片布局优化
+
+**新增功能亮点：**
+- **卡片样式**：使用Element Plus的border-card类型，提供更好的视觉层次
+- **滚动区域**：诊断列表区域设置最大高度（60vh），超出部分自动滚动
+- **工具栏位置**：工具栏位于诊断列表下方，便于操作
+- **标签页集成**：右侧标签页支持诊断说明和目前诊断两个选项卡
+
+**布局实现流程：**
+
+```mermaid
+flowchart TD
+CardWrapper[卡片包装器] --> MainRow[主行布局<br/>:gutter="12"]
+MainRow --> LeftColumn[左侧列<br/>12/24宽度<br/>flex-direction: column]
+LeftColumn --> DiagnosisScroll[诊断滚动区域<br/>min-height: 280px<br/>max-height: 60vh<br/>overflow-y: auto]
+DiagnosisScroll --> DiagnosisItems[诊断项目列表<br/>hover效果<br/>active状态]
+LeftColumn --> Toolbar[工具栏<br/>底部边框]
+MainRow --> RightColumn[右侧列<br/>12/24宽度<br/>flex-direction: column]
+RightColumn --> CardContainer[卡片容器<br/>height: 100%]
+CardContainer --> Tabs[标签页<br/>border-card类型]
+Tabs --> DetailPane[诊断说明<br/>min-height: 255px<br/>overflow-y: auto]
+Tabs --> CurrentPane[目前诊断<br/>表格形式]
+```
+
+**图表来源**
+- [DiagnosisCard.vue:470-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L470-L644)
+
+#### 诊断解析系统
+
+**新增功能亮点：**
+- **结构化解析**：使用diagnosisParser工具提取完整的诊断信息块
+- **字段提取**：支持诊断编号、名称、类别、依据、鉴别诊断、补充说明的提取
+- **思维过程处理**：自动移除<thinking>标签，避免误解析
+- **降级机制**：当结构化解析失败时使用简单名称提取作为后备
+
+**技术实现流程：**
+
+```mermaid
+flowchart TD
+ContentInput[AI结果内容] --> StripThinking[移除<thinking>标签]
+StripThinking --> ExtractBlocks[提取诊断块]
+ExtractBlocks --> ParseFields[解析字段<br/>诊断编号/名称/类别/依据/鉴别诊断/补充说明]
+ParseFields --> ValidateData[验证数据有效性]
+ValidateData --> ReturnBlocks[返回诊断块数组]
+ReturnBlocks --> UseInUI[在UI中使用]
+```
+
+**图表来源**
+- [DiagnosisCard.vue:203-231](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L203-L231)
+
+**章节来源**
+- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
 
 ### PromptExecutor 组件深度分析
 
@@ -810,6 +1087,168 @@ ReturnParsed --> Output[输出结构化对象]
 **章节来源**
 - [voiceTextProcessor.js:1-168](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L1-L168)
 
+## 诊断编辑与卡片组件优化
+
+### 诊断解析工具函数
+
+**新增** diagnosisParser.js 提供了完整的诊断信息提取功能：
+
+#### 组件架构图
+
+```mermaid
+classDiagram
+class DiagnosisParser {
++stripThinkingTags(content) string
++extractDiagnosisNames(content) Object[]
++extractDiagnosisBlocks(content) DiagnosisBlock[]
++parseDiagnosisBlock(blockContent) DiagnosisBlock|null
+}
+class DiagnosisBlock {
++number|string index
++string name
++string category
++string basis
++string differentialDiagnosis
++string supplement
++string rawContent
+}
+class ThinkingProcessRemoval {
++RegExp thinkingRegex
++stripThinkingTags(content) string
+}
+class NameExtraction {
++RegExp nameRegex
++extractDiagnosisNames(content) Object[]
+}
+class BlockExtraction {
++RegExp listRegex
++RegExp blockStartRegex
++extractDiagnosisBlocks(content) DiagnosisBlock[]
+}
+DiagnosisParser --> DiagnosisBlock : "创建"
+DiagnosisParser --> ThinkingProcessRemoval : "使用"
+DiagnosisParser --> NameExtraction : "使用"
+DiagnosisParser --> BlockExtraction : "使用"
+```
+
+**图表来源**
+- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
+
+#### 结构化诊断信息提取
+
+**新增功能亮点：**
+- **思维过程移除**：自动移除<thinking>标签，避免误解析
+- **字段提取**：支持诊断编号、名称、类别、依据、鉴别诊断、补充说明的提取
+- **降级机制**：当结构化解析失败时使用简单名称提取作为后备
+- **数据验证**：确保提取的数据有效性和完整性
+
+**解析算法流程：**
+
+```mermaid
+flowchart TD
+ContentInput[AI结果内容] --> StripThinking[stripThinkingTags<br/>移除<thinking>标签]
+StripThinking --> ExtractList[extractDiagnosisBlocks<br/>提取诊断列表区块]
+ExtractList --> SplitBlocks[按诊断编号/名称分割<br/>诊断块]
+SplitBlocks --> ParseFields[parseDiagnosisBlock<br/>解析各字段]
+ParseFields --> ValidateBlock[验证诊断块<br/>name字段必须存在]
+ValidateBlock --> ReturnBlocks[返回诊断块数组]
+ReturnBlocks --> UseInComponents[在诊断组件中使用]
+```
+
+**图表来源**
+- [diagnosisParser.js:93-149](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L93-L149)
+
+#### 诊断名称提取算法
+
+**新增功能亮点：**
+- **灵活匹配**：支持多种格式的诊断名称标记
+- **降级处理**：当严格格式不匹配时使用宽松匹配
+- **去重处理**：自动去除重复的诊断名称
+- **格式化输出**：返回标准化的对象数组
+
+**提取流程：**
+
+```mermaid
+flowchart TD
+ContentInput[AI结果内容] --> StripThinking[stripThinkingTags<br/>移除<thinking>标签]
+StripThinking --> StrictMatch[严格匹配<br/>#### 诊断名称: / ## 诊断名称:]
+StrictMatch --> FoundMatches{找到匹配?}
+FoundMatches --> |是| CollectMatches[收集匹配的诊断名称]
+FoundMatches --> |否| FallbackMatch[宽松匹配<br/>诊断: / 诊断：]
+FallbackMatch --> CollectMatches
+CollectMatches --> RemoveDuplicates[去重处理]
+RemoveDuplicates --> FormatOutput[格式化输出<br/>[{name: string, code: string}]]
+FormatOutput --> ReturnNames[返回诊断名称数组]
+```
+
+**图表来源**
+- [diagnosisParser.js:39-75](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L39-L75)
+
+**章节来源**
+- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
+
+### 诊断组件集成分析
+
+#### 组件间协作关系
+
+**新增功能亮点：**
+- **AIResults集成**：AIResults组件支持诊断编辑面板和卡片组件的显示
+- **数据共享**：通过Vuex store共享AI诊断数据和当前诊断数据
+- **事件通信**：通过refresh-diagnosis事件实现组件间的数据同步
+- **思维过程支持**：所有诊断组件均支持<thinking>标签的折叠显示
+
+**集成架构图：**
+
+```mermaid
+flowchart TD
+AIResults[AIResults组件] --> DiagnosisEditPanel[诊断编辑面板]
+AIResults --> DiagnosisCard[诊断卡片组件]
+DiagnosisEditPanel --> DiagnosisParser[诊断解析工具]
+DiagnosisCard --> DiagnosisParser
+DiagnosisParser --> VuexStore[Vuex Store]
+VuexStore --> PatientModule[患者模块]
+PatientModule --> DiagnosisManagement[诊断管理]
+DiagnosisManagement --> APIInterface[API接口]
+APIInterface --> BackendServer[后端服务器]
+```
+
+**图表来源**
+- [AIResults.vue:77-84](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L77-L84)
+- [DiagnosisEditPanel.vue:171-202](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L171-L202)
+- [DiagnosisCard.vue:154-182](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L154-L182)
+
+#### 滚动优化实现
+
+**新增功能亮点：**
+- **独立滚动区域**：左右两栏均支持独立的滚动控制
+- **最大高度限制**：使用max-height: 60vh限制滚动区域高度
+- **溢出处理**：使用overflow-y: auto实现超出部分的滚动
+- **响应式调整**：根据屏幕尺寸自动调整滚动行为
+
+**滚动实现流程：**
+
+```mermaid
+flowchart TD
+LayoutInit[布局初始化] --> SetMaxHeight[设置max-height: 60vh]
+SetMaxHeight --> EnableOverflow[启用overflow-y: auto]
+EnableOverflow --> MonitorScroll[监控滚动事件]
+MonitorScroll --> UpdateScroll[更新滚动状态]
+UpdateScroll --> ApplyStyles[应用样式变化]
+ApplyStyles --> UserInteraction[用户交互]
+UserInteraction --> TriggerResize[触发resize事件]
+TriggerResize --> RecalculateHeight[重新计算高度]
+RecalculateHeight --> MaintainScroll[保持滚动位置]
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:593-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L593-L611)
+- [DiagnosisCard.vue:495-501](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L495-L501)
+
+**章节来源**
+- [AIResults.vue:1-800](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1-L800)
+- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
+- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
+
 ## 依赖分析
 
 ### 技术栈依赖关系
@@ -863,6 +1302,7 @@ graph TD
 subgraph "应用层"
 App[App.vue]
 MainLayout[MainLayout.vue]
+PatientView[PatientView.vue]
 end
 subgraph "导航组件"
 TopMenu[TopMenu.vue]
@@ -871,6 +1311,8 @@ end
 subgraph "业务组件"
 ServerLogViewer[ServerLogViewer.vue]
 AIResults[AIResults.vue]
+DiagnosisEditPanel[DiagnosisEditPanel.vue]
+DiagnosisCard[DiagnosisCard.vue]
 PromptExecutor[PromptExecutor.vue]
 PatientSummary[PatientSummary.vue]
 PatientTabs[PatientTabs.vue]
@@ -883,7 +1325,8 @@ subgraph "基础设施"
 API[API接口层]
 Store[Vuex状态]
 Router[路由系统]
-end
+DiagnosisParser[诊断解析工具]
+End
 App --> MainLayout
 MainLayout --> TopMenu
 MainLayout --> UserLookup
@@ -900,6 +1343,8 @@ TopMenu --> API
 UserLookup --> API
 ServerLogViewer --> API
 AIResults --> API
+DiagnosisEditPanel --> API
+DiagnosisCard --> API
 PromptExecutor --> API
 PatientSummary --> API
 PatientTabs --> API
@@ -910,11 +1355,18 @@ UserComponents --> API
 App --> Store
 App --> Router
 MainLayout --> Router
+PatientView --> PatientTabs
+PatientTabs --> PatientSummary
+AIResults --> DiagnosisEditPanel
+AIResults --> DiagnosisCard
+DiagnosisEditPanel --> DiagnosisParser
+DiagnosisCard --> DiagnosisParser
 ```
 
 **图表来源**
 - [App.vue:16-47](file://med_ai_assistant_1.0_bs_vue/src/App.vue#L16-L47)
 - [router/index.js:1-118](file://med_ai_assistant_1.0_bs_vue/src/router/index.js#L1-L118)
+- [PatientView.vue:1-64](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L1-L64)
 
 **章节来源**
 - [package.json:1-56](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L56)
@@ -967,6 +1419,35 @@ Store --> UserState[用户状态]
 **章节来源**
 - [aiService.js:1-280](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js#L1-L280)
 
+### 诊断组件依赖关系
+
+**新增** 诊断编辑面板和诊断卡片组件的依赖关系：
+
+```mermaid
+graph TD
+DiagnosisEditPanel[DiagnosisEditPanel.vue] --> DiagnosisParser[diagnosisParser.js]
+DiagnosisEditPanel --> VuexStore[Vuex Store]
+DiagnosisEditPanel --> PatientAPI[patient.js]
+DiagnosisEditPanel --> AIResults[AIResults.vue]
+DiagnosisCard[DiagnosisCard.vue] --> DiagnosisParser
+DiagnosisCard --> VuexStore
+DiagnosisCard --> PatientAPI
+DiagnosisCard --> AIResults
+DiagnosisParser --> Marked[marked库]
+DiagnosisParser --> DOMPurify[DOMPurify库]
+AIResults --> DiagnosisEditPanel
+AIResults --> DiagnosisCard
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:141-143](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L141-L143)
+- [DiagnosisCard.vue:125-127](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L125-L127)
+
+**章节来源**
+- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
+- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
+- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
+
 ## 性能考虑
 
 ### 内存管理优化
@@ -977,6 +1458,8 @@ Store --> UserState[用户状态]
 4. **AI结果处理优化**：去换行符复制功能使用高效的正则表达式处理
 5. **患者数据缓存**：PatientSummary 组件实现智能的数据缓存和清理机制
 6. **流式处理优化**：VoiceTextProcessor的流式处理支持实时更新，避免内存累积
+7. **诊断组件优化**：DiagnosisEditPanel和DiagnosisCard的滚动区域限制高度，避免内存溢出
+8. **思维过程处理**：AIResults的<thinking>标签处理使用占位符机制，避免DOM节点过多
 
 ### 渲染性能优化
 
@@ -986,6 +1469,8 @@ Store --> UserState[用户状态]
 4. **组件复用**：AIResults组件的复制功能支持多次复用
 5. **Markdown渲染优化**：PatientSummary组件的增强渲染系统支持内容缓存
 6. **思维过程折叠**：AIResults的<thinking>标签支持折叠显示，减少DOM节点数量
+7. **滚动区域优化**：诊断组件的max-height和overflow-y优化滚动性能
+8. **标签页懒加载**：PatientTabs组件支持标签页的懒加载，减少初始渲染压力
 
 ### 网络请求优化
 
@@ -995,6 +1480,8 @@ Store --> UserState[用户状态]
 4. **轮询服务优化**：PromptExecutor实现了智能的轮询服务管理
 5. **API请求合并**：PatientSummary组件支持多个API请求的并发处理
 6. **流式请求优化**：VoiceTextProcessor的流式处理支持实时数据传输
+7. **诊断数据缓存**：DiagnosisParser的解析结果缓存机制
+8. **组件状态管理**：诊断组件的状态变化通过Vuex集中管理，避免重复请求
 
 ### 患者数据管理优化
 
@@ -1009,6 +1496,12 @@ Store --> UserState[用户状态]
 - **模板缓存**：Prompt模板内容的缓存机制
 - **错误处理优化**：完善的异常捕获和用户提示
 - **内存管理**：及时清理临时数据和回调函数
+
+**更新** 诊断组件的性能优化：
+- **滚动区域限制**：使用max-height限制滚动区域，避免DOM节点过多
+- **独立滚动**：左右两栏独立滚动，避免相互影响
+- **状态缓存**：通过Vuex缓存诊断数据，避免重复解析
+- **思维过程处理**：使用占位符机制处理<thinking>标签，减少DOM操作
 
 ## 故障排除指南
 
@@ -1061,6 +1554,45 @@ Store --> UserState[用户状态]
 - 检查全局函数注册
 - 验证事件监听器
 - 确认DOM元素存在
+
+#### 诊断编辑面板问题
+
+**更新** **问题**：诊断列表滚动异常
+- 检查max-height设置是否正确
+- 验证overflow-y属性配置
+- 确认Flexbox布局计算
+
+**问题**：诊断详情显示不完整
+- 检查诊断块解析是否成功
+- 验证Markdown渲染配置
+- 确认DOMPurify过滤规则
+
+**问题**：工具栏操作失效
+- 检查事件绑定是否正确
+- 验证方法调用逻辑
+- 确认Vuex store状态
+
+**问题**：思维过程显示异常
+- 检查<thinking>标签解析
+- 验证占位符替换逻辑
+- 确认全局切换函数注册
+
+#### 诊断卡片组件问题
+
+**更新** **问题**：卡片布局错乱
+- 检查Element Plus版本兼容性
+- 验证CSS样式覆盖情况
+- 确认响应式断点设置
+
+**问题**：诊断列表点击无效
+- 检查事件处理器绑定
+- 验证选中状态管理
+- 确认标签页切换逻辑
+
+**问题**：目前诊断表格异常
+- 检查表格数据绑定
+- 验证编辑模式切换
+- 确认API接口调用
 
 #### 轮询服务问题
 
@@ -1117,7 +1649,9 @@ Store --> UserState[用户状态]
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
 - [UserLookup.vue:49-51](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue#L49-L51)
-- [AIResults.vue:625-674](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L625-L674)
+- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [DiagnosisEditPanel.vue:593-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L593-L611)
+- [DiagnosisCard.vue:495-501](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L495-L501)
 - [PromptExecutor.vue:800-825](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue#L800-L825)
 - [PatientSummary.vue:135-145](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L135-L145)
 - [PatientSummary.vue:151-156](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L151-L156)
@@ -1135,18 +1669,22 @@ Store --> UserState[用户状态]
 5. **性能优化**：多项性能优化措施确保流畅体验
 6. **功能增强**：最新版本显著提升了AI结果处理、轮询服务稳定性和患者信息管理能力
 
-通过ServerLogViewer、TopMenu、UserLookup、AIResults、PromptExecutor、**新增的PatientSummary**和**新增的VoiceTextProcessor**等核心组件的协同工作，整个应用形成了一个功能完整、易于维护的医疗AI助手平台。特别是PatientSummary组件的住院时长计算、颜色编码状态显示、待办事项集成和Markdown渲染增强功能，以及VoiceTextProcessor组件的流式文本处理能力，都显著提升了用户的操作效率和系统稳定性。
+**更新** 通过新增的DiagnosisEditPanel和DiagnosisCard组件，整个应用形成了更加完善的诊断管理生态系统。这些组件不仅提供了直观的诊断编辑界面，还集成了思维过程显示、滚动优化、布局重构等先进技术，显著提升了用户的操作效率和系统稳定性。
 
-**更新** 新增的VoiceTextProcessor组件作为语音识别处理的核心，其增强功能包括：
-- **流式文本处理**：支持processRecognizedTextStream的实时数据块处理
-- **结构化内容解析**：自动提取修改后记录和修改原因
-- **统一处理接口**：支持不同语音识别入口的统一调用
-- **错误处理机制**：完善的异常捕获和用户提示
+**更新** 新增的diagnosisParser.js工具函数为诊断信息的结构化提取提供了强大支持，确保了诊断数据的准确性和完整性。该工具函数的思维过程移除、字段提取、降级机制等功能，为整个诊断系统的可靠性奠定了坚实基础。
 
 **更新** 项目版本已升级至0.8.025，反映了版本0.8.025和0.8.024的增强功能，包括：
-- AIResults组件的思维过程折叠功能
-- 去换行符复制功能的完善
-- voiceTextProcessor.js流式文本处理组件的引入
+- 诊断编辑面板的左右两栏布局优化
+- 诊断卡片组件的滚动区域重构
+- 思维过程折叠显示的增强功能
+- 诊断解析工具函数的结构化信息提取
 - 整体性能和稳定性的提升
 
-建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和语音识别处理方面持续改进。
+**更新** 诊断组件的滚动优化和布局重构包括：
+- **独立滚动区域**：左右两栏均支持独立滚动，提升用户体验
+- **最大高度限制**：使用max-height限制滚动区域，避免内存溢出
+- **响应式设计**：支持不同屏幕尺寸的自适应显示
+- **工具栏集成**：底部工具栏提供统一的操作入口
+- **标签页优化**：右侧标签页支持诊断说明和目前诊断的切换
+
+建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和诊断组件优化方面持续改进。新增的诊断编辑面板和卡片组件为医疗AI助手的应用场景提供了更加专业和实用的解决方案，值得进一步推广和应用。

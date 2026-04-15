@@ -19,23 +19,29 @@
 - [docker-compose.yml](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue/docker-compose.yml)
 - [更新小结.md](file://med_ai_assistant_1.0_bs_vue/更新小结.md)
 - [更新小结.md](file://更新小结.md)
+- [2026-04-11.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-11.md)
 - [2026-04-14.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md)
 - [2026-04-13.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
 - [2026-04-02.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-02.md)
+- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
 - [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
+- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
+- [2026-04-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
+- [2026-04-13.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-13.md)
 </cite>
 
 ## 更新摘要
 **已进行的变更**
+- 新增了OpenClaw集成方案文档的详细分析，反映MedAiAssistant系统版本0.8.021的功能增强
 - 更新了版本0.8.025和0.8.024的具体更新内容，重点反映了诊断编辑面板集成、流式响应改进等新功能
 - 新增了诊断编辑面板组件（DiagnosisEditPanel.vue）的详细功能说明和架构分析
 - 完善了AI对话流式响应改造的技术实现细节和用户体验改进
 - 增强了诊断概览卡片组件的功能描述和使用场景说明
-- 更新了版本发布历史，包含最新的前端版本演进记录
+- 更新了版本发布历史，包含最新的前端版本演进记录和OpenClaw集成方案
 
 ## 目录
 1. [简介](#简介)
@@ -43,18 +49,19 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [依赖分析](#依赖分析)
-7. [性能考虑](#性能考虑)
-8. [故障排除指南](#故障排除指南)
-9. [版本发布历史](#版本发布历史)
-10. [结论](#结论)
-11. [附录](#附录)
+6. [OpenClaw集成方案](#openclaw集成方案)
+7. [依赖分析](#依赖分析)
+8. [性能考虑](#性能考虑)
+9. [故障排除指南](#故障排除指南)
+10. [版本发布历史](#版本发布历史)
+11. [结论](#结论)
+12. [附录](#附录)
 
 ## 简介
 
 MedAiAssistant 是一个基于人工智能技术的医疗辅助系统，旨在为医疗机构提供智能化的诊断支持、病历管理、影像分析等功能。该项目采用前后端分离的架构设计，后端使用Spring Boot框架，前端使用Vue.js技术栈，通过Docker容器化部署实现系统的可扩展性和可维护性。
 
-该系统的核心目标是通过AI技术提升医疗服务质量和效率，为医生提供智能辅助决策支持，同时确保医疗数据的安全性和隐私保护。
+该系统的核心目标是通过AI技术提升医疗服务质量和效率，为医生提供智能辅助决策支持，同时确保医疗数据的安全性和隐私保护。系统现已集成OpenClaw AI编排引擎，通过自然语言驱动多步骤API编排，实现更智能的临床工作流程自动化。
 
 ## 项目结构
 
@@ -68,17 +75,20 @@ Backend[后端模块<br/>med_ai_assistant_1.0_bs_backend]
 Frontend[前端模块<br/>med_ai_assistant_1.0_bs_vue]
 Docs[文档目录<br/>doc/]
 Config[配置文件<br/>config/]
+OpenClaw[OpenClaw集成<br/>doc/迭代/openclaw/]
 end
 subgraph "后端模块结构"
 Backend --> SpringBoot[Spring Boot 应用]
 Backend --> Deploy[部署配置]
 Backend --> MemoryBank[内存银行]
 Backend --> Config[配置管理]
+Backend --> OpenClawDoc[OpenClaw文档]
 end
 subgraph "前端模块结构"
 Frontend --> VueApp[Vue.js 应用]
 Frontend --> Deploy[部署配置]
 Frontend --> Components[组件库]
+Frontend --> OpenClawUI[OpenClaw界面]
 end
 subgraph "工具和配置"
 Tools[开发工具]
@@ -89,6 +99,7 @@ Root --> Backend
 Root --> Frontend
 Root --> Docs
 Root --> Config
+Root --> OpenClaw
 Root --> Tools
 Root --> Scripts
 Root --> Templates
@@ -112,6 +123,7 @@ Root --> Templates
    - 影像分析服务
    - 实验室结果处理
    - 电子病历查询
+   - OpenClaw编排服务
 
 2. **数据访问层**
    - 数据库连接池管理
@@ -143,13 +155,18 @@ Root --> Templates
    - 权限控制
    - 导航管理
 
+4. **OpenClaw集成界面**
+   - 自然语言交互界面
+   - 编排流程可视化
+   - 任务状态监控
+
 **章节来源**
 - [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
 - [logback-spring.xml](file://med_ai_assistant_1.0_bs_backend/src/main/resources/logback-spring.xml)
 
 ## 架构概览
 
-系统采用微服务架构设计，通过容器化部署实现高可用性和可扩展性：
+系统采用微服务架构设计，通过容器化部署实现高可用性和可扩展性，并集成了OpenClaw AI编排引擎：
 
 ```mermaid
 graph TB
@@ -157,11 +174,13 @@ subgraph "客户端层"
 Web[Web浏览器]
 Mobile[移动应用]
 Desktop[桌面应用]
+OpenClawClient[OpenClaw客户端]
 end
 subgraph "网关层"
 Gateway[API网关]
 Auth[认证授权]
 LoadBalancer[负载均衡]
+OpenClawGateway[OpenClaw网关]
 end
 subgraph "业务服务层"
 Diagnosis[诊断服务]
@@ -169,12 +188,18 @@ EMR[电子病历服务]
 Imaging[影像分析服务]
 Lab[实验室服务]
 Pharmacy[药房服务]
+OpenClawService[OpenClaw编排服务]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库)]
 Redis[(Redis缓存)]
 MinIO[(对象存储)]
 Elasticsearch[(搜索引擎)]
+end
+subgraph "AI编排层"
+OpenClawEngine[OpenClaw引擎]
+Skills[技能库]
+LLM[大语言模型]
 end
 subgraph "基础设施层"
 Docker[Docker容器]
@@ -185,6 +210,7 @@ end
 Web --> Gateway
 Mobile --> Gateway
 Desktop --> Gateway
+OpenClawClient --> OpenClawGateway
 Gateway --> Auth
 Auth --> LoadBalancer
 LoadBalancer --> Diagnosis
@@ -192,6 +218,13 @@ LoadBalancer --> EMR
 LoadBalancer --> Imaging
 LoadBalancer --> Lab
 LoadBalancer --> Pharmacy
+OpenClawGateway --> OpenClawEngine
+OpenClawEngine --> Skills
+OpenClawEngine --> LLM
+OpenClawEngine --> OpenClawService
+OpenClawService --> Diagnosis
+OpenClawService --> EMR
+OpenClawService --> Lab
 Diagnosis --> MySQL
 EMR --> MySQL
 Imaging --> MinIO
@@ -205,6 +238,8 @@ MySQL --> Docker
 Redis --> Docker
 MinIO --> Docker
 Elasticsearch --> Docker
+OpenClawEngine --> Docker
+OpenClawGateway --> Docker
 Docker --> Kubernetes
 Kubernetes --> Monitoring
 Kubernetes --> Logging
@@ -213,6 +248,7 @@ Kubernetes --> Logging
 **图表来源**
 - [docker-compose-main-linux-oracle-image.yml](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/docker-compose-main-linux-oracle-image.yml)
 - [docker-compose-execution-image.yml](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/docker-compose-execution-image.yml)
+- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
 
 ## 详细组件分析
 
@@ -276,6 +312,7 @@ Local[本地开发]
 Test[测试环境]
 Stage[预生产环境]
 Prod[生产环境]
+OpenClaw[OpenClaw环境]
 end
 subgraph "配置源"
 YAML[YAML配置文件]
@@ -289,6 +326,7 @@ Environment --> Local
 Environment --> Test
 Environment --> Stage
 Environment --> Prod
+Environment --> OpenClaw
 Instance --> YAML
 Instance --> ENV
 Instance --> Secret
@@ -553,6 +591,175 @@ LeftCol --> RightCol
 **章节来源**
 - [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 
+## OpenClaw集成方案
+
+### 整体架构设计
+
+MedAiAssistant系统集成了OpenClaw AI编排引擎，通过REST API实现自然语言驱动的多步骤工作流程编排：
+
+```mermaid
+graph TB
+subgraph "OpenClaw集成架构"
+Frontend[Vue前端界面]
+OpenClawGateway[OpenClaw网关]
+OpenClawEngine[OpenClaw编排引擎]
+Skill1[患者查询技能]
+Skill2[查房语音记录技能]
+Skill3[MCC/DRG分析技能]
+Skill4[数据同步监控技能]
+Backend[Spring Boot后端]
+Database[(数据库)]
+end
+Frontend --> OpenClawGateway
+OpenClawGateway --> OpenClawEngine
+OpenClawEngine --> Skill1
+OpenClawEngine --> Skill2
+OpenClawEngine --> Skill3
+OpenClawEngine --> Skill4
+Skill1 --> Backend
+Skill2 --> Backend
+Skill3 --> Backend
+Skill4 --> Backend
+Backend --> Database
+OpenClawEngine --> Backend
+Backend --> OpenClawGateway
+OpenClawGateway --> Frontend
+```
+
+**图表来源**
+- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
+
+### 临床场景分析
+
+系统基于180+个REST API接口的全面调研，识别出7个适合OpenClaw编排的临床场景：
+
+#### 场景1：查房语音记录
+**用户故事**：医生查房时口述内容，系统自动识别、整理、关联患者并保存。
+
+**编排流程**：
+1. POST /api/voice/recognize-file → 语音转文字
+2. POST /api/ai/response → LLM整理为结构化查房记录
+3. POST /api/medicalrecords → 创建病历记录（草稿）
+
+**OpenClaw附加价值**：
+- LLM自动理解口述中提到的患者姓名/床号，调用患者查询API关联
+- 自动补充患者当前诊断、医嘱等上下文
+- 如果口述中提到异常指标，自动触发告警逻辑
+
+#### 场景2：智能MCC/DRG全流程分析
+**用户故事**：医生说"帮我分析一下3床病人的DRG编码和可能的并发症"，系统自动完成全链路分析。
+
+**编排流程**：
+1. GET /api/patients/by-department → 通过床号找到患者
+2. GET /api/patients/{id}/diagnoses → 获取诊断列表
+3. POST /api/drg/mcc/screen → MCC预筛选
+4. POST /api/drg/mcc/generate-prompt → 生成MCC分析Prompt
+5. GET /api/drg/catalog/match → DRG编码匹配
+6. GET /api/drg/patient-fee → 查询实际费用
+7. POST /api/drg/profit-loss → 计算盈亏
+
+#### 场景3：患者综合情况快速查询
+**用户故事**：医生问"12床病人现在情况怎么样？"，系统自动汇总所有关键信息。
+
+**编排流程**：
+1. GET /api/patients/by-department → 通过床号定位患者
+2. GET /api/patients/{id}/basic-info → 基本信息
+3. GET /api/patients/{id}/diagnoses → 当前诊断
+4. GET /api/patients/{id}/long-term-orders → 长期医嘱
+5. GET /api/patients/{id}/temporary-orders → 临时医嘱
+6. GET /api/ai/latestPromptResult → 最近AI分析结果
+7. LLM汇总为简明的患者情况摘要
+
+### 场景优先级矩阵
+
+| 场景 | 技术可行性 | 业务价值 | 实现复杂度 | 建议优先级 |
+|------|-----------|---------|-----------|----------|
+| 查房语音记录 | 高（API已有） | 极高 | 中 | P0 - 首选PoC |
+| MCC/DRG全流程分析 | 高（API已有） | 极高 | 中 | P0 |
+| 患者综合情况查询 | 高（API已有） | 高 | 低 | P1 |
+| AI诊疗辅助 | 高（API已有） | 高 | 中 | P1 |
+| 数据同步监控 | 高（API已有） | 中 | 低 | P2 |
+| 病历分析转待办 | 高（API已有） | 高 | 中 | P2 |
+| 非计划再次手术预警 | 高（API已有） | 中 | 中 | P3 |
+
+### PoC验证计划
+
+#### 前置条件
+- 测试服务器需能访问后端API `http://10.120.11.43:8081`
+- 测试服务器需有Node.js 22.16+或Node.js 24（推荐）
+- 需要一个LLM API Key（如OpenAI、Claude、DeepSeek等）
+
+#### Task 1: 环境准备与OpenClaw安装
+```bash
+# 检查Node.js版本
+node --version
+
+# 如果版本不够，安装Node.js 24
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo bash -
+sudo apt-get install -y nodejs
+
+# 全局安装OpenClaw
+npm install -g openclaw@latest
+
+# 运行引导式配置（会设置Gateway、LLM provider、工作区等）
+openclaw onboard --install-daemon
+```
+
+#### Task 2: 编写患者查询Skill
+在OpenClaw工作区创建Skill目录：
+```bash
+mkdir -p ~/.openclaw/skills/med-patient-query
+```
+
+创建`~/.openclaw/skills/med-patient-query/SKILL.md`：
+
+```markdown
+---
+name: med_patient_query
+description: 查询医院科室的患者列表，支持按科室名称查询在院病人信息
+metadata: {"openclaw": {"requires": {"bins": ["curl", "jq"]}}}
+---
+
+# 患者信息查询
+
+当用户询问某个科室的病人列表、患者信息、在院病人等内容时，使用此技能。
+
+## 使用方法
+
+根据用户提供的科室名称，调用医疗AI辅助系统的患者查询接口：
+
+curl -s "http://10.120.11.43:8081/api/patients/by-department?department={科室名}&sync=false" | jq '.'
+
+## 参数说明
+
+- department: 科室名称（如"心内科"、"呼吸内科"等），从用户输入中提取
+- sync: 是否同步刷新数据，默认false
+
+## 返回结果处理
+
+将返回的JSON数据整理为易读的患者列表，包含：
+- 患者姓名
+- 住院号
+- 床号
+- 入院日期
+- 诊断信息
+
+如果查询失败或无数据，告知用户可能的原因（科室名称不正确、服务不可用等）。
+```
+
+#### Task 3: 通过REST API验证
+核心验证步骤——模拟Spring Boot后端通过HTTP调用OpenClaw：
+
+```bash
+curl -X POST http://<openclaw服务器IP>:18789/api/sessions/main/messages \
+  -H "Authorization: Bearer your-secret-token-here" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "查一下心内科的病人列表"}'
+```
+
+**章节来源**
+- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
+
 ## 依赖分析
 
 ### 技术栈依赖关系
@@ -567,6 +774,7 @@ ElementUI[Element Plus]
 Axios[Axios HTTP客户端]
 Vuex[Vuex状态管理]
 Router[Vue Router]
+OpenClawUI[OpenClaw界面组件]
 end
 subgraph "后端技术栈"
 SpringBoot[Spring Boot 2.x]
@@ -574,6 +782,7 @@ SpringWeb[Spring Web MVC]
 SpringData[Spring Data JPA]
 Security[Spring Security]
 MyBatis[MyBatis ORM]
+OpenClawService[OpenClaw服务]
 end
 subgraph "数据库层"
 MySQL[MySQL 8.x]
@@ -590,20 +799,24 @@ Maven[Maven 3.x]
 Node[Node.js 16.x]
 ESLint[ESLint]
 Prettier[Prettier]
+OpenClawCLI[OpenClaw CLI]
 end
 Vue --> ElementUI
 Vue --> Axios
 Vue --> Vuex
 Vue --> Router
+Vue --> OpenClawUI
 SpringBoot --> SpringWeb
 SpringBoot --> SpringData
 SpringBoot --> Security
 SpringBoot --> MyBatis
+SpringBoot --> OpenClawService
 SpringBoot --> MySQL
 SpringBoot --> Redis
 SpringBoot --> Elasticsearch
 Vue --> Docker
 SpringBoot --> Docker
+OpenClawService --> OpenClawCLI
 Docker --> Compose
 Docker --> Kubernetes
 Maven --> SpringBoot
@@ -625,29 +838,35 @@ subgraph "部署配置层次"
 BaseConfig[基础配置]
 EnvSpecific[环境特定配置]
 InstanceSpecific[实例特定配置]
+OpenClawConfig[OpenClaw配置]
 end
 subgraph "环境类型"
 Oracle[Oracle数据库环境]
 TestServer[测试服务器环境]
 Windows[Windows环境]
 Linux[Linux环境]
+OpenClawEnv[OpenClaw环境]
 end
 subgraph "配置文件类型"
 DockerCompose[Docker Compose配置]
 SQLQueries[SQL查询配置]
 MemoryBank[内存银行配置]
 KnowledgeBase[知识库配置]
+OpenClawSkill[OpenClaw技能配置]
 end
 BaseConfig --> EnvSpecific
 EnvSpecific --> InstanceSpecific
+EnvSpecific --> OpenClawConfig
 EnvSpecific --> Oracle
 EnvSpecific --> TestServer
 EnvSpecific --> Windows
 EnvSpecific --> Linux
+EnvSpecific --> OpenClawEnv
 InstanceSpecific --> DockerCompose
 InstanceSpecific --> SQLQueries
 InstanceSpecific --> MemoryBank
 InstanceSpecific --> KnowledgeBase
+OpenClawConfig --> OpenClawSkill
 ```
 
 **图表来源**
@@ -685,6 +904,12 @@ InstanceSpecific --> KnowledgeBase
    - 健康检查设置
    - 自动扩缩容策略
    - 存储卷优化
+
+5. **OpenClaw性能优化**
+   - 技能缓存机制
+   - 编排流程优化
+   - LLM调用频率控制
+   - 并发任务管理
 
 ## 故障排除指南
 
@@ -735,6 +960,24 @@ InstanceSpecific --> KnowledgeBase
    - 确保执行服务器和主服务器的配置隔离
    - 验证Profile配置的正确性
 
+#### OpenClaw集成问题
+**新增** 针对OpenClaw集成的故障排除指南
+
+1. **OpenClaw网关连接失败**
+   - 检查OpenClaw服务状态
+   - 验证Gateway Token配置
+   - 确认网络连通性
+
+2. **技能调用失败**
+   - 验证技能配置文件
+   - 检查后端API可达性
+   - 确认LLM API Key有效性
+
+3. **编排流程中断**
+   - 查看编排日志
+   - 验证技能依赖关系
+   - 检查并发限制设置
+
 **章节来源**
 - [.gitignore](file://.gitignore)
 
@@ -742,8 +985,16 @@ InstanceSpecific --> KnowledgeBase
 
 ### 前端版本更新记录
 
-#### v0.8.024 - v0.8.025
-**更新** 新增了版本0.8.025和0.8.024的具体更新内容
+#### v0.8.021 - v0.8.025
+**更新** 新增了版本0.8.025和0.8.024的具体更新内容，以及0.8.021的OpenClaw集成方案
+
+##### v0.8.021 - OpenClaw集成方案引入
+**新增功能**
+- 配合后端新增OpenClaw集成方案文档，前端无功能变更
+- 为后续OpenClaw界面集成做准备
+
+**章节来源**
+- [2026-04-11.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-11.md)
 
 ##### v0.8.024 - AI对话功能流式响应改造
 **新增功能**
@@ -812,28 +1063,58 @@ InstanceSpecific --> KnowledgeBase
 
 ### 后端版本更新记录
 
-#### v0.7.018 - v0.7.023
-- 修复执行服务器Profile依赖链断裂
-- 优化EMR病历同步机制
-- 改进病历记录修改功能
+#### v0.8.021 - OpenClaw集成方案引入
+**新增功能**
+- 新增OpenClaw集成方案文档，基于系统已有180+个REST API接口的全面调研
+- 识别出7个适合OpenClaw编排的临床场景
+- 制定PoC部署验证计划，设计Spring Boot通过REST API调用OpenClaw Gateway的集成架构
+- 定义场景优先级矩阵和四阶段扩展路线
 
-#### v0.7.020 - v0.7.023
-- 修复DRG相关Bean依赖注入失败
-- 优化定时任务配置
-- 增强序列一致性检查
-
-#### v0.8.001 - v0.8.023
-- 新增AI辅助页面诊断概览组件
-- 优化文字整理功能为流式响应
-- 增强病情小结组件功能
-- 改进DRG分析页面体验
+**新增文件**
+- `doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md`
+- `pom.xml`（版本号更新至0.8.021）
 
 **章节来源**
-- [2026-04-14.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md)
-- [2026-04-13.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
-- [2026-04-02.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-02.md)
-- [更新小结.md](file://med_ai_assistant_1.0_bs_vue/更新小结.md)
-- [更新小结.md](file://更新小结.md)
+- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
+
+#### v0.8.016 - v0.8.020
+**更新** 完善了之前的版本更新记录
+
+##### v0.8.016 - Prompt状态循环重置修复
+**Bug修复**
+- 修复PromptResult软删除导致Prompt状态循环重置问题
+- 问题描述：用户软删除PromptResult（deleted=1）后，补偿机制`checkDataConsistency()`误判为数据丢失，将Prompt从"已完成"重置为"已提交"，导致循环重新提交
+- 修复方案：修改`PromptRepository.findIncompleteCompleted()`查询，移除`AND pr.deleted = 0`条件，仅在完全不存在任何PromptResult记录时才判定为数据丢失
+
+##### v0.8.017 - 开发环境维护更新
+**维护更新**
+- 清理AI工具临时文件：删除.qoder/目录下的review_diff.txt、promptresult_fix_diff.txt、PromptPollingService.diff等临时差异文件
+- 提交遗留配置变更：提交后端.dockerignore配置变更
+- 补充代码注释：为PromptRepository.findIncompleteCompleted()方法补充完整的Javadoc注释
+
+##### v0.8.018 - 开发环境禁用定时Prompt生成任务
+**变更内容**
+- 在`TimerPromptGenerator`的`dailyPromptGeneration()`和`generateNoonWardRoundPrompts()`定时任务方法中添加启用状态检查
+- 新增配置项`scheduling.timer.enabled`，开发环境默认设置为`false`（禁用）
+- 生产环境不受影响，代码默认值为`true`（启用）
+
+##### v0.8.019 - Prompt数据一致性检查ResultId回填修复
+**Bug修复**
+- 修复`checkDataConsistency()`对PromptResult软删除场景的处理逻辑
+- 问题描述：当Prompt状态为"已完成"但ResultId为NULL，且PromptResult记录全部被软删除(deleted=1)时，补偿机制仅"跳过重置"但不回填ResultId，导致每次轮询都重复检测到该不一致记录，浪费服务器资源
+- 修复方案：将`checkDataConsistency()`改为三路径修复逻辑
+
+##### v0.8.020 - EMR记录详情查询修复
+**Bug修复**
+- 修复EMR记录详情查询返回多条结果导致`IncorrectResultSizeDataAccessException`异常
+- `EmrContentRepository.findContentById`返回类型从`String`改为`List<String>`
+- 添加`ORDER BY modifiedOn DESC NULLS LAST`排序，多条记录时优先返回最新修改记录
+- `EmrRecordService.getEmrRecordContentById`适配List返回，多条记录时记录WARN日志
+
+**章节来源**
+- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
+- [2026-04-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
+- [2026-04-13.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-13.md)
 
 ## 结论
 
@@ -844,14 +1125,22 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - 灵活的配置管理和多环境支持
 - 完善的监控和日志管理机制
 - 友好的开发者体验和工具链支持
+- **新增**：OpenClaw AI编排引擎集成，通过自然语言驱动多步骤API编排
 
 **更新亮点**：
 - **流式响应技术**：AI对话功能实现真正的流式响应，显著提升用户体验
 - **诊断编辑集成**：诊断编辑面板内嵌到AI结果页面，提供更直观的操作体验
 - **组件化架构**：诊断卡片和编辑面板等组件化设计，便于维护和扩展
 - **性能优化**：通过流式处理和组件优化，系统响应速度和资源利用率得到提升
+- **AI编排集成**：OpenClaw集成方案为系统提供智能化的工作流程自动化能力
 
-未来的发展方向将重点关注AI模型的持续优化、系统性能的进一步提升，以及用户体验的不断改善。
+**OpenClaw集成价值**：
+- **自然语言驱动**：通过自然语言指令触发复杂的多步骤工作流程
+- **技能编排**：将现有的180+个API接口通过技能进行编排组合
+- **智能决策**：利用LLM理解用户意图，自动选择合适的技能组合
+- **扩展性强**：支持四阶段扩展路线，从PoC验证到全面集成
+
+未来的发展方向将重点关注AI模型的持续优化、系统性能的进一步提升、用户体验的不断改善，以及OpenClaw编排能力的深入应用。
 
 ## 附录
 
@@ -869,10 +1158,17 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    ./npm.bat
    ```
 
-3. **环境变量配置**
+3. **OpenClaw环境启动**
+   ```bash
+   # 在OpenClaw服务器上执行
+   openclaw gateway --port 18789 --verbose
+   ```
+
+4. **环境变量配置**
    - 设置JAVA_OPTS参数
    - 配置数据库连接信息
    - 指定日志输出目录
+   - 配置OpenClaw Gateway Token
 
 ### 部署配置说明
 
@@ -890,6 +1186,11 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 集成Prometheus监控
    - 配置Grafana可视化
    - 设置告警规则和通知
+
+4. **OpenClaw部署**
+   - 配置OpenClaw Gateway服务
+   - 设置技能目录和配置
+   - 验证LLM API连接
 
 ### 版本管理最佳实践
 
@@ -936,7 +1237,19 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 实时内容更新
    - 更流畅的交互体验
 
+#### OpenClaw编排使用
+1. **自然语言交互**
+   - 在OpenClaw界面输入自然语言指令
+   - 系统自动识别意图并选择合适技能
+   - 观察编排流程的执行进度
+
+2. **技能监控**
+   - 查看技能调用日志
+   - 监控API调用状态
+   - 处理编排过程中的异常
+
 **章节来源**
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
