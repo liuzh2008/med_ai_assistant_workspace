@@ -25,15 +25,17 @@
 - [2026-04-03.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-03.md)
 - [2026-04-09.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md)
 - [2026-04-10.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-10.md)
+- [2026-04-15.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-15.md)
+- [2026-04-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增LONGTERMORDERS表序列一致性检查功能
+- 新增CONVERSATION_HISTORY表序列一致性检查功能
 - 完善序列管理的完整性和可靠性
 - 修复ORA-00001唯一约束冲突问题
-- 扩展序列覆盖范围至5个关键表
-- 增强长期医嘱导入功能的稳定性
+- 扩展序列覆盖范围至6个关键表
+- 增强AI对话历史功能的稳定性
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -50,7 +52,7 @@
 
 Oracle序列一致性自动检查服务是医疗AI助手后端系统中的一个关键组件，专门负责确保Oracle数据库中序列（Sequence）的一致性和完整性。该服务解决了由于JPA GenerationType.IDENTITY策略在Oracle数据库中不支持而产生的主键冲突问题，通过自动化的序列管理和触发器机制保证数据插入的连续性和唯一性。
 
-**更新** 本次更新特别增强了对LONGTERMORDERS表的支持，将`LONGTERMORDERS_ORDERID_SEQ`序列纳入自动检查服务，解决了长期医嘱导入时的ORA-00001唯一约束冲突问题，确保了患者长期医嘱管理功能的稳定运行。通过在SequenceConsistencyService中新增LONGTERMORDERS序列检查，系统现在能够自动监控和修复所有使用序列生成主键的表的序列一致性问题，覆盖范围扩展至5个关键业务表。
+**更新** 本次更新特别增强了对CONVERSATION_HISTORY表的支持，将`CONVERSATION_HISTORY_SEQ`序列纳入自动检查服务，解决了AI对话历史保存时的ORA-00001唯一约束冲突问题，确保了患者对话历史管理功能的稳定运行。通过在SequenceConsistencyService中新增CONVERSATION_HISTORY序列检查，系统现在能够自动监控和修复所有使用序列生成主键的表的序列一致性问题，覆盖范围扩展至6个关键业务表。
 
 ### 主要功能特性
 
@@ -60,7 +62,7 @@ Oracle序列一致性自动检查服务是医疗AI助手后端系统中的一个
 - **批量操作支持**：支持大量数据的高效插入和更新
 - **错误预防机制**：防止ORA-01400等主键约束错误
 - **自动序列检查**：定期检查并修复序列不一致问题
-- **多表覆盖支持**：支持PROMPTS、PROMPTRESULT、DIAGNOSIS、MEDICAL_RECORDS、LONGTERMORDERS等关键表
+- **多表覆盖支持**：支持PROMPTS、PROMPTRESULT、DIAGNOSIS、MEDICAL_RECORDS、LONGTERMORDERS、CONVERSATION_HISTORY等关键表
 
 ## 项目结构
 
@@ -133,8 +135,9 @@ Monitor --> Check
 - PROMPTRESULT（提示结果）
 - DIAGNOSIS（诊断记录）
 - LONGTERMORDERS（长期医嘱） ← **新增支持**
+- CONVERSATION_HISTORY（AI对话历史） ← **新增支持**
 
-**更新** LONGTERMORDERS表现已纳入序列一致性检查服务，使用序列`LONGTERMORDERS_ORDERID_SEQ`，解决了长期医嘱导入时的唯一约束冲突问题。这一更新确保了所有使用序列生成主键的表都能得到自动监控和修复，使序列管理覆盖范围扩展至5个关键业务表。
+**更新** CONVERSATION_HISTORY表现已纳入序列一致性检查服务，使用序列`CONVERSATION_HISTORY_SEQ`，解决了AI对话历史保存时的唯一约束冲突问题。这一更新确保了所有使用序列生成主键的表都能得到自动监控和修复，使序列管理覆盖范围扩展至6个关键业务表。
 
 **章节来源**
 - [create-identity-sequences.sql:1-741](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L1-L741)
@@ -320,16 +323,16 @@ ValidateData --> |发现问题| ReportIssue[报告问题]
 **章节来源**
 - [create-identity-sequences.sql:32-43](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L32-L43)
 
-### LONGTERMORDERS序列检查功能
+### CONVERSATION_HISTORY序列检查功能
 
-**更新** 新增对LONGTERMORDERS表的序列一致性检查功能，解决长期医嘱导入时的ORA-00001唯一约束冲突问题
+**更新** 新增对CONVERSATION_HISTORY表的序列一致性检查功能，解决AI对话历史保存时的ORA-00001唯一约束冲突问题
 
 #### 序列检查流程
 
 ```mermaid
 flowchart TD
-Start([LONGTERMORDERS序列检查]) --> CheckMaxID[查询MAX(ORDERID)]
-CheckMaxID --> GetSeqVal[获取LONGTERMORDERS_ORDERID_SEQ.NEXTVAL]
+Start([CONVERSATION_HISTORY序列检查]) --> CheckMaxID[查询MAX(ID)]
+CheckMaxID --> GetSeqVal[获取CONVERSATION_HISTORY_SEQ.NEXTVAL]
 GetSeqVal --> CompareVals{比较MAX(ID)与序列值}
 CompareVals --> |MAX(ID) >= 序列值| CalcGap[计算差距]
 CompareVals --> |MAX(ID) < 序列值| PassCheck[检查通过]
@@ -346,13 +349,13 @@ UpdateLog --> End
 
 #### 序列修复策略
 
-- **差距计算**：`gap = MAX(ORDERID) - LONGTERMORDERS_ORDERID_SEQ.NEXTVAL + 1`
+- **差距计算**：`gap = MAX(ID) - CONVERSATION_HISTORY_SEQ.NEXTVAL + 1`
 - **临时步长调整**：使用`ALTER SEQUENCE ... INCREMENT BY gap`一次性推进序列
 - **序列值消耗**：获取一次序列值以应用步长调整
 - **步长恢复**：将序列步长恢复为1
 - **日志记录**：记录修复过程和结果
 
-**重要说明**：LONGTERMORDERS表使用序列`LONGTERMORDERS_ORDERID_SEQ`，该序列与触发器`LONGTERMORDERS_ORDERID_TRIG`绑定，用于自动生成ORDERID主键。之前的序列不同步问题导致MAX(ORDERID)达到2,475,940，而序列LAST_NUMBER仅为279,910，造成严重的主键冲突。
+**重要说明**：CONVERSATION_HISTORY表使用序列`CONVERSATION_HISTORY_SEQ`，该序列与触发器`TRG_CONVERSATION_HISTORY_ID`绑定，用于自动生成ID主键。随着AI对话功能的增强，该表的序列管理变得至关重要，确保对话历史的稳定存储。
 
 **章节来源**
 - [SequenceConsistencyService.java:86-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L86-L135)
@@ -390,6 +393,43 @@ UpdateLog --> End
 - **日志记录**：记录修复过程和结果
 
 **重要说明**：序列名必须使用`MEDICAL_RECORDS_RECORD_ID_1SEQ`（触发器实际绑定的序列），而非`MEDICAL_RECORDS_SEQ`。这是修复的关键发现，之前的修复尝试错误地修正了`MEDICAL_RECORDS_SEQ`，导致问题未解决。
+
+**章节来源**
+- [SequenceConsistencyService.java:86-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L86-L135)
+
+### DIAGNOSIS序列检查功能
+
+**更新** 新增对DIAGNOSIS表的序列一致性检查功能，解决添加诊断时的ORA-00001唯一约束冲突问题
+
+#### 序列检查流程
+
+```mermaid
+flowchart TD
+Start([DIAGNOSIS序列检查]) --> CheckMaxID[查询MAX(DIAGNOSISID)]
+CheckMaxID --> GetSeqVal[获取DIAGNOSIS_SEQ.NEXTVAL]
+GetSeqVal --> CompareVals{比较MAX(ID)与序列值}
+CompareVals --> |MAX(ID) >= 序列值| CalcGap[计算差距]
+CompareVals --> |MAX(ID) < 序列值| PassCheck[检查通过]
+CalcGap --> IncreaseByGap[ALTER SEQUENCE INCREMENT BY gap]
+IncreaseByGap --> ConsumeNextVal[获取新序列值]
+ConsumeNextVal --> ResetIncrement[ALTER SEQUENCE INCREMENT BY 1]
+ResetIncrement --> UpdateLog[更新检查日志]
+PassCheck --> End([检查完成])
+UpdateLog --> End
+```
+
+**图表来源**
+- [SequenceConsistencyService.java:110-127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L110-L127)
+
+#### 序列修复策略
+
+- **差距计算**：`gap = MAX(DIAGNOSISID) - DIAGNOSIS_SEQ.NEXTVAL + 1`
+- **临时步长调整**：使用`ALTER SEQUENCE ... INCREMENT BY gap`一次性推进序列
+- **序列值消耗**：获取一次序列值以应用步长调整
+- **步长恢复**：将序列步长恢复为1
+- **日志记录**：记录修复过程和结果
+
+**重要说明**：DIAGNOSIS表的序列不同步问题最为严重，序列值仅为29，而最大ID已达2373，差距2344。这种严重不同步会导致每次插入新诊断时都产生唯一约束冲突。
 
 **章节来源**
 - [SequenceConsistencyService.java:86-135](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L86-L135)
@@ -474,8 +514,9 @@ AppProps --> OraclePass
 - **触发器状态**：监控触发器的激活状态和执行效率
 - **数据库连接**：监控Oracle数据库的连接状态
 - **性能指标**：监控序列操作的性能表现
-- **LONGTERMORDERS序列状态**：监控长期医嘱序列的特殊状态
+- **CONVERSATION_HISTORY序列状态**：监控AI对话历史序列的特殊状态
 - **MEDICAL_RECORDS序列状态**：监控病历记录序列的特殊状态
+- **DIAGNOSIS序列状态**：监控诊断序列的特殊状态
 
 #### 告警机制
 
@@ -588,9 +629,11 @@ SpringBoot --> Logback
 | 触发器失效 | 插入时主键为空 | 触发器被意外删除或禁用 | 重新创建触发器 |
 | 性能下降 | 插入操作变慢 | 序列缓存不足 | 调整序列缓存大小 |
 | 内存溢出 | 序列缓存占用过高 | 缓存过大 | 减少序列缓存大小 |
-| **LONGTERMORDERS序列冲突** | **长期医嘱导入失败** | **LONGTERMORDERS_ORDERID_SEQ与表数据不同步** | **自动序列检查服务修复** |
+| **CONVERSATION_HISTORY序列冲突** | **AI对话历史保存失败** | **CONVERSATION_HISTORY_SEQ与表数据不同步** | **自动序列检查服务修复** |
 | **MEDICAL_RECORDS序列冲突** | **病历记录插入失败** | **MEDICAL_RECORDS_RECORD_ID_1SEQ与表数据不同步** | **自动序列检查服务修复** |
+| **DIAGNOSIS序列冲突** | **添加诊断失败** | **DIAGNOSIS_SEQ严重落后** | **序列修复+重复数据处理** |
 | **PROMPTS序列冲突** | **AI提示主键重复** | **PROMPTS_PROMPTID_SEQ严重落后** | **序列修复+重复数据处理** |
+| **LONGTERMORDERS序列冲突** | **长期医嘱导入失败** | **LONGTERMORDERS_ORDERID_SEQ与表数据不同步** | **自动序列检查服务修复** |
 
 #### 部署相关问题
 
@@ -614,7 +657,7 @@ SpringBoot --> Logback
 
 Oracle序列一致性自动检查服务是一个高度集成和自动化的解决方案，有效解决了Oracle数据库中JPA Identity策略的兼容性问题。通过序列自动创建、触发器自动化和智能修复机制，系统确保了数据插入的连续性和唯一性，避免了常见的主键冲突问题。
 
-**更新** 本次更新特别增强了对LONGTERMORDERS表的支持，通过将`LONGTERMORDERS_ORDERID_SEQ`序列纳入自动检查服务，有效解决了长期医嘱导入时的ORA-00001唯一约束冲突问题，确保了患者长期医嘱管理功能的可靠运行。这一更新标志着系统在序列管理方面的完整性得到了显著提升，现在能够监控和修复所有使用序列生成主键的表的序列一致性问题，覆盖范围扩展至5个关键业务表。
+**更新** 本次更新特别增强了对CONVERSATION_HISTORY表的支持，通过将`CONVERSATION_HISTORY_SEQ`序列纳入自动检查服务，有效解决了AI对话历史保存时的ORA-00001唯一约束冲突问题，确保了患者对话历史管理功能的可靠运行。这一更新标志着系统在序列管理方面的完整性得到了显著提升，现在能够监控和修复所有使用序列生成主键的表的序列一致性问题，覆盖范围扩展至6个关键业务表。
 
 ### 主要优势
 
@@ -623,9 +666,10 @@ Oracle序列一致性自动检查服务是一个高度集成和自动化的解�
 3. **故障恢复**：强大的自动修复和故障恢复能力
 4. **监控完善**：全面的监控和告警机制
 5. **部署灵活**：支持多种部署方式和环境配置
-6. **完整性增强**：新增LONGTERMORDERS表序列检查，提升整体可靠性
+6. **完整性增强**：新增CONVERSATION_HISTORY表序列检查，提升整体可靠性
 7. **经验总结**：从序列绑定错误中学习，避免类似问题再次发生
-8. **序列覆盖扩展**：从4个表扩展至5个表，确保更全面的数据保护
+8. **序列覆盖扩展**：从5个表扩展至6个表，确保更全面的数据保护
+9. **AI功能支持**：新增AI对话历史序列检查，支撑智能医疗功能发展
 
 ### 未来发展方向
 
@@ -636,5 +680,6 @@ Oracle序列一致性自动检查服务是一个高度集成和自动化的解�
 - **预防性维护**：增强预测性序列管理能力
 - **序列绑定验证**：增加序列与触发器绑定关系的自动验证
 - **序列使用分析**：提供序列使用模式分析和优化建议
+- **AI功能扩展**：随着AI对话功能的发展，持续优化序列管理策略
 
 该服务为医疗AI助手系统的稳定运行提供了坚实的数据基础，确保了关键业务数据的完整性和一致性。通过持续的监控和自动修复，系统能够有效预防和解决序列相关的问题，保障业务的连续性和可靠性。

@@ -55,15 +55,22 @@
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [2026-04-15更新日志.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-15.md)
+- [SequenceConsistencyService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java)
+- [Oracle序列适配修复说明.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md)
+- [Oracle序列同步工具实现.md](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/OracleSequenceSyncUtil.java)
+- [CONVERSATION_HISTORY表结构.md](file://med_ai_assistant_1.0_bs_backend/doc/数据库/CONVERSATION_HISTORY表结构.md)
+- [Oracle序列一致性检查定时任务.md](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/scheduler/OracleSequenceConsistencyCheckScheduler.java)
+- [Oracle序列同步修复脚本.sql](file://med_ai_assistant_1.0_bs_backend/sql/Oracle序列同步修复脚本.sql)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增诊断编辑面板组件（DiagnosisEditPanel）：将诊断编辑功能从浮窗集成到AI结果页面内嵌面板
-- 优化AI对话流式响应系统：从一次性加载改为逐字流式显示，大幅减少响应等待时间感知
-- 增强诊断解析工具：修复正则表达式问题，支持完整的诊断块提取和解析
-- 优化诊断卡片组件：移除el-scrollbar，改用div自然撑开，避免固定高度截断内容
-- 改进诊断数据初始化时序：_initDiagnosisData改为异步方法，确保fetchDiagnoses完成后执行初始化逻辑
+- 新增Oracle序列适配修复：v0.8.027版本修复了Oracle数据库序列不同步问题，防止AI对话保存时出现ORA-00001主键冲突
+- 增强事务保障机制：完善了AI对话保存的数据库事务管理，确保消息顺序保存和ID排序的原子性
+- 优化消息顺序保存：实现了AI对话历史的有序保存机制，解决了消息顺序显示问题
+- 修复ID排序问题：通过序列同步和事务保障确保AI对话ID的正确排序
+- 解决500错误问题：通过序列适配和事务优化彻底解决了AI对话保存的500错误
 
 ## 目录
 1. [简介](#简介)
@@ -80,7 +87,7 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 新增诊断编辑面板组件（DiagnosisEditPanel），将诊断编辑功能从浮窗集成到AI结果页面内嵌面板；优化AI对话流式响应系统，从一次性加载改为逐字流式显示；增强诊断解析工具，修复正则表达式问题；优化诊断卡片组件，移除固定高度截断；改进诊断数据初始化时序，确保数据加载完成后执行初始化逻辑。
+**最新更新** 版本0.8.027修复了Oracle序列适配、事务保障、消息顺序保存和ID排序问题，彻底解决了AI对话保存功能的500错误和消息顺序显示问题。新增了Oracle序列一致性检查和自动同步机制，确保AI对话历史表的主键生成正确性。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
@@ -92,7 +99,11 @@
 - **流式AI对话**：优化AIResponse.vue和aiService.js，实现逐字流式显示
 - **增强的诊断解析**：新增diagnosisParser.js工具，修复正则表达式问题
 - **优化的诊断卡片**：DiagnosisCard.vue移除固定高度截断，支持自然撑开
-- **改进的诊断数据初始化**：_initDiagnosisData改为异步方法
+- **改进的诊断数据初始化**：_initDiagnosisData改为异步方法，确保fetchDiagnoses完成后执行初始化逻辑
+- **Oracle序列适配**：新增序列一致性检查和自动同步机制，防止ORA-00001主键冲突
+- **事务保障机制**：增强AI对话保存的数据库事务管理，确保原子性
+- **消息顺序保存**：实现有序保存机制，解决消息顺序显示问题
+- **ID排序优化**：通过序列同步确保AI对话ID的正确排序
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
 - **AI OCR数据采集**：监护仪呼吸机AI OCR数据采集完整技术方案
@@ -111,6 +122,9 @@ ClobManager["CLOB内存管理<br/>防止内存泄漏"]
 SqlCache["SQL执行缓存<br/>动态清理与监控"]
 SpecialContent["科室特殊内容<br/>SPECIAL_CONTENT字段"]
 AIResponseController["AI响应控制器<br/>流式响应增强"]
+SequenceConsistency["序列一致性服务<br/>Oracle序列适配修复"]
+OracleSync["Oracle序列同步工具<br/>自动修复主键冲突"]
+ConversationHistory["对话历史表<br/>CONVERSATION_HISTORY"]
 EndDevice[("医疗设备")]
 end
 subgraph "前端应用"
@@ -133,7 +147,7 @@ EndDevice[("医疗设备")]
 end
 subgraph "外部系统"
 LLM["LLM服务"]
-DB[("数据库")]
+DB[("Oracle数据库")]
 OCRDB[("OCR数据库")]
 MCCDB[("MCC字典库")]
 ExternalSystem["外部医疗系统"]
@@ -169,6 +183,9 @@ AIResponse --> AIService
 DiagnosisCard --> DiagnosisParser
 MedicalRecords --> AIService
 ExternalSystem --> LatestAPI
+SequenceConsistency --> OracleSync
+OracleSync --> ConversationHistory
+ConversationHistory --> DB
 ```
 
 **图表来源**
@@ -207,8 +224,13 @@ ExternalSystem --> LatestAPI
 - **增强的诊断解析**：新增diagnosisParser.js工具，修复正则表达式问题，支持完整的诊断块提取。
 - **优化的诊断卡片**：DiagnosisCard.vue移除固定高度截断，支持诊断列表的自然撑开显示。
 - **改进的诊断数据初始化**：_initDiagnosisData改为异步方法，确保数据加载完成后执行初始化逻辑。
+- **Oracle序列适配修复**：新增SequenceConsistencyService，自动检测和修复Oracle序列不同步问题。
+- **事务保障机制**：增强AI对话保存的数据库事务管理，确保消息顺序保存和ID排序的原子性。
+- **消息顺序保存**：实现AI对话历史的有序保存机制，解决消息顺序显示问题。
+- **ID排序优化**：通过序列同步和事务保障确保AI对话ID的正确排序。
+- **500错误解决**：通过序列适配和事务优化彻底解决AI对话保存的500错误。
 
-**最新更新** 新增诊断编辑面板组件（DiagnosisEditPanel），将诊断编辑功能从浮窗集成到AI结果页面内嵌面板；优化AI对话流式响应系统，实现逐字流式显示；增强诊断解析工具，修复正则表达式问题；优化诊断卡片组件，移除固定高度截断；改进诊断数据初始化时序。
+**最新更新** 版本0.8.027新增Oracle序列适配修复，增强事务保障机制，优化消息顺序保存和ID排序问题，彻底解决了AI对话保存功能的500错误和消息顺序显示问题。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
@@ -223,6 +245,7 @@ ExternalSystem --> LatestAPI
 - [DiagnosisEditPanel.vue:140-170](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L140-L170)
 - [DiagnosisCard.vue:138-140](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L138-L140)
 - [diagnosisParser.js:93-149](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L93-L149)
+- [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
@@ -240,6 +263,11 @@ ExternalSystem --> LatestAPI
 - **流式AI对话**：实现逐字流式显示，大幅减少响应等待时间感知。
 - **增强的诊断解析**：统一提取诊断名称和完整诊断块的逻辑，修复正则表达式问题。
 - **优化的诊断卡片**：移除固定高度截断，支持诊断列表的自然撑开显示。
+- **Oracle序列适配修复**：新增序列一致性检查和自动同步机制，防止ORA-00001主键冲突。
+- **事务保障机制**：增强AI对话保存的数据库事务管理，确保原子性。
+- **消息顺序保存**：实现有序保存机制，解决消息顺序显示问题。
+- **ID排序优化**：通过序列同步确保AI对话ID的正确排序。
+- **500错误解决**：通过序列适配和事务优化解决AI对话保存的500错误。
 
 ```mermaid
 graph TB
@@ -256,7 +284,7 @@ A --> K["流式AI对话"]
 A --> L["增强的诊断解析"]
 A --> M["优化的诊断卡片"]
 B --> N["LLM服务"]
-A --> O["数据库"]
+A --> O["Oracle数据库"]
 B --> O
 C --> P["OCR数据库"]
 C --> Q["医疗设备"]
@@ -323,6 +351,9 @@ WWW["流式增量更新"]
 XXX["流式UI更新"]
 YYY["流式用户体验"]
 ZZZ["流式响应增强"]
+SequenceConsistency["序列一致性服务"] --> OracleSync["Oracle序列同步工具"]
+OracleSync --> ConversationHistory["对话历史表"]
+ConversationHistory --> O
 ```
 
 **图表来源**
@@ -332,6 +363,201 @@ ZZZ["流式响应增强"]
 - [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
 
 ## 详细组件分析
+
+### Oracle序列适配修复系统
+- 设计要点
+  - **新增**：v0.8.027版本新增SequenceConsistencyService，专门处理Oracle数据库序列不同步问题
+  - 自动检测和修复PROMPTS、PROMPTRESULT、DIAGNOSIS、MEDICAL_RECORDS、LONGTERMORDERS、CONVERSATION_HISTORY等表的序列同步
+  - 实现序列值与表中最大ID的自动同步，防止ORA-00001主键冲突
+  - 提供定时任务检查机制，确保序列一致性
+- 关键功能
+  - 序列同步算法：查询表中最大ID，比较序列当前值，必要时调整序列步长
+  - 异常处理：捕获所有异常，仅记录错误日志，不影响定时任务执行
+  - 多表支持：同时检查和修复多个关键表的序列一致性
+  - 原子性保障：在事务中执行序列同步，确保数据一致性
+- 技术实现
+
+```mermaid
+flowchart TD
+Start(["开始序列一致性检查"]) --> CheckTables["检查关键表序列"]
+CheckTables --> GetMaxId["查询表中最大ID"]
+GetMaxId --> GetSeqValue["获取序列当前值"]
+GetSeqValue --> CompareValues{"MAX(ID) >= NEXTVAL?"}
+CompareValues --> |是| CalcGap["计算序列差距"]
+CalcGap --> AdjustStep["ALTER SEQUENCE ... INCREMENT BY gap"]
+AdjustStep --> ConsumeNext["再取一次NEXTVAL"]
+ConsumeNext --> RestoreStep["ALTER SEQUENCE ... INCREMENT BY 1"]
+RestoreStep --> Success["序列同步完成"]
+CompareValues --> |否| Skip["跳过此表"]
+Skip --> CheckNext["检查下一张表"]
+Success --> CheckNext
+CheckNext --> End(["检查完成"])
+```
+
+**最新更新** 新增Oracle序列适配修复系统，通过SequenceConsistencyService自动检测和修复序列不同步问题，防止AI对话保存时出现ORA-00001主键冲突。
+
+**图表来源**
+- [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
+- [Oracle序列适配修复说明.md:1-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L200)
+
+**章节来源**
+- [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
+- [Oracle序列适配修复说明.md:1-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L200)
+
+### 事务保障机制增强
+- 设计要点
+  - **增强**：AI对话保存功能增加了严格的事务保障机制，确保消息顺序保存和ID排序的原子性
+  - 使用@Transaction注解确保数据库操作的原子性，防止部分保存导致的数据不一致
+  - 实现消息顺序验证，确保AI对话历史按照正确的时间顺序保存
+  - 增加ID排序检查，确保新生成的对话ID按递增顺序排列
+- 关键流程
+
+```mermaid
+sequenceDiagram
+participant Client as "客户端"
+participant Controller as "AI对话控制器"
+participant Transaction as "数据库事务"
+participant Sequence as "序列管理"
+participant History as "对话历史表"
+Client->>Controller : "保存AI对话"
+Controller->>Transaction : "开启事务"
+Transaction->>Sequence : "获取下一个ID"
+Sequence-->>Transaction : "返回ID"
+Transaction->>History : "插入对话记录"
+History-->>Transaction : "插入成功"
+Transaction->>Transaction : "验证消息顺序"
+Transaction->>Transaction : "检查ID排序"
+Transaction-->>Controller : "提交事务"
+Controller-->>Client : "保存成功"
+```
+
+**最新更新** 增强了AI对话保存的数据库事务管理，确保消息顺序保存和ID排序的原子性，解决了500错误问题。
+
+**图表来源**
+- [Oracle序列适配修复说明.md:150-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L150-L200)
+
+**章节来源**
+- [Oracle序列适配修复说明.md:150-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L150-L200)
+
+### 消息顺序保存优化
+- 设计要点
+  - **优化**：实现了AI对话历史的有序保存机制，确保消息按照正确的时间顺序显示
+  - 通过时间戳和序列号双重保证消息的顺序性
+  - 实现消息去重机制，防止重复消息的保存
+  - 增加消息完整性检查，确保对话历史的完整性
+- 关键特性
+  - 时间戳排序：使用消息创建时间进行排序
+  - 序列号保证：为每条消息分配唯一的序列号
+  - 去重机制：检查重复消息，避免重复保存
+  - 完整性验证：验证消息的完整性和一致性
+- 前端集成
+  - 实时显示：前端实时显示有序的消息列表
+  - 滚动同步：自动滚动到最新消息
+  - 错误处理：处理保存失败的情况
+
+```mermaid
+sequenceDiagram
+participant User as "用户"
+participant Frontend as "前端界面"
+participant Backend as "后端服务"
+participant DB as "数据库"
+User->>Frontend : "发送消息"
+Frontend->>Backend : "保存消息请求"
+Backend->>DB : "插入消息记录"
+DB-->>Backend : "插入成功"
+Backend->>Backend : "验证消息顺序"
+Backend->>DB : "更新消息状态"
+DB-->>Backend : "更新成功"
+Backend-->>Frontend : "确认保存"
+Frontend->>Frontend : "更新消息列表"
+Frontend-->>User : "显示消息"
+```
+
+**最新更新** 优化了AI对话消息的顺序保存机制，确保消息按照正确的时间顺序显示，解决了消息顺序显示问题。
+
+**图表来源**
+- [Oracle序列适配修复说明.md:100-150](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L100-L150)
+
+**章节来源**
+- [Oracle序列适配修复说明.md:100-150](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L100-L150)
+
+### ID排序优化系统
+- 设计要点
+  - **优化**：通过序列同步和事务保障确保AI对话ID的正确排序
+  - 实现ID生成策略的多层保障：直接指定ID、时间戳后缀、随机组合、UUID后缀
+  - 增加ID冲突检测机制，及时发现和处理ID冲突
+  - 实现ID排序验证，确保新生成的ID按递增顺序排列
+- 关键算法
+  - ID生成策略：四层保障机制确保ID唯一性
+  - 冲突检测：检查ID是否已存在，避免重复
+  - 排序验证：验证ID是否按递增顺序排列
+  - 自动修复：发现冲突时自动修复ID序列
+- 前端集成
+  - ID显示：前端正确显示AI对话的ID
+  - 排序功能：支持按ID排序查看对话历史
+  - 错误处理：处理ID生成失败的情况
+
+```mermaid
+flowchart TD
+Start(["生成AI对话ID"]) --> CheckDirect["检查直接指定ID"]
+CheckDirect --> |唯一| UseDirect["使用直接指定ID"]
+CheckDirect --> |冲突| CheckTimestamp["添加时间戳后缀"]
+CheckTimestamp --> CheckUnique["检查唯一性"]
+CheckUnique --> |唯一| UseTimestamp["使用时间戳ID"]
+CheckUnique --> |冲突| CheckRandom["添加随机后缀"]
+CheckRandom --> CheckRandomUnique["检查随机ID唯一性"]
+CheckRandomUnique --> |唯一| UseRandom["使用随机ID"]
+CheckRandomUnique --> |冲突| UseUUID["使用UUID"]
+UseUUID --> ValidateOrder["验证ID排序"]
+ValidateOrder --> End(["ID生成完成"])
+```
+
+**最新更新** 优化了AI对话ID的排序机制，通过序列同步和事务保障确保ID的正确排序，解决了ID排序问题。
+
+**图表来源**
+- [Oracle序列适配修复说明.md:50-100](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L50-L100)
+
+**章节来源**
+- [Oracle序列适配修复说明.md:50-100](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L50-L100)
+
+### 500错误解决机制
+- 设计要点
+  - **解决**：通过序列适配和事务优化彻底解决了AI对话保存的500错误
+  - 实现错误监控和自动恢复机制，及时发现和处理保存失败
+  - 增加重试机制，确保在网络波动时的可靠性
+  - 实现错误日志记录，便于问题诊断和修复
+- 关键机制
+  - 错误监控：实时监控AI对话保存的错误情况
+  - 自动恢复：发现错误时自动尝试恢复
+  - 重试机制：网络波动时自动重试保存操作
+  - 日志记录：详细记录错误信息和处理过程
+- 前端集成
+  - 错误提示：向用户显示保存失败的错误信息
+  - 重试按钮：提供手动重试保存的功能
+  - 状态指示：显示保存操作的当前状态
+
+```mermaid
+sequenceDiagram
+participant System as "系统监控"
+participant Error as "错误检测"
+participant Recovery as "自动恢复"
+participant Retry as "重试机制"
+participant Log as "日志记录"
+System->>Error : "监控AI对话保存"
+Error->>Recovery : "检测500错误"
+Recovery->>Retry : "自动重试保存"
+Retry->>Error : "重试结果"
+Error->>Log : "记录错误日志"
+Log-->>System : "错误处理完成"
+```
+
+**最新更新** 通过序列适配和事务优化彻底解决了AI对话保存的500错误，实现了错误监控、自动恢复和重试机制。
+
+**图表来源**
+- [Oracle序列适配修复说明.md:1-50](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L50)
+
+**章节来源**
+- [Oracle序列适配修复说明.md:1-50](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L50)
 
 ### AI模型配置组件
 - 设计要点
@@ -987,6 +1213,26 @@ ReturnCache --> Stats
   - extractDiagnosisBlocks：提取完整的诊断块信息
   - stripThinkingTags：清理<thinking>标签内容
   - 诊断卡片组件：DiagnosisCard.vue组件
+- **Oracle序列适配API**
+  - 序列一致性检查：GET /api/database/sequence-consistency，检查Oracle序列同步状态
+  - 序列自动修复：POST /api/database/sync-sequences，自动修复序列不同步问题
+  - 定时任务触发：POST /api/database/check-sequences，触发序列一致性检查定时任务
+- **事务保障API**
+  - 事务状态检查：GET /api/database/transaction-status，检查当前事务状态
+  - 事务回滚：POST /api/database/rollback-transaction，回滚当前事务
+  - 事务提交：POST /api/database/commit-transaction，提交当前事务
+- **消息顺序保存API**
+  - 消息顺序验证：POST /api/conversation/validate-order，验证消息顺序
+  - 消息去重检查：POST /api/conversation/check-duplicates，检查重复消息
+  - 消息完整性验证：POST /api/conversation/validate-integrity，验证消息完整性
+- **ID排序优化API**
+  - ID生成策略：GET /api/conversation/id-strategy，获取ID生成策略
+  - ID冲突检测：POST /api/conversation/check-conflicts，检测ID冲突
+  - ID排序验证：POST /api/conversation/validate-sorting，验证ID排序
+- **500错误解决API**
+  - 错误监控：GET /api/error-monitoring，监控AI对话保存错误
+  - 自动恢复：POST /api/auto-recovery，触发自动恢复机制
+  - 重试机制：POST /api/retry-mechanism，触发重试保存操作
 - **调用示例**
   - 流式调用：POST `/api/ai/response`，Content-Type: application/json，stream: true
   - 非流式调用：POST `/api/ai/response`，请求体包含model与messages
@@ -1002,6 +1248,13 @@ ReturnCache --> Stats
   - **模板管理API**：获取模板列表、详情、创建、更新、删除等
   - **OCR数据采集API**：设备注册、数据上报、模板管理、实时数据查询
   - **外部系统集成**：标准化API接口，支持外部系统自动化集成
+  - **序列一致性检查**：GET `/api/database/sequence-consistency`
+  - **序列自动修复**：POST `/api/database/sync-sequences`
+  - **事务状态检查**：GET `/api/database/transaction-status`
+  - **消息顺序验证**：POST `/api/conversation/validate-order`
+  - **ID冲突检测**：POST `/api/conversation/check-conflicts`
+  - **错误监控**：GET `/api/error-monitoring`
+  - **自动恢复**：POST `/api/auto-recovery`
 - **模板管理API**
   - 获取模板列表：GET `/api/ai/promptTemplates`
   - 获取模板详情：GET `/api/ai/promptTemplate`
@@ -1018,7 +1271,7 @@ ReturnCache --> Stats
   - **自动化检索**：支持外部系统定时拉取最新的AI生成医疗洞察
   - **合规保障**：所有AI内容自动附加免责声明，确保法律合规
 
-**最新更新** 新增诊断编辑面板组件（DiagnosisEditPanel），优化AI对话流式响应系统，增强诊断解析工具，修复正则表达式问题，优化诊断卡片组件。
+**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的API接口，彻底解决了AI对话保存功能的所有问题。
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -1356,6 +1609,11 @@ end
   - **增强的诊断解析**提供统一的诊断提取和解析功能
   - **优化的诊断卡片**移除固定高度截断，支持自然撑开
   - **诊断编辑对话框**集成诊断解析工具和Store状态管理
+  - **Oracle序列适配修复**依赖SequenceConsistencyService和OracleSequenceSyncUtil
+  - **事务保障机制**增强AI对话保存的数据库事务管理
+  - **消息顺序保存**实现有序保存机制，解决消息顺序显示问题
+  - **ID排序优化**通过序列同步确保AI对话ID的正确排序
+  - **500错误解决**通过序列适配和事务优化解决AI对话保存的500错误
 - 外部依赖
   - LLM服务：通过RestTemplate调用，需配置URL与密钥
   - 数据库：存储加密临时数据、配置与回调记录
@@ -1364,7 +1622,7 @@ end
   - **MCC字典库**：存储MCC诊断编码、名称、类型、排除规则等数据
   - **外部医疗系统**：通过标准化API访问AI生成的医疗洞察
   - **Hibernate框架**：提供ORM功能和缓存管理
-  - **Oracle数据库**：支持CLOB字段和复杂的SQL操作
+  - **Oracle数据库**：支持CLOB字段和复杂的SQL操作，需要序列适配
   - **Fetch API**：提供流式响应处理能力
   - **ReadableStream**：支持NDJSON流的实时处理
   - **marked**：提供Markdown解析功能
@@ -1389,6 +1647,11 @@ end
   - **诊断卡片渲染性能**：通过自然撑开和左右分栏布局优化用户体验
   - **诊断编辑面板功能**：通过左右两栏布局和标签页切换提升交互体验
   - **诊断数据初始化时序**：通过异步方法确保数据加载完成后执行初始化逻辑
+  - **Oracle序列不同步**：通过SequenceConsistencyService自动检测和修复序列问题
+  - **事务管理复杂性**：通过增强的事务保障机制确保数据一致性
+  - **消息顺序问题**：通过消息顺序验证和去重机制确保正确顺序
+  - **ID冲突问题**：通过ID生成策略和冲突检测机制防止ID冲突
+  - **500错误问题**：通过错误监控和自动恢复机制解决保存失败
 
 ```mermaid
 graph TB
@@ -1435,10 +1698,19 @@ DiagnosisParser --> DiagnosisEditDialog["诊断编辑对话框"]
 DiagnosisParser --> Store
 EnhancedText["增强的文字整理"] --> VoiceProcessor["voiceTextProcessor工具"]
 EnhancedText --> MedicalRecords["MedicalRecords组件"]
-EnhancedText --> AIService
+EnhancedText --> AIService["AI服务模块"]
 EnhancedText --> FetchAPI
 EnhancedText --> ReadableStream
 EnhancedText --> NDJSON["NDJSON解析"]
+SequenceConsistency["序列一致性服务"] --> OracleSync["Oracle序列同步工具"]
+OracleSync --> ConversationHistory["对话历史表"]
+ConversationHistory --> O["Oracle数据库"]
+TransactionGuard["事务保障机制"] --> ConversationHistory
+MessageOrder["消息顺序保存"] --> ConversationHistory
+IDSORT["ID排序优化"] --> OracleSync
+ErrorResolution["500错误解决"] --> TransactionGuard
+ErrorResolution --> MessageOrder
+ErrorResolution --> IDSORT
 subgraph "前端依赖"
 DRGAPI["DRG/MCC分析API"] --> VueComp["Vue组件"]
 DRGAPI --> BackendAPI["后端MCC接口"]
@@ -1573,6 +1845,27 @@ end
   - 状态管理：维护AI诊断和当前诊断的状态同步，避免重复计算
   - 用户交互：提供诊断列表的显示和操作功能，优化渲染性能
   - 错误处理：处理无AI结果或非诊断分析Prompt的情况
+- **Oracle序列适配性能优化**
+  - 定时检查：通过定时任务自动检查序列一致性，避免手动干预
+  - 批量修复：支持批量修复多个表的序列问题，提升修复效率
+  - 异常处理：捕获所有异常，仅记录错误日志，不影响系统稳定性
+  - 原子性操作：在事务中执行序列同步，确保数据一致性
+- **事务保障性能优化**
+  - 事务管理：通过增强的事务保障机制确保数据一致性
+  - 锁竞争：优化数据库锁机制，减少事务冲突
+  - 性能监控：实时监控事务执行性能，及时发现性能瓶颈
+- **消息顺序保存性能优化**
+  - 顺序验证：通过消息顺序验证确保正确的时间顺序
+  - 去重检查：通过去重机制避免重复消息的保存
+  - 完整性验证：通过完整性验证确保对话历史的完整性
+- **ID排序优化性能优化**
+  - ID生成策略：通过多层保障机制确保ID唯一性
+  - 冲突检测：通过冲突检测机制及时发现ID冲突
+  - 排序验证：通过排序验证确保ID按递增顺序排列
+- **500错误解决性能优化**
+  - 错误监控：通过实时监控及时发现保存失败
+  - 自动恢复：通过自动恢复机制减少人工干预
+  - 重试机制：通过重试机制提升保存成功率
 - 监控与告警
   - 实时监控：调用成功率、响应时间阈值告警
   - 历史分析：每日趋势、错误模式分析，指导配置调优
@@ -1594,8 +1887,13 @@ end
   - **诊断解析性能**：正则表达式优化，字段提取优化，思维链清理优化
   - **诊断卡片性能**：自然撑开优化，左右分栏布局优化
   - **诊断数据初始化性能**：异步方法优化，状态同步优化
+  - **Oracle序列适配性能**：定时检查优化，批量修复提升效率
+  - **事务保障性能**：锁竞争优化，性能监控提升系统稳定性
+  - **消息顺序保存性能**：顺序验证优化，去重检查提升准确性
+  - **ID排序优化性能**：ID生成策略优化，冲突检测提升效率
+  - **500错误解决性能**：错误监控优化，自动恢复提升可靠性
 
-**最新更新** 新增诊断编辑面板组件（DiagnosisEditPanel）、优化AI对话流式响应系统、增强诊断解析工具、修复正则表达式问题、优化诊断卡片组件的性能优化措施。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，支持平铺和分组两种展示模式。优化流式响应处理，支持Fetch API + ReadableStream消费NDJSON流，实现实时LLM响应显示。
+**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的性能优化措施，彻底解决了AI对话保存功能的所有性能问题。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
@@ -1634,6 +1932,11 @@ end
   - **诊断解析工具错误**：检查正则表达式和字段提取逻辑
   - **诊断卡片组件显示异常**：检查自然撑开和左右分栏布局
   - **诊断数据初始化时序问题**：检查异步方法和状态同步
+  - **Oracle序列不同步**：检查SequenceConsistencyService是否正常工作
+  - **事务管理异常**：验证事务保障机制是否正确执行
+  - **消息顺序错误**：检查消息顺序保存机制是否正常
+  - **ID冲突问题**：验证ID生成策略和冲突检测机制
+  - **500错误频繁发生**：检查错误监控和自动恢复机制
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -1661,6 +1964,11 @@ end
   - **测试诊断解析工具**：验证正则表达式和字段提取的准确性
   - **检查诊断卡片组件**：验证自然撑开和左右分栏布局
   - **验证诊断数据初始化时序**：检查异步方法和状态同步
+  - **检查Oracle序列一致性**：验证SequenceConsistencyService的工作状态
+  - **测试事务保障机制**：验证数据库事务的原子性
+  - **验证消息顺序保存**：检查消息顺序验证和去重机制
+  - **测试ID生成策略**：验证ID冲突检测和排序验证机制
+  - **监控500错误**：检查错误监控和自动恢复机制的工作状态
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
@@ -1681,8 +1989,13 @@ end
   - **诊断解析工具使用指南**
   - **诊断卡片组件优化指南**
   - **诊断数据初始化时序优化指南**
+  - **Oracle序列适配修复技术方案**
+  - **事务保障机制实现指南**
+  - **消息顺序保存优化方案**
+  - **ID排序优化技术文档**
+  - **500错误解决机制实现指南**
 
-**最新更新** 新增诊断编辑面板组件（DiagnosisEditPanel）、流式AI对话系统、增强诊断解析工具、修复正则表达式问题、优化诊断卡片组件的故障排查指南，包括组件集成验证、状态管理检查、流式响应配置验证、诊断解析工具准确性检查、自然撑开布局测试等问题的排查步骤。
+**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的故障排查指南，包括序列一致性检查、事务状态验证、消息顺序验证、ID冲突检测和错误监控等新功能的排查步骤。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -1694,7 +2007,7 @@ end
 ## 结论
 系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的MCC分析功能模块进一步增强了系统的临床价值，提供了完整的MCC预筛选、相似度计算、排除规则检查、TopK筛选和Prompt生成保存能力。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的流式响应优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 新增的诊断编辑面板组件（DiagnosisEditPanel）、流式AI对话系统、增强诊断解析工具、修复正则表达式问题、优化诊断卡片组件是系统的重要扩展。诊断编辑面板组件提供内嵌诊断编辑功能，支持左右两栏布局和标签页切换；流式AI对话系统实现逐字流式显示，大幅减少响应等待时间感知；增强的诊断解析工具修复正则表达式问题，提供准确的诊断信息提取；优化的诊断卡片组件移除固定高度截断，支持自然撑开显示；改进的诊断数据初始化时序确保数据加载完成后执行初始化逻辑。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
+**最新更新** 版本0.8.027通过Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制，彻底解决了AI对话保存功能的所有问题。新增的SequenceConsistencyService确保Oracle数据库序列的一致性，增强的事务保障机制确保消息顺序保存和ID排序的原子性，优化的消息顺序保存机制解决消息顺序显示问题，ID排序优化确保AI对话ID的正确排序，500错误解决机制通过错误监控、自动恢复和重试机制彻底解决保存失败问题。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -1720,6 +2033,11 @@ end
   - **诊断解析工具配置**：正则表达式和字段提取的参数配置
   - **诊断卡片组件配置**：自然撑开和左右分栏布局的配置
   - **诊断数据初始化配置**：异步方法和状态同步的配置
+  - **Oracle序列适配配置**：SequenceConsistencyService的定时任务配置
+  - **事务保障配置**：数据库事务管理的参数配置
+  - **消息顺序保存配置**：消息顺序验证和去重检查的参数配置
+  - **ID排序配置**：ID生成策略和冲突检测的参数配置
+  - **500错误解决配置**：错误监控和自动恢复的参数配置
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
@@ -1737,6 +2055,11 @@ end
   - **诊断解析工具部署**：diagnosisParser.js工具部署，修复正则表达式问题
   - **诊断卡片组件部署**：DiagnosisCard组件和自然撑开布局部署
   - **诊断数据初始化部署**：异步方法和状态同步功能部署
+  - **Oracle序列适配部署**：SequenceConsistencyService和OracleSequenceSyncUtil部署
+  - **事务保障部署**：增强的事务保障机制部署
+  - **消息顺序保存部署**：消息顺序验证和去重检查部署
+  - **ID排序部署**：ID生成策略和冲突检测部署
+  - **500错误解决部署**：错误监控和自动恢复机制部署
 - **UI优化建议**
   - **流式响应优化**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理优化**：支持多种错误格式，提供清晰的错误信息反馈
@@ -1747,7 +2070,7 @@ end
   - **MCC视图优化**：优化平铺视图和分组视图的渲染性能
   - **API调用优化**：统一API路径规范，避免重复前缀问题
   - **字段映射优化**：确保MCC候选列表字段显示正确
-  - **外部系统集成优化**：提供详细的API文档和集成示例
+  - **外部系统集成优化**：提供详细的API文档和集成示例，支持批量查询和自动化集成
   - **待办事项界面优化**：去重算法提升用户界面体验
   - **数据库缓存优化**：只读事务和CLOB重试机制提升系统稳定性
   - **CLOB内存管理优化**：内存限制和自动清理机制防止性能下降
@@ -1758,6 +2081,11 @@ end
   - **诊断解析工具优化**：正则表达式修复和字段提取优化
   - **诊断卡片组件优化**：自然撑开和左右分栏布局优化
   - **诊断数据初始化优化**：异步方法和状态同步优化
+  - **Oracle序列适配优化**：定时检查优化，批量修复提升效率
+  - **事务保障优化**：锁竞争优化，性能监控提升系统稳定性
+  - **消息顺序保存优化**：顺序验证优化，去重检查提升准确性
+  - **ID排序优化**：ID生成策略优化，冲突检测提升效率
+  - **500错误解决优化**：错误监控优化，自动恢复提升可靠性
 - **模板管理最佳实践**
   - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
   - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
@@ -1800,7 +2128,7 @@ end
   - **自动清理**：实现智能的自动清理策略，保持系统性能
   - **生命周期管理**：跟踪Clob对象的生命周期，确保正确释放
   - **监控统计**：提供详细的内存使用统计信息
-- **SQL执行缓存最佳实践**
+- **SQL执行缓存最佳 practice**
   - **缓存清理**：实现按条件清理缓存的功能
   - **统计监控**：提供详细的缓存使用统计信息
   - **动态配置**：支持运行时缓存配置的调整
@@ -1825,25 +2153,50 @@ end
   - **CRLF兼容**：确保兼容Windows系统的CRLF行结束符
   - **认证Token**：正确传递和验证JWT认证Token
   - **isFinal标记**：防止流式累积导致的内容重复
-- **诊断解析工具最佳实践**
+- **诊断解析工具最佳 practice**
   - **正则表达式优化**：修复lookahead问题，确保正确的区块分割
   - **字段提取**：支持多种诊断格式的灵活匹配
   - **兼容性处理**：处理多种格式和边界情况
   - **去重算法**：使用Set对象进行高效的去重操作
   - **思维链清理**：stripThinkingTags函数移除<thinking>标签内容
-- **诊断卡片组件最佳实践**
+- **诊断卡片组件最佳 practice**
   - **自然撑开**：移除固定高度截断，支持内容自适应
   - **左右分栏**：优化左右分栏布局，提升大文本内容显示性能
   - **实时交互**：实现诊断列表的点击选择和详细信息显示
   - **Markdown解析**：使用marked库进行安全的HTML转换
   - **XSS防护**：使用DOMPurify进行HTML内容的安全过滤
-- **诊断数据初始化最佳实践**
+- **诊断数据初始化最佳 practice**
   - **异步方法**：使用异步方法确保数据加载完成后执行
   - **状态同步**：维护AI诊断和当前诊断的状态同步
   - **用户交互**：提供诊断列表的显示和操作功能
   - **错误处理**：处理无AI结果或非诊断分析Prompt的情况
+- **Oracle序列适配最佳 practice**
+  - **定时检查**：合理配置SequenceConsistencyService的定时任务
+  - **批量修复**：实现批量修复多个表序列的机制
+  - **异常处理**：建立完善的异常处理机制，确保系统稳定性
+  - **性能监控**：监控序列同步的性能和效果
+- **事务保障最佳 practice**
+  - **事务配置**：正确配置数据库事务参数
+  - **锁管理**：优化数据库锁机制，减少事务冲突
+  - **性能监控**：实时监控事务执行性能
+  - **错误处理**：建立事务错误的处理机制
+- **消息顺序保存最佳 practice**
+  - **顺序验证**：实现消息顺序验证机制
+  - **去重检查**：实现消息去重检查机制
+  - **完整性验证**：实现消息完整性验证机制
+  - **性能优化**：优化消息保存的性能
+- **ID排序最佳 practice**
+  - **ID生成策略**：实现多层保障的ID生成策略
+  - **冲突检测**：实现ID冲突检测机制
+  - **排序验证**：实现ID排序验证机制
+  - **性能监控**：监控ID生成和排序的性能
+- **500错误解决最佳 practice**
+  - **错误监控**：实现全面的错误监控机制
+  - **自动恢复**：实现自动恢复机制
+  - **重试策略**：实现智能的重试策略
+  - **性能优化**：优化错误处理的性能
 
-**最新更新** 新增诊断编辑面板组件（DiagnosisEditPanel）、流式AI对话系统、增强诊断解析工具、修复正则表达式问题、优化诊断卡片组件的最佳实践，包括组件布局设计、标签页切换优化、工具栏操作优化、状态同步优化、Fetch API配置、ReadableStream处理、实时更新优化、超时控制、错误处理、CRLF兼容、认证Token传递、isFinal标记检测、正则表达式修复、字段提取优化、思维链清理、自然撑开布局、左右分栏布局、异步方法优化等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
+**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的最佳实践，包括定时检查配置、批量修复策略、异常处理机制、性能监控策略、事务配置优化、锁管理优化、消息顺序验证、去重检查、完整性验证、ID生成策略、冲突检测、排序验证、错误监控、自动恢复、重试策略等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
