@@ -12,6 +12,9 @@
 - [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 - [PatientView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 - [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
@@ -19,12 +22,16 @@
 - [main.js](file://med_ai_assistant_1.0_bs_vue/src/main.js)
 - [App.vue](file://med_ai_assistant_1.0_bs_vue/src/App.vue)
 - [router/index.js](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
+- [store/modules/ai.js](file://med_ai_assistant_1.0_bs_vue/src/store/modules/ai.js)
+- [store/modules/user.js](file://med_ai_assistant_1.0_bs_vue/src/store/modules/user.js)
 - [package.json](file://med_ai_assistant_1.0_bs_vue/package.json)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增诊断编辑面板和诊断卡片组件的滚动优化、布局重构分析
+- 新增PromptTemplates组件的重大UI重构：从传统下拉菜单改为overlay下拉面板系统
+- 更新AIView组件以支持新的Overlay面板系统和CSS过渡动画
+- 新增小屏模式下的Prompt模板列表显示控制机制
 - 更新思维过程折叠显示功能的技术实现细节
 - 完善诊断解析工具函数的结构化信息提取机制
 - 增强AI Results组件与诊断组件的集成分析
@@ -37,10 +44,11 @@
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
 6. [诊断编辑与卡片组件优化](#诊断编辑与卡片组件优化)
-7. [依赖分析](#依赖分析)
-8. [性能考虑](#性能考虑)
-9. [故障排除指南](#故障排除指南)
-10. [结论](#结论)
+7. [PromptTemplates组件重大UI重构](#prompttemplates组件重大ui重构)
+8. [依赖分析](#依赖分析)
+9. [性能考虑](#性能考虑)
+10. [故障排除指南](#故障排除指南)
+11. [结论](#结论)
 
 ## 简介
 
@@ -301,30 +309,38 @@ K[PromptExecutor<br/>轮询服务管理]
 L[PatientSummary<br/>患者病情小结]
 M[VoiceTextProcessor<br/>流式文本处理]
 N[App<br/>根组件]
+O[PromptTemplates<br/>Prompt模板管理]
+P[AIView<br/>AI视图容器]
 end
 subgraph "业务功能层"
-O[AI诊断系统]
-P[患者管理系统]
-Q[服务器维护]
-R[用户设置]
-S[轮询服务监控]
-T[待办事项管理]
-U[病历记录管理]
-V[语音识别处理]
-W[诊断编辑管理]
-X[思维过程显示]
+Q[AI诊断系统]
+R[患者管理系统]
+S[服务器维护]
+T[用户设置]
+U[轮询服务监控]
+V[待办事项管理]
+W[病历记录管理]
+X[语音识别处理]
+Y[诊断编辑管理]
+Z[思维过程显示]
+AA[模板管理]
+BB[小屏模式适配]
 end
 subgraph "基础设施层"
-Y[API接口层]
-Z[工具函数库]
-AA[数据配置]
-BB[Markdown渲染引擎]
-CC[DOM净化器]
-DD[颜色编码系统]
-EE[流式处理服务]
-FF[AI服务类]
-GG[诊断解析工具]
-HH[诊断数据管理]
+CC[API接口层]
+DD[工具函数库]
+EE[数据配置]
+FF[Markdown渲染引擎]
+GG[DOM净化器]
+HH[颜色编码系统]
+II[流式处理服务]
+JJ[AI服务类]
+KK[诊断解析工具]
+LL[诊断数据管理]
+MM[模板树形结构]
+NN[Overlay面板系统]
+OO[CSS过渡动画]
+PP[自动折叠机制]
 end
 A --> E
 A --> F
@@ -336,30 +352,38 @@ A --> K
 A --> L
 A --> M
 A --> N
-F --> O
-F --> P
+A --> O
+A --> P
 F --> Q
 F --> R
 F --> S
 F --> T
 F --> U
 F --> V
-H --> W
-H --> X
-I --> W
-I --> X
-J --> W
-J --> X
-L --> Y
-M --> EE
-M --> FF
-N --> Y
-A --> Z
-A --> AA
-I --> GG
-J --> GG
-H --> GG
-GG --> HH
+F --> W
+F --> X
+H --> Y
+H --> Z
+I --> Y
+I --> Z
+J --> Y
+J --> Z
+L --> CC
+M --> II
+M --> JJ
+N --> CC
+A --> DD
+A --> EE
+I --> KK
+J --> KK
+H --> KK
+O --> MM
+O --> NN
+O --> OO
+O --> PP
+P --> NN
+P --> OO
+P --> PP
 ```
 
 **图表来源**
@@ -1249,6 +1273,198 @@ RecalculateHeight --> MaintainScroll[保持滚动位置]
 - [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
 - [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
 
+## PromptTemplates组件重大UI重构
+
+### Overlay下拉面板系统
+
+**新增** PromptTemplates组件经历了重大UI重构，从传统的下拉菜单系统转变为现代化的Overlay下拉面板系统：
+
+#### Overlay面板架构
+
+```mermaid
+classDiagram
+class PromptTemplates {
++Array templates
++Object defaultProps
++handleNodeClick(data, node) void
++displayTemplates() Array
+}
+class OverlayPanel {
++Boolean isTemplatesCollapsed
++String templatesOverlayPanel
++Transition panelSlide
++AbsolutePositioning positioning
++CSSAnimations animations
++AutoCollapseBehavior autoCollapse
+}
+class TreeStructure {
++ElTree templateTree
++ExpandOnClickNode expandOnClickNode
++NodeClickHandler nodeClickHandler
++Level1Expansion level1Expansion
++Level2Execution level2Execution
+}
+class SmallScreenMode {
++Boolean isSmallScreenMode
++Boolean showPromptTemplatesInSmallScreen
++HIDE_PROMPT_TEMPLATES_IN_SMALL_SCREEN hideAction
++TOGGLE_PROMPT_TEMPLATES_IN_SMALL_SCREEN toggleAction
+}
+PromptTemplates --> OverlayPanel : "使用"
+PromptTemplates --> TreeStructure : "包含"
+PromptTemplates --> SmallScreenMode : "响应"
+OverlayPanel --> AbsolutePositioning : "实现"
+OverlayPanel --> CSSAnimations : "支持"
+OverlayPanel --> AutoCollapseBehavior : "具备"
+```
+
+**图表来源**
+- [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
+- [AIView.vue:28-42](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L28-L42)
+
+#### 绝对定位面板系统
+
+**新增功能亮点：**
+- **绝对定位**：使用position: absolute将面板定位在工具栏按钮正下方
+- **z-index管理**：设置z-index: 200确保面板在所有元素之上显示
+- **响应式宽度**：固定width: 190px，适配不同屏幕尺寸
+- **最大高度限制**：max-height: 70vh避免面板超出可视区域
+- **溢出滚动**：overflow-y: auto支持长列表的垂直滚动
+
+**定位实现流程：**
+
+```mermaid
+flowchart TD
+ButtonPosition[工具栏按钮位置] --> CalcTop[calc(100% + 4px)]
+CalcTop --> AbsolutePosition[absolute定位]
+AbsolutePosition --> RightAlign[right: 0]
+RightAlign --> PanelDisplay[面板显示]
+PanelDisplay --> ZIndex[z-index: 200]
+ZIndex --> Shadow[box-shadow: 0 4px 16px rgba(0,0,0,0.15)]
+Shadow --> PanelReady[面板就绪]
+```
+
+**图表来源**
+- [AIView.vue:324-336](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L324-L336)
+
+#### CSS过渡动画系统
+
+**新增功能亮点：**
+- **panel-slide过渡**：使用Vue transition组件实现展开/收起动画
+- **transform-origin**：设置transform-origin: top right实现右上角缩放效果
+- **opacity动画**：fade效果配合transform实现平滑过渡
+- **动画时长**：0.25s ease确保动画流畅自然
+- **位移效果**：translateY(-8px)配合scaleY(0.85)实现缩放+位移
+
+**动画实现流程：**
+
+```mermaid
+flowchart TD
+EnterState[panel-slide-enter] --> FadeOut[opacity: 0]
+FadeOut --> ScaleDown[transform: scaleY(0.85)]
+ScaleDown --> TranslateUp[translateY(-8px)]
+TranslateUp --> AnimationComplete[动画完成]
+LeaveState[panel-slide-leave-to] --> FadeIn[opacity: 0]
+FadeIn --> ScaleUp[transform: scaleY(0.85)]
+ScaleUp --> TranslateDown[translateY(-8px)]
+ScaleDown --> AnimationComplete
+```
+
+**图表来源**
+- [AIView.vue:342-351](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L342-L351)
+
+#### 自动折叠行为
+
+**新增功能亮点：**
+- **模板执行后自动折叠**：通过@template-executed事件监听器实现
+- **小屏模式自动隐藏**：isSmallScreenMode条件下自动隐藏模板列表
+- **点击外部区域关闭**：closeTemplatesPanel方法处理面板外部点击
+- **状态管理**：isTemplatesCollapsed布尔值控制面板显示状态
+
+**自动折叠实现流程：**
+
+```mermaid
+flowchart TD
+TemplateExecution[模板执行成功] --> EmitEvent[emit template-executed]
+EmitEvent --> CollapsePanel[isTemplatesCollapsed = true]
+CollapsePanel --> HidePanel[面板隐藏]
+SmallScreenMode[小屏模式] --> CheckMode[检查isSmallScreenMode]
+CheckMode --> HideAction[HIDE_PROMPT_TEMPLATES_IN_SMALL_SCREEN]
+HideAction --> AutoHide[自动隐藏]
+ExternalClick[点击外部区域] --> ClosePanel[closeTemplatesPanel]
+ClosePanel --> CheckCollapsed[检查isTemplatesCollapsed]
+CheckCollapsed --> |false| CollapsePanel
+```
+
+**图表来源**
+- [PromptTemplates.vue:176-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L176-L187)
+- [AIView.vue:117-129](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L117-L129)
+
+#### 树形结构与节点交互
+
+**新增功能亮点：**
+- **ElTree组件**：使用Element Plus的树形组件展示模板层级
+- **node-key配置**：使用id属性作为节点唯一标识
+- **props配置**：children: 'children', label: 'name'简化数据绑定
+- **expand-on-click-node**：设置为false避免意外展开
+- **node-click事件**：自定义点击处理逻辑区分层级
+
+**节点交互流程：**
+
+```mermaid
+flowchart TD
+NodeClick[node-click事件] --> CheckLevel{node.level === 1?}
+CheckLevel --> |是| ToggleExpand[切换expanded状态]
+CheckLevel --> |否| ShowConfirm[显示确认对话框]
+ShowConfirm --> ExecuteTemplate[执行模板]
+ExecuteTemplate --> CheckAdditionalInfo{需要补充信息?}
+CheckAdditionalInfo --> |是| ShowPrompt[显示补充信息输入框]
+CheckAdditionalInfo --> |否| SkipPrompt[跳过输入框]
+ShowPrompt --> GetInfo[获取补充信息]
+GetInfo --> AddToOptions[添加到options]
+SkipPrompt --> AddToOptions
+AddToOptions --> HandleExecution[handlePromptExecution]
+HandleExecution --> Success[执行成功]
+Success --> ShowSuccess[显示成功提示]
+ShowSuccess --> EmitEvent[emit template-executed]
+EmitEvent --> CollapsePanel[isTemplatesCollapsed = true]
+```
+
+**图表来源**
+- [PromptTemplates.vue:97-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L97-L187)
+
+#### 小屏模式适配
+
+**新增功能亮点：**
+- **条件渲染**：v-if="!isSmallScreenMode || showPromptTemplatesInSmallScreen"
+- **状态控制**：showPromptTemplatesInSmallScreen getter提供显示控制
+- **自动隐藏**：模板执行后自动隐藏小屏模式下的模板列表
+- **用户控制**：通过TOGGLE_PROMPT_TEMPLATES_IN_SMALL_SCREEN切换显示
+
+**小屏适配实现流程：**
+
+```mermaid
+flowchart TD
+SmallScreenCheck[检查isSmallScreenMode] --> IsSmallScreen{isSmallScreenMode?}
+IsSmallScreen --> |是| CheckDisplay{showPromptTemplatesInSmallScreen?}
+IsSmallScreen --> |否| NormalDisplay[正常显示]
+CheckDisplay --> |是| ShowPanel[显示面板]
+CheckDisplay --> |否| HidePanel[隐藏面板]
+ShowPanel --> TemplateExecution[模板执行]
+TemplateExecution --> HideAction[HIDE_PROMPT_TEMPLATES_IN_SMALL_SCREEN]
+HideAction --> AutoHide[自动隐藏]
+NormalDisplay --> TemplateExecution
+```
+
+**图表来源**
+- [AIView.vue:14](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L14)
+- [store/modules/user.js:64-84](file://med_ai_assistant_1.0_bs_vue/src/store/modules/user.js#L64-L84)
+
+**章节来源**
+- [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
+- [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
+- [store/modules/user.js:1-129](file://med_ai_assistant_1.0_bs_vue/src/store/modules/user.js#L1-L129)
+
 ## 依赖分析
 
 ### 技术栈依赖关系
@@ -1303,6 +1519,7 @@ subgraph "应用层"
 App[App.vue]
 MainLayout[MainLayout.vue]
 PatientView[PatientView.vue]
+AIView[AIView.vue]
 end
 subgraph "导航组件"
 TopMenu[TopMenu.vue]
@@ -1317,16 +1534,14 @@ PromptExecutor[PromptExecutor.vue]
 PatientSummary[PatientSummary.vue]
 PatientTabs[PatientTabs.vue]
 VoiceTextProcessor[VoiceTextProcessor.vue]
-AIComponents[AI相关组件]
-PatientComponents[患者相关组件]
-UserComponents[用户相关组件]
+PromptTemplates[PromptTemplates.vue]
 end
 subgraph "基础设施"
 API[API接口层]
 Store[Vuex状态]
 Router[路由系统]
 DiagnosisParser[诊断解析工具]
-End
+end
 App --> MainLayout
 MainLayout --> TopMenu
 MainLayout --> UserLookup
@@ -1336,9 +1551,8 @@ MainLayout --> PromptExecutor
 MainLayout --> PatientSummary
 MainLayout --> PatientTabs
 MainLayout --> VoiceTextProcessor
-MainLayout --> AIComponents
-MainLayout --> PatientComponents
-MainLayout --> UserComponents
+MainLayout --> AIView
+AIView --> PromptTemplates
 TopMenu --> API
 UserLookup --> API
 ServerLogViewer --> API
@@ -1349,14 +1563,7 @@ PromptExecutor --> API
 PatientSummary --> API
 PatientTabs --> API
 VoiceTextProcessor --> API
-AIComponents --> API
-PatientComponents --> API
-UserComponents --> API
-App --> Store
-App --> Router
-MainLayout --> Router
-PatientView --> PatientTabs
-PatientTabs --> PatientSummary
+AIView --> API
 AIResults --> DiagnosisEditPanel
 AIResults --> DiagnosisCard
 DiagnosisEditPanel --> DiagnosisParser
@@ -1448,6 +1655,39 @@ AIResults --> DiagnosisCard
 - [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
 - [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
 
+### PromptTemplates组件依赖关系
+
+**新增** PromptTemplates组件的完整依赖关系：
+
+```mermaid
+graph TD
+PromptTemplates[PromptTemplates.vue] --> ElTree[Element Plus Tree]
+PromptTemplates --> ElMessageBox[Element Plus MessageBox]
+PromptTemplates --> ElMessage[Element Plus Message]
+PromptTemplates --> VuexStore[Vuex Store]
+PromptTemplates --> PromptUtils[promptUtils.js]
+PromptTemplates --> AIView[AIView.vue]
+AIView --> TemplatesOverlayPanel[templates-overlay-panel CSS]
+AIView --> PanelSlideTransition[panel-slide transition]
+AIView --> AbsolutePositioning[absolute positioning]
+AIView --> CSSAnimations[CSS animations]
+AIView --> AutoCollapseBehavior[auto collapse behavior]
+ElTree --> TreeData[tree data structure]
+ElMessageBox --> ConfirmationDialog[confirmation dialog]
+ElMessage --> SuccessNotification[success notification]
+PromptUtils --> HandlePromptExecution[handlePromptExecution]
+HandlePromptExecution --> APIService[AI API service]
+APIService --> BackendServer[backend server]
+```
+
+**图表来源**
+- [PromptTemplates.vue:22-24](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L22-L24)
+- [AIView.vue:28-42](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L28-L42)
+
+**章节来源**
+- [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
+- [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
+
 ## 性能考虑
 
 ### 内存管理优化
@@ -1460,6 +1700,8 @@ AIResults --> DiagnosisCard
 6. **流式处理优化**：VoiceTextProcessor的流式处理支持实时更新，避免内存累积
 7. **诊断组件优化**：DiagnosisEditPanel和DiagnosisCard的滚动区域限制高度，避免内存溢出
 8. **思维过程处理**：AIResults的<thinking>标签处理使用占位符机制，避免DOM节点过多
+9. **Overlay面板优化**：PromptTemplates的Overlay面板使用绝对定位，避免影响其他元素布局
+10. **CSS动画优化**：panel-slide过渡动画使用transform而非改变布局属性，提升渲染性能
 
 ### 渲染性能优化
 
@@ -1471,6 +1713,8 @@ AIResults --> DiagnosisCard
 6. **思维过程折叠**：AIResults的<thinking>标签支持折叠显示，减少DOM节点数量
 7. **滚动区域优化**：诊断组件的max-height和overflow-y优化滚动性能
 8. **标签页懒加载**：PatientTabs组件支持标签页的懒加载，减少初始渲染压力
+9. **Overlay面板延迟渲染**：PromptTemplates面板仅在展开时渲染，减少初始DOM节点数量
+10. **CSS过渡优化**：使用transform-origin: top right确保动画性能最佳
 
 ### 网络请求优化
 
@@ -1482,6 +1726,8 @@ AIResults --> DiagnosisCard
 6. **流式请求优化**：VoiceTextProcessor的流式处理支持实时数据传输
 7. **诊断数据缓存**：DiagnosisParser的解析结果缓存机制
 8. **组件状态管理**：诊断组件的状态变化通过Vuex集中管理，避免重复请求
+9. **模板数据缓存**：PromptTemplates的模板数据通过Vuex缓存，避免重复请求
+10. **小屏模式优化**：PromptTemplates在小屏模式下支持条件渲染，减少不必要的DOM节点
 
 ### 患者数据管理优化
 
@@ -1502,6 +1748,13 @@ AIResults --> DiagnosisCard
 - **独立滚动**：左右两栏独立滚动，避免相互影响
 - **状态缓存**：通过Vuex缓存诊断数据，避免重复解析
 - **思维过程处理**：使用占位符机制处理<thinking>标签，减少DOM操作
+
+**更新** PromptTemplates组件的性能优化：
+- **条件渲染**：仅在展开时渲染模板面板，减少初始DOM节点数量
+- **绝对定位**：使用position: absolute避免影响其他元素布局
+- **CSS动画**：使用transform实现动画，避免触发布局重排
+- **事件委托**：通过@template-executed事件实现自动折叠，减少DOM操作
+- **小屏适配**：在小屏模式下支持条件渲染，减少不必要的DOM节点
 
 ## 故障排除指南
 
@@ -1645,6 +1898,33 @@ AIResults --> DiagnosisCard
 - 验证识别服务状态
 - 确认模板获取成功
 
+#### PromptTemplates组件问题
+
+**更新** **问题**：Overlay面板不显示
+- 检查templates-overlay-panel CSS类
+- 验证position: absolute定位
+- 确认z-index设置
+
+**问题**：CSS过渡动画不生效
+- 检查panel-slide transition配置
+- 验证transform-origin设置
+- 确认CSS动画属性
+
+**问题**：模板执行后面板不自动折叠
+- 检查@template-executed事件监听
+- 验证isTemplatesCollapsed状态
+- 确认事件冒泡阻止
+
+**问题**：小屏模式下模板列表不显示
+- 检查showPromptTemplatesInSmallScreen状态
+- 验证条件渲染逻辑
+- 确认用户切换操作
+
+**问题**：节点点击事件异常
+- 检查node-click事件处理
+- 验证node.level判断逻辑
+- 确认ElTree配置
+
 **章节来源**
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
@@ -1657,6 +1937,8 @@ AIResults --> DiagnosisCard
 - [PatientSummary.vue:151-156](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L151-L156)
 - [PatientSummary.vue:341-408](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L341-L408)
 - [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
+- [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
+- [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
 
 ## 结论
 
@@ -1669,7 +1951,7 @@ AIResults --> DiagnosisCard
 5. **性能优化**：多项性能优化措施确保流畅体验
 6. **功能增强**：最新版本显著提升了AI结果处理、轮询服务稳定性和患者信息管理能力
 
-**更新** 通过新增的DiagnosisEditPanel和DiagnosisCard组件，整个应用形成了更加完善的诊断管理生态系统。这些组件不仅提供了直观的诊断编辑界面，还集成了思维过程显示、滚动优化、布局重构等先进技术，显著提升了用户的操作效率和系统稳定性。
+**更新** 通过新增的DiagnosisEditPanel和DiagnosisCard组件，以及重大UI重构的PromptTemplates组件，整个应用形成了更加完善的诊断管理生态系统。这些组件不仅提供了直观的诊断编辑界面，还集成了思维过程显示、滚动优化、布局重构等先进技术，显著提升了用户的操作效率和系统稳定性。
 
 **更新** 新增的diagnosisParser.js工具函数为诊断信息的结构化提取提供了强大支持，确保了诊断数据的准确性和完整性。该工具函数的思维过程移除、字段提取、降级机制等功能，为整个诊断系统的可靠性奠定了坚实基础。
 
@@ -1678,7 +1960,18 @@ AIResults --> DiagnosisCard
 - 诊断卡片组件的滚动区域重构
 - 思维过程折叠显示的增强功能
 - 诊断解析工具函数的结构化信息提取
+- **PromptTemplates组件的重大UI重构：从传统下拉菜单改为Overlay下拉面板系统**
+- **Overlay面板的绝对定位、CSS过渡动画和自动折叠行为**
+- **小屏模式下的Prompt模板列表显示控制机制**
 - 整体性能和稳定性的提升
+
+**更新** PromptTemplates组件的Overlay面板系统包括：
+- **绝对定位面板**：使用position: absolute实现从工具栏按钮正下方展开
+- **CSS过渡动画**：使用panel-slide transition实现平滑的展开/收起效果
+- **自动折叠行为**：模板执行后自动折叠面板，提升用户体验
+- **小屏模式适配**：支持小屏设备上的条件渲染和自动隐藏
+- **树形结构展示**：使用Element Plus Tree组件展示模板层级结构
+- **节点交互优化**：区分一级节点展开和二级节点执行的不同交互逻辑
 
 **更新** 诊断组件的滚动优化和布局重构包括：
 - **独立滚动区域**：左右两栏均支持独立滚动，提升用户体验
@@ -1687,4 +1980,4 @@ AIResults --> DiagnosisCard
 - **工具栏集成**：底部工具栏提供统一的操作入口
 - **标签页优化**：右侧标签页支持诊断说明和目前诊断的切换
 
-建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和诊断组件优化方面持续改进。新增的诊断编辑面板和卡片组件为医疗AI助手的应用场景提供了更加专业和实用的解决方案，值得进一步推广和应用。
+建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和诊断组件优化方面持续改进。新增的诊断编辑面板和卡片组件、以及PromptTemplates组件的Overlay面板系统为医疗AI助手的应用场景提供了更加专业和实用的解决方案，值得进一步推广和应用。

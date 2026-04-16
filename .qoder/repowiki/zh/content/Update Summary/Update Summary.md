@@ -29,6 +29,9 @@
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
 - [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
 - [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
 - [2026-04-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
 - [2026-04-13.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-13.md)
@@ -36,11 +39,10 @@
 
 ## 更新摘要
 **已进行的变更**
-- 新增了OpenClaw集成方案文档的详细分析，反映MedAiAssistant系统版本0.8.021的功能增强
-- 更新了版本0.8.025和0.8.024的具体更新内容，重点反映了诊断编辑面板集成、流式响应改进等新功能
-- 新增了诊断编辑面板组件（DiagnosisEditPanel.vue）的详细功能说明和架构分析
+- 新增了PromptTemplates组件UI重构的重要改进：模板列表改为overlay下拉面板，默认折叠，右上角按钮展开，执行模板后自动收起
+- 更新了版本0.8.025的具体更新内容，重点反映了PromptTemplates组件的UI重构和交互优化
 - 完善了AI对话流式响应改造的技术实现细节和用户体验改进
-- 增强了诊断概览卡片组件的功能描述和使用场景说明
+- 增强了诊断编辑面板组件的功能描述和使用场景说明
 - 更新了版本发布历史，包含最新的前端版本演进记录和OpenClaw集成方案
 
 ## 目录
@@ -49,13 +51,14 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [OpenClaw集成方案](#openclaw集成方案)
-7. [依赖分析](#依赖分析)
-8. [性能考虑](#性能考虑)
-9. [故障排除指南](#故障排除指南)
-10. [版本发布历史](#版本发布历史)
-11. [结论](#结论)
-12. [附录](#附录)
+6. [PromptTemplates组件UI重构](#prompttemplates组件ui重构)
+7. [OpenClaw集成方案](#openclaw集成方案)
+8. [依赖分析](#依赖分析)
+9. [性能考虑](#性能考虑)
+10. [故障排除指南](#故障排除指南)
+11. [版本发布历史](#版本发布历史)
+12. [结论](#结论)
+13. [附录](#附录)
 
 ## 简介
 
@@ -206,43 +209,6 @@ Docker[Docker容器]
 Kubernetes[Kubernetes集群]
 Monitoring[监控系统]
 Logging[日志系统]
-end
-Web --> Gateway
-Mobile --> Gateway
-Desktop --> Gateway
-OpenClawClient --> OpenClawGateway
-Gateway --> Auth
-Auth --> LoadBalancer
-LoadBalancer --> Diagnosis
-LoadBalancer --> EMR
-LoadBalancer --> Imaging
-LoadBalancer --> Lab
-LoadBalancer --> Pharmacy
-OpenClawGateway --> OpenClawEngine
-OpenClawEngine --> Skills
-OpenClawEngine --> LLM
-OpenClawEngine --> OpenClawService
-OpenClawService --> Diagnosis
-OpenClawService --> EMR
-OpenClawService --> Lab
-Diagnosis --> MySQL
-EMR --> MySQL
-Imaging --> MinIO
-Lab --> MySQL
-Pharmacy --> MySQL
-Diagnosis --> Redis
-EMR --> Redis
-Lab --> Redis
-Imaging --> Elasticsearch
-MySQL --> Docker
-Redis --> Docker
-MinIO --> Docker
-Elasticsearch --> Docker
-OpenClawEngine --> Docker
-OpenClawGateway --> Docker
-Docker --> Kubernetes
-Kubernetes --> Monitoring
-Kubernetes --> Logging
 ```
 
 **图表来源**
@@ -590,6 +556,99 @@ LeftCol --> RightCol
 
 **章节来源**
 - [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+
+## PromptTemplates组件UI重构
+
+### Overlay下拉面板架构
+
+**更新** 新增了PromptTemplates组件UI重构的重要改进
+
+PromptTemplates组件经过重大UI重构，从传统的浮动面板改为现代化的Overlay下拉面板设计：
+
+```mermaid
+graph TB
+subgraph "AI视图布局"
+LeftPanel[左侧Prompt列表]
+MainArea[中间AI标签页区域]
+RightPanel[右侧Prompt模板面板]
+end
+subgraph "模板面板架构"
+Toolbar[顶部工具栏]
+ToggleBtn[展开按钮]
+OverlayPanel[Overlay下拉面板]
+TemplateTree[模板树形结构]
+end
+subgraph "交互流程"
+ClickBtn[点击展开按钮]
+ShowPanel[显示Overlay面板]
+ClickOutside[点击外部区域]
+HidePanel[自动收起面板]
+ExecuteTemplate[执行模板]
+AutoCollapse[执行后自动收起]
+end
+LeftPanel --> MainArea
+MainArea --> RightPanel
+RightPanel --> Toolbar
+Toolbar --> ToggleBtn
+ToggleBtn --> OverlayPanel
+OverlayPanel --> TemplateTree
+ClickBtn --> ShowPanel
+ShowPanel --> HidePanel
+HidePanel --> ClickOutside
+TemplateTree --> ExecuteTemplate
+ExecuteTemplate --> AutoCollapse
+```
+
+**图表来源**
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+
+### 核心UI重构特性
+
+#### 默认折叠设计
+- **初始状态**：模板面板默认处于折叠状态（isTemplatesCollapsed = true）
+- **节省空间**：避免遮挡AI标签页的主要内容区域
+- **按需展开**：用户主动点击按钮才显示模板面板
+
+#### Overlay下拉面板
+- **绝对定位**：使用position: absolute从工具栏按钮正下方展开
+- **z-index管理**：设置z-index: 200确保面板在最顶层显示
+- **阴影效果**：box-shadow: 0 4px 16px rgba(0,0,0,0.15)提供立体感
+- **尺寸限制**：width: 190px, max-height: 70vh，确保良好的视觉比例
+
+#### 展开/收起动画
+- **panel-slide过渡**：使用Vue transition实现平滑的展开/收起动画
+- **transform-origin**：设置transform-origin: top right，面板从右上角缩放+位移
+- **动画时长**：opacity和transform过渡均为0.25秒，提供流畅的用户体验
+
+#### 事件处理机制
+- **点击外部关闭**：点击.ai-tabs-container区域自动收起面板
+- **模板执行自动收起**：模板执行成功后通过事件通知父组件折叠
+- **小屏模式适配**：在小屏模式下自动隐藏模板面板
+
+**章节来源**
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+
+### 模板树形结构优化
+
+#### Tree组件配置
+- **node-key**: 使用id属性作为节点唯一标识
+- **expand-on-click-node**: 设置为false，仅点击箭头图标展开/收起
+- **props配置**: children: 'children', label: 'name'，简化数据结构
+
+#### 模板分类展示
+- **层级结构**：一级节点为模板类型，二级节点为具体模板名称
+- **描述信息**：支持显示模板描述信息，提升用户体验
+- **点击行为**：一级节点切换展开状态，二级节点触发模板执行
+
+#### 交互增强
+- **确认对话框**：执行模板前弹出确认对话框，防止误操作
+- **补充信息收集**：对特定模板（如'请会诊记录'、'日常对话'、'转科记录'）收集补充信息
+- **执行状态反馈**：显示正在生成Prompt的提示信息
+
+**章节来源**
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
 
 ## OpenClaw集成方案
 
@@ -978,6 +1037,24 @@ OpenClawConfig --> OpenClawSkill
    - 验证技能依赖关系
    - 检查并发限制设置
 
+#### PromptTemplates组件问题
+**新增** 针对UI重构后的问题排除指南
+
+1. **Overlay面板不显示**
+   - 检查isTemplatesCollapsed状态管理
+   - 验证CSS样式类名
+   - 确认z-index层级设置
+
+2. **模板执行后不自动收起**
+   - 检查template-executed事件触发
+   - 验证父组件事件监听
+   - 确认状态更新逻辑
+
+3. **动画效果异常**
+   - 检查Vue transition配置
+   - 验证transform-origin设置
+   - 确认CSS过渡时长
+
 **章节来源**
 - [.gitignore](file://.gitignore)
 
@@ -1008,21 +1085,23 @@ OpenClawConfig --> OpenClawSkill
 - 修改：`src/api/aiService.js`
 - 修改：`src/components/ai/AIResponse.vue`
 
-##### v0.8.025 - 诊断编辑面板内嵌 & 布局优化
+##### v0.8.025 - PromptTemplates组件UI重构
 **新增功能**
-- 新建`DiagnosisEditPanel.vue`组件，将诊断编辑功能从浮窗（DiagnosisEditDialog）集成到AI结果页面内嵌面板
-- 面板布局：左侧AI诊断列表 + 右侧标签页（诊断说明/目前诊断），底部工具栏
+- PromptTemplates组件UI重构：模板列表改为overlay下拉面板，默认折叠，右上角按钮展开
+- 执行模板后自动收起：通过template-executed事件实现自动折叠
+- AIView.vue集成Overlay面板：实现完整的展开/收起交互逻辑
+- PromptList.vue优化：改进Prompt列表显示和交互体验
 
-**问题修复**
-- 修复诊断数据初始化时序问题：`_initDiagnosisData`改为异步方法，确保`fetchDiagnoses`完成后再执行初始化逻辑
-
-**优化**
-- `DiagnosisCard.vue`高度自适应优化：移除`el-scrollbar`，改用`div`自然撑开，避免固定高度截断内容
-- 诊断名称支持自动换行，长文本不再溢出
+**用户体验改进**
+- 模板面板默认折叠，节省界面空间
+- Overlay面板提供更好的视觉层次
+- 执行后自动收起，提升操作效率
+- 展开/收起动画提供流畅的用户体验
 
 **变更文件**
-- 新增：`src/components/ai/DiagnosisEditPanel.vue`
-- 修改：`src/components/ai/DiagnosisCard.vue`
+- 修改：`src/components/ai/PromptTemplates.vue`
+- 修改：`src/views/AIView.vue`
+- 修改：`src/components/ai/PromptList.vue`
 
 #### v0.8.022 - AI辅助页面诊断卡片组件
 **新增功能**
@@ -1133,6 +1212,14 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - **组件化架构**：诊断卡片和编辑面板等组件化设计，便于维护和扩展
 - **性能优化**：通过流式处理和组件优化，系统响应速度和资源利用率得到提升
 - **AI编排集成**：OpenClaw集成方案为系统提供智能化的工作流程自动化能力
+- **UI重构升级**：PromptTemplates组件采用Overlay下拉面板设计，提供现代化的用户体验
+
+**PromptTemplates组件UI重构价值**：
+- **空间优化**：默认折叠设计节省界面空间，避免遮挡主要内容
+- **交互提升**：Overlay面板提供更好的视觉层次和用户体验
+- **操作效率**：执行后自动收起，减少用户操作步骤
+- **动画体验**：panel-slide过渡动画提供流畅的视觉反馈
+- **响应式设计**：适配不同屏幕尺寸，提升移动端体验
 
 **OpenClaw集成价值**：
 - **自然语言驱动**：通过自然语言指令触发复杂的多步骤工作流程
@@ -1211,6 +1298,21 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 
 ### 新功能使用指南
 
+#### PromptTemplates组件使用
+1. **展开模板面板**
+   - 点击右上角"Prompt模板"按钮展开Overlay面板
+   - 面板默认折叠，节省界面空间
+
+2. **选择模板执行**
+   - 在模板树形结构中选择具体模板
+   - 点击二级节点执行模板
+   - 模板执行成功后自动收起面板
+
+3. **模板分类浏览**
+   - 一级节点显示模板类型
+   - 二级节点显示具体模板名称
+   - 支持模板描述信息查看
+
 #### 诊断编辑面板使用
 1. **打开诊断编辑面板**
    - 在AI结果页面中查看诊断分析结果
@@ -1249,7 +1351,8 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 处理编排过程中的异常
 
 **章节来源**
-- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
 - [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
