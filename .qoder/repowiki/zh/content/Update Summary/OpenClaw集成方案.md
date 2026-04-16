@@ -4,6 +4,10 @@
 **本文档引用的文件**
 - [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
 - [QClaw API调用链路实施方案.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/QClaw API调用链路/QClaw API调用链路实施方案.md)
+- [接口文档索引.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/接口文档索引.md)
+- [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG分析接口.md)
+- [语音识别接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/语音识别/语音识别接口.md)
+- [系统管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/系统管理/系统管理接口.md)
 - [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
 - [AppDataSourceProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AppDataSourceProperties.java)
 - [CustomProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CustomProperties.java)
@@ -555,3 +559,17 @@ OpenClaw集成方案为MedAiAssistant系统提供了强大的智能化能力，�
 随着OpenClaw集成的不断完善，系统将能够支持更多复杂的医疗场景，为医护人员提供更加智能化的服务，推动医疗信息化向更高水平发展。
 
 **更新** 通过7个精心设计的临床编排场景，OpenClaw集成方案为医疗AI应用提供了清晰的实施路径和价值体现，特别是在查房、DRG分析、患者查询等核心医疗流程中的智能化升级。
+
+### 系统API接口概览
+
+**更新** 基于180+个API接口的系统能力调研，OpenClaw集成方案可编排的核心接口包括：
+
+- **患者管理**：患者查询、诊断管理、医嘱查询等9个接口
+- **DRG分析**：MCC筛选、DRG匹配、费用查询等22个接口  
+- **语音识别**：实时识别、文件识别等4个接口
+- **病历记录**：病历查询、创建、管理等8个接口
+- **数据同步**：患者同步、检验/检查结果同步、EMR同步等12个接口
+- **AI服务**：Prompt模板管理、AI响应、结果保存等18个接口
+- **系统管理**：健康检查、配置管理、数据一致性诊断等15个接口
+
+这些接口为OpenClaw提供了丰富的业务能力支撑，确保编排场景的完整性和实用性。
