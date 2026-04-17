@@ -12,9 +12,7 @@
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
 - [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
-- [2026-04-14更新日志.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md)
-- [2026-04-13更新日志.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
-- [2026-04-14后端更新日志.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
+- [2026-04-17更新日志.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md)
 - [AIResponseController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 - [MccScreeningController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MccScreeningController.java)
 - [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析接口.md)
@@ -55,22 +53,22 @@
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
 - [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
-- [2026-04-15更新日志.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-15.md)
 - [SequenceConsistencyService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java)
 - [Oracle序列适配修复说明.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md)
 - [Oracle序列同步工具实现.md](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/OracleSequenceSyncUtil.java)
 - [CONVERSATION_HISTORY表结构.md](file://med_ai_assistant_1.0_bs_backend/doc/数据库/CONVERSATION_HISTORY表结构.md)
 - [Oracle序列一致性检查定时任务.md](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/scheduler/OracleSequenceConsistencyCheckScheduler.java)
 - [Oracle序列同步修复脚本.sql](file://med_ai_assistant_1.0_bs_backend/sql/Oracle序列同步修复脚本.sql)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [treatmentPlanParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增Oracle序列适配修复：v0.8.027版本修复了Oracle数据库序列不同步问题，防止AI对话保存时出现ORA-00001主键冲突
-- 增强事务保障机制：完善了AI对话保存的数据库事务管理，确保消息顺序保存和ID排序的原子性
-- 优化消息顺序保存：实现了AI对话历史的有序保存机制，解决了消息顺序显示问题
-- 修复ID排序问题：通过序列同步和事务保障确保AI对话ID的正确排序
-- 解决500错误问题：通过序列适配和事务优化彻底解决了AI对话保存的500错误
+- AI结果渲染优化：在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别
+- 治疗计划表重要程度术语优化：将"危急"替换为"关键"，提升临床术语准确性
+- 新增待办事项功能：治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项
+- 色标样式优化：为重要程度列添加圆角徽章样式，提供更好的视觉层次
 
 ## 目录
 1. [简介](#简介)
@@ -87,7 +85,7 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 版本0.8.027修复了Oracle序列适配、事务保障、消息顺序保存和ID排序问题，彻底解决了AI对话保存功能的500错误和消息顺序显示问题。新增了Oracle序列一致性检查和自动同步机制，确保AI对话历史表的主键生成正确性。
+**最新更新** 版本0.8.037新增AI结果渲染优化功能，实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别；同时优化治疗计划表重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。新增待办事项功能，支持一键将治疗计划项添加到待办事项。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
@@ -104,6 +102,8 @@
 - **事务保障机制**：增强AI对话保存的数据库事务管理，确保原子性
 - **消息顺序保存**：实现有序保存机制，解决消息顺序显示问题
 - **ID排序优化**：通过序列同步确保AI对话ID的正确排序
+- **AI结果渲染优化**：新增诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别
+- **治疗计划表优化**：优化重要程度术语，新增待办事项功能
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
 - **AI OCR数据采集**：监护仪呼吸机AI OCR数据采集完整技术方案
@@ -191,8 +191,7 @@ ConversationHistory --> DB
 **图表来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:140-161](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L140-L161)
 - [AIResponseController.java:320-420](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L320-L420)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [2026-04-17更新日志.md:13-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L13-L21)
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:1-136](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L1-L136)
@@ -227,10 +226,13 @@ ConversationHistory --> DB
 - **Oracle序列适配修复**：新增SequenceConsistencyService，自动检测和修复Oracle序列不同步问题。
 - **事务保障机制**：增强AI对话保存的数据库事务管理，确保消息顺序保存和ID排序的原子性。
 - **消息顺序保存**：实现AI对话历史的有序保存机制，解决消息顺序显示问题。
-- **ID排序优化**：通过序列同步和事务保障确保AI对话ID的正确排序。
+- **ID排序优化**：通过序列同步确保AI对话ID的正确排序。
 - **500错误解决**：通过序列适配和事务优化彻底解决AI对话保存的500错误。
+- **AI结果渲染优化**：在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别。
+- **治疗计划表优化**：优化重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。
+- **待办事项功能**：治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项。
 
-**最新更新** 版本0.8.027新增Oracle序列适配修复，增强事务保障机制，优化消息顺序保存和ID排序问题，彻底解决了AI对话保存功能的500错误和消息顺序显示问题。
+**最新更新** 版本0.8.037新增AI结果渲染优化功能，实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别；同时优化治疗计划表重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。新增待办事项功能，支持一键将治疗计划项添加到待办事项。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
@@ -246,6 +248,8 @@ ConversationHistory --> DB
 - [DiagnosisCard.vue:138-140](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L138-L140)
 - [diagnosisParser.js:93-149](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L93-L149)
 - [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
@@ -268,6 +272,9 @@ ConversationHistory --> DB
 - **消息顺序保存**：实现有序保存机制，解决消息顺序显示问题。
 - **ID排序优化**：通过序列同步确保AI对话ID的正确排序。
 - **500错误解决**：通过序列适配和事务优化解决AI对话保存的500错误。
+- **AI结果渲染优化**：在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别。
+- **治疗计划表优化**：优化重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。
+- **待办事项功能**：治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项。
 
 ```mermaid
 graph TB
@@ -351,6 +358,32 @@ WWW["流式增量更新"]
 XXX["流式UI更新"]
 YYY["流式用户体验"]
 ZZZ["流式响应增强"]
+AAAA["AI结果渲染优化"]
+BBBB["治疗计划表优化"]
+CCCC["待办事项功能"]
+DDDD["重要程度色标"]
+EEEE["术语优化"]
+FFFF["加入待办按钮"]
+GGGG["圆角徽章样式"]
+HHHH["颜色映射"]
+IIII["分类标题高亮"]
+JJJJ["表格美化"]
+KKKK["Markdown解析"]
+LLLL["DOMPurify过滤"]
+MMMM["思维过程折叠"]
+NNNN["占位符替换"]
+OOOO["正则表达式匹配"]
+PPPP["HTML内容安全"]
+QQQQ["用户体验提升"]
+RRRR["临床术语准确性"]
+SSSS["功能完整性"]
+TTTT["系统稳定性"]
+UUUU["性能优化"]
+VVVV["错误处理"]
+WWWW["监控告警"]
+XXXX["部署运维"]
+YYYY["测试验证"]
+ZZZZ["文档维护"]
 SequenceConsistency["序列一致性服务"] --> OracleSync["Oracle序列同步工具"]
 OracleSync --> ConversationHistory["对话历史表"]
 ConversationHistory --> O
@@ -359,205 +392,185 @@ ConversationHistory --> O
 **图表来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:141-161](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L141-L161)
 - [AIResponseController.java:320-420](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java#L320-L420)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [2026-04-17更新日志.md:13-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L13-L21)
 
 ## 详细组件分析
 
-### Oracle序列适配修复系统
+### AI结果渲染优化系统
 - 设计要点
-  - **新增**：v0.8.027版本新增SequenceConsistencyService，专门处理Oracle数据库序列不同步问题
-  - 自动检测和修复PROMPTS、PROMPTRESULT、DIAGNOSIS、MEDICAL_RECORDS、LONGTERMORDERS、CONVERSATION_HISTORY等表的序列同步
-  - 实现序列值与表中最大ID的自动同步，防止ORA-00001主键冲突
-  - 提供定时任务检查机制，确保序列一致性
+  - **新增**：在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑
+  - 支持'关键/重要/一般'三种级别的重要程度显示
+  - 使用正则表达式匹配表格单元格中的重要程度文本
+  - 将纯文本替换为带颜色徽章样式的HTML元素
+  - 为每种重要程度级别提供对应的CSS样式类
 - 关键功能
-  - 序列同步算法：查询表中最大ID，比较序列当前值，必要时调整序列步长
-  - 异常处理：捕获所有异常，仅记录错误日志，不影响定时任务执行
-  - 多表支持：同时检查和修复多个关键表的序列一致性
-  - 原子性保障：在事务中执行序列同步，确保数据一致性
+  - 色标渲染：将"关键"替换为红色徽章，"重要"替换为橙色徽章，"一般"替换为灰色徽章
+  - 圆角徽章：使用border-radius实现圆润外观，提供更好的视觉体验
+  - 颜色映射：severity-critical（红色）、severity-important（橙色）、severity-normal（绿色）
+  - 正则匹配：精确匹配表格单元格中的重要程度文本，避免误匹配
+  - 安全过滤：在DOMPurify过滤器中允许span元素和相关属性
 - 技术实现
 
 ```mermaid
 flowchart TD
-Start(["开始序列一致性检查"]) --> CheckTables["检查关键表序列"]
-CheckTables --> GetMaxId["查询表中最大ID"]
-GetMaxId --> GetSeqValue["获取序列当前值"]
-GetSeqValue --> CompareValues{"MAX(ID) >= NEXTVAL?"}
-CompareValues --> |是| CalcGap["计算序列差距"]
-CalcGap --> AdjustStep["ALTER SEQUENCE ... INCREMENT BY gap"]
-AdjustStep --> ConsumeNext["再取一次NEXTVAL"]
-ConsumeNext --> RestoreStep["ALTER SEQUENCE ... INCREMENT BY 1"]
-RestoreStep --> Success["序列同步完成"]
-CompareValues --> |否| Skip["跳过此表"]
-Skip --> CheckNext["检查下一张表"]
-Success --> CheckNext
-CheckNext --> End(["检查完成"])
+Start(["开始AI结果渲染"]) --> ParseMarkdown["marked.parse解析Markdown"]
+ParseThinking["提取<thinking>块并用占位符替换"]
+ParseMain["解析主体Markdown内容"]
+ColorBadge["重要程度色标渲染"]
+ReplaceCritical["替换'关键'为红色徽章"]
+ReplaceImportant["替换'重要'为橙色徽章"]
+ReplaceNormal["替换'一般'为灰色徽章"]
+CategoryHighlight["分类标题行高亮"]
+AddClass["为符合条件的行添加category-row类"]
+DOMPurify["DOMPurify安全过滤"]
+AllowElements["允许span元素和相关属性"]
+FinalHTML["输出最终HTML内容"]
+ParseMarkdown --> ParseThinking --> ParseMain --> ColorBadge --> ReplaceCritical --> ReplaceImportant --> ReplaceNormal --> CategoryHighlight --> AddClass --> DOMPurify --> AllowElements --> FinalHTML
 ```
 
-**最新更新** 新增Oracle序列适配修复系统，通过SequenceConsistencyService自动检测和修复序列不同步问题，防止AI对话保存时出现ORA-00001主键冲突。
+**最新更新** 新增AI结果渲染优化功能，在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别，提升视觉层次和用户体验。
 
 **图表来源**
-- [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
-- [Oracle序列适配修复说明.md:1-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L200)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
 
 **章节来源**
-- [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
-- [Oracle序列适配修复说明.md:1-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L200)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
 
-### 事务保障机制增强
+### 治疗计划表重要程度术语优化
 - 设计要点
-  - **增强**：AI对话保存功能增加了严格的事务保障机制，确保消息顺序保存和ID排序的原子性
-  - 使用@Transaction注解确保数据库操作的原子性，防止部分保存导致的数据不一致
-  - 实现消息顺序验证，确保AI对话历史按照正确的时间顺序保存
-  - 增加ID排序检查，确保新生成的对话ID按递增顺序排列
-- 关键流程
-
-```mermaid
-sequenceDiagram
-participant Client as "客户端"
-participant Controller as "AI对话控制器"
-participant Transaction as "数据库事务"
-participant Sequence as "序列管理"
-participant History as "对话历史表"
-Client->>Controller : "保存AI对话"
-Controller->>Transaction : "开启事务"
-Transaction->>Sequence : "获取下一个ID"
-Sequence-->>Transaction : "返回ID"
-Transaction->>History : "插入对话记录"
-History-->>Transaction : "插入成功"
-Transaction->>Transaction : "验证消息顺序"
-Transaction->>Transaction : "检查ID排序"
-Transaction-->>Controller : "提交事务"
-Controller-->>Client : "保存成功"
-```
-
-**最新更新** 增强了AI对话保存的数据库事务管理，确保消息顺序保存和ID排序的原子性，解决了500错误问题。
-
-**图表来源**
-- [Oracle序列适配修复说明.md:150-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L150-L200)
-
-**章节来源**
-- [Oracle序列适配修复说明.md:150-200](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L150-L200)
-
-### 消息顺序保存优化
-- 设计要点
-  - **优化**：实现了AI对话历史的有序保存机制，确保消息按照正确的时间顺序显示
-  - 通过时间戳和序列号双重保证消息的顺序性
-  - 实现消息去重机制，防止重复消息的保存
-  - 增加消息完整性检查，确保对话历史的完整性
+  - **优化**：将"危急"替换为"关键"，提升临床术语准确性
+  - 更准确地描述临床优先级分类，符合医疗标准术语
+  - 保持与AI结果渲染色标的语义一致性
+  - 支持原有的重要程度分类体系
 - 关键特性
-  - 时间戳排序：使用消息创建时间进行排序
-  - 序列号保证：为每条消息分配唯一的序列号
-  - 去重机制：检查重复消息，避免重复保存
-  - 完整性验证：验证消息的完整性和一致性
+  - 术语替换：将"危急"替换为"关键"，提升术语准确性
+  - 下拉选项更新：治疗计划表中重要程度下拉框选项更新
+  - 颜色映射：保持与色标渲染的颜色映射一致性
+  - 数据结构：更新treatmentPlanParser.js中的枚举定义
+  - JSDoc注释：更新API文档中的示例代码
 - 前端集成
-  - 实时显示：前端实时显示有序的消息列表
-  - 滚动同步：自动滚动到最新消息
-  - 错误处理：处理保存失败的情况
+  - 下拉选项：治疗计划表中重要程度下拉框显示"关键/重要/一般"
+  - 颜色显示：重要程度文本使用对应的颜色显示
+  - 数据保存：重要程度数据保存时使用新的术语
+  - 用户体验：提升临床术语的准确性和专业性
 
 ```mermaid
 sequenceDiagram
 participant User as "用户"
-participant Frontend as "前端界面"
-participant Backend as "后端服务"
-participant DB as "数据库"
-User->>Frontend : "发送消息"
-Frontend->>Backend : "保存消息请求"
-Backend->>DB : "插入消息记录"
-DB-->>Backend : "插入成功"
-Backend->>Backend : "验证消息顺序"
-Backend->>DB : "更新消息状态"
-DB-->>Backend : "更新成功"
-Backend-->>Frontend : "确认保存"
-Frontend->>Frontend : "更新消息列表"
-Frontend-->>User : "显示消息"
+participant TreatmentPlan as "治疗计划表"
+participant Parser as "treatmentPlanParser"
+participant Renderer as "AI结果渲染"
+User->>TreatmentPlan : "选择重要程度"
+TreatmentPlan->>TreatmentPlan : "更新下拉选项"
+TreatmentPlan->>Parser : "保存重要程度数据"
+Parser->>Renderer : "传递重要程度数据"
+Renderer->>Renderer : "应用色标渲染"
+Renderer-->>User : "显示彩色重要程度"
 ```
 
-**最新更新** 优化了AI对话消息的顺序保存机制，确保消息按照正确的时间顺序显示，解决了消息顺序显示问题。
+**最新更新** 优化治疗计划表重要程度术语，将"危急"替换为"关键"，提升临床术语准确性，与AI结果渲染色标保持一致。
 
 **图表来源**
-- [Oracle序列适配修复说明.md:100-150](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L100-L150)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [2026-04-17更新日志.md:16-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L16-L21)
 
 **章节来源**
-- [Oracle序列适配修复说明.md:100-150](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L100-L150)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [2026-04-17更新日志.md:16-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L16-L21)
 
-### ID排序优化系统
+### 待办事项功能增强
 - 设计要点
-  - **优化**：通过序列同步和事务保障确保AI对话ID的正确排序
-  - 实现ID生成策略的多层保障：直接指定ID、时间戳后缀、随机组合、UUID后缀
-  - 增加ID冲突检测机制，及时发现和处理ID冲突
-  - 实现ID排序验证，确保新生成的ID按递增顺序排列
-- 关键算法
-  - ID生成策略：四层保障机制确保ID唯一性
-  - 冲突检测：检查ID是否已存在，避免重复
-  - 排序验证：验证ID是否按递增顺序排列
-  - 自动修复：发现冲突时自动修复ID序列
-- 前端集成
-  - ID显示：前端正确显示AI对话的ID
-  - 排序功能：支持按ID排序查看对话历史
-  - 错误处理：处理ID生成失败的情况
-
-```mermaid
-flowchart TD
-Start(["生成AI对话ID"]) --> CheckDirect["检查直接指定ID"]
-CheckDirect --> |唯一| UseDirect["使用直接指定ID"]
-CheckDirect --> |冲突| CheckTimestamp["添加时间戳后缀"]
-CheckTimestamp --> CheckUnique["检查唯一性"]
-CheckUnique --> |唯一| UseTimestamp["使用时间戳ID"]
-CheckUnique --> |冲突| CheckRandom["添加随机后缀"]
-CheckRandom --> CheckRandomUnique["检查随机ID唯一性"]
-CheckRandomUnique --> |唯一| UseRandom["使用随机ID"]
-CheckRandomUnique --> |冲突| UseUUID["使用UUID"]
-UseUUID --> ValidateOrder["验证ID排序"]
-ValidateOrder --> End(["ID生成完成"])
-```
-
-**最新更新** 优化了AI对话ID的排序机制，通过序列同步和事务保障确保ID的正确排序，解决了ID排序问题。
-
-**图表来源**
-- [Oracle序列适配修复说明.md:50-100](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L50-L100)
-
-**章节来源**
-- [Oracle序列适配修复说明.md:50-100](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L50-L100)
-
-### 500错误解决机制
-- 设计要点
-  - **解决**：通过序列适配和事务优化彻底解决了AI对话保存的500错误
-  - 实现错误监控和自动恢复机制，及时发现和处理保存失败
-  - 增加重试机制，确保在网络波动时的可靠性
-  - 实现错误日志记录，便于问题诊断和修复
-- 关键机制
-  - 错误监控：实时监控AI对话保存的错误情况
-  - 自动恢复：发现错误时自动尝试恢复
-  - 重试机制：网络波动时自动重试保存操作
-  - 日志记录：详细记录错误信息和处理过程
-- 前端集成
-  - 错误提示：向用户显示保存失败的错误信息
-  - 重试按钮：提供手动重试保存的功能
-  - 状态指示：显示保存操作的当前状态
+  - **新增**：治疗计划表操作列新增"加入待办"按钮功能
+  - 支持一键将治疗计划项添加到待办事项
+  - 自动添加"- [ ] "前缀，支持注意事项合并为单行传输
+  - 每行独立loading状态，避免操作冲突
+  - 支持内容匹配去重，同一患者同一内容仅入库一条
+- 关键流程
 
 ```mermaid
 sequenceDiagram
-participant System as "系统监控"
-participant Error as "错误检测"
-participant Recovery as "自动恢复"
-participant Retry as "重试机制"
-participant Log as "日志记录"
-System->>Error : "监控AI对话保存"
-Error->>Recovery : "检测500错误"
-Recovery->>Retry : "自动重试保存"
-Retry->>Error : "重试结果"
-Error->>Log : "记录错误日志"
-Log-->>System : "错误处理完成"
+participant User as "用户"
+participant TreatmentPlan as "治疗计划表"
+participant API as "createTodoFromTreatmentPlan"
+participant Store as "Vuex Store"
+User->>TreatmentPlan : "点击'加入待办'按钮"
+TreatmentPlan->>TreatmentPlan : "设置行loading状态"
+TreatmentPlan->>Store : "获取当前患者ID"
+Store-->>TreatmentPlan : "返回patientId"
+TreatmentPlan->>TreatmentPlan : "构建待办内容添加- [ ] 前缀"
+TreatmentPlan->>API : "调用createTodoFromTreatmentPlan"
+API-->>TreatmentPlan : "返回处理结果"
+alt "添加成功"
+TreatmentPlan->>TreatmentPlan : "显示成功提示"
+else "重复添加"
+TreatmentPlan->>TreatmentPlan : "显示重复提示"
+else "添加失败"
+TreatmentPlan->>TreatmentPlan : "显示错误提示"
+end
+TreatmentPlan->>TreatmentPlan : "恢复行loading状态"
 ```
 
-**最新更新** 通过序列适配和事务优化彻底解决了AI对话保存的500错误，实现了错误监控、自动恢复和重试机制。
+**最新更新** 新增待办事项功能，治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项，自动添加"- [ ] "前缀并支持注意事项合并。
 
 **图表来源**
-- [Oracle序列适配修复说明.md:1-50](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L50)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 
 **章节来源**
-- [Oracle序列适配修复说明.md:1-50](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle序列适配修复说明.md#L1-L50)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [2026-04-17更新日志.md:6-11](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L6-L11)
+
+### 色标样式系统
+- 设计要点
+  - **新增**：为重要程度列添加圆角徽章样式，提供更好的视觉层次
+  - 使用display: inline-block实现徽章效果，padding和border-radius提供圆润外观
+  - 为每种重要程度级别提供独特的颜色方案和边框样式
+  - 支持hover状态的颜色变化，提升交互体验
+- 关键样式
+  - 圆角徽章：border-radius: 10px，padding: 2px 8px，提供舒适的视觉比例
+  - 字体设置：font-size: 11px，font-weight: 600，white-space: nowrap
+  - 颜色方案：
+    - 关键：#fef0f0背景色，#f56c6c文字色，#fab6b6边框色（红色系）
+    - 重要：#fdf6ec背景色，#e6a23c文字色，#f5dab1边框色（橙色系）
+    - 一般：#f4f4f5背景色，#909399文字色，#d3d4d6边框色（灰色系）
+  - 悬停效果：支持hover状态的颜色变化和背景色调整
+- 前端集成
+  - CSS类：severity-badge、severity-critical、severity-important、severity-normal
+  - HTML结构：使用span元素包裹重要程度文本，应用相应的CSS类
+  - 响应式设计：支持不同屏幕尺寸下的显示效果
+  - 可访问性：提供足够的颜色对比度，确保可读性
+
+```mermaid
+flowchart TD
+CSSClasses["CSS类定义"] --> BadgeStyle["徽章样式"]
+BadgeStyle --> CriticalStyle["关键样式"]
+BadgeStyle --> ImportantStyle["重要样式"]
+BadgeStyle --> NormalStyle["一般样式"]
+CriticalStyle --> RedScheme["红色系配色"]
+ImportantStyle --> OrangeScheme["橙色系配色"]
+NormalStyle --> GrayScheme["灰色系配色"]
+RedScheme --> RedBackground["#fef0f0背景"]
+RedScheme --> RedText["#f56c6c文字"]
+RedScheme --> RedBorder["#fab6b6边框"]
+OrangeScheme --> OrangeBackground["#fdf6ec背景"]
+OrangeScheme --> OrangeText["#e6a23c文字"]
+OrangeScheme --> OrangeBorder["#f5dab1边框"]
+GrayScheme --> GrayBackground["#f4f4f5背景"]
+GrayScheme --> GrayText["#909399文字"]
+GrayScheme --> GrayBorder["#d3d4d6边框"]
+```
+
+**最新更新** 新增色标样式系统，为重要程度列添加圆角徽章样式，提供'关键/重要/一般'三种级别的视觉区分。
+
+**图表来源**
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+
+**章节来源**
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
 
 ### AI模型配置组件
 - 设计要点
@@ -1233,6 +1246,21 @@ ReturnCache --> Stats
   - 错误监控：GET /api/error-monitoring，监控AI对话保存错误
   - 自动恢复：POST /api/auto-recovery，触发自动恢复机制
   - 重试机制：POST /api/retry-mechanism，触发重试保存操作
+- **AI结果渲染优化API**
+  - 色标渲染：支持'关键/重要/一般'三种级别的重要程度色标
+  - 分类标题高亮：为符合条件的分类标题行添加高亮样式
+  - 正则匹配：精确匹配表格单元格中的重要程度文本
+  - CSS样式：提供圆角徽章样式和颜色映射
+- **治疗计划表优化API**
+  - 术语替换：将"危急"替换为"关键"，提升术语准确性
+  - 下拉选项更新：治疗计划表中重要程度下拉框选项更新
+  - 颜色映射：保持与色标渲染的颜色映射一致性
+  - 数据结构：更新treatmentPlanParser.js中的枚举定义
+- **待办事项功能API**
+  - 加入待办：POST /api/patient/createTodoFromTreatmentPlan，将治疗计划项添加到待办
+  - 内容处理：自动添加"- [ ] "前缀，支持注意事项合并为单行传输
+  - 去重机制：同一患者同一内容仅入库一条
+  - 行级状态：每行独立loading状态，避免操作冲突
 - **调用示例**
   - 流式调用：POST `/api/ai/response`，Content-Type: application/json，stream: true
   - 非流式调用：POST `/api/ai/response`，请求体包含model与messages
@@ -1255,6 +1283,9 @@ ReturnCache --> Stats
   - **ID冲突检测**：POST `/api/conversation/check-conflicts`
   - **错误监控**：GET `/api/error-monitoring`
   - **自动恢复**：POST `/api/auto-recovery`
+  - **AI结果渲染优化**：色标渲染、分类标题高亮、正则匹配
+  - **治疗计划表优化**：术语替换、下拉选项更新、颜色映射
+  - **待办事项功能**：加入待办、内容处理、去重机制、行级状态
 - **模板管理API**
   - 获取模板列表：GET `/api/ai/promptTemplates`
   - 获取模板详情：GET `/api/ai/promptTemplate`
@@ -1271,7 +1302,7 @@ ReturnCache --> Stats
   - **自动化检索**：支持外部系统定时拉取最新的AI生成医疗洞察
   - **合规保障**：所有AI内容自动附加免责声明，确保法律合规
 
-**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的API接口，彻底解决了AI对话保存功能的所有问题。
+**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的API接口，包括色标渲染、术语替换、下拉选项更新、颜色映射、加入待办、内容处理、去重机制等功能。
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -1284,8 +1315,11 @@ ReturnCache --> Stats
 - [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
 - [HospitalConfigTestController.java:450-481](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java#L450-L481)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [2026-04-17更新日志.md:13-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L13-L21)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
 
 ### 最新提示结果接口（新增功能）
 - 设计要点
@@ -1614,6 +1648,9 @@ end
   - **消息顺序保存**实现有序保存机制，解决消息顺序显示问题
   - **ID排序优化**通过序列同步确保AI对话ID的正确排序
   - **500错误解决**通过序列适配和事务优化解决AI对话保存的500错误
+  - **AI结果渲染优化**依赖AIResults.vue中的色标渲染逻辑
+  - **治疗计划表优化**依赖TreatmentPlanTable.vue中的术语替换和颜色映射
+  - **待办事项功能**依赖TreatmentPlanTable.vue中的加入待办按钮和API调用
 - 外部依赖
   - LLM服务：通过RestTemplate调用，需配置URL与密钥
   - 数据库：存储加密临时数据、配置与回调记录
@@ -1627,6 +1664,10 @@ end
   - **ReadableStream**：支持NDJSON流的实时处理
   - **marked**：提供Markdown解析功能
   - **DOMPurify**：提供HTML安全过滤功能
+  - **Vue.js**：提供组件化开发框架和响应式数据绑定
+  - **Element Plus**：提供现代化的Vue.js UI组件库
+  - **Vuex**：提供Vue.js状态管理
+  - **Axios**：提供HTTP客户端库
 - 潜在风险
   - LLM服务不稳定：通过熔断器与重试缓解
   - 连接池耗尽：通过专用连接池与超时配置控制
@@ -1652,6 +1693,9 @@ end
   - **消息顺序问题**：通过消息顺序验证和去重机制确保正确顺序
   - **ID冲突问题**：通过ID生成策略和冲突检测机制防止ID冲突
   - **500错误问题**：通过错误监控和自动恢复机制解决保存失败
+  - **AI结果渲染问题**：通过正则表达式匹配和CSS样式确保色标正确显示
+  - **治疗计划表术语问题**：通过术语替换和颜色映射确保重要程度准确显示
+  - **待办事项功能问题**：通过内容处理和去重机制确保待办事项正确添加
 
 ```mermaid
 graph TB
@@ -1711,6 +1755,20 @@ IDSORT["ID排序优化"] --> OracleSync
 ErrorResolution["500错误解决"] --> TransactionGuard
 ErrorResolution --> MessageOrder
 ErrorResolution --> IDSORT
+AIResultsOptimization["AI结果渲染优化"] --> SeverityBadge["重要程度色标"]
+SeverityBadge --> CriticalBadge["关键徽章"]
+SeverityBadge --> ImportantBadge["重要徽章"]
+SeverityBadge --> NormalBadge["一般徽章"]
+TreatmentPlanOptimization["治疗计划表优化"] --> TermReplacement["术语替换"]
+TermReplacement --> CriticalTerm["关键术语"]
+TreatmentPlanOptimization --> ColorMapping["颜色映射"]
+ColorMapping --> CriticalColor["关键颜色"]
+ColorMapping --> ImportantColor["重要颜色"]
+ColorMapping --> NormalColor["一般颜色"]
+TodoFeature["待办事项功能"] --> AddTodoButton["加入待办按钮"]
+AddTodoButton --> ContentProcessing["内容处理"]
+ContentProcessing --> PrefixAddition["前缀添加"]
+ContentProcessing --> NoteMerging["注意事项合并"]
 subgraph "前端依赖"
 DRGAPI["DRG/MCC分析API"] --> VueComp["Vue组件"]
 DRGAPI --> BackendAPI["后端MCC接口"]
@@ -1748,8 +1806,11 @@ end
 - [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
 - [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
 - [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
@@ -1769,8 +1830,11 @@ end
 - [PromptTemplate.java:31-32](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java#L31-L32)
 - [UpdatePromptTemplateDTO.java:56-62](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdatePromptTemplateDTO.java#L56-L62)
 - [DepartmentDTO.java:1-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DepartmentDTO.java#L1-L41)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
 
 ## 性能考虑
 - 连接池与超时
@@ -1866,6 +1930,21 @@ end
   - 错误监控：通过实时监控及时发现保存失败
   - 自动恢复：通过自动恢复机制减少人工干预
   - 重试机制：通过重试机制提升保存成功率
+- **AI结果渲染优化性能优化**
+  - 正则表达式优化：精确匹配表格单元格中的重要程度文本
+  - CSS样式优化：圆角徽章样式提供更好的视觉体验
+  - DOMPurify优化：允许span元素和相关属性，确保安全过滤
+  - HTML内容优化：避免误匹配和重复渲染
+- **治疗计划表优化性能优化**
+  - 术语替换优化：将"危急"替换为"关键"，提升术语准确性
+  - 下拉选项优化：更新重要程度下拉框选项，提升用户体验
+  - 颜色映射优化：保持与色标渲染的颜色映射一致性
+  - 数据结构优化：更新treatmentPlanParser.js中的枚举定义
+- **待办事项功能性能优化**
+  - 内容处理优化：自动添加"- [ ] "前缀，提升内容格式化效率
+  - 去重机制优化：同一患者同一内容仅入库一条，减少重复处理
+  - 行级状态优化：每行独立loading状态，避免操作冲突
+  - API调用优化：优化createTodoFromTreatmentPlan接口调用
 - 监控与告警
   - 实时监控：调用成功率、响应时间阈值告警
   - 历史分析：每日趋势、错误模式分析，指导配置调优
@@ -1892,8 +1971,11 @@ end
   - **消息顺序保存性能**：顺序验证优化，去重检查提升准确性
   - **ID排序优化性能**：ID生成策略优化，冲突检测提升效率
   - **500错误解决性能**：错误监控优化，自动恢复提升可靠性
+  - **AI结果渲染性能**：正则表达式匹配优化，CSS样式优化，DOMPurify优化
+  - **治疗计划表性能**：术语替换优化，下拉选项优化，颜色映射优化
+  - **待办事项功能性能**：内容处理优化，去重机制优化，行级状态优化
 
-**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的性能优化措施，彻底解决了AI对话保存功能的所有性能问题。
+**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的性能优化措施，包括正则表达式优化、CSS样式优化、DOMPurify优化、术语替换优化、下拉选项优化、颜色映射优化、内容处理优化、去重机制优化、行级状态优化等。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
@@ -1904,8 +1986,11 @@ end
 - [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
 - [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
 
 ## 故障排查指南
 - 常见问题
@@ -1937,6 +2022,9 @@ end
   - **消息顺序错误**：检查消息顺序保存机制是否正常
   - **ID冲突问题**：验证ID生成策略和冲突检测机制
   - **500错误频繁发生**：检查错误监控和自动恢复机制
+  - **AI结果渲染问题**：检查正则表达式匹配和CSS样式是否正确
+  - **治疗计划表术语问题**：检查术语替换和颜色映射是否正确
+  - **待办事项功能问题**：检查内容处理和去重机制是否正确
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -1969,6 +2057,9 @@ end
   - **验证消息顺序保存**：检查消息顺序验证和去重机制
   - **测试ID生成策略**：验证ID冲突检测和排序验证机制
   - **监控500错误**：检查错误监控和自动恢复机制的工作状态
+  - **检查AI结果渲染功能**：验证正则表达式匹配和CSS样式应用
+  - **验证治疗计划表术语替换**：检查"危急"到"关键"的替换逻辑
+  - **测试待办事项功能**：验证加入待办按钮和内容处理逻辑
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
@@ -1994,20 +2085,26 @@ end
   - **消息顺序保存优化方案**
   - **ID排序优化技术文档**
   - **500错误解决机制实现指南**
+  - **AI结果渲染优化技术方案**
+  - **治疗计划表优化技术方案**
+  - **待办事项功能实现指南**
 
-**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的故障排查指南，包括序列一致性检查、事务状态验证、消息顺序验证、ID冲突检测和错误监控等新功能的排查步骤。
+**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的故障排查指南，包括正则表达式匹配问题、CSS样式应用问题、术语替换问题、颜色映射问题、加入待办按钮问题、内容处理问题、去重机制问题等新功能的排查步骤。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
 - [执行服务器架构简化实施报告.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器架构简化实施报告.md)
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
 
 ## 结论
 系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的MCC分析功能模块进一步增强了系统的临床价值，提供了完整的MCC预筛选、相似度计算、排除规则检查、TopK筛选和Prompt生成保存能力。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的流式响应优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 版本0.8.027通过Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制，彻底解决了AI对话保存功能的所有问题。新增的SequenceConsistencyService确保Oracle数据库序列的一致性，增强的事务保障机制确保消息顺序保存和ID排序的原子性，优化的消息顺序保存机制解决消息顺序显示问题，ID排序优化确保AI对话ID的正确排序，500错误解决机制通过错误监控、自动恢复和重试机制彻底解决保存失败问题。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
+**最新更新** 版本0.8.037通过AI结果渲染优化、治疗计划表优化和待办事项功能的引入，显著提升了系统的用户体验和临床实用性。新增的AI结果渲染优化功能实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别；治疗计划表优化将"危急"替换为"关键"，提升术语准确性；待办事项功能支持一键将治疗计划项添加到待办事项，提升工作效率。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -2038,6 +2135,9 @@ end
   - **消息顺序保存配置**：消息顺序验证和去重检查的参数配置
   - **ID排序配置**：ID生成策略和冲突检测的参数配置
   - **500错误解决配置**：错误监控和自动恢复的参数配置
+  - **AI结果渲染优化配置**：正则表达式匹配、CSS样式和DOMPurify配置
+  - **治疗计划表优化配置**：术语替换、下拉选项和颜色映射配置
+  - **待办事项功能配置**：加入待办按钮、内容处理和去重机制配置
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
@@ -2060,6 +2160,9 @@ end
   - **消息顺序保存部署**：消息顺序验证和去重检查部署
   - **ID排序部署**：ID生成策略和冲突检测部署
   - **500错误解决部署**：错误监控和自动恢复机制部署
+  - **AI结果渲染优化部署**：正则表达式匹配、CSS样式和DOMPurify部署
+  - **治疗计划表优化部署**：术语替换、下拉选项和颜色映射部署
+  - **待办事项功能部署**：加入待办按钮、内容处理和去重机制部署
 - **UI优化建议**
   - **流式响应优化**：确保回调在Promise resolve之前执行，避免UI显示延迟
   - **错误处理优化**：支持多种错误格式，提供清晰的错误信息反馈
@@ -2086,6 +2189,9 @@ end
   - **消息顺序保存优化**：顺序验证优化，去重检查提升准确性
   - **ID排序优化**：ID生成策略优化，冲突检测提升效率
   - **500错误解决优化**：错误监控优化，自动恢复提升可靠性
+  - **AI结果渲染优化**：正则表达式匹配优化，CSS样式优化，DOMPurify优化
+  - **治疗计划表优化**：术语替换优化，下拉选项优化，颜色映射优化
+  - **待办事项功能优化**：内容处理优化，去重机制优化，行级状态优化
 - **模板管理最佳实践**
   - **模板分类**：合理组织模板类型，便于用户快速找到所需模板
   - **表单验证**：建立完善的表单验证机制，确保模板配置的正确性
@@ -2106,24 +2212,24 @@ end
   - **排除规则**：完善排除规则配置，提高候选质量
   - **性能监控**：监控MCC分析的响应时间和准确率
   - **用户培训**：提供MCC分析功能的使用培训和技术支持
-- **最新提示结果接口最佳实践**
+- **最新提示结果接口最佳 practice**
   - **参数验证**：严格验证patientId和promptName参数的格式和有效性
   - **缓存策略**：实现合理的缓存机制，避免频繁数据库查询
   - **错误处理**：提供清晰的错误信息和降级策略
   - **性能监控**：监控接口的响应时间和调用频率
   - **安全控制**：实现访问权限控制和API版本管理
   - **外部系统集成**：提供详细的API文档和集成示例，支持批量查询和自动化集成
-- **待办事项查询最佳实践**
+- **待办事项查询最佳 practice**
   - **去重算法**：确保按medicalRecordId分组和createdTime比较逻辑正确
   - **null ID处理**：正确处理medicalRecordId为null的记录
   - **性能优化**：优化查询性能，避免重复显示同一病历的多个待办事项
   - **用户体验**：提供清晰的待办事项展示和状态管理
-- **数据库缓存最佳实践**
+- **数据库缓存最佳 practice**
   - **事务配置**：正确配置Hibernate事务，避免自动刷新冲突
   - **CLOB处理**：实现CLOB重试机制，处理网络波动导致的异常
   - **异常处理**：建立完善的异常处理机制，确保系统稳定性
   - **性能监控**：监控缓存使用情况和系统性能
-- **CLOB内存管理最佳实践**
+- **CLOB内存管理最佳 practice**
   - **内存限制**：合理设置内存限制，防止内存泄漏
   - **自动清理**：实现智能的自动清理策略，保持系统性能
   - **生命周期管理**：跟踪Clob对象的生命周期，确保正确释放
@@ -2132,19 +2238,19 @@ end
   - **缓存清理**：实现按条件清理缓存的功能
   - **统计监控**：提供详细的缓存使用统计信息
   - **动态配置**：支持运行时缓存配置的调整
-  - **错误处理**：建立完善的错误处理机制
-- **科室特殊内容最佳实践**
+  - **异常处理**：建立完善的错误处理机制
+- **科室特殊内容最佳 practice**
   - **字段配置**：合理配置SPECIAL_CONTENT字段，支持个性化模板
   - **数据加载**：实现动态加载和应用科室特殊内容
   - **兼容性处理**：确保与现有模板系统的兼容性
   - **维护策略**：建立科室特殊内容的维护和更新策略
-- **诊断编辑面板最佳实践**
+- **诊断编辑面板最佳 practice**
   - **布局设计**：合理设计左右两栏布局，优化用户体验
   - **标签页切换**：优化标签页切换性能，提升交互体验
   - **工具栏操作**：提供快捷操作按钮，减少用户交互步骤
   - **状态同步**：维护AI诊断和当前诊断的状态同步
   - **错误处理**：处理无AI结果或非诊断分析Prompt的情况
-- **流式AI对话最佳实践**
+- **流式AI对话最佳 practice**
   - **Fetch API配置**：正确配置Fetch API参数，支持流式响应
   - **ReadableStream处理**：实现高效的NDJSON流数据处理
   - **实时更新优化**：通过onData回调实现高效的实时更新
@@ -2195,11 +2301,29 @@ end
   - **自动恢复**：实现自动恢复机制
   - **重试策略**：实现智能的重试策略
   - **性能优化**：优化错误处理的性能
+- **AI结果渲染优化最佳 practice**
+  - **正则表达式匹配**：实现精确的表格单元格匹配
+  - **CSS样式应用**：正确应用圆角徽章样式和颜色映射
+  - **DOMPurify配置**：允许span元素和相关属性的安全过滤
+  - **HTML内容优化**：避免误匹配和重复渲染
+- **治疗计划表优化最佳 practice**
+  - **术语替换**：实现"危急"到"关键"的准确替换
+  - **下拉选项更新**：正确更新重要程度下拉框选项
+  - **颜色映射**：保持与色标渲染的颜色映射一致性
+  - **数据结构**：正确更新treatmentPlanParser.js中的枚举定义
+- **待办事项功能最佳 practice**
+  - **内容处理**：实现自动添加"- [ ] "前缀和注意事项合并
+  - **去重机制**：实现同一患者同一内容仅入库一条的去重
+  - **行级状态**：实现每行独立loading状态的管理
+  - **API调用**：优化createTodoFromTreatmentPlan接口调用
 
-**最新更新** 新增Oracle序列适配修复、事务保障机制、消息顺序保存优化、ID排序优化和500错误解决机制的最佳实践，包括定时检查配置、批量修复策略、异常处理机制、性能监控策略、事务配置优化、锁管理优化、消息顺序验证、去重检查、完整性验证、ID生成策略、冲突检测、排序验证、错误监控、自动恢复、重试策略等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
+**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的最佳实践，包括正则表达式匹配、CSS样式应用、DOMPurify配置、术语替换、下拉选项更新、颜色映射、内容处理、去重机制、行级状态管理等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
-- [2026-04-14更新日志.md:3-32](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md#L3-L32)
-- [2026-04-13更新日志.md:3-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md#L3-L21)
+- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
+- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
+- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
