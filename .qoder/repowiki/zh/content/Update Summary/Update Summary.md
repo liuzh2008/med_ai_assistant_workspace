@@ -2,48 +2,21 @@
 
 <cite>
 **本文档引用的文件**
-- [.gitignore](file://.gitignore)
-- [mvn.bat](file://mvn.bat)
-- [npm.bat](file://npm.bat)
-- [Mermaid 代码修复 Prompt 模板.txt](file://项目相关/Mermaid 代码修复 Prompt 模板.txt)
-- [常用.txt](file://项目相关/常用.txt)
-- [神级Prompt.txt](file://项目相关/神级Prompt.txt)
-- [testAudio测试命令.txt](file://项目相关/test/testAudio测试命令.txt)
-- [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
-- [logback-spring.xml](file://med_ai_assistant_1.0_bs_backend/src/main/resources/logback-spring.xml)
-- [docker-compose-main-linux-oracle-image.yml](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/docker-compose-main-linux-oracle-image.yml)
-- [docker-compose-main.yml](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/docker-compose-main.yml)
-- [docker-compose-execution-image.yml](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/docker-compose-execution-image.yml)
-- [docker-compose-execution-linux.yml](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/docker-compose-execution-linux.yml)
-- [docker-compose.prod.yml](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue/docker-compose.prod.yml)
-- [docker-compose.yml](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue/docker-compose.yml)
-- [更新小结.md](file://med_ai_assistant_1.0_bs_vue/更新小结.md)
 - [更新小结.md](file://更新小结.md)
-- [2026-04-11.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-11.md)
-- [2026-04-14.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-14.md)
-- [2026-04-13.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-13.md)
-- [2026-04-02.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-02.md)
-- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
-- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
-- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
-- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
-- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
-- [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
-- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
-- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
-- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
-- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
-- [2026-04-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
-- [2026-04-13.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-13.md)
+- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [病人列表返回时未自动滚动到选中病人位置.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/病人列表返回时未自动滚动到选中病人位置.md)
+- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 </cite>
 
 ## 更新摘要
 **已进行的变更**
-- 新增了PromptTemplates组件UI重构的重要改进：模板列表改为overlay下拉面板，默认折叠，右上角按钮展开，执行模板后自动收起
-- 更新了版本0.8.025的具体更新内容，重点反映了PromptTemplates组件的UI重构和交互优化
-- 完善了AI对话流式响应改造的技术实现细节和用户体验改进
-- 增强了诊断编辑面板组件的功能描述和使用场景说明
-- 更新了版本发布历史，包含最新的前端版本演进记录和OpenClaw集成方案
+- 新增版本0.8.037的重要程度术语优化：将"危急"替换为"关键"，提升术语表达的准确性
+- 新增版本0.8.036的病人列表滚动修复：解决从AI辅助页面返回时未自动滚动到选中病人位置的问题
+- 完善了诊疗计划表重要程度色标系统，支持"关键/重要/一般"三种等级的彩色显示
+- 优化了病人列表组件的滚动机制，确保选中状态恢复和位置定位的可靠性
 
 ## 目录
 1. [简介](#简介)
@@ -51,14 +24,15 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [PromptTemplates组件UI重构](#prompttemplates组件ui重构)
-7. [OpenClaw集成方案](#openclaw集成方案)
-8. [依赖分析](#依赖分析)
-9. [性能考虑](#性能考虑)
-10. [故障排除指南](#故障排除指南)
-11. [版本发布历史](#版本发布历史)
-12. [结论](#结论)
-13. [附录](#附录)
+6. [版本0.8.037 - 重要程度术语优化](#版本08037---重要程度术语优化)
+7. [版本0.8.036 - 病人列表滚动修复](#版本08036---病人列表滚动修复)
+8. [诊疗计划表重要程度系统](#诊疗计划表重要程度系统)
+9. [依赖分析](#依赖分析)
+10. [性能考虑](#性能考虑)
+11. [故障排除指南](#故障排除指南)
+12. [版本发布历史](#版本发布历史)
+13. [结论](#结论)
+14. [附录](#附录)
 
 ## 简介
 
@@ -426,398 +400,307 @@ Retry --> Success
 **章节来源**
 - [testAudio测试命令.txt](file://项目相关/test/testAudio测试命令.txt)
 
-### AI诊断编辑面板组件
+### 病人列表组件
 
-#### 诊断编辑面板（DiagnosisEditPanel）
-**更新** 新增了诊断编辑面板组件的详细功能说明
+#### 病人列表组件（PatientList）
+**更新** 新增了病人列表滚动修复的重要改进
 
-诊断编辑面板是一个集成了诊断编辑、管理和查看功能的综合组件，采用左右两栏布局设计：
+病人列表组件负责显示当前科室的在院病人信息，支持选中状态管理和滚动定位：
 
 ```mermaid
 graph TB
-subgraph "诊断编辑面板布局"
-LeftPanel[左侧：AI诊断列表]
-RightPanel[右侧：标签页区域]
-Toolbar[底部工具栏]
+subgraph "病人列表布局"
+Header[头部：科室信息]
+Table[主体：病人表格]
+Footer[底部：统计信息]
 end
-subgraph "左侧面板功能"
-AITableView[AI诊断表格]
-AITableView --> Selection[多选功能]
-AITableView --> EditMode[双击编辑]
-AITableView --> Highlight[差异高亮]
+subgraph "表格功能"
+PatientRows[病人行数据]
+StatusColumn[状态列]
+BedColumn[床号列]
+NameColumn[姓名列]
+SelectAction[选择动作]
 end
-subgraph "右侧标签页"
-DetailTab[诊断说明标签页]
-CurrentTab[目前诊断标签页]
-DetailTab --> Category[诊断类别]
-DetailTab --> Basis[诊断依据]
-DetailTab --> Differential[鉴别诊断]
-DetailTab --> Supplement[补充说明]
+subgraph "滚动机制"
+RestorePosition[恢复滚动位置]
+ScrollToCenter[居中显示]
+AutoScroll[自动滚动]
 end
-LeftPanel --> RightPanel
-LeftPanel --> Toolbar
-RightPanel --> DetailTab
-RightPanel --> CurrentTab
+Header --> Table
+Table --> PatientRows
+PatientRows --> StatusColumn
+PatientRows --> BedColumn
+PatientRows --> NameColumn
+PatientRows --> SelectAction
+Table --> Footer
+RestorePosition --> ScrollToCenter
+ScrollToCenter --> AutoScroll
 ```
 
 **图表来源**
-- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
 **核心功能特性**：
-- **AI诊断列表管理**：支持AI生成诊断的查看、编辑、删除
-- **诊断详情展示**：右侧标签页展示诊断的详细分析信息
-- **目前诊断管理**：支持对现有诊断的修改、保存、删除
-- **差异诊断高亮**：自动识别并高亮显示AI推荐的新诊断
-- **工具栏操作**：提供刷新、新增、插入、保存、删除等快捷操作
+- **选中状态管理**：支持病人选中状态的设置和持久化
+- **滚动位置恢复**：从AI辅助页面返回时自动滚动到选中病人位置
+- **居中显示优化**：选中行显示在表格可视区域的中心位置
+- **生命周期适配**：支持keep-alive和非keep-alive两种路由场景
 
 **章节来源**
-- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
-### AI对话流式响应组件
+## 版本0.8.037 - 重要程度术语优化
 
-#### 流式响应改造（AIResponse + aiService）
-**更新** 完善了AI对话流式响应的技术实现细节
+### 术语优化背景
 
-AI对话功能从一次性加载改为逐字流式显示，大幅减少响应等待时间感知：
+**更新** 新增了版本0.8.037的重要程度术语优化功能
+
+在医疗信息系统中，重要程度的术语表达直接影响医护人员的理解和操作。版本0.8.037对重要程度术语进行了优化，将"危急"替换为"关键"，提升了术语表达的准确性和专业性。
+
+### 术语优化内容
+
+#### 重要程度等级体系
+系统支持三级重要程度等级，每级都有明确的术语定义：
+
+```mermaid
+graph TD
+subgraph "重要程度等级体系"
+Critical[关键<br/>对应红色 #F56C6C]
+Important[重要<br/>对应橙色 #E6A23C]
+Normal[一般<br/>对应灰色 #909399]
+end
+subgraph "术语优化"
+OldTerm["危急"] --> NewTerm["关键"]
+Explanation["术语优化说明"]
+end
+Critical --> OldTerm
+Important --> Normal
+NewTerm --> Explanation
+```
+
+**图表来源**
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+
+#### 前端实现细节
+- **术语替换**：将"危急"替换为"关键"，保持与医疗标准术语的一致性
+- **颜色映射**：维持原有的颜色编码系统，确保视觉一致性
+- **兼容性处理**：向后兼容已存在的"危急"数据，确保系统稳定运行
+
+#### 后端数据处理
+- **存储优化**：重要程度字段统一使用"关键/重要/一般"标准术语
+- **查询优化**：支持按重要程度等级的精确查询和统计
+- **报表生成**：重要程度统计报表使用标准化术语
+
+**章节来源**
+- [更新小结.md](file://更新小结.md)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+
+## 版本0.8.036 - 病人列表滚动修复
+
+### 问题背景
+
+**更新** 新增了版本0.8.036的病人列表滚动修复功能
+
+在使用MedAiAssistant系统时，用户从AI辅助页面返回病人列表时，发现列表虽然正确显示了选中状态（高亮），但列表内容并未滚动到该病人所在位置。这个问题影响了用户的操作体验和工作效率。
+
+### 问题分析
+
+#### 根因诊断
+经过深入分析，发现问题的根本原因：
+
+```mermaid
+flowchart TD
+Problem[问题现象] --> RootCause[根因分析]
+RootCause --> LifecycleIssue[生命周期覆盖不全]
+RootCause --> AsyncIssue[异步数据加载时序问题]
+RootCause --> DOMIssue[DOM层级不匹配问题]
+RootCause --> UXIssue[用户体验不佳问题]
+LifecycleIssue --> KeepAliveIssue[未使用keep-alive]
+AsyncIssue --> MountIssue[mounted时机问题]
+DOMIssue --> ScrollContainerIssue[滚动容器层级问题]
+UXIssue --> PositionIssue[位置定位不理想]
+KeepAliveIssue --> Solution1[双生命周期覆盖]
+MountIssue --> Solution2[异步数据后处理]
+ScrollContainerIssue --> Solution3[scrollIntoView替代]
+PositionIssue --> Solution4[居中显示优化]
+```
+
+**图表来源**
+- [病人列表返回时未自动滚动到选中病人位置.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/病人列表返回时未自动滚动到选中病人位置.md)
+
+#### 详细问题描述
+1. **生命周期覆盖不全**：项目路由未使用`<keep-alive>`，导致`activated`钩子不触发
+2. **异步数据加载时序**：`mounted`时数据尚未加载完成，滚动恢复逻辑失效
+3. **DOM层级不匹配**：Element Plus的滚动容器层级与预期不符
+4. **用户体验问题**：滚动位置不够理想，需要改进为居中显示
+
+### 解决方案实现
+
+#### 双生命周期覆盖机制
+为确保在不同路由配置下都能正常工作，采用了双生命周期覆盖策略：
 
 ```mermaid
 sequenceDiagram
 participant User as 用户
-participant AIResponse as AIResponse组件
-participant AIService as AIService类
-participant aiService as aiService实例
-participant Backend as 后端AI服务
-User->>AIResponse : 发送消息
-AIResponse->>AIResponse : 组合历史对话
-AIResponse->>AIService : 调用getAIResponseStream
-AIService->>aiService : 发送流式请求
-aiService->>Backend : POST /api/ai/response
-Backend->>aiService : 返回NDJSON流
-loop 流式响应
-aiService->>AIService : onData回调(增量内容)
-AIService->>AIResponse : 更新UI显示
-AIResponse->>AIResponse : 实时渲染增量内容
-end
-aiService->>AIService : onData回调(最终内容)
-AIService->>AIResponse : 替换完整内容
-AIResponse->>User : 显示最终AI回复
+participant Component as 组件
+participant DOM as DOM元素
+participant Timer as 定时器
+User->>Component : 从AI页面返回
+Note over Component : mounted钩子触发
+Component->>Component : 检查selectedPatientId
+Component->>DOM : setCurrentRow(选中状态)
+Component->>Timer : setTimeout(300ms)
+Timer->>Component : 延迟回调
+Component->>DOM : scrollToSelectedPatient
+DOM->>DOM : scrollIntoView({block : 'center'})
 ```
 
 **图表来源**
-- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
-- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
-**技术实现要点**：
-- **NDJSON流处理**：使用ReadableStream消费后端返回的NDJSON格式数据
-- **增量内容渲染**：支持实时显示AI回复的增量内容
-- **超时控制**：集成AbortController实现300秒超时取消机制
-- **最终内容替换**：使用isFinal标识确保最终内容正确替换累积内容
+#### 核心修复技术
+- **双生命周期适配**：同时支持`mounted`和`activated`钩子，确保兼容不同路由配置
+- **异步数据处理**：在数据加载完成后执行滚动，避免空数组查找问题
+- **DOM层级适配**：使用`scrollIntoView`替代手动`scrollTop`计算，适配Element Plus的滚动容器结构
+- **居中显示优化**：使用`{block:'center', behavior:'instant'}`确保选中行显示在可视区域中心
 
-**章节来源**
-- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
-- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+#### 实现细节
+```javascript
+// 恢复滚动位置的通用方法
+restoreScrollPosition() {
+  const selectedId = localStorage.getItem('selectedPatientId')
+  if (!selectedId || !this.patients.length) return
+  const patient = this.patients.find(p => String(p.patientId) === String(selectedId))
+  if (patient) {
+    this.scrollToSelectedPatient(patient)
+  }
+}
 
-### 诊断概览卡片组件
-
-#### 诊断卡片组件（DiagnosisCard）
-**更新** 新增了诊断概览卡片组件的功能描述
-
-诊断概览卡片组件提供简洁的诊断信息展示功能：
-
-```mermaid
-graph LR
-subgraph "诊断卡片布局"
-LeftCol[左侧诊断列表]
-RightCol[右侧诊断详情]
-end
-subgraph "左侧功能"
-ListItems[诊断列表项]
-ListItems --> ClickSelect[点击选择]
-ListItems --> AutoScroll[自动滚动]
-end
-subgraph "右侧功能"
-DetailSections[详情区域]
-DetailSections --> Category[诊断类别]
-DetailSections --> Basis[诊断依据]
-DetailSections --> Differential[鉴别诊断]
-DetailSections --> Supplement[补充说明]
-end
-LeftCol --> RightCol
+// 滚动到指定病人的优化实现
+scrollToSelectedPatient(patient) {
+  if (!patient || !this.$refs.patientTable) return
+  
+  const tableBody = this.$refs.patientTable.$el.querySelector('.el-table__body-wrapper')
+  if (!tableBody) return
+  
+  const index = this.patients.findIndex(p => p.patientId === patient.patientId)
+  if (index === -1) return
+  
+  const rows = tableBody.querySelectorAll('.el-table__row')
+  if (rows[index]) {
+    // 使用scrollIntoView确保居中显示
+    rows[index].scrollIntoView({ 
+      block: 'center', 
+      behavior: 'instant' 
+    })
+  }
+}
 ```
 
-**图表来源**
-- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
-
-**功能特点**：
-- **左右分栏布局**：左侧显示诊断列表，右侧显示详细信息
-- **Markdown渲染**：支持诊断依据等内容的Markdown格式渲染
-- **自动换行支持**：优化长文本显示，避免内容溢出
-- **XSS安全过滤**：使用DOMPurify确保渲染内容的安全性
-
 **章节来源**
-- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [更新小结.md](file://更新小结.md)
+- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
+- [病人列表返回时未自动滚动到选中病人位置.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/病人列表返回时未自动滚动到选中病人位置.md)
+- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
-## PromptTemplates组件UI重构
+## 诊疗计划表重要程度系统
 
-### Overlay下拉面板架构
+### 系统架构设计
 
-**更新** 新增了PromptTemplates组件UI重构的重要改进
+**更新** 完善了诊疗计划表重要程度系统的实现细节
 
-PromptTemplates组件经过重大UI重构，从传统的浮动面板改为现代化的Overlay下拉面板设计：
+诊疗计划表的重要程度系统是整个医疗辅助系统的重要组成部分，通过标准化的重要程度等级和颜色编码，为医护人员提供清晰的优先级指导。
 
 ```mermaid
 graph TB
-subgraph "AI视图布局"
-LeftPanel[左侧Prompt列表]
-MainArea[中间AI标签页区域]
-RightPanel[右侧Prompt模板面板]
+subgraph "重要程度系统架构"
+LevelSystem[重要程度等级系统]
+ColorMapping[颜色映射系统]
+UIComponents[UI组件系统]
+DataPersistence[数据持久化]
+ReportSystem[报表系统]
 end
-subgraph "模板面板架构"
-Toolbar[顶部工具栏]
-ToggleBtn[展开按钮]
-OverlayPanel[Overlay下拉面板]
-TemplateTree[模板树形结构]
+subgraph "等级定义"
+Critical[关键 - #F56C6C]
+Important[重要 - #E6A23C]
+Normal[一般 - #909399]
 end
-subgraph "交互流程"
-ClickBtn[点击展开按钮]
-ShowPanel[显示Overlay面板]
-ClickOutside[点击外部区域]
-HidePanel[自动收起面板]
-ExecuteTemplate[执行模板]
-AutoCollapse[执行后自动收起]
-end
-LeftPanel --> MainArea
-MainArea --> RightPanel
-RightPanel --> Toolbar
-Toolbar --> ToggleBtn
-ToggleBtn --> OverlayPanel
-OverlayPanel --> TemplateTree
-ClickBtn --> ShowPanel
-ShowPanel --> HidePanel
-HidePanel --> ClickOutside
-TemplateTree --> ExecuteTemplate
-ExecuteTemplate --> AutoCollapse
+subgraph "功能实现"
+LevelSystem --> Critical
+LevelSystem --> Important
+LevelSystem --> Normal
+ColorMapping --> Critical
+ColorMapping --> Important
+ColorMapping --> Normal
+UIComponents --> LevelSystem
+UIComponents --> ColorMapping
+DataPersistence --> LevelSystem
+ReportSystem --> LevelSystem
 ```
 
 **图表来源**
-- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
-- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 
-### 核心UI重构特性
+### 重要程度等级定义
 
-#### 默认折叠设计
-- **初始状态**：模板面板默认处于折叠状态（isTemplatesCollapsed = true）
-- **节省空间**：避免遮挡AI标签页的主要内容区域
-- **按需展开**：用户主动点击按钮才显示模板面板
+#### 三个等级的定义和应用场景
 
-#### Overlay下拉面板
-- **绝对定位**：使用position: absolute从工具栏按钮正下方展开
-- **z-index管理**：设置z-index: 200确保面板在最顶层显示
-- **阴影效果**：box-shadow: 0 4px 16px rgba(0,0,0,0.15)提供立体感
-- **尺寸限制**：width: 190px, max-height: 70vh，确保良好的视觉比例
+| 等级 | 颜色代码 | 颜色名称 | 适用场景 | 视觉特征 |
+|------|----------|----------|----------|----------|
+| 关键 | #F56C6C | 红色 | 紧急处理、危重病人 | 红色警示，高对比度 |
+| 重要 | #E6A23C | 橙色 | 重要但非紧急、常规处理 | 橙色提醒，中等强调 |
+| 一般 | #909399 | 灰色 | 常规检查、日常护理 | 灰色标识，温和显示 |
 
-#### 展开/收起动画
-- **panel-slide过渡**：使用Vue transition实现平滑的展开/收起动画
-- **transform-origin**：设置transform-origin: top right，面板从右上角缩放+位移
-- **动画时长**：opacity和transform过渡均为0.25秒，提供流畅的用户体验
+#### 前端实现细节
 
-#### 事件处理机制
-- **点击外部关闭**：点击.ai-tabs-container区域自动收起面板
-- **模板执行自动收起**：模板执行成功后通过事件通知父组件折叠
-- **小屏模式适配**：在小屏模式下自动隐藏模板面板
+```javascript
+// 重要程度颜色映射
+getImportanceColor(level) {
+  const colorMap = {
+    '关键': '#F56C6C',    // 红色
+    '重要': '#E6A23C',    // 橙色
+    '一般': '#909399'     // 灰色
+  }
+  return colorMap[level] || '#909399'
+}
 
-**章节来源**
-- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
-- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+// 重要程度选项配置
+<el-option label="关键" value="关键" />
+<el-option label="重要" value="重要" />
+<el-option label="一般" value="一般" />
+```
 
-### 模板树形结构优化
+#### 后端数据处理
 
-#### Tree组件配置
-- **node-key**: 使用id属性作为节点唯一标识
-- **expand-on-click-node**: 设置为false，仅点击箭头图标展开/收起
-- **props配置**: children: 'children', label: 'name'，简化数据结构
+- **数据标准化**：重要程度字段统一使用"关键/重要/一般"标准术语
+- **查询优化**：支持按重要程度等级的精确查询和统计分析
+- **报表生成**：重要程度统计报表使用标准化术语，便于医疗质量管理
 
-#### 模板分类展示
-- **层级结构**：一级节点为模板类型，二级节点为具体模板名称
-- **描述信息**：支持显示模板描述信息，提升用户体验
-- **点击行为**：一级节点切换展开状态，二级节点触发模板执行
+### AI结果页面重要程度美化
 
-#### 交互增强
-- **确认对话框**：执行模板前弹出确认对话框，防止误操作
-- **补充信息收集**：对特定模板（如'请会诊记录'、'日常对话'、'转科记录'）收集补充信息
-- **执行状态反馈**：显示正在生成Prompt的提示信息
+**更新** 新增了AI结果页面重要程度的美化处理
 
-**章节来源**
-- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
-
-## OpenClaw集成方案
-
-### 整体架构设计
-
-MedAiAssistant系统集成了OpenClaw AI编排引擎，通过REST API实现自然语言驱动的多步骤工作流程编排：
+在AI结果页面中，重要程度信息通过JavaScript正则表达式进行自动美化处理：
 
 ```mermaid
-graph TB
-subgraph "OpenClaw集成架构"
-Frontend[Vue前端界面]
-OpenClawGateway[OpenClaw网关]
-OpenClawEngine[OpenClaw编排引擎]
-Skill1[患者查询技能]
-Skill2[查房语音记录技能]
-Skill3[MCC/DRG分析技能]
-Skill4[数据同步监控技能]
-Backend[Spring Boot后端]
-Database[(数据库)]
-end
-Frontend --> OpenClawGateway
-OpenClawGateway --> OpenClawEngine
-OpenClawEngine --> Skill1
-OpenClawEngine --> Skill2
-OpenClawEngine --> Skill3
-OpenClawEngine --> Skill4
-Skill1 --> Backend
-Skill2 --> Backend
-Skill3 --> Backend
-Skill4 --> Backend
-Backend --> Database
-OpenClawEngine --> Backend
-Backend --> OpenClawGateway
-OpenClawGateway --> Frontend
+flowchart TD
+AIResult[AI结果HTML] --> RegexScan[正则扫描]
+RegexScan --> ReplaceCritical[替换"关键"为彩色span]
+RegexScan --> ReplaceImportant[替换"重要"为彩色span]
+RegexScan --> ReplaceNormal[替换"一般"为彩色span]
+ReplaceCritical --> StyledHTML[美化后的HTML]
+ReplaceImportant --> StyledHTML
+ReplaceNormal --> StyledHTML
 ```
 
 **图表来源**
-- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
-
-### 临床场景分析
-
-系统基于180+个REST API接口的全面调研，识别出7个适合OpenClaw编排的临床场景：
-
-#### 场景1：查房语音记录
-**用户故事**：医生查房时口述内容，系统自动识别、整理、关联患者并保存。
-
-**编排流程**：
-1. POST /api/voice/recognize-file → 语音转文字
-2. POST /api/ai/response → LLM整理为结构化查房记录
-3. POST /api/medicalrecords → 创建病历记录（草稿）
-
-**OpenClaw附加价值**：
-- LLM自动理解口述中提到的患者姓名/床号，调用患者查询API关联
-- 自动补充患者当前诊断、医嘱等上下文
-- 如果口述中提到异常指标，自动触发告警逻辑
-
-#### 场景2：智能MCC/DRG全流程分析
-**用户故事**：医生说"帮我分析一下3床病人的DRG编码和可能的并发症"，系统自动完成全链路分析。
-
-**编排流程**：
-1. GET /api/patients/by-department → 通过床号找到患者
-2. GET /api/patients/{id}/diagnoses → 获取诊断列表
-3. POST /api/drg/mcc/screen → MCC预筛选
-4. POST /api/drg/mcc/generate-prompt → 生成MCC分析Prompt
-5. GET /api/drg/catalog/match → DRG编码匹配
-6. GET /api/drg/patient-fee → 查询实际费用
-7. POST /api/drg/profit-loss → 计算盈亏
-
-#### 场景3：患者综合情况快速查询
-**用户故事**：医生问"12床病人现在情况怎么样？"，系统自动汇总所有关键信息。
-
-**编排流程**：
-1. GET /api/patients/by-department → 通过床号定位患者
-2. GET /api/patients/{id}/basic-info → 基本信息
-3. GET /api/patients/{id}/diagnoses → 当前诊断
-4. GET /api/patients/{id}/long-term-orders → 长期医嘱
-5. GET /api/patients/{id}/temporary-orders → 临时医嘱
-6. GET /api/ai/latestPromptResult → 最近AI分析结果
-7. LLM汇总为简明的患者情况摘要
-
-### 场景优先级矩阵
-
-| 场景 | 技术可行性 | 业务价值 | 实现复杂度 | 建议优先级 |
-|------|-----------|---------|-----------|----------|
-| 查房语音记录 | 高（API已有） | 极高 | 中 | P0 - 首选PoC |
-| MCC/DRG全流程分析 | 高（API已有） | 极高 | 中 | P0 |
-| 患者综合情况查询 | 高（API已有） | 高 | 低 | P1 |
-| AI诊疗辅助 | 高（API已有） | 高 | 中 | P1 |
-| 数据同步监控 | 高（API已有） | 中 | 低 | P2 |
-| 病历分析转待办 | 高（API已有） | 高 | 中 | P2 |
-| 非计划再次手术预警 | 高（API已有） | 中 | 中 | P3 |
-
-### PoC验证计划
-
-#### 前置条件
-- 测试服务器需能访问后端API `http://10.120.11.43:8081`
-- 测试服务器需有Node.js 22.16+或Node.js 24（推荐）
-- 需要一个LLM API Key（如OpenAI、Claude、DeepSeek等）
-
-#### Task 1: 环境准备与OpenClaw安装
-```bash
-# 检查Node.js版本
-node --version
-
-# 如果版本不够，安装Node.js 24
-curl -fsSL https://deb.nodesource.com/setup_24.x | sudo bash -
-sudo apt-get install -y nodejs
-
-# 全局安装OpenClaw
-npm install -g openclaw@latest
-
-# 运行引导式配置（会设置Gateway、LLM provider、工作区等）
-openclaw onboard --install-daemon
-```
-
-#### Task 2: 编写患者查询Skill
-在OpenClaw工作区创建Skill目录：
-```bash
-mkdir -p ~/.openclaw/skills/med-patient-query
-```
-
-创建`~/.openclaw/skills/med-patient-query/SKILL.md`：
-
-```markdown
----
-name: med_patient_query
-description: 查询医院科室的患者列表，支持按科室名称查询在院病人信息
-metadata: {"openclaw": {"requires": {"bins": ["curl", "jq"]}}}
----
-
-# 患者信息查询
-
-当用户询问某个科室的病人列表、患者信息、在院病人等内容时，使用此技能。
-
-## 使用方法
-
-根据用户提供的科室名称，调用医疗AI辅助系统的患者查询接口：
-
-curl -s "http://10.120.11.43:8081/api/patients/by-department?department={科室名}&sync=false" | jq '.'
-
-## 参数说明
-
-- department: 科室名称（如"心内科"、"呼吸内科"等），从用户输入中提取
-- sync: 是否同步刷新数据，默认false
-
-## 返回结果处理
-
-将返回的JSON数据整理为易读的患者列表，包含：
-- 患者姓名
-- 住院号
-- 床号
-- 入院日期
-- 诊断信息
-
-如果查询失败或无数据，告知用户可能的原因（科室名称不正确、服务不可用等）。
-```
-
-#### Task 3: 通过REST API验证
-核心验证步骤——模拟Spring Boot后端通过HTTP调用OpenClaw：
-
-```bash
-curl -X POST http://<openclaw服务器IP>:18789/api/sessions/main/messages \
-  -H "Authorization: Bearer your-secret-token-here" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "查一下心内科的病人列表"}'
-```
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 
 **章节来源**
-- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 
 ## 依赖分析
 
@@ -1037,23 +920,36 @@ OpenClawConfig --> OpenClawSkill
    - 验证技能依赖关系
    - 检查并发限制设置
 
-#### PromptTemplates组件问题
-**新增** 针对UI重构后的问题排除指南
+#### 病人列表滚动问题
+**新增** 针对版本0.8.036滚动修复问题的排除指南
 
-1. **Overlay面板不显示**
-   - 检查isTemplatesCollapsed状态管理
-   - 验证CSS样式类名
-   - 确认z-index层级设置
+1. **滚动位置不正确**
+   - 检查`restoreScrollPosition`方法调用时机
+   - 验证`$nextTick`和`setTimeout`的使用
+   - 确认DOM元素的选择器正确性
 
-2. **模板执行后不自动收起**
-   - 检查template-executed事件触发
-   - 验证父组件事件监听
-   - 确认状态更新逻辑
+2. **Element Plus滚动容器问题**
+   - 检查`.el-table__body-wrapper`是否存在
+   - 验证`scrollIntoView`的参数设置
+   - 确认`behavior:'instant'`的兼容性
 
-3. **动画效果异常**
-   - 检查Vue transition配置
-   - 验证transform-origin设置
-   - 确认CSS过渡时长
+3. **keep-alive兼容性问题**
+   - 检查路由配置中是否使用`<keep-alive>`
+   - 验证`activated`钩子的触发条件
+   - 确认双生命周期覆盖的实现
+
+#### 重要程度术语问题
+**新增** 针对版本0.8.037术语优化问题的排除指南
+
+1. **术语显示异常**
+   - 检查`getImportanceColor`方法的颜色映射
+   - 验证CSS类名的正确性
+   - 确认颜色代码的格式
+
+2. **数据兼容性问题**
+   - 检查数据库中"危急"数据的转换
+   - 验证前端显示逻辑的兼容性
+   - 确认报表统计的准确性
 
 **章节来源**
 - [.gitignore](file://.gitignore)
@@ -1062,8 +958,71 @@ OpenClawConfig --> OpenClawSkill
 
 ### 前端版本更新记录
 
-#### v0.8.021 - v0.8.025
-**更新** 新增了版本0.8.025和0.8.024的具体更新内容，以及0.8.021的OpenClaw集成方案
+#### v0.8.036 - v0.8.037
+**更新** 新增了版本0.8.037和0.8.036的具体更新内容
+
+##### v0.8.036 - 病人列表滚动修复
+**新增功能**
+- 修复从AI辅助页面返回时未自动滚动到选中病人位置的问题
+- 实现选中行居中显示功能，提升用户体验
+- 采用双生命周期覆盖策略，确保兼容不同路由配置
+
+**技术实现**
+- 使用`$nextTick`和`setTimeout`双重保障DOM渲染完成
+- 采用`scrollIntoView({block:'center'})`实现居中滚动
+- 支持keep-alive和非keep-alive两种路由场景
+
+**用户体验改进**
+- 选中病人自动滚动到可视区域中心
+- 减少用户手动滚动操作
+- 提升整体操作流畅度
+
+**变更文件**
+- 修改：`src/components/patient/PatientList.vue`
+
+##### v0.8.037 - 重要程度术语优化
+**新增功能**
+- 将"危急"术语替换为"关键"，提升术语表达的专业性
+- 保持原有颜色编码系统，确保视觉一致性
+- 向后兼容已存在的"危急"数据
+
+**术语优化**
+- "危急" → "关键"（红色警示）
+- 保持"重要"和"一般"术语不变
+- 统一医疗术语表达标准
+
+**用户体验改进**
+- 术语表达更加符合医疗行业标准
+- 保持颜色编码的视觉一致性
+- 确保系统升级的平滑过渡
+
+**变更文件**
+- 修改：`src/components/ai/TreatmentPlanTable.vue`
+- 修改：`src/components/ai/AIResults.vue`
+
+#### v0.8.035 - v0.8.036
+**更新** 完善了之前的版本更新记录
+
+##### v0.8.035 - PromptTemplates组件UI重构
+**新增功能**
+- PromptTemplates模板列表改为overlay下拉面板，默认折叠，右上角按钮展开
+- 执行模板后自动收起：通过template-executed事件实现自动折叠
+- AIView.vue集成Overlay面板：实现完整的展开/收起交互逻辑
+- PromptList.vue优化：改进Prompt列表显示和交互体验
+
+**用户体验改进**
+- 模板面板默认折叠，节省界面空间
+- Overlay面板提供更好的视觉层次
+- 执行后自动收起，提升操作效率
+- 展开/收起动画提供流畅的用户体验
+
+**变更文件**
+- 修改：`src/components/ai/PromptTemplates.vue`
+- 修改：`src/views/AIView.vue`
+- 修改：`src/components/ai/PromptList.vue`
+
+#### v0.8.021 - v0.8.035
+**更新** 完善了之前的版本更新记录
 
 ##### v0.8.021 - OpenClaw集成方案引入
 **新增功能**
@@ -1142,21 +1101,49 @@ OpenClawConfig --> OpenClawSkill
 
 ### 后端版本更新记录
 
-#### v0.8.021 - OpenClaw集成方案引入
+#### v0.8.036 - v0.8.037
+**更新** 新增了版本0.8.036和0.8.037的具体更新内容
+
+##### v0.8.036 - 病人列表滚动修复
 **新增功能**
-- 新增OpenClaw集成方案文档，基于系统已有180+个REST API接口的全面调研
-- 识别出7个适合OpenClaw编排的临床场景
-- 制定PoC部署验证计划，设计Spring Boot通过REST API调用OpenClaw Gateway的集成架构
-- 定义场景优先级矩阵和四阶段扩展路线
+- 修复从AI辅助页面返回时未自动滚动到选中病人位置的问题
+- 实现选中行居中显示功能，提升用户体验
+- 采用双生命周期覆盖策略，确保兼容不同路由配置
 
-**新增文件**
-- `doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md`
-- `pom.xml`（版本号更新至0.8.021）
+**技术实现**
+- 使用`$nextTick`和`setTimeout`双重保障DOM渲染完成
+- 采用`scrollIntoView({block:'center'})`实现居中滚动
+- 支持keep-alive和非keep-alive两种路由场景
 
-**章节来源**
-- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
+**用户体验改进**
+- 选中病人自动滚动到可视区域中心
+- 减少用户手动滚动操作
+- 提升整体操作流畅度
 
-#### v0.8.016 - v0.8.020
+**变更文件**
+- 修改：`src/components/patient/PatientList.vue`
+
+##### v0.8.037 - 重要程度术语优化
+**新增功能**
+- 将"危急"术语替换为"关键"，提升术语表达的专业性
+- 保持原有颜色编码系统，确保视觉一致性
+- 向后兼容已存在的"危急"数据
+
+**术语优化**
+- "危急" → "关键"（红色警示）
+- 保持"重要"和"一般"术语不变
+- 统一医疗术语表达标准
+
+**用户体验改进**
+- 术语表达更加符合医疗行业标准
+- 保持颜色编码的视觉一致性
+- 确保系统升级的平滑过渡
+
+**变更文件**
+- 修改：`src/components/ai/TreatmentPlanTable.vue`
+- 修改：`src/components/ai/AIResults.vue`
+
+#### v0.8.016 - v0.8.035
 **更新** 完善了之前的版本更新记录
 
 ##### v0.8.016 - Prompt状态循环重置修复
@@ -1191,43 +1178,31 @@ OpenClawConfig --> OpenClawSkill
 - `EmrRecordService.getEmrRecordContentById`适配List返回，多条记录时记录WARN日志
 
 **章节来源**
-- [2026-04-11.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-11.md)
-- [2026-04-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-14.md)
-- [2026-04-13.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-13.md)
+- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
 
 ## 结论
 
 MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过前后端分离、容器化部署、多环境配置管理等技术手段，实现了高可用性、可扩展性和易维护性的系统目标。
 
-项目的核心优势包括：
-- 标准化的开发流程和质量保证体系
-- 灵活的配置管理和多环境支持
-- 完善的监控和日志管理机制
-- 友好的开发者体验和工具链支持
-- **新增**：OpenClaw AI编排引擎集成，通过自然语言驱动多步骤API编排
-
 **更新亮点**：
-- **流式响应技术**：AI对话功能实现真正的流式响应，显著提升用户体验
-- **诊断编辑集成**：诊断编辑面板内嵌到AI结果页面，提供更直观的操作体验
-- **组件化架构**：诊断卡片和编辑面板等组件化设计，便于维护和扩展
-- **性能优化**：通过流式处理和组件优化，系统响应速度和资源利用率得到提升
-- **AI编排集成**：OpenClaw集成方案为系统提供智能化的工作流程自动化能力
-- **UI重构升级**：PromptTemplates组件采用Overlay下拉面板设计，提供现代化的用户体验
+- **重要程度术语优化**：版本0.8.037将"危急"替换为"关键"，提升了术语表达的专业性和准确性
+- **病人列表滚动修复**：版本0.8.036解决了从AI辅助页面返回时未自动滚动到选中病人位置的问题，采用居中显示优化用户体验
+- **双生命周期覆盖**：通过`mounted`和`activated`钩子的双重保障，确保在不同路由配置下都能正常工作
+- **scrollIntoView技术**：使用原生DOM API替代手动scrollTop计算，适配Element Plus的滚动容器结构
+- **颜色编码系统**：保持"关键/重要/一般"三级重要程度的颜色编码，确保视觉一致性
 
-**PromptTemplates组件UI重构价值**：
-- **空间优化**：默认折叠设计节省界面空间，避免遮挡主要内容
-- **交互提升**：Overlay面板提供更好的视觉层次和用户体验
-- **操作效率**：执行后自动收起，减少用户操作步骤
-- **动画体验**：panel-slide过渡动画提供流畅的视觉反馈
-- **响应式设计**：适配不同屏幕尺寸，提升移动端体验
+**技术价值**：
+- **用户体验提升**：居中显示选中行，减少用户手动滚动操作
+- **系统稳定性**：双生命周期覆盖策略，确保兼容不同路由配置
+- **术语标准化**：统一医疗术语表达，符合行业标准
+- **向前兼容**：重要程度术语优化不影响现有数据和功能
 
-**OpenClaw集成价值**：
-- **自然语言驱动**：通过自然语言指令触发复杂的多步骤工作流程
-- **技能编排**：将现有的180+个API接口通过技能进行编排组合
-- **智能决策**：利用LLM理解用户意图，自动选择合适的技能组合
-- **扩展性强**：支持四阶段扩展路线，从PoC验证到全面集成
-
-未来的发展方向将重点关注AI模型的持续优化、系统性能的进一步提升、用户体验的不断改善，以及OpenClaw编排能力的深入应用。
+**未来发展方向**：
+- 继续优化用户体验，提升系统的易用性和效率
+- 扩展OpenClaw编排能力，实现更多临床场景的智能化
+- 完善医疗术语标准化，提升系统的专业性和准确性
+- 加强系统监控和日志管理，提升运维效率
 
 ## 附录
 
@@ -1298,61 +1273,40 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 
 ### 新功能使用指南
 
-#### PromptTemplates组件使用
-1. **展开模板面板**
-   - 点击右上角"Prompt模板"按钮展开Overlay面板
-   - 面板默认折叠，节省界面空间
+#### 病人列表滚动功能使用
+1. **自动滚动机制**
+   - 从AI辅助页面返回时自动滚动到选中病人位置
+   - 选中行显示在表格可视区域中心
+   - 支持keep-alive和非keep-alive两种路由场景
 
-2. **选择模板执行**
-   - 在模板树形结构中选择具体模板
-   - 点击二级节点执行模板
-   - 模板执行成功后自动收起面板
+2. **双生命周期适配**
+   - `mounted`钩子处理组件首次加载
+   - `activated`钩子处理keep-alive场景
+   - `$nextTick`和`setTimeout`确保DOM渲染完成
 
-3. **模板分类浏览**
-   - 一级节点显示模板类型
-   - 二级节点显示具体模板名称
-   - 支持模板描述信息查看
+3. **滚动容器适配**
+   - 使用`scrollIntoView`替代手动scrollTop
+   - 支持Element Plus的滚动容器层级
+   - `{block:'center', behavior:'instant'}`居中显示
 
-#### 诊断编辑面板使用
-1. **打开诊断编辑面板**
-   - 在AI结果页面中查看诊断分析结果
-   - 点击"显示列表"按钮打开诊断编辑面板
+#### 重要程度术语使用
+1. **术语标准化**
+   - "危急" → "关键"（红色警示）
+   - "重要"和"一般"术语保持不变
+   - 颜色编码系统保持一致
 
-2. **编辑AI诊断**
-   - 双击AI诊断名称进入编辑模式
-   - 直接修改诊断文本
-   - 点击保存按钮确认修改
+2. **颜色显示**
+   - 关键：#F56C6C（红色）
+   - 重要：#E6A23C（橙色）
+   - 一般：#909399（灰色）
 
-3. **管理目前诊断**
-   - 在右侧"目前诊断"标签页查看现有诊断
-   - 选中诊断后点击"保存"按钮更新
-   - 使用"删除"按钮移除不需要的诊断
-
-#### 流式响应体验
-1. **AI对话交互**
-   - 在AI对话框中输入问题
-   - 等待AI逐步生成回复
-   - 实时看到AI的思考过程
-
-2. **性能优势**
-   - 响应延迟大幅降低
-   - 实时内容更新
-   - 更流畅的交互体验
-
-#### OpenClaw编排使用
-1. **自然语言交互**
-   - 在OpenClaw界面输入自然语言指令
-   - 系统自动识别意图并选择合适技能
-   - 观察编排流程的执行进度
-
-2. **技能监控**
-   - 查看技能调用日志
-   - 监控API调用状态
-   - 处理编排过程中的异常
+3. **兼容性处理**
+   - 向后兼容已存在的"危急"数据
+   - 系统升级平滑过渡
+   - 报表统计自动转换
 
 **章节来源**
-- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
-- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
-- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
-- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
-- [OpenClaw集成方案-临床场景分析与PoC规划.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/openclaw/OpenClaw集成方案-临床场景分析与PoC规划.md)
+- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [更新小结.md](file://更新小结.md)

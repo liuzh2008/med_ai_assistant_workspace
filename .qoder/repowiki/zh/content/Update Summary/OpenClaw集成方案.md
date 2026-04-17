@@ -1,3 +1,4 @@
+<docs>
 # OpenClaw集成方案
 
 <cite>
@@ -8,6 +9,9 @@
 - [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG分析接口.md)
 - [语音识别接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/语音识别/语音识别接口.md)
 - [系统管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/系统管理/系统管理接口.md)
+- [AI服务接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/AI服务/AI服务接口.md)
+- [病历记录管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/病历记录管理接口.md)
+- [病人数据同步API接口文档.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/数据同步/病人数据同步API接口文档.md)
 - [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
 - [AppDataSourceProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AppDataSourceProperties.java)
 - [CustomProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CustomProperties.java)
@@ -573,3 +577,174 @@ OpenClaw集成方案为MedAiAssistant系统提供了强大的智能化能力，�
 - **系统管理**：健康检查、配置管理、数据一致性诊断等15个接口
 
 这些接口为OpenClaw提供了丰富的业务能力支撑，确保编排场景的完整性和实用性。
+
+### 7个临床编排场景详细分析
+
+**更新** 基于完整的PoC规划文档，现对7个核心编排场景进行深入分析：
+
+#### 场景1：查房语音记录（P0 - 首选PoC）
+- **用户故事**：医生查房时口述内容，系统自动识别、整理、关联患者并保存
+- **编排流程**：语音识别 → LLM整理 → 病历创建 → 返回确认
+- **技术价值**：LLM自动理解口述中的患者信息，自动关联诊断和医嘱
+- **PoC验证**：已通过CLI验证，可直接进入后端集成
+
+#### 场景2：智能MCC/DRG全流程分析（P0）
+- **用户故事**：医生说"分析3床病人的DRG编码和可能的并发症"
+- **编排流程**：患者查询 → 诊断获取 → MCC预筛选 → DRG匹配 → 费用查询 → 盈亏计算
+- **业务价值**：替代DRG分析页面的多次点击操作，一句话完成全链路分析
+- **技术挑战**：需要完整的DRG分析API链路验证
+
+#### 场景3：患者综合情况快速查询（P1）
+- **用户故事**：医生问"12床病人现在情况怎么样？"
+- **编排流程**：床号定位 → 基本信息 → 诊断列表 → 医嘱信息 → AI分析结果
+- **场景价值**：查房前快速了解患者近况，无需多页面切换
+- **技术实现**：基于现有API的简单编排
+
+#### 场景4：自然语言驱动的AI诊疗辅助（P1）
+- **用户故事**：医生说"用入院记录分析治疗方案建议"
+- **编排流程**：患者数据获取 → Prompt模板匹配 → LLM分析 → 结果保存
+- **技术价值**：简化AIView页面的多步操作
+- **实现难度**：需要完整的AI服务链路验证
+
+#### 场景5：数据同步与质量监控（P2）
+- **用户故事**：运维人员说"同步心内科数据并检查一致性"
+- **编排流程**：科室患者同步 → 检验结果同步 → 一致性检测 → 自动修复
+- **业务价值**：自动化数据质量管理工作
+- **技术实现**：基于现有同步API的编排
+
+#### 场景6：病历分析转待办事项（P2）
+- **用户故事**：系统自动分析病历内容，提取待办事项
+- **编排流程**：科室患者获取 → 综合数据获取 → LLM分析 → 结果保存 → 汇总清单
+- **场景价值**：利用OpenClaw Cron实现每日自动生成待办
+- **技术实现**：定时任务编排
+
+#### 场景7：非计划再次手术风险预警（P3）
+- **用户故事**：质控人员问"最近有非计划再次手术风险的病例吗？"
+- **编排流程**：科室患者获取 → 手术记录分析 → 风险评估 → 结果汇总
+- **业务价值**：辅助质控工作，提升医疗质量
+- **实现复杂度**：相对较低，适合后期扩展
+
+### PoC部署验证完整流程
+
+**更新** 基于详细的PoC规划，现提供完整的部署验证流程：
+
+#### 前置条件
+- 测试服务器访问后端API `http://10.120.11.43:8081`
+- 测试服务器具备Node.js 22.16+或Node.js 24（推荐）
+- 需要LLM API Key（OpenAI、Claude、DeepSeek等）
+
+#### 环境准备与OpenClaw安装
+```bash
+# 检查Node.js版本
+node --version
+
+# 安装Node.js 24（如版本不够）
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo bash -
+sudo apt-get install -y nodejs
+
+# 全局安装OpenClaw
+npm install -g openclaw@latest
+
+# 运行引导式配置
+openclaw onboard --install-daemon
+```
+
+#### Gateway配置
+- 选择LLM Provider并输入API Key
+- 配置Gateway端口（默认18789）
+- 设置Gateway Token（供后端调用认证）
+- 允许后端服务器访问（bind 0.0.0.0）
+
+#### Skill开发与验证
+- 创建患者查询Skill目录：`~/.openclaw/skills/med-patient-query`
+- 编写SKILL.md配置文件
+- 使用CLI验证：`openclaw skills list` 和 `openclaw agent --message`
+
+#### REST API验证
+```bash
+# 模拟Spring Boot后端调用
+curl -X POST http://<openclaw服务器IP>:18789/api/sessions/main/messages \
+  -H "Authorization: Bearer your-secret-token-here" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "查一下心内科的病人列表"}'
+```
+
+#### 预期产出
+- OpenClaw Gateway在测试服务器上正常运行
+- 通过REST API调用能成功查询患者信息
+- 验证"HTTP请求 → OpenClaw意图识别 → Skill调度 → 后端API调用 → JSON结果返回"完整链路
+- 明确7个可落地的临床场景及其优先级
+
+### 技术架构与集成方案
+
+**更新** 基于完整的PoC规划，现提供详细的技术架构：
+
+#### OpenClaw集成架构
+- **OpenClaw Gateway**：作为AI编排引擎，接收自然语言请求
+- **Skill编排**：通过PowerShell脚本调用后端API
+- **后端服务**：MedAiAssistant提供RESTful API
+- **数据库**：Oracle存储对话历史和业务数据
+
+#### 并发与会话管理
+- **Session Lane**：同一会话内严格串行执行
+- **Global Lane**：不同会话间并行执行
+- **会话隔离**：使用UUID确保会话独立性
+- **用户标识**：X-Operator-Id Header传递操作员信息
+
+#### 安全与认证
+- **服务Token认证**：Gateway Token验证
+- **操作员标识**：确保合规的操作审计
+- **数据加密**：敏感数据的保护机制
+- **权限控制**：基于角色的访问控制
+
+### 实施路线图
+
+**更新** 基于场景优先级和技术可行性，现提供详细的实施路线图：
+
+#### 第一阶段（PoC验证，P0场景）
+- 完成OpenClaw环境搭建
+- 开发患者查询Skill
+- 验证REST API调用链路
+- 建立PoC验证标准
+
+#### 第二阶段（核心功能，P0+P1场景）
+- 开发DRG分析Skill
+- 实现AI诊疗辅助功能
+- 完善会话管理系统
+- 优化并发处理机制
+
+#### 第三阶段（扩展功能，P2场景）
+- 实现数据同步监控
+- 开发病历分析待办功能
+- 集成定时任务编排
+- 完善前端交互界面
+
+#### 第四阶段（部署上线）
+- 完成系统集成测试
+- 制定用户培训计划
+- 准备生产环境部署
+- 建立运维监控体系
+
+### 预期收益与价值
+
+**更新** 基于7个编排场景的分析，现提供详细的预期收益：
+
+#### 医疗效率提升
+- **查房效率**：查房语音记录减少录入时间60%
+- **DRG分析**：全流程分析替代多次点击操作
+- **患者查询**：一句话获取患者全景信息
+- **病历管理**：自动待办生成减少人工工作量
+
+#### 医疗质量改善
+- **准确性提升**：AI辅助分析减少人为错误
+- **及时性改善**：自动监控预警系统
+- **一致性保证**：标准化的业务流程
+- **合规性增强**：完善的操作审计机制
+
+#### 技术创新价值
+- **AI技术应用**：自然语言处理在医疗领域的创新应用
+- **系统架构优化**：微服务架构与AI编排的结合
+- **用户体验提升**：简化操作流程，提升医护人员满意度
+- **技术积累**：为后续AI应用奠定技术基础
+
+通过完整的7个临床编排场景分析和PoC部署验证计划，OpenClaw集成方案为MedAiAssistant系统提供了清晰的实施路径和明确的价值体现，特别是在提升医疗效率、改善医疗质量和推动技术创新方面的显著优势。
