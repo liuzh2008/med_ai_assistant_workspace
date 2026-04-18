@@ -5,7 +5,15 @@
 - [更新小结.md](file://更新小结.md)
 - [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
-- [病人列表返回时未自动滚动到选中病人位置.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/病人列表返回时未自动滚动到选中病人位置.md)
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
+- [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
+- [PatientInfo.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientInfo.vue)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 - [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
 - [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
@@ -13,10 +21,10 @@
 
 ## 更新摘要
 **已进行的变更**
-- 新增版本0.8.037的重要程度术语优化：将"危急"替换为"关键"，提升术语表达的准确性
-- 新增版本0.8.036的病人列表滚动修复：解决从AI辅助页面返回时未自动滚动到选中病人位置的问题
-- 完善了诊疗计划表重要程度色标系统，支持"关键/重要/一般"三种等级的彩色显示
-- 优化了病人列表组件的滚动机制，确保选中状态恢复和位置定位的可靠性
+- 新增版本0.8.040的手术列表CRUD功能补充：实现双击编辑、新增、软删除、设主手术、主手术排序和日期展示的完整功能
+- 后端新增手术CRUD接口，包括新增手术、替换手术、软删除和设主手术接口
+- 数据库脚本更新，为surgeryname表添加IS_DELETED和MODIFICATION_TYPE列
+- 前端手术任务管理组件实现完整的CRUD操作界面和交互逻辑
 
 ## 目录
 1. [简介](#简介)
@@ -24,15 +32,16 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [版本0.8.037 - 重要程度术语优化](#版本08037---重要程度术语优化)
-7. [版本0.8.036 - 病人列表滚动修复](#版本08036---病人列表滚动修复)
-8. [诊疗计划表重要程度系统](#诊疗计划表重要程度系统)
-9. [依赖分析](#依赖分析)
-10. [性能考虑](#性能考虑)
-11. [故障排除指南](#故障排除指南)
-12. [版本发布历史](#版本发布历史)
-13. [结论](#结论)
-14. [附录](#附录)
+6. [版本0.8.040 - 手术列表CRUD功能补充](#版本08040---手术列表crud功能补充)
+7. [后端手术CRUD接口实现](#后端手术crud接口实现)
+8. [前端手术任务管理组件](#前端手术任务管理组件)
+9. [数据库脚本更新](#数据库脚本更新)
+10. [依赖分析](#依赖分析)
+11. [性能考虑](#性能考虑)
+12. [故障排除指南](#故障排除指南)
+13. [版本发布历史](#版本发布历史)
+14. [结论](#结论)
+15. [附录](#附录)
 
 ## 简介
 
@@ -101,12 +110,14 @@ Root --> Templates
    - 实验室结果处理
    - 电子病历查询
    - OpenClaw编排服务
+   - **手术管理服务**（新增）
 
 2. **数据访问层**
    - 数据库连接池管理
    - SQL查询优化器
    - 缓存策略管理
    - 数据同步机制
+   - **手术数据访问**（新增）
 
 3. **配置管理**
    - 多环境配置支持
@@ -166,12 +177,14 @@ Imaging[影像分析服务]
 Lab[实验室服务]
 Pharmacy[药房服务]
 OpenClawService[OpenClaw编排服务]
+Surgery[手术管理服务]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库)]
 Redis[(Redis缓存)]
 MinIO[(对象存储)]
 Elasticsearch[(搜索引擎)]
+Oracle[(Oracle数据库)]
 end
 subgraph "AI编排层"
 OpenClawEngine[OpenClaw引擎]
@@ -449,258 +462,567 @@ ScrollToCenter --> AutoScroll
 **章节来源**
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
-## 版本0.8.037 - 重要程度术语优化
+## 版本0.8.040 - 手术列表CRUD功能补充
 
-### 术语优化背景
+### 功能概述
 
-**更新** 新增了版本0.8.037的重要程度术语优化功能
+**更新** 新增了版本0.8.040的手术列表CRUD功能补充
 
-在医疗信息系统中，重要程度的术语表达直接影响医护人员的理解和操作。版本0.8.037对重要程度术语进行了优化，将"危急"替换为"关键"，提升了术语表达的准确性和专业性。
+版本0.8.040为MedAiAssistant系统新增了完整的手术列表CRUD功能，包括双击编辑、新增、软删除、设主手术、主手术排序和日期展示等核心功能。这一功能的实现标志着系统在手术管理方面达到了更高的成熟度，能够满足临床医生对手术信息管理的全面需求。
 
-### 术语优化内容
+### 核心功能特性
 
-#### 重要程度等级体系
-系统支持三级重要程度等级，每级都有明确的术语定义：
-
-```mermaid
-graph TD
-subgraph "重要程度等级体系"
-Critical[关键<br/>对应红色 #F56C6C]
-Important[重要<br/>对应橙色 #E6A23C]
-Normal[一般<br/>对应灰色 #909399]
-end
-subgraph "术语优化"
-OldTerm["危急"] --> NewTerm["关键"]
-Explanation["术语优化说明"]
-end
-Critical --> OldTerm
-Important --> Normal
-NewTerm --> Explanation
-```
-
-**图表来源**
-- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
-
-#### 前端实现细节
-- **术语替换**：将"危急"替换为"关键"，保持与医疗标准术语的一致性
-- **颜色映射**：维持原有的颜色编码系统，确保视觉一致性
-- **兼容性处理**：向后兼容已存在的"危急"数据，确保系统稳定运行
-
-#### 后端数据处理
-- **存储优化**：重要程度字段统一使用"关键/重要/一般"标准术语
-- **查询优化**：支持按重要程度等级的精确查询和统计
-- **报表生成**：重要程度统计报表使用标准化术语
-
-**章节来源**
-- [更新小结.md](file://更新小结.md)
-- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
-- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
-
-## 版本0.8.036 - 病人列表滚动修复
-
-### 问题背景
-
-**更新** 新增了版本0.8.036的病人列表滚动修复功能
-
-在使用MedAiAssistant系统时，用户从AI辅助页面返回病人列表时，发现列表虽然正确显示了选中状态（高亮），但列表内容并未滚动到该病人所在位置。这个问题影响了用户的操作体验和工作效率。
-
-### 问题分析
-
-#### 根因诊断
-经过深入分析，发现问题的根本原因：
-
-```mermaid
-flowchart TD
-Problem[问题现象] --> RootCause[根因分析]
-RootCause --> LifecycleIssue[生命周期覆盖不全]
-RootCause --> AsyncIssue[异步数据加载时序问题]
-RootCause --> DOMIssue[DOM层级不匹配问题]
-RootCause --> UXIssue[用户体验不佳问题]
-LifecycleIssue --> KeepAliveIssue[未使用keep-alive]
-AsyncIssue --> MountIssue[mounted时机问题]
-DOMIssue --> ScrollContainerIssue[滚动容器层级问题]
-UXIssue --> PositionIssue[位置定位不理想]
-KeepAliveIssue --> Solution1[双生命周期覆盖]
-MountIssue --> Solution2[异步数据后处理]
-ScrollContainerIssue --> Solution3[scrollIntoView替代]
-PositionIssue --> Solution4[居中显示优化]
-```
-
-**图表来源**
-- [病人列表返回时未自动滚动到选中病人位置.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/病人列表返回时未自动滚动到选中病人位置.md)
-
-#### 详细问题描述
-1. **生命周期覆盖不全**：项目路由未使用`<keep-alive>`，导致`activated`钩子不触发
-2. **异步数据加载时序**：`mounted`时数据尚未加载完成，滚动恢复逻辑失效
-3. **DOM层级不匹配**：Element Plus的滚动容器层级与预期不符
-4. **用户体验问题**：滚动位置不够理想，需要改进为居中显示
-
-### 解决方案实现
-
-#### 双生命周期覆盖机制
-为确保在不同路由配置下都能正常工作，采用了双生命周期覆盖策略：
-
-```mermaid
-sequenceDiagram
-participant User as 用户
-participant Component as 组件
-participant DOM as DOM元素
-participant Timer as 定时器
-User->>Component : 从AI页面返回
-Note over Component : mounted钩子触发
-Component->>Component : 检查selectedPatientId
-Component->>DOM : setCurrentRow(选中状态)
-Component->>Timer : setTimeout(300ms)
-Timer->>Component : 延迟回调
-Component->>DOM : scrollToSelectedPatient
-DOM->>DOM : scrollIntoView({block : 'center'})
-```
-
-**图表来源**
-- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
-
-#### 核心修复技术
-- **双生命周期适配**：同时支持`mounted`和`activated`钩子，确保兼容不同路由配置
-- **异步数据处理**：在数据加载完成后执行滚动，避免空数组查找问题
-- **DOM层级适配**：使用`scrollIntoView`替代手动`scrollTop`计算，适配Element Plus的滚动容器结构
-- **居中显示优化**：使用`{block:'center', behavior:'instant'}`确保选中行显示在可视区域中心
-
-#### 实现细节
-```javascript
-// 恢复滚动位置的通用方法
-restoreScrollPosition() {
-  const selectedId = localStorage.getItem('selectedPatientId')
-  if (!selectedId || !this.patients.length) return
-  const patient = this.patients.find(p => String(p.patientId) === String(selectedId))
-  if (patient) {
-    this.scrollToSelectedPatient(patient)
-  }
-}
-
-// 滚动到指定病人的优化实现
-scrollToSelectedPatient(patient) {
-  if (!patient || !this.$refs.patientTable) return
-  
-  const tableBody = this.$refs.patientTable.$el.querySelector('.el-table__body-wrapper')
-  if (!tableBody) return
-  
-  const index = this.patients.findIndex(p => p.patientId === patient.patientId)
-  if (index === -1) return
-  
-  const rows = tableBody.querySelectorAll('.el-table__row')
-  if (rows[index]) {
-    // 使用scrollIntoView确保居中显示
-    rows[index].scrollIntoView({ 
-      block: 'center', 
-      behavior: 'instant' 
-    })
-  }
-}
-```
-
-**章节来源**
-- [更新小结.md](file://更新小结.md)
-- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
-- [病人列表返回时未自动滚动到选中病人位置.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/病人列表返回时未自动滚动到选中病人位置.md)
-- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
-
-## 诊疗计划表重要程度系统
-
-### 系统架构设计
-
-**更新** 完善了诊疗计划表重要程度系统的实现细节
-
-诊疗计划表的重要程度系统是整个医疗辅助系统的重要组成部分，通过标准化的重要程度等级和颜色编码，为医护人员提供清晰的优先级指导。
+#### 手术列表管理功能
+系统实现了完整的手术列表管理功能，包括：
 
 ```mermaid
 graph TB
-subgraph "重要程度系统架构"
-LevelSystem[重要程度等级系统]
-ColorMapping[颜色映射系统]
-UIComponents[UI组件系统]
-DataPersistence[数据持久化]
-ReportSystem[报表系统]
+subgraph "手术列表CRUD功能"
+Create[新增手术]
+Read[查看手术列表]
+Update[编辑手术信息]
+Delete[软删除手术]
+SetPrimary[设为主要手术]
+Sort[主手术排序]
+DateDisplay[日期展示]
+DoubleClick[双击编辑]
 end
-subgraph "等级定义"
-Critical[关键 - #F56C6C]
-Important[重要 - #E6A23C]
-Normal[一般 - #909399]
+subgraph "数据管理"
+SoftDelete[软删除机制]
+PrimarySurgery[主手术标记]
+DateSorting[日期排序]
+History[历史记录]
 end
-subgraph "功能实现"
-LevelSystem --> Critical
-LevelSystem --> Important
-LevelSystem --> Normal
-ColorMapping --> Critical
-ColorMapping --> Important
-ColorMapping --> Normal
-UIComponents --> LevelSystem
-UIComponents --> ColorMapping
-DataPersistence --> LevelSystem
-ReportSystem --> LevelSystem
+subgraph "用户界面"
+TaskManagement[任务管理]
+Dictionary[字典管理]
+RiskAssessment[风险评估]
+end
+Create --> SoftDelete
+Read --> PrimarySurgery
+Update --> DateSorting
+Delete --> History
+SetPrimary --> Sort
+DoubleClick --> TaskManagement
 ```
 
 **图表来源**
-- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
 
-### 重要程度等级定义
+#### 双击编辑功能
+支持双击手术列表中的任意单元格进行快速编辑，提升用户操作效率：
 
-#### 三个等级的定义和应用场景
+- **双击触发**：用户双击任意单元格激活编辑模式
+- **即时保存**：编辑完成后自动保存到数据库
+- **数据验证**：确保编辑数据的完整性和正确性
+- **撤销机制**：支持编辑错误时的撤销操作
 
-| 等级 | 颜色代码 | 颜色名称 | 适用场景 | 视觉特征 |
-|------|----------|----------|----------|----------|
-| 关键 | #F56C6C | 红色 | 紧急处理、危重病人 | 红色警示，高对比度 |
-| 重要 | #E6A23C | 橙色 | 重要但非紧急、常规处理 | 橙色提醒，中等强调 |
-| 一般 | #909399 | 灰色 | 常规检查、日常护理 | 灰色标识，温和显示 |
+#### 新增手术功能
+提供直观的新手术添加界面：
 
-#### 前端实现细节
+- **表单输入**：包含手术名称、日期、麻醉方式等基本信息
+- **字典选择**：支持从手术字典中选择标准手术名称
+- **风险评估**：自动获取和显示手术风险评估信息
+- **默认值**：预填充常见默认值，减少用户输入
 
-```javascript
-// 重要程度颜色映射
-getImportanceColor(level) {
-  const colorMap = {
-    '关键': '#F56C6C',    // 红色
-    '重要': '#E6A23C',    // 橙色
-    '一般': '#909399'     // 灰色
-  }
-  return colorMap[level] || '#909399'
-}
+#### 软删除机制
+实现手术记录的软删除功能：
 
-// 重要程度选项配置
-<el-option label="关键" value="关键" />
-<el-option label="重要" value="重要" />
-<el-option label="一般" value="一般" />
-```
+- **逻辑删除**：不物理删除数据，而是标记为已删除状态
+- **数据保留**：保留完整的手术历史记录
+- **恢复能力**：支持误删后的数据恢复
+- **查询过滤**：默认查询时自动过滤已删除记录
 
-#### 后端数据处理
+#### 设主手术功能
+支持将特定手术标记为主要手术：
 
-- **数据标准化**：重要程度字段统一使用"关键/重要/一般"标准术语
-- **查询优化**：支持按重要程度等级的精确查询和统计分析
-- **报表生成**：重要程度统计报表使用标准化术语，便于医疗质量管理
+- **唯一性保证**：确保每个患者只有一个主要手术
+- **自动排序**：主要手术自动移动到列表首位
+- **视觉标识**：主要手术使用特殊标识进行区分
+- **DRG分析**：主要手术参与DRG分析和费用计算
 
-### AI结果页面重要程度美化
+#### 主手术排序
+实现主手术的智能排序功能：
 
-**更新** 新增了AI结果页面重要程度的美化处理
+- **优先级排序**：主要手术始终显示在列表顶部
+- **日期排序**：同级手术按手术日期排序
+- **稳定性保证**：排序结果在系统重启后保持一致
+- **用户友好**：排序逻辑符合用户的认知习惯
 
-在AI结果页面中，重要程度信息通过JavaScript正则表达式进行自动美化处理：
+#### 日期展示功能
+提供直观的手术日期展示：
 
-```mermaid
-flowchart TD
-AIResult[AI结果HTML] --> RegexScan[正则扫描]
-RegexScan --> ReplaceCritical[替换"关键"为彩色span]
-RegexScan --> ReplaceImportant[替换"重要"为彩色span]
-RegexScan --> ReplaceNormal[替换"一般"为彩色span]
-ReplaceCritical --> StyledHTML[美化后的HTML]
-ReplaceImportant --> StyledHTML
-ReplaceNormal --> StyledHTML
-```
-
-**图表来源**
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- **日期列表**：左侧显示所有手术日期列表
+- **日期选择**：用户可选择特定日期查看对应手术
+- **格式统一**：统一使用YYYY-MM-DD日期格式
+- **去重处理**：自动去除重复的手术日期
 
 **章节来源**
-- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
+
+## 后端手术CRUD接口实现
+
+### 接口设计架构
+
+**更新** 新增了后端手术CRUD接口的完整实现
+
+后端为手术管理功能提供了完整的RESTful API接口，支持所有基本的CRUD操作：
+
+```mermaid
+graph TB
+subgraph "手术CRUD接口架构"
+PostSurgery[POST /api/surgeries/{patientId}] --> CreateSurgery[新增手术]
+PostReplace[POST /api/surgeries/replace] --> UpdateSurgery[修改手术]
+DeleteSurgery[DELETE /api/surgeries/{surgeryId}] --> SoftDelete[软删除]
+PutPrimary[PUT /api/surgeries/{surgeryId}/set-primary] --> SetPrimary[设为主手术]
+GetByPatient[GET /api/surgeries/by-patient/{patientId}] --> ListSurgery[查询手术列表]
+end
+subgraph "数据访问层"
+SurgeryRepository[SurgeryRepository] --> Database[Oracle数据库]
+SurgeryService[SurgeryService] --> Repository[数据访问]
+end
+subgraph "实体增强"
+SurgeryEntity[Surgery实体] --> IsDeleted[isDeleted字段]
+SurgeryEntity --> ModificationType[modificationType字段]
+end
+CreateSurgery --> SurgeryEntity
+UpdateSurgery --> SurgeryEntity
+SoftDelete --> SurgeryEntity
+SetPrimary --> SurgeryEntity
+ListSurgery --> SurgeryEntity
+```
+
+**图表来源**
+- [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
+- [SurgeryRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java)
+
+### 新增手术接口
+
+#### POST /api/surgeries/{patientId}
+用于为指定患者新增手术记录：
+
+**请求参数**：
+- 路径参数：patientId（患者ID）
+- 请求体：手术基本信息（名称、日期、麻醉方式等）
+
+**响应内容**：
+- 返回新创建的手术任务ID
+- 包含完整的手术任务信息
+
+**业务逻辑**：
+- 验证患者存在性和权限
+- 创建新的手术任务记录
+- 设置默认状态为"计划中"
+- 返回创建成功的响应
+
+### 修改手术接口
+
+#### POST /api/surgeries/replace
+用于修改现有手术名称：
+
+**请求参数**：
+- 请求体：包含surgeryId、newSurgeryName、patientId的JSON对象
+
+**响应内容**：
+- 返回修改操作的结果状态
+- 包含更新后的手术信息
+
+**业务逻辑**：
+- 验证手术记录存在性
+- 执行手术名称替换操作
+- 更新相关联的任务状态
+- 记录修改历史
+
+### 软删除接口
+
+#### DELETE /api/surgeries/{surgeryId}
+用于软删除指定的手术记录：
+
+**请求参数**：
+- 路径参数：surgeryId（手术ID）
+
+**响应内容**：
+- 返回布尔值表示删除结果
+- true：删除成功
+- false：记录不存在
+
+**业务逻辑**：
+- 检查手术记录是否存在
+- 设置isDeleted标志为1
+- 不物理删除数据库记录
+- 返回操作结果
+
+### 设主手术接口
+
+#### PUT /api/surgeries/{surgeryId}/set-primary
+用于将指定手术标记为主要手术：
+
+**请求参数**：
+- 路径参数：surgeryId（手术ID）
+
+**响应内容**：
+- 返回设置主手术的操作结果
+- 包含更新后的手术列表
+
+**业务逻辑**：
+- 验证手术记录存在性
+- 将其他同患者手术的主手术标记重置
+- 设置当前手术为主要手术
+- 更新手术列表排序
+- 返回更新后的完整列表
+
+### 查询手术列表接口
+
+#### GET /api/surgeries/by-patient/{patientId}
+用于查询指定患者的手术列表：
+
+**请求参数**：
+- 路径参数：patientId（患者ID）
+
+**响应内容**：
+- 返回该患者的所有手术记录列表
+- 自动过滤已软删除的记录
+- 按主手术优先和日期排序
+
+**业务逻辑**：
+- 验证患者存在性
+- 查询该患者的所有手术记录
+- 应用软删除过滤条件
+- 执行主手术优先和日期排序
+- 返回排序后的手术列表
+
+### 数据库实体增强
+
+#### Surgery实体字段扩展
+为支持软删除和主手术功能，Surgery实体增加了以下字段：
+
+**新增字段**：
+1. **isDeleted**（NUMBER(1,0)）：软删除标志，0表示正常，1表示已删除
+2. **modificationType**（NUMBER）：数据来源类型，0表示EMR同步，1表示手动添加
+
+**字段作用**：
+- **软删除支持**：实现逻辑删除而非物理删除
+- **数据来源追踪**：区分数据是来自EMR系统还是手动录入
+- **历史记录保留**：保留完整的手术历史信息
+
+### 数据访问层增强
+
+#### SurgeryRepository方法扩展
+Repository层增加了以下关键方法：
+
+**查询方法**：
+- `findByPatientIdAndIsDeletedOrderByPrimaryDescAndDateDesc()`：按患者ID查询，过滤软删除，按主手术优先和日期排序
+- `softDeleteById()`：按ID软删除手术记录
+- `resetPrimaryByPatientId()`：重置指定患者的所有主手术标记
+
+**业务方法**：
+- `findPrimarySurgeryByPatientId()`：查询指定患者的主要手术
+- `findSurgeryByPatientAndDate()`：按患者和日期查询手术记录
+
+### 数据库脚本更新
+
+#### add-surgery-columns.sql脚本
+为支持新的手术功能，数据库执行了以下变更：
+
+**表结构变更**：
+1. **添加IS_DELETED列**：支持软删除功能
+   - 类型：NUMBER(1,0)
+   - 默认值：0
+   - 说明：0=正常，1=已删除
+
+2. **添加MODIFICATION_TYPE列**：追踪数据来源
+   - 类型：NUMBER
+   - 默认值：0
+   - 说明：0=EMR同步，1=手动添加
+
+**序列和触发器**：
+1. **创建SURGERYNAME_SEQ序列**：支持自增ID生成
+2. **创建TRG_SURGERYNAME_ID触发器**：自动填充手术ID
+
+**数据迁移**：
+- 为现有记录设置默认值
+- 确保数据兼容性和平滑过渡
+
+**章节来源**
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
+- [SurgeryRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java)
+- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+
+## 前端手术任务管理组件
+
+### 组件架构设计
+
+**更新** 新增了前端手术任务管理组件的完整实现
+
+前端实现了完整的手术任务管理界面，提供直观的用户交互体验：
+
+```mermaid
+graph TB
+subgraph "手术任务管理界面"
+LeftPanel[左侧手术日期列表]
+CenterPanel[中间手术信息表单]
+RightPanel[右侧手术任务列表]
+end
+subgraph "界面组件"
+DateList[日期列表表格]
+SurgeryForm[手术信息表单]
+TaskList[任务列表表格]
+ButtonGroup[操作按钮组]
+end
+subgraph "交互功能"
+DateSelection[日期选择]
+FormEditing[表单编辑]
+TaskCompletion[任务完成]
+Dictionary[字典选择]
+RiskAssessment[风险评估]
+end
+LeftPanel --> DateList
+CenterPanel --> SurgeryForm
+RightPanel --> TaskList
+ButtonGroup --> FormEditing
+DateSelection --> FormEditing
+Dictionary --> FormEditing
+RiskAssessment --> FormEditing
+TaskCompletion --> FormEditing
+```
+
+**图表来源**
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
+
+### 左侧手术日期列表
+
+#### 日期列表功能
+左侧区域显示患者的所有手术日期，支持快速导航：
+
+**核心功能**：
+- **日期展示**：显示所有手术日期，格式为YYYY-MM-DD
+- **日期选择**：点击日期选择器中的日期
+- **自动加载**：选择日期后自动加载对应日期的手术信息
+- **滚动定位**：支持滚动到指定日期位置
+
+**界面设计**：
+- **固定宽度**：150px宽度，确保日期列表清晰可见
+- **垂直滚动**：支持大量日期的垂直滚动浏览
+- **响应式布局**：在小屏幕设备上自动调整布局
+
+### 中间手术信息表单
+
+#### 表单设计架构
+中间区域提供完整的手术信息编辑界面：
+
+**表单字段**：
+1. **手术名称**：支持手动输入和字典选择
+2. **手术日期**：日期选择器，支持手动输入
+3. **麻醉方式**：下拉选择器，支持常用麻醉方式
+4. **术前讨论主持**：默认值为"张医生"
+5. **术前讨论参加者**：默认值为"李医生, 王医生, 刘护士长"
+6. **手术风险评估**：文本域，支持多行输入
+
+**高级功能**：
+- **字典集成**：集成手术字典系统，提供标准手术名称
+- **风险评估**：自动获取和显示手术风险评估信息
+- **默认值填充**：预填充常用默认值
+- **数据验证**：实时验证表单数据的有效性
+
+### 右侧手术任务列表
+
+#### 任务管理功能
+右侧区域显示与手术相关的任务列表：
+
+**任务类型**：
+- **术前检查**：手术前必须完成的检查项目
+- **签署手术同意书**：法律程序要求
+- **术前准备**：手术前的各项准备工作
+- **术后护理计划**：手术后的护理安排
+
+**交互功能**：
+- **任务勾选**：勾选已完成的任务
+- **状态同步**：任务完成状态与后端同步
+- **进度跟踪**：显示任务完成进度
+- **操作提示**：提供任务执行的操作指导
+
+### 操作按钮组
+
+#### 核心操作功能
+底部按钮组提供完整的CRUD操作：
+
+**按钮功能**：
+1. **新建**（+）：清空表单，准备新建手术任务
+2. **保存**（✓）：保存当前编辑的手术任务
+3. **刷新**（↻）：重新加载所有数据
+4. **删除**（🗑️）：删除当前选中的手术任务
+
+**操作流程**：
+- **新建**：清空表单，设置当前时间为默认日期
+- **保存**：根据状态调用相应API接口
+- **刷新**：重新获取所有数据，更新界面显示
+- **删除**：弹出确认对话框，执行软删除操作
+
+### 数据加载和管理
+
+#### 异步数据处理
+组件实现了完整的异步数据加载和管理机制：
+
+**数据加载顺序**：
+1. **组件挂载**：自动加载手术字典、默认数据
+2. **患者切换**：监听患者ID变化，自动重新加载
+3. **手动刷新**：用户点击刷新按钮时重新加载
+4. **操作后刷新**：新增、编辑、删除后自动刷新
+
+**数据同步机制**：
+- **并行加载**：多个API请求并行执行，提升加载速度
+- **错误处理**：完善的错误处理和用户提示
+- **状态管理**：使用loading状态指示数据加载进度
+- **缓存策略**：合理使用缓存避免重复请求
+
+### 用户交互优化
+
+#### 体验增强功能
+组件实现了多项用户体验优化：
+
+**输入优化**：
+- **自动补全**：手术名称输入时提供智能补全
+- **字典选择**：支持从字典中选择标准手术名称
+- **风险评估**：自动获取和显示手术风险评估
+- **默认值**：预填充常用默认值
+
+**操作便利性**：
+- **键盘快捷键**：支持Enter键快速保存，Esc键取消编辑
+- **拖拽排序**：支持任务列表的拖拽排序
+- **批量操作**：支持批量勾选和取消任务
+- **状态提示**：实时显示操作状态和结果
+
+**界面响应性**：
+- **移动端适配**：在移动设备上自动调整布局
+- **加载指示**：长时间操作显示加载动画
+- **错误提示**：操作失败时显示详细的错误信息
+- **成功反馈**：操作成功时显示确认提示
+
+**章节来源**
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+
+## 数据库脚本更新
+
+### 脚本设计原理
+
+**更新** 新增了数据库脚本的详细实现说明
+
+数据库脚本为支持新的手术功能，对surgeryname表进行了结构增强：
+
+```mermaid
+graph TB
+subgraph "数据库增强架构"
+Table[surgeryname表] --> IsDeleted[IS_DELETED列]
+Table --> ModificationType[MODIFICATION_TYPE列]
+Table --> Sequence[SURGERYNAME_SEQ序列]
+Table --> Trigger[TRG_SURGERYNAME_ID触发器]
+end
+subgraph "字段说明"
+IsDeleted --> DefaultValue[默认值: 0]
+ModificationType --> SourceType[来源类型: 0=EMR, 1=手动]
+Sequence --> AutoIncrement[自动递增ID]
+Trigger --> AutoFill[自动填充ID]
+end
+subgraph "数据迁移"
+OldData[旧数据] --> DefaultValue
+OldData --> SourceType
+DefaultValue --> Migration[数据迁移]
+SourceType --> Migration
+end
+Migration --> NewData[新数据结构]
+```
+
+**图表来源**
+- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+
+### 字段设计说明
+
+#### IS_DELETED字段
+**字段类型**：NUMBER(1,0)
+**默认值**：0
+**取值含义**：
+- 0：记录正常，参与查询和显示
+- 1：记录已删除，系统自动过滤
+
+**设计考虑**：
+- **兼容性**：保持与现有系统的兼容性
+- **性能**：软删除避免频繁的表结构变更
+- **安全性**：防止误删除重要数据
+- **审计**：保留完整的操作历史记录
+
+#### MODIFICATION_TYPE字段
+**字段类型**：NUMBER
+**默认值**：0
+**取值含义**：
+- 0：数据来自EMR系统同步
+- 1：数据由医护人员手动添加
+
+**设计目的**：
+- **数据溯源**：追踪数据的来源和可靠性
+- **质量控制**：区分系统数据和人工数据
+- **业务规则**：为不同来源的数据制定不同处理规则
+- **审计追踪**：提供完整的数据变更历史
+
+### 序列和触发器实现
+
+#### SURGERYNAME_SEQ序列
+**序列配置**：
+- **起始值**：1
+- **增量**：1
+- **缓存**：NO CACHE
+- **循环**：NO CYCLE
+
+**实现目的**：
+- **唯一标识**：为每条手术记录提供唯一ID
+- **自动分配**：避免手动ID管理的复杂性
+- **性能优化**：减少ID冲突和并发问题
+- **扩展性**：支持未来的数据增长需求
+
+#### TRG_SURGERYNAME_ID触发器
+**触发条件**：INSERT时NEW.SURGERYID为NULL
+**触发动作**：自动分配下一个序列值
+**设计特点**：
+- **条件触发**：仅在ID为空时才自动填充
+- **保护机制**：防止覆盖手动指定的ID值
+- **数据完整性**：确保每条记录都有唯一ID
+- **向后兼容**：不影响现有数据的ID值
+
+### 数据迁移策略
+
+#### 兼容性保证
+**迁移策略**：
+1. **渐进式迁移**：分批处理现有数据，避免系统停机
+2. **数据验证**：迁移前后进行数据完整性验证
+3. **回滚机制**：提供数据迁移失败时的回滚方案
+4. **性能监控**：监控迁移过程对系统性能的影响
+
+**迁移步骤**：
+1. **备份现有数据**：确保迁移前的数据安全
+2. **执行结构变更**：添加新列和约束条件
+3. **设置默认值**：为现有记录设置合理的默认值
+4. **验证数据完整性**：检查迁移后的数据质量
+5. **清理临时数据**：删除迁移过程中的临时数据
+
+### 脚本执行验证
+
+#### 验证机制
+**执行验证**：
+- **语法检查**：确保SQL语句语法正确
+- **权限验证**：验证执行用户具备必要权限
+- **依赖检查**：检查表结构和依赖关系
+- **回滚测试**：测试脚本的回滚能力
+
+**错误处理**：
+- **异常捕获**：捕获并处理执行过程中的异常
+- **错误日志**：记录详细的错误信息和处理建议
+- **自动回滚**：发生错误时自动回滚已执行的变更
+- **用户提示**：向用户提供清晰的错误信息
+
+**章节来源**
+- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
 
 ## 依赖分析
 
@@ -717,6 +1039,7 @@ Axios[Axios HTTP客户端]
 Vuex[Vuex状态管理]
 Router[Vue Router]
 OpenClawUI[OpenClaw界面组件]
+SurgicalTask[SurgicalTask组件]
 end
 subgraph "后端技术栈"
 SpringBoot[Spring Boot 2.x]
@@ -725,11 +1048,13 @@ SpringData[Spring Data JPA]
 Security[Spring Security]
 MyBatis[MyBatis ORM]
 OpenClawService[OpenClaw服务]
+SurgeryController[SurgeryController]
 end
 subgraph "数据库层"
 MySQL[MySQL 8.x]
 Redis[Redis 6.x]
 Elasticsearch[Elasticsearch 7.x]
+Oracle[Oracle 21c]
 end
 subgraph "容器化"
 Docker[Docker 20.x]
@@ -748,14 +1073,14 @@ Vue --> Axios
 Vue --> Vuex
 Vue --> Router
 Vue --> OpenClawUI
+Vue --> SurgicalTask
 SpringBoot --> SpringWeb
 SpringBoot --> SpringData
 SpringBoot --> Security
 SpringBoot --> MyBatis
 SpringBoot --> OpenClawService
-SpringBoot --> MySQL
-SpringBoot --> Redis
-SpringBoot --> Elasticsearch
+SpringBoot --> SurgeryController
+SpringBoot --> Oracle
 Vue --> Docker
 SpringBoot --> Docker
 OpenClawService --> OpenClawCLI
@@ -781,6 +1106,7 @@ BaseConfig[基础配置]
 EnvSpecific[环境特定配置]
 InstanceSpecific[实例特定配置]
 OpenClawConfig[OpenClaw配置]
+SurgeryConfig[手术配置]
 end
 subgraph "环境类型"
 Oracle[Oracle数据库环境]
@@ -795,10 +1121,12 @@ SQLQueries[SQL查询配置]
 MemoryBank[内存银行配置]
 KnowledgeBase[知识库配置]
 OpenClawSkill[OpenClaw技能配置]
+SurgeryScript[手术脚本配置]
 end
 BaseConfig --> EnvSpecific
 EnvSpecific --> InstanceSpecific
 EnvSpecific --> OpenClawConfig
+EnvSpecific --> SurgeryConfig
 EnvSpecific --> Oracle
 EnvSpecific --> TestServer
 EnvSpecific --> Windows
@@ -809,6 +1137,7 @@ InstanceSpecific --> SQLQueries
 InstanceSpecific --> MemoryBank
 InstanceSpecific --> KnowledgeBase
 OpenClawConfig --> OpenClawSkill
+SurgeryConfig --> SurgeryScript
 ```
 
 **图表来源**
@@ -853,6 +1182,12 @@ OpenClawConfig --> OpenClawSkill
    - LLM调用频率控制
    - 并发任务管理
 
+6. **手术功能性能优化**
+   - **软删除优化**：使用索引过滤已删除记录
+   - **排序优化**：建立复合索引支持主手术优先和日期排序
+   - **查询优化**：使用LIMIT和分页避免大数据量查询
+   - **缓存策略**：缓存常用的手术字典数据
+
 ## 故障排除指南
 
 ### 常见问题诊断
@@ -888,6 +1223,45 @@ OpenClawConfig --> OpenClawSkill
    - 检查事务配置
    - 验证数据同步机制
    - 实施补偿措施
+
+#### 手术功能相关问题
+**新增** 针对版本0.8.040手术功能的故障排除指南
+
+1. **手术列表显示异常**
+   - 检查数据库连接和权限
+   - 验证surgeryname表结构完整性
+   - 确认软删除字段数据正确性
+   - 验证序列和触发器正常工作
+
+2. **CRUD操作失败**
+   - 检查API接口响应状态
+   - 验证请求参数格式和类型
+   - 确认用户权限和认证信息
+   - 查看后端日志中的错误信息
+
+3. **软删除功能异常**
+   - 检查isDeleted字段值是否正确更新
+   - 验证查询时的软删除过滤逻辑
+   - 确认删除操作不会影响其他数据
+   - 验证软删除记录的恢复机制
+
+4. **主手术排序问题**
+   - 检查主手术标记字段数据
+   - 验证排序算法的正确性
+   - 确认日期字段格式一致性
+   - 验证排序结果的稳定性
+
+5. **字典数据加载失败**
+   - 检查字典服务的可用性
+   - 验证字典数据的格式和结构
+   - 确认字典内容的缓存机制
+   - 验证字典数据的更新同步
+
+6. **风险评估信息缺失**
+   - 检查风险评估字典的配置
+   - 验证手术名称与风险评估的关联
+   - 确认风险评估数据的自动获取逻辑
+   - 验证风险评估信息的显示格式
 
 #### Profile依赖链问题
 **更新** 新增了针对执行服务器Profile依赖链断裂的故障排除指南
@@ -958,8 +1332,35 @@ OpenClawConfig --> OpenClawSkill
 
 ### 前端版本更新记录
 
-#### v0.8.036 - v0.8.037
-**更新** 新增了版本0.8.037和0.8.036的具体更新内容
+#### v0.8.040 - v0.8.041
+**更新** 新增了版本0.8.040的具体更新内容
+
+##### v0.8.040 - 手术列表CRUD功能补充
+**新增功能**
+- 新增SurgicalTask.vue组件，实现完整的手术任务管理界面
+- 支持双击编辑、新增、软删除、设主手术、主手术排序和日期展示
+- 集成手术字典系统，提供标准手术名称选择
+- 实现手术风险评估的自动获取和显示
+
+**技术实现**
+- 使用Element Plus组件库构建用户界面
+- 实现响应式布局，支持移动端访问
+- 集成Vuex状态管理，实现数据持久化
+- 使用axios进行HTTP请求，处理异步数据操作
+
+**用户体验改进**
+- 提供直观的手术任务管理界面
+- 支持多种输入方式（键盘、鼠标、触摸屏）
+- 实时数据验证和错误提示
+- 流畅的用户交互体验
+
+**变更文件**
+- 新增：`src/components/patient/SurgicalTask.vue`
+- 新增：`src/api/patient.js`（新增手术相关API）
+- 更新：`package.json`（新增依赖项）
+
+#### v0.8.036 - v0.8.040
+**更新** 完善了之前的版本更新记录
 
 ##### v0.8.036 - 病人列表滚动修复
 **新增功能**
@@ -1101,8 +1502,42 @@ OpenClawConfig --> OpenClawSkill
 
 ### 后端版本更新记录
 
-#### v0.8.036 - v0.8.037
-**更新** 新增了版本0.8.036和0.8.037的具体更新内容
+#### v0.8.040 - v0.8.041
+**更新** 新增了版本0.8.040的具体更新内容
+
+##### v0.8.040 - 手术列表CRUD功能补充
+**新增功能**
+- 新增Surgery实体增强，包含isDeleted和modificationType字段
+- 新增SurgeryRepository方法扩展，支持软删除和排序查询
+- 新增SurgeryController CRUD接口，实现完整的手术管理功能
+- 新增数据库脚本add-surgery-columns.sql，更新表结构和序列
+
+**技术实现**
+- 使用Spring Data JPA实现数据访问层
+- 实现软删除机制，支持逻辑删除和数据恢复
+- 实现主手术优先排序，确保主要手术显示在列表顶部
+- 实现手术任务的完整CRUD操作
+
+**数据库变更**
+- 为surgeryname表添加IS_DELETED和MODIFICATION_TYPE列
+- 创建SURGERYNAME_SEQ序列和TRG_SURGERYNAME_ID触发器
+- 实现数据迁移，确保现有数据的兼容性
+
+**API接口**
+- POST /api/surgeries/{patientId}：新增手术
+- POST /api/surgeries/replace：修改手术名称
+- DELETE /api/surgeries/{surgeryId}：软删除手术
+- PUT /api/surgeries/{surgeryId}/set-primary：设为主要手术
+- GET /api/surgeries/by-patient/{patientId}：查询手术列表
+
+**变更文件**
+- 新增：`src/main/java/com/example/medaiassistant/model/Surgery.java`
+- 新增：`src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java`
+- 新增：`src/main/java/com/example/medaiassistant/controller/SurgeryController.java`
+- 新增：`sql-scripts/add-surgery-columns.sql`
+
+#### v0.8.036 - v0.8.040
+**更新** 完善了之前的版本更新记录
 
 ##### v0.8.036 - 病人列表滚动修复
 **新增功能**
@@ -1186,20 +1621,20 @@ OpenClawConfig --> OpenClawSkill
 MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过前后端分离、容器化部署、多环境配置管理等技术手段，实现了高可用性、可扩展性和易维护性的系统目标。
 
 **更新亮点**：
-- **重要程度术语优化**：版本0.8.037将"危急"替换为"关键"，提升了术语表达的专业性和准确性
-- **病人列表滚动修复**：版本0.8.036解决了从AI辅助页面返回时未自动滚动到选中病人位置的问题，采用居中显示优化用户体验
-- **双生命周期覆盖**：通过`mounted`和`activated`钩子的双重保障，确保在不同路由配置下都能正常工作
-- **scrollIntoView技术**：使用原生DOM API替代手动scrollTop计算，适配Element Plus的滚动容器结构
-- **颜色编码系统**：保持"关键/重要/一般"三级重要程度的颜色编码，确保视觉一致性
+- **手术功能完整实现**：版本0.8.040新增了完整的手术列表CRUD功能，包括双击编辑、新增、软删除、设主手术、主手术排序和日期展示
+- **后端接口完善**：新增4个手术管理API接口，支持完整的CRUD操作和数据管理
+- **数据库结构增强**：为surgeryname表添加软删除和数据来源字段，支持数据溯源和历史追踪
+- **前端组件丰富**：SurgicalTask.vue组件提供直观的手术任务管理界面，支持多种输入方式和交互体验
+- **用户体验提升**：通过软删除、主手术排序、风险评估等功能，显著提升系统的实用性和易用性
 
 **技术价值**：
-- **用户体验提升**：居中显示选中行，减少用户手动滚动操作
-- **系统稳定性**：双生命周期覆盖策略，确保兼容不同路由配置
-- **术语标准化**：统一医疗术语表达，符合行业标准
-- **向前兼容**：重要程度术语优化不影响现有数据和功能
+- **功能完整性**：手术管理功能达到临床应用水平，满足医生的实际工作需求
+- **数据安全性**：软删除机制确保数据安全，支持误操作后的数据恢复
+- **系统稳定性**：主手术优先排序和日期排序确保数据展示的逻辑正确性
+- **扩展性良好**：模块化设计支持未来功能的扩展和定制
 
 **未来发展方向**：
-- 继续优化用户体验，提升系统的易用性和效率
+- 继续优化手术功能的用户体验，提升系统的易用性和效率
 - 扩展OpenClaw编排能力，实现更多临床场景的智能化
 - 完善医疗术语标准化，提升系统的专业性和准确性
 - 加强系统监控和日志管理，提升运维效率
@@ -1273,21 +1708,41 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 
 ### 新功能使用指南
 
-#### 病人列表滚动功能使用
-1. **自动滚动机制**
-   - 从AI辅助页面返回时自动滚动到选中病人位置
-   - 选中行显示在表格可视区域中心
-   - 支持keep-alive和非keep-alive两种路由场景
+#### 手术任务管理功能使用
+1. **访问手术管理界面**
+   - 在左侧导航菜单中选择"手术任务"
+   - 界面自动加载当前患者的手术信息
+   - 显示所有手术日期和相关任务
 
-2. **双生命周期适配**
-   - `mounted`钩子处理组件首次加载
-   - `activated`钩子处理keep-alive场景
-   - `$nextTick`和`setTimeout`确保DOM渲染完成
+2. **新增手术任务**
+   - 点击"新建"按钮清空表单
+   - 填写手术名称、日期、麻醉方式等信息
+   - 从字典中选择标准手术名称
+   - 点击"保存"按钮提交手术任务
 
-3. **滚动容器适配**
-   - 使用`scrollIntoView`替代手动scrollTop
-   - 支持Element Plus的滚动容器层级
-   - `{block:'center', behavior:'instant'}`居中显示
+3. **编辑现有手术**
+   - 在日期列表中选择目标日期
+   - 界面自动加载该日期的手术信息
+   - 双击任意单元格进入编辑模式
+   - 修改完成后自动保存
+
+4. **删除手术任务**
+   - 选择要删除的手术任务
+   - 点击"删除"按钮
+   - 系统弹出确认对话框
+   - 确认后执行软删除操作
+
+5. **设为主要手术**
+   - 在手术列表中选择目标手术
+   - 点击"设为主要手术"按钮
+   - 系统自动将其他手术重置为主要手术标记
+   - 主要手术自动移动到列表首位
+
+6. **查看手术字典**
+   - 在手术名称输入框中点击下拉箭头
+   - 显示手术字典树形结构
+   - 支持分类浏览和快速搜索
+   - 选择标准手术名称自动填充
 
 #### 重要程度术语使用
 1. **术语标准化**
@@ -1306,6 +1761,11 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 报表统计自动转换
 
 **章节来源**
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 - [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
 - [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
