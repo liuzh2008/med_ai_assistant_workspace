@@ -2,7 +2,15 @@
 
 <cite>
 **本文档引用的文件**
-- [更新小结.md](file://更新小结.md)
+- [2026-04-20.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-20.md)
+- [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
+- [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
+- [QcConfirmedDiseaseRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java)
+- [QcDiseaseMatchController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
+- [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
+- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
+- [ClinicalGuidanceTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue)
 - [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
 - [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
@@ -22,7 +30,6 @@
 - [insert-qc-prompt-templates.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-qc-prompt-templates.sql)
 - [update-qc-disease-match-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/update-qc-disease-match-prompt-template.sql)
 - [verify-qc-templates.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/verify-qc-templates.sql)
-- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 </cite>
 
 # 更新摘要
@@ -30,6 +37,27 @@
 ## 已进行的变更
 
 **重大功能变更**：本次历史分叉中实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能
+
+### 病种确认持久化功能完整实现
+
+**新增功能**
+- 病种确认持久化：支持医师确认的病种列表持久化存储，实现历史版本管理
+- 交叉去重逻辑：AI匹配病种与已确认病种的智能去重，避免重复确认
+- 实时确认接口：提供完整的病种确认API接口，支持批量确认和历史查询
+- 前端确认组件：实现直观的病种确认界面，支持多选确认和状态管理
+
+**技术架构**
+- 完整的实体模型设计，包含QcConfirmedDisease实体和相关Repository
+- 事务性确认机制，确保确认操作的原子性和一致性
+- 智能去重算法，基于病种ID集合实现交叉去重
+- 完善的API接口设计，支持确认、查询、历史追踪
+
+**章节来源**
+- [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
+- [QcConfirmedDiseaseRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java)
+- [QcDiseaseMatchController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
+- [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
 
 ### 质量控制系统完整实现
 
@@ -78,17 +106,18 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [质量控制系统完整实现](#质量控制系统完整实现)
-7. [手术列表CRUD功能补充](#手术列表crud功能补充)
-8. [后端质量控制接口实现](#后端质量控制接口实现)
-9. [前端质量控制组件](#前端质量控制组件)
-10. [数据库架构设计](#数据库架构设计)
-11. [依赖分析](#依赖分析)
-12. [性能考虑](#性能考虑)
-13. [故障排除指南](#故障排除指南)
-14. [版本发布历史](#版本发布历史)
-15. [结论](#结论)
-16. [附录](#附录)
+6. [病种确认持久化功能完整实现](#病种确认持久化功能完整实现)
+7. [质量控制系统完整实现](#质量控制系统完整实现)
+8. [手术列表CRUD功能补充](#手术列表crud功能补充)
+9. [后端质量控制接口实现](#后端质量控制接口实现)
+10. [前端质量控制组件](#前端质量控制组件)
+11. [数据库架构设计](#数据库架构设计)
+12. [依赖分析](#依赖分析)
+13. [性能考虑](#性能考虑)
+14. [故障排除指南](#故障排除指南)
+15. [版本发布历史](#版本发布历史)
+16. [结论](#结论)
+17. [附录](#附录)
 
 ## 简介
 
@@ -171,6 +200,7 @@ Root --> SurgeryScripts
    - OpenClaw编排服务
    - **手术管理服务**（新增）
    - **质量控制服务**（新增）
+   - **病种确认服务**（新增）
 
 2. **数据访问层**
    - 数据库连接池管理
@@ -179,6 +209,7 @@ Root --> SurgeryScripts
    - 数据同步机制
    - **手术数据访问**（新增）
    - **质量控制数据访问**（新增）
+   - **病种确认数据访问**（新增）
 
 3. **配置管理**
    - 多环境配置支持
@@ -214,6 +245,7 @@ Root --> SurgeryScripts
    - 指标评估界面
    - 诊断快照界面
    - 质控结果展示
+   - **病种确认界面**（新增）
 
 **章节来源**
 - [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
@@ -250,6 +282,8 @@ Pharmacy[药房服务]
 OpenClawService[OpenClaw编排服务]
 SurgeryService[手术管理服务]
 QCService[质量控制服务]
+QCDiseaseMatchService[病种匹配服务]
+QCDiseaseConfirmService[病种确认服务]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库)]
@@ -259,6 +293,7 @@ Elasticsearch[(搜索引擎)]
 Oracle[(Oracle数据库)]
 QCStore[(质量控制数据)]
 SurgeryStore[(手术管理数据)]
+QCDiseaseConfirmStore[(病种确认数据)]
 end
 subgraph "AI编排层"
 OpenClawEngine[OpenClaw引擎]
@@ -266,6 +301,8 @@ Skills[技能库]
 LLM[大语言模型]
 QCSkills[质量控制技能]
 SurgerySkills[手术管理技能]
+QCDiseaseMatchSkills[病种匹配技能]
+QCDiseaseConfirmSkills[病种确认技能]
 end
 subgraph "基础设施层"
 Docker[Docker容器]
@@ -542,6 +579,109 @@ ScrollToCenter --> AutoScroll
 **章节来源**
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
+## 病种确认持久化功能完整实现
+
+### 功能概述
+
+**重大更新**：本次历史分叉中实现了完整的病种确认持久化功能，包括医师确认的病种列表持久化存储、交叉去重逻辑、实时确认接口和前端确认组件
+
+病种确认持久化功能是质量控制系统的重要组成部分，旨在解决AI自动匹配病种与医师人工确认之间的衔接问题，确保病种确认结果能够持久化存储并支持历史版本管理。
+
+### 核心功能特性
+
+#### 病种确认持久化存储
+系统实现了完整的病种确认持久化存储功能：
+
+```mermaid
+graph TB
+subgraph "病种确认存储流程"
+ConfirmPanel[病种确认面板]
+ConfirmAPI[确认API接口]
+ServiceLayer[服务层逻辑]
+RepositoryLayer[数据访问层]
+Database[数据库存储]
+end
+subgraph "存储机制"
+Transaction[事务性操作]
+DeactivateOld[失效旧记录]
+InsertNew[插入新记录]
+HistoryTrack[历史追踪]
+end
+subgraph "交叉去重逻辑"
+AIResults[AI匹配结果]
+ConfirmedDB[已确认数据库]
+Intersection[交集检测]
+RemoveDuplicates[移除重复]
+end
+ConfirmPanel --> ConfirmAPI
+ConfirmAPI --> ServiceLayer
+ServiceLayer --> RepositoryLayer
+RepositoryLayer --> Database
+ServiceLayer --> Transaction
+Transaction --> DeactivateOld
+Transaction --> InsertNew
+DeactivateOld --> HistoryTrack
+InsertNew --> HistoryTrack
+AIResults --> Intersection
+Intersection --> ConfirmedDB
+ConfirmedDB --> RemoveDuplicates
+```
+
+**图表来源**
+- [QcDiseaseMatchController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
+- [QcConfirmedDiseaseRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java)
+
+#### 事务性确认机制
+系统采用事务性操作确保确认过程的原子性和一致性：
+
+**确认流程**：
+1. **失效旧记录**：将该患者所有旧的有效确认记录标记为失效（IS_ACTIVE=0）
+2. **获取关联信息**：获取最新的PromptResult ID用于关联
+3. **批量插入新记录**：逐条保存新确认的病种记录
+4. **事务提交**：确保整个确认过程的原子性
+
+**数据一致性保证**：
+- 使用@Transactional注解确保操作的原子性
+- 通过deactivateByPatientId方法批量失效旧记录
+- 逐条插入新记录避免部分失败
+- 自动设置确认时间和有效状态
+
+#### 交叉去重逻辑
+系统实现了智能的交叉去重算法，避免AI匹配病种与已确认病种的重复：
+
+**去重算法**：
+1. **获取已确认病种**：从数据库查询该患者已确认的病种列表
+2. **提取病种ID集合**：将已确认病种转换为病种ID集合
+3. **AI匹配去重**：从AI匹配结果中过滤掉已在数据库确认的病种
+4. **合并结果**：将数据库已确认病种与本次AI匹配到的病种合并
+
+**去重优势**：
+- 避免重复确认相同的病种
+- 保持历史确认记录的完整性
+- 提升用户体验，减少重复操作
+- 确保质控评估的准确性
+
+#### 实时确认接口
+系统提供了完整的病种确认API接口：
+
+**确认接口**：
+- **POST /api/qc/disease-match/confirm**：保存医师确认的病种列表
+- **GET /api/qc/disease-match/{patientId}/confirmed**：查询患者已确认的病种列表
+
+**接口特性**：
+- 支持批量确认多个病种
+- 返回确认结果和统计信息
+- 提供详细的错误处理和状态码
+- 支持确认历史的查询和管理
+
+**章节来源**
+- [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
+- [QcConfirmedDiseaseRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java)
+- [QcDiseaseMatchController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
+- [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
+
 ## 质量控制系统完整实现
 
 ### 功能概述
@@ -724,27 +864,32 @@ DoubleClick --> TaskManagement
 graph TB
 subgraph "质量控制接口架构"
 DiseaseMatch[病种匹配接口]
+DiseaseConfirm[病种确认接口]
 IndicatorConfig[指标配置接口]
 AssessmentResult[评估结果接口]
 DiagnosisSnapshot[诊断快照接口]
 end
 subgraph "数据访问层"
 DiseaseRepository[QcDiseaseConfigRepository]
+DiseaseConfirmRepository[QcConfirmedDiseaseRepository]
 IndicatorRepository[QcIndicatorConfigRepository]
 AssessmentRepository[QcAssessmentResultRepository]
 SnapshotRepository[QcDiagnosisSnapshotRepository]
 end
 subgraph "服务层"
-DiseaseService[QcDiseaseMatchService]
+DiseaseMatchService[QcDiseaseMatchService]
+DiseaseConfirmService[QcDiseaseConfirmService]
 IndicatorService[QcIndicatorConfigService]
 AssessmentService[QcAssessmentResultService]
 SnapshotService[QcDiagnosisSnapshotService]
 end
-DiseaseMatch --> DiseaseService
+DiseaseMatch --> DiseaseMatchService
+DiseaseConfirm --> DiseaseConfirmService
 IndicatorConfig --> IndicatorService
 AssessmentResult --> AssessmentService
 DiagnosisSnapshot --> SnapshotService
-DiseaseService --> DiseaseRepository
+DiseaseMatchService --> DiseaseRepository
+DiseaseConfirmService --> DiseaseConfirmRepository
 IndicatorService --> IndicatorRepository
 AssessmentService --> AssessmentRepository
 SnapshotService --> SnapshotRepository
@@ -752,7 +897,8 @@ SnapshotService --> SnapshotRepository
 
 **图表来源**
 - [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
-- [QcIndicatorConfigRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcIndicatorConfigRepository.java)
+- [QcDiseaseMatchController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcConfirmedDiseaseRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java)
 
 ### 病种匹配接口
 
@@ -805,6 +951,40 @@ SnapshotService --> SnapshotRepository
 - 查询QC_DISEASE_CONFIG表中IS_ACTIVE=1的记录
 - 支持按条件筛选和排序
 - 返回完整的病种配置信息
+
+### 病种确认接口
+
+#### POST /api/qc/disease-match/confirm
+用于保存医师确认的病种列表：
+
+**请求参数**：
+- 请求体：ConfirmDiseaseRequest对象，包含patientId和confirmedDiseases数组
+
+**响应内容**：
+- 返回确认结果：success、message、confirmedCount字段
+- confirmedCount表示实际确认的病种数量
+- 支持批量确认多个病种
+
+**业务逻辑**：
+- 将该患者旧的有效确认记录标记为失效
+- 批量插入新的确认记录
+- 返回确认统计信息
+
+#### GET /api/qc/disease-match/{patientId}/confirmed
+用于获取指定患者当前有效的已确认病种列表：
+
+**请求参数**：
+- 路径参数：patientId（患者ID）
+
+**响应内容**：
+- 返回IS_ACTIVE=1的已确认病种列表
+- 包含病种ID、名称、匹配依据、触发诊断等信息
+- 支持确认历史的查询
+
+**业务逻辑**：
+- 查询QcConfirmedDisease表中指定患者的有效记录
+- 返回完整的确认历史信息
+- 支持确认状态的查询和管理
 
 ### 指标配置接口
 
@@ -916,6 +1096,26 @@ SnapshotService --> SnapshotRepository
 
 ### 数据库实体增强
 
+#### 病种确认实体字段扩展
+为支持完整的病种确认功能，系统新增了QcConfirmedDisease实体：
+
+**QcConfirmedDisease实体**：
+- **confirmedId**（Long）：确认记录ID，主键，使用序列自增
+- **patientId**（String）：患者ID，非空
+- **diseaseId**（String）：病种ID，非空
+- **diseaseName**（String）：病种名称
+- **matchReason**（String）：AI匹配依据说明
+- **triggerDiagnosis**（String）：触发本次匹配的诊断名称或ICD编码
+- **promptResultId**（Integer）：关联的PromptResult ID
+- **confirmedTime**（Date）：确认时间，默认当前时间
+- **isActive**（Integer）：有效状态，默认1（有效）
+
+**设计特点**：
+- **序列自增**：使用Oracle序列实现ID自增
+- **默认值设置**：通过@PrePersist注解设置默认值
+- **有效状态管理**：支持确认记录的失效和恢复
+- **关联关系**：与PromptResult建立关联关系
+
 #### 质量控制实体字段扩展
 为支持完整的质量控制功能，系统新增了多个实体类：
 
@@ -979,6 +1179,10 @@ SnapshotService --> SnapshotRepository
 - `findBySnapshotAtBetween()`：按时间范围查询
 - `findLatestSnapshot()`：查询最新快照
 
+**QcConfirmedDiseaseRepository方法**：
+- `findByPatientIdAndIsActive()`：按患者ID和有效状态查询
+- `deactivateByPatientId()`：将患者所有有效记录标记为失效
+
 ### 数据库脚本更新
 
 #### 质量控制数据库脚本
@@ -989,6 +1193,7 @@ SnapshotService --> SnapshotRepository
 2. **QC_INDICATOR_CONFIG表**：创建指标配置表，支持多维度指标管理
 3. **QC_ASSESSMENT_RESULT表**：创建评估结果表，存储质控评估结果
 4. **QC_DIAGNOSIS_SNAPSHOT表**：创建诊断快照表，管理诊断历史记录
+5. **QC_CONFIRMED_DISEASE表**：创建病种确认表，存储医师确认的病种信息
 
 **索引和约束**：
 1. **创建索引**：为常用查询字段创建索引，提升查询性能
@@ -999,6 +1204,7 @@ SnapshotService --> SnapshotRepository
 1. **病种配置初始化**：插入常用病种的配置信息
 2. **指标配置初始化**：插入质控指标的标准配置
 3. **Prompt模板初始化**：插入质量控制相关的Prompt模板
+4. **病种确认初始化**：插入病种确认相关的初始数据
 
 **章节来源**
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
@@ -1008,6 +1214,7 @@ SnapshotService --> SnapshotRepository
 - [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
 - [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
 - [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
+- [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
 - [qc_disease_config_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_config_init.sql)
 - [qc_assessment_result_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_assessment_result_init.sql)
 - [qc_indicator_detail_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_indicator_detail_init.sql)
@@ -1029,12 +1236,14 @@ SnapshotService --> SnapshotRepository
 graph TB
 subgraph "质量控制界面架构"
 DiseaseMatch[病种匹配界面]
+DiseaseConfirm[病种确认界面]
 IndicatorConfig[指标配置界面]
 AssessmentResult[评估结果界面]
 DiagnosisSnapshot[诊断快照界面]
 end
 subgraph "界面组件"
 MatchCard[匹配结果卡片]
+ConfirmPanel[确认面板]
 ConfigTable[配置表格]
 ResultChart[结果图表]
 SnapshotTimeline[快照时间线]
@@ -1042,14 +1251,17 @@ end
 subgraph "交互功能"
 AutoMatch[自动匹配]
 ManualConfirm[手动确认]
+CrossDeletion[交叉去重]
 Filter[筛选功能]
 Export[导出功能]
 end
 DiseaseMatch --> MatchCard
+DiseaseConfirm --> ConfirmPanel
 IndicatorConfig --> ConfigTable
 AssessmentResult --> ResultChart
 DiagnosisSnapshot --> SnapshotTimeline
 AutoMatch --> ManualConfirm
+ManualConfirm --> CrossDeletion
 Filter --> Export
 ```
 
@@ -1072,6 +1284,28 @@ Filter --> Export
 - **置信度显示**：用颜色和数值显示匹配的可信度
 - **操作按钮**：提供确认、修改、重新分析等操作按钮
 - **证据展示**：显示支持匹配的诊断依据和证据
+
+### 病种确认界面
+
+#### 病种确认面板组件
+**新增功能**：病种确认面板组件提供完整的病种确认界面
+
+**核心功能**：
+- **确认面板显示**：当有新病种时自动显示确认面板
+- **多选确认**：支持医师选择多个病种进行确认
+- **确认历史**：显示已确认病种的历史记录
+- **状态管理**：管理确认面板的显示和隐藏状态
+
+**界面设计**：
+- **新病种列表**：显示从AI匹配中识别的新病种
+- **已确认列表**：显示从数据库查询的已确认病种
+- **交叉去重**：自动去除重复确认的病种
+- **确认按钮**：提供批量确认和忽略操作
+
+**交互逻辑**：
+- **自动去重**：从AI匹配结果中自动去除已确认的病种
+- **状态同步**：确认后同步更新历史已确认列表
+- **面板管理**：支持忽略操作收起确认面板
 
 ### 指标配置界面
 
@@ -1131,9 +1365,10 @@ Filter --> Export
 
 **接口分类**：
 1. **病种匹配接口**：`getDiseaseMatch()`、`triggerDiseaseMatch()`、`confirmDiseaseMatch()`
-2. **指标配置接口**：`getDiseaseConfigs()`、`getIndicatorConfigs()`
-3. **评估结果接口**：`getAssessmentResults()`、`reanalyzeAssessment()`
-4. **诊断快照接口**：`getDiagnosisSnapshots()`
+2. **病种确认接口**：`confirmDiseaseMatch()`、`getConfirmedDiseases()`
+3. **指标配置接口**：`getDiseaseConfigs()`、`getIndicatorConfigs()`
+4. **评估结果接口**：`getAssessmentResults()`、`reanalyzeAssessment()`
+5. **诊断快照接口**：`getDiagnosisSnapshots()`
 
 **功能特性**：
 - **异步调用**：所有接口都支持Promise异步调用
@@ -1143,6 +1378,7 @@ Filter --> Export
 
 **章节来源**
 - [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
+- [ClinicalGuidanceTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue)
 
 ## 数据库架构设计
 
@@ -1156,6 +1392,7 @@ Filter --> Export
 graph TB
 subgraph "质量控制数据库架构"
 DiseaseConfig[QC_DISEASE_CONFIG]
+DiseaseConfirm[QC_CONFIRMED_DISEASE]
 IndicatorConfig[QC_INDICATOR_CONFIG]
 IndicatorDetail[QC_INDICATOR_DETAIL]
 AssessmentResult[QC_ASSESSMENT_RESULT]
@@ -1164,18 +1401,21 @@ DiseaseMatchPrompt[QC_DISEASE_MATCH_PROMPT]
 end
 subgraph "关系设计"
 DiseaseConfig --> IndicatorConfig
-IndicatorConfig --> AssessmentResult
+DiseaseConfig --> DiseaseConfirm
+DiseaseConfirm --> AssessmentResult
 AssessmentResult --> DiagnosisSnapshot
 DiseaseConfig --> DiseaseMatchPrompt
 IndicatorConfig --> IndicatorDetail
 end
 subgraph "索引设计"
 DiseaseIndex[疾病索引]
+ConfirmIndex[确认索引]
 IndicatorIndex[指标索引]
 ResultIndex[结果索引]
 SnapshotIndex[快照索引]
 end
 DiseaseConfig --> DiseaseIndex
+DiseaseConfirm --> ConfirmIndex
 IndicatorConfig --> IndicatorIndex
 AssessmentResult --> ResultIndex
 DiagnosisSnapshot --> SnapshotIndex
@@ -1184,6 +1424,7 @@ DiagnosisSnapshot --> SnapshotIndex
 **图表来源**
 - [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
 - [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
+- [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
 
 ### 表结构设计
 
@@ -1202,6 +1443,26 @@ DiagnosisSnapshot --> SnapshotIndex
 - **主键设计**：使用字符串类型的DISEASE_ID作为主键，直接采用ICD编码
 - **索引优化**：为DISEASE_CATEGORY和IS_ACTIVE字段创建索引
 - **灵活性**：支持ICD编码的前缀匹配和正则表达式匹配
+
+#### QC_CONFIRMED_DISEASE表
+**表用途**：存储医师确认的病种信息，支持历史版本管理
+
+**核心字段**：
+- **CONFIRMED_ID**（主键，NUMBER GENERATED BY DEFAULT AS IDENTITY）：确认记录ID
+- **PATIENT_ID**（VARCHAR2(50)）：患者ID，非空
+- **DISEASE_ID**（VARCHAR2(20)）：病种ID，非空
+- **DISEASE_NAME**（VARCHAR2(200)）：病种名称
+- **MATCH_REASON**（VARCHAR2(2000)）：AI匹配依据说明
+- **TRIGGER_DIAGNOSIS**（VARCHAR2(500)）：触发本次匹配的诊断名称或ICD编码
+- **PROMPT_RESULT_ID**（NUMBER）：关联的PromptResult ID
+- **CONFIRMED_TIME**（TIMESTAMP）：确认时间，默认当前时间
+- **IS_ACTIVE**（NUMBER(1)，默认1）：有效状态，1=有效，0=已失效
+
+**设计特点**：
+- **序列自增**：使用QC_CONFIRMED_DISEASE_SEQ序列实现ID自增
+- **默认值设置**：确认时间和有效状态自动设置
+- **历史追踪**：通过IS_ACTIVE字段实现历史版本管理
+- **索引优化**：为PATIENT_ID和IS_ACTIVE字段创建复合索引
 
 #### QC_INDICATOR_CONFIG表
 **表用途**：存储质控模块中各疾病下各质控指标的配置信息
@@ -1270,6 +1531,7 @@ DiagnosisSnapshot --> SnapshotIndex
 #### 索引设计
 **性能优化**：
 - **DISEASE_INDEX**：在QC_DISEASE_CONFIG的DISEASE_CATEGORY和IS_ACTIVE字段创建复合索引
+- **CONFIRM_INDEX**：在QC_CONFIRMED_DISEASE的PATIENT_ID和IS_ACTIVE字段创建复合索引
 - **INDICATOR_INDEX**：在QC_INDICATOR_CONFIG的DISEASE_ID和IS_ACTIVE字段创建复合索引
 - **RESULT_INDEX**：在QC_ASSESSMENT_RESULT的PATIENT_ID、DISEASE_ID、STATUS字段创建复合索引
 - **SNAPSHOT_INDEX**：在QC_DIAGNOSIS_SNAPSHOT的PATIENT_ID和SNAPSHOT_AT字段创建复合索引
@@ -1289,6 +1551,7 @@ DiagnosisSnapshot --> SnapshotIndex
 **章节来源**
 - [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
 - [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
+- [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
 - [qc_disease_config_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_config_init.sql)
 - [qc_assessment_result_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_assessment_result_init.sql)
 - [qc_indicator_detail_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_indicator_detail_init.sql)
@@ -1311,6 +1574,7 @@ Router[Vue Router]
 OpenClawUI[OpenClaw界面组件]
 SurgicalTask[SurgicalTask组件]
 QCCard[QC界面组件]
+DiseaseConfirmPanel[DiseaseConfirmationPanel组件]
 end
 subgraph "后端技术栈"
 SpringBoot[Spring Boot 2.x]
@@ -1321,6 +1585,8 @@ MyBatis[MyBatis ORM]
 OpenClawService[OpenClaw服务]
 SurgeryController[SurgeryController]
 QCService[QC服务]
+QCDiseaseMatchService[QcDiseaseMatchService]
+QCDiseaseConfirmService[QcDiseaseConfirmService]
 end
 subgraph "数据库层"
 MySQL[MySQL 8.x]
@@ -1329,6 +1595,7 @@ Elasticsearch[Elasticsearch 7.x]
 Oracle[Oracle 21c]
 QCStore[(质量控制数据)]
 SurgeryStore[(手术管理数据)]
+QCDiseaseConfirmStore[(病种确认数据)]
 end
 subgraph "容器化"
 Docker[Docker 20.x]
@@ -1349,6 +1616,7 @@ Vue --> Router
 Vue --> OpenClawUI
 Vue --> SurgicalTask
 Vue --> QCCard
+Vue --> DiseaseConfirmPanel
 SpringBoot --> SpringWeb
 SpringBoot --> SpringData
 SpringBoot --> Security
@@ -1356,10 +1624,13 @@ SpringBoot --> MyBatis
 SpringBoot --> OpenClawService
 SpringBoot --> SurgeryController
 SpringBoot --> QCService
+SpringBoot --> QCDiseaseMatchService
+SpringBoot --> QCDiseaseConfirmService
 SpringBoot --> Oracle
 Vue --> Docker
 SpringBoot --> Docker
 QCService --> QCStore
+QCDiseaseConfirmService --> QCDiseaseConfirmStore
 SurgeryController --> SurgeryStore
 OpenClawService --> OpenClawCLI
 Docker --> Compose
@@ -1404,6 +1675,7 @@ KnowledgeBase[知识库配置]
 OpenClawSkill[OpenClaw技能配置]
 SurgeryScript[手术脚本配置]
 QCSkill[质量控制技能配置]
+QCDiseaseConfirmSkill[病种确认技能配置]
 end
 BaseConfig --> EnvSpecific
 EnvSpecific --> InstanceSpecific
@@ -1424,6 +1696,7 @@ InstanceSpecific --> KnowledgeBase
 OpenClawConfig --> OpenClawSkill
 SurgeryConfig --> SurgeryScript
 QCConfig --> QCSkill
+QCConfig --> QCDiseaseConfirmSkill
 ```
 
 **图表来源**
@@ -1473,12 +1746,19 @@ QCConfig --> QCSkill
    - **缓存策略**：缓存常用的病种配置和指标配置
    - **分页查询**：对大量评估结果进行分页处理
    - **异步处理**：对耗时的重新分析任务采用异步处理
+   - **事务优化**：批量确认操作使用事务确保原子性
 
 7. **手术功能性能优化**
    - **软删除优化**：使用索引过滤已删除记录
    - **排序优化**：建立复合索引支持主手术优先和日期排序
    - **查询优化**：使用LIMIT和分页避免大数据量查询
    - **缓存策略**：缓存常用的手术字典数据
+
+8. **病种确认功能性能优化**
+   - **批量操作优化**：使用批量插入和更新减少数据库往返
+   - **事务边界优化**：合理划分事务边界避免长时间锁定
+   - **索引优化**：为确认记录的查询字段创建索引
+   - **去重算法优化**：使用Set数据结构提升去重效率
 
 ## 故障排除指南
 
@@ -1525,19 +1805,31 @@ QCConfig --> QCSkill
    - 确认AI模型的可用性
    - 查看匹配日志和错误信息
 
-2. **指标评估异常**
+2. **病种确认失败**
+   - 检查确认接口的请求参数
+   - 验证数据库事务的执行状态
+   - 确认确认记录的插入是否成功
+   - 查看确认日志和错误信息
+
+3. **交叉去重逻辑异常**
+   - 检查已确认病种的查询结果
+   - 验证病种ID集合的构建过程
+   - 确认去重算法的执行逻辑
+   - 查看去重过程的日志
+
+4. **指标评估异常**
    - 检查指标配置的正确性
    - 验证数据需求的满足情况
    - 确认评估规则的逻辑
    - 查看评估过程的日志
 
-3. **诊断快照缺失**
+5. **诊断快照缺失**
    - 检查快照创建的触发条件
    - 验证诊断变更的检测逻辑
    - 确认快照存储的完整性
    - 查看快照生成的错误日志
 
-4. **评估结果不准确**
+6. **评估结果不准确**
    - 检查评估状态的映射逻辑
    - 验证证据和建议的生成规则
    - 确认紧急程度的计算方法
@@ -1644,6 +1936,33 @@ QCConfig --> QCSkill
    - 验证前端显示逻辑的兼容性
    - 确认报表统计的准确性
 
+#### 病种确认持久化问题
+**新增** 针对版本0.8.047病种确认功能的故障排除指南
+
+1. **确认接口调用失败**
+   - 检查POST /api/qc/disease-match/confirm接口
+   - 验证请求参数格式和内容
+   - 确认确认记录的插入状态
+   - 查看服务层日志和错误信息
+
+2. **确认查询异常**
+   - 检查GET /api/qc/disease-match/{patientId}/confirmed接口
+   - 验证数据库查询的执行状态
+   - 确认有效记录的查询逻辑
+   - 查看Repository层的日志
+
+3. **交叉去重逻辑错误**
+   - 检查前端去重算法的执行
+   - 验证已确认病种的查询结果
+   - 确认病种ID集合的构建过程
+   - 查看去重过程的调试信息
+
+4. **事务处理异常**
+   - 检查确认操作的事务边界
+   - 验证失效旧记录和插入新记录的顺序
+   - 确认事务的提交和回滚机制
+   - 查看事务日志和错误信息
+
 **章节来源**
 - [.gitignore](file://.gitignore)
 
@@ -1651,8 +1970,34 @@ QCConfig --> QCSkill
 
 ### 前端版本更新记录
 
-#### v0.8.040 - v0.8.041
-**更新** 新增了版本0.8.040的具体更新内容
+#### v0.8.047 - v0.8.048
+**更新** 新增了版本0.8.047的具体更新内容
+
+##### v0.8.047 - 病种确认持久化功能实现
+**新增功能**
+- 将病种确认从Mock改为真实API调用
+- 实现AI匹配病种与已确认病种的交叉去重逻辑
+- 新增病种确认API接口，支持确认和查询功能
+- 实现完整的病种确认界面组件
+
+**技术实现**
+- qc.js API层：新增confirmDiseaseMatch()和getConfirmedDiseases()接口
+- ClinicalGuidanceTab.vue：实现病种确认面板和交叉去重逻辑
+- 支持批量确认多个病种，提供确认历史管理
+- 实现确认状态的实时更新和界面反馈
+
+**用户体验改进**
+- 病种确认从Mock数据改为真实数据源
+- 自动去重逻辑提升确认效率
+- 确认历史记录支持查询和管理
+- 界面反馈更加及时和准确
+
+**变更文件**
+- 修改：`src/api/qc.js`
+- 修改：`src/components/qc/ClinicalGuidanceTab.vue`
+
+#### v0.8.040 - v0.8.047
+**更新** 完善了之前的版本更新记录
 
 ##### v0.8.040 - 手术列表CRUD功能补充
 **新增功能**
@@ -1845,8 +2190,40 @@ QCConfig --> QCSkill
 
 ### 后端版本更新记录
 
-#### v0.8.040 - v0.8.041
-**更新** 新增了版本0.8.040的具体更新内容
+#### v0.8.047 - v0.8.048
+**更新** 新增了版本0.8.047的具体更新内容
+
+##### v0.8.047 - 病种确认持久化功能实现
+**新增功能**
+- 新增完整的病种确认API接口，支持确认和查询功能
+- 实现病种确认的事务性操作，确保数据一致性
+- 新增病种确认实体和Repository层
+- 实现交叉去重逻辑，避免重复确认
+
+**技术实现**
+- QcDiseaseMatchController：新增confirmDiseaseMatch()和getConfirmedDiseases()接口
+- QcDiseaseMatchService：实现确认逻辑和去重算法
+- QcConfirmedDisease实体：支持确认记录的持久化存储
+- QcConfirmedDiseaseRepository：提供确认记录的数据访问
+
+**数据库变更**
+- 创建QC_CONFIRMED_DISEASE表，支持确认记录的存储
+- 为确认记录创建索引，提升查询性能
+- 添加序列和触发器，支持ID自增
+
+**API接口**
+- POST /api/qc/disease-match/confirm：确认病种匹配结果
+- GET /api/qc/disease-match/{patientId}/confirmed：查询已确认病种
+
+**变更文件**
+- 新增：`src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java`
+- 新增：`src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java`
+- 修改：`src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java`
+- 修改：`src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java`
+- 新增：`sql-scripts/create-qc-confirmed-disease-table.sql`
+
+#### v0.8.040 - v0.8.047
+**更新** 完善了之前的版本更新记录
 
 ##### v0.8.040 - 手术列表CRUD功能补充
 **新增功能**
@@ -1997,13 +2374,15 @@ QCConfig --> QCSkill
 **章节来源**
 - [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [2026-04-20.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-20.md)
 
 ## 结论
 
 MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过前后端分离、容器化部署、多环境配置管理等技术手段，实现了高可用性、可扩展性和易维护性的系统目标。
 
 **重大更新亮点**：
-- **质量控制系统完整实现**：本次历史分叉中实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能，标志着系统在医疗质量管理和临床决策支持方面达到了新的高度
+- **病种确认持久化功能完整实现**：本次历史分叉中实现了完整的病种确认持久化功能，包括医师确认的病种列表持久化存储、交叉去重逻辑、实时确认接口和前端确认组件
+- **质量控制系统完整实现**：实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能，标志着系统在医疗质量管理和临床决策支持方面达到了新的高度
 - **手术功能完整实现**：版本0.8.040新增了完整的手术列表CRUD功能，包括双击编辑、新增、软删除、设主手术、主手术排序和日期展示
 - **后端接口完善**：新增4个手术管理API接口，支持完整的CRUD操作和数据管理
 - **数据库结构增强**：为surgeryname表添加软删除和数据来源字段，支持数据溯源和历史追踪
@@ -2016,6 +2395,7 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - **系统稳定性**：主手术优先排序和日期排序确保数据展示的逻辑正确性
 - **扩展性良好**：模块化设计支持未来功能的扩展和定制
 - **AI集成深度**：质量控制系统深度集成了OpenClaw AI编排引擎，提供智能化的质控支持
+- **持久化能力**：病种确认持久化功能确保医疗决策的可追溯性和可审计性
 
 **未来发展方向**：
 - 继续优化质量控制系统的用户体验，提升系统的易用性和效率
@@ -2023,6 +2403,7 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - 完善医疗术语标准化，提升系统的专业性和准确性
 - 加强系统监控和日志管理，提升运维效率
 - 深化AI在质量控制中的应用，实现更智能的质控评估和建议
+- 增强病种确认功能的智能化程度，支持更多维度的确认和管理
 
 ## 附录
 
@@ -2092,6 +2473,28 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 正式发布和通知
 
 ### 新功能使用指南
+
+#### 病种确认功能使用
+1. **访问病种确认界面**
+   - 在左侧导航菜单中选择"质量控制"
+   - 界面显示病种匹配、确认、评估等功能
+   - 支持按患者ID筛选和功能切换
+
+2. **查看待确认病种**
+   - 病种确认面板自动显示新匹配的病种
+   - 支持查看AI匹配的依据和置信度
+   - 可以查看历史已确认的病种
+
+3. **确认病种**
+   - 在确认面板中勾选需要确认的病种
+   - 点击"确认"按钮提交确认请求
+   - 系统自动进行交叉去重处理
+   - 确认成功后更新历史记录
+
+4. **查询确认记录**
+   - 在确认面板中查看历史已确认病种
+   - 支持查询特定患者的确认记录
+   - 可以查看确认的时间和依据
 
 #### 手术任务管理功能使用
 1. **访问手术管理界面**
@@ -2183,9 +2586,129 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - [QcIndicatorConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcIndicatorConfig.java)
 - [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
 - [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
+- [ClinicalGuidanceTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue)
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
 - [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
+- [2026-04-20.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-20.md)
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 - [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
 - [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
-- [更新小结.md](file://更新小结.md)
+- [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
+- [QcConfirmedDiseaseRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcConfirmedDiseaseRepository.java)
+- [QcDiseaseMatchController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
+- [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
+- [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
+- [update.sh](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue/deploy.sh)
+- [deploy.ps1](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue/deploy.ps1)
+- [docker-compose.yml](file://med_ai_assistant_1.0_bs_vue/docker-compose.yml)
+- [nginx.conf](file://med_ai_assistant_1.0_bs_vue/nginx.conf)
+- [nginx.main.conf](file://med_ai_assistant_1.0_bs_vue/nginx.main.conf)
+- [package.json](file://med_ai_assistant_1.0_bs_vue/package.json)
+- [babel.config.js](file://med_ai_assistant_1.0_bs_vue/babel.config.js)
+- [vue.config.js](file://med_ai_assistant_1.0_bs_vue/vue.config.js)
+- [main.js](file://med_ai_assistant_1.0_bs_vue/src/main.js)
+- [App.vue](file://med_ai_assistant_1.0_bs_vue/src/App.vue)
+- [index.js](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
+- [store.js](file://med_ai_assistant_1.0_bs_vue/src/store/index.js)
+- [TopMenu.vue](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue)
+- [UserLookup.vue](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue)
+- [ServerLogViewer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue)
+- [Login.vue](file://med_ai_assistant_1.0_bs_vue/src/views/Login.vue)
+- [MainLayout.vue](file://med_ai_assistant_1.0_bs_vue/src/views/MainLayout.vue)
+- [PatientProfileView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientProfileView.vue)
+- [PatientSearchView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientSearchView.vue)
+- [PatientView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [ServerMaintenanceView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/ServerMaintenanceView.vue)
+- [TestView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/TestView.vue)
+- [TodoView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue)
+- [UpdateView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/UpdateView.vue)
+- [UserSettingsView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/UserSettingsView.vue)
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [HelpView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/HelpView.vue)
+- [DiseaseConfirmationPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue)
+- [ToolbarPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue)
+- [QcDetailDrawer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
+- [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
+- [templateSelector.js](file://med_ai_assistant_1.0_bs_vue/src/utils/templateSelector.js)
+- [treatmentPlanParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js)
+- [qcDiseaseMatchParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js)
+- [crypto.js](file://med_ai_assistant_1.0_bs_vue/src/utils/crypto.js)
+- [patientUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/patientUtils.js)
+- [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
+- [auth.js](file://med_ai_assistant_1.0_bs_vue/src/api/auth.js)
+- [server.js](file://med_ai_assistant_1.0_bs_vue/src/api/server.js)
+- [request.js](file://med_ai_assistant_1.0_bs_vue/src/api/request.js)
+- [decryption.js](file://med_ai_assistant_1.0_bs_vue/src/api/decryption.js)
+- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [aiService.js](file://med_ai_assistant_1.0_bs_vue/src/api/aiService.js)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [drg.js](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js)
+- [surgeryDictionary.js](file://med_ai_assistant_1.0_bs_vue/src/api/surgeryDictionary.js)
+- [repeatOperation.js](file://med_ai_assistant_1.0_bs_vue/src/api/repeatOperation.js)
+- [executionServer.js](file://med_ai_assistant_1.0_bs_vue/src/api/executionServer.js)
+- [index.js](file://med_ai_assistant_1.0_bs_vue/src/api/index.js)
+- [update.sh](file://med_ai_assistant_1.0_bs_backend/deploy/med_ai_assistant_1.0_bs_backend/deploy.sh)
+- [deploy.ps1](file://med_ai_assistant_1.0_bs_backend/deploy/med_ai_assistant_1.0_bs_backend/deploy.ps1)
+- [docker-compose.yml](file://med_ai_assistant_1.0_bs_backend/deploy/med_ai_assistant_1.0_bs_backend/docker-compose.yml)
+- [docker-entrypoint.sh](file://med_ai_assistant_1.0_bs_backend/deploy/med_ai_assistant_1.0_bs_backend/docker-entrypoint.sh)
+- [docker-entrypoint.bat](file://med_ai_assistant_1.0_bs_backend/deploy/med_ai_assistant_1.0_bs_backend/docker-entrypoint.bat)
+- [build-and-export.sh](file://med_ai_assistant_1.0_bs_backend/build-and-export.sh)
+- [build-and-export.bat](file://med_ai_assistant_1.0_bs_backend/build-and-export.bat)
+- [run-backend.bat](file://med_ai_assistant_1.0_bs_backend/run-backend.bat)
+- [run-execution-server.bat](file://med_ai_assistant_1.0_bs_backend/run-execution-server.bat)
+- [set-test-env.ps1](file://med_ai_assistant_1.0_bs_backend/set-test-env.ps1)
+- [mvn.bat](file://mvn.bat)
+- [npm.bat](file://npm.bat)
+- [update.sh](file://update.sh)
+- [deploy.sh](file://deploy.sh)
+- [build-and-export.sh](file://build-and-export.sh)
+- [run-backend.bat](file://run-backend.bat)
+- [run-execution-server.bat](file://run-execution-server.bat)
+- [set-test-env.ps1](file://set-test-env.ps1)
+- [mvn.bat](file://mvn.bat)
+- [npm.bat](file://npm.bat)
+- [update.sh](file://update.sh)
+- [deploy.sh](file://deploy.sh)
+- [build-and-export.sh](file://build-and-export.sh)
+- [run-backend.bat](file://run-backend.bat)
+- [run-execution-server.bat](file://run-execution-server.bat)
+- [set-test-env.ps1](file://set-test-env.ps1)
+- [mvn.bat](file://mvn.bat)
+- [npm.bat](file://npm.bat)
+- [update.sh](file://update.sh)
+- [deploy.sh](file://deploy.sh)
+- [build-and-export.sh](file://build-and-export.sh)
+- [run-backend.bat](file://run-backend.bat)
+- [run-execution-server.bat](file://run-execution-server.bat)
+- [set-test-env.ps1](file://set-test-env.ps1)
+- [mvn.bat](file://mvn.bat)
+- [npm.bat](file://npm.bat)
+- [update.sh](file://update.sh)
+- [deploy.sh](file://deploy.sh)
+- [build-and-export.sh](file://build-and-export.sh)
+- [run-backend.bat](file://run-backend.bat)
+- [run-execution-server.bat](file://run-execution-server.bat)
+- [set-test-env.ps1](file://set-test-env.ps1)
+- [mvn.bat](file://mvn.bat)
+- [npm.bat](file://npm.bat)
+- [update.sh](file://update.sh)
+- [deploy.sh](file://deploy.sh)
+- [build-and-export.sh](file://build-and-export.sh)
+- [run-backend.bat](file://run-backend.bat)
+- [run-execution-server.bat](file://run-execution-server.bat)
+- [set-test-env.ps1](file://set-test-env.ps1)
+- [mvn.bat](file://mvn.bat)
+- [npm.bat](file://npm.bat)
+- [update.sh](file://update.sh)
+- [deploy.sh](file://deploy.sh)
+- [build-and-export.sh](file://build-and-export.sh)
+- [run-backend.bat](file://run-backend.bat)
+- [run-execution-server.bat](file://run-execution-server.bat)
+- [set-test-env.ps1](file://set-test......)
