@@ -45,14 +45,18 @@
 - [AI健康状态检查接口](file://med_ai_assistant_1.0_bs_backend/doc/接口/AI健康状态检查接口.md)
 - [ConfigurationCacheService配置缓存服务接口](file://med_ai_assistant_1.0_bs_backend/doc/接口/ConfigurationCacheService配置缓存服务接口.md)
 - [医院数据同步接口](file://med_ai_assistant_1.0_bs_backend/doc/接口/医院数据同步接口.md)
+- [QcDiseaseMatchController](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java)
+- [QcAssessmentService](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcAssessmentService.java)
+- [质控病种匹配接口](file://med_ai_assistant_1.0_bs_backend/doc/接口/质控病种匹配接口.md)
+- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 更新了接口文档目录结构，按业务功能分类到9个子目录
-- 合并了4组同类文档，建立了统一的接口文档索引系统
-- 改善了开发者和系统管理员查找API文档的便利性
-- 新增了多个专业领域的接口文档分类
+- 新增POST /api/qc/assessment/{patientId}/reanalyze接口的完整文档
+- 更新质控病种匹配接口文档，包含重新分析功能
+- 添加质控评估服务的技术实现细节
+- 更新前端API调用示例
 
 ## 目录
 1. [简介](#简介)
@@ -273,6 +277,62 @@ AC-->>FE : "返回结果列表"
 
 **章节来源**
 - [告警规则接口文档:1-59](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_ALERT_RULES.md#L1-L59)
+
+### 质控病种匹配接口（新增/更新）
+**更新** 新增质控评估重新分析功能，完善质控模块的完整接口文档
+
+- POST /api/qc/assessment/{patientId}/reanalyze
+  - **功能说明**：触发指定患者的第三阶段AI质控评估重新分析。根据患者已确认的病种列表加载质控指标配置，获取患者临床数据，组装并保存第三阶段AI质控评估Prompt到数据库，由执行服务器异步处理。
+  - **请求参数**：
+    - **patientId**（路径参数，必填）：患者ID，如 `230043555_2`
+  - **请求体**：无
+  - **响应格式**：
+    ```json
+    {
+      "patientId": "230043555_2",
+      "status": "SAVED",
+      "success": true,
+      "message": "质控评估任务已提交"
+    }
+    ```
+  - **业务逻辑**：
+    1. 查询患者已确认病种（QC_CONFIRMED_DISEASE 表，IS_ACTIVE=1）
+    2. 遍历已确认病种，加载每个病种的启用质控指标配置（QC_INDICATOR_CONFIG 表）
+    3. 获取"QC-第三阶段-AI质控评估"Prompt模板
+    4. 调用 AIController.getPatientData 获取患者临床数据（失败时降级处理）
+    5. 组装 ObjectiveContent（患者临床资料 + 质控指标评估清单Markdown表格）
+    6. 保存 Prompt（status=待处理, generatedBy=QC-SYSTEM, priority=2）
+  - **状态码与响应**：
+    - `200 OK` + status=SAVED — 质控评估任务已提交
+    - `400 Bad Request` + status=NO_CONFIRMED_DISEASE — 该患者无已确认病种
+    - `500 Internal Server Error` + status=NO_INDICATOR_CONFIG — 已确认病种无有效指标配置
+    - `500 Internal Server Error` + status=NO_TEMPLATE — 未找到质控评估Prompt模板
+    - `500 Internal Server Error` + status=ERROR — 处理失败
+  - **响应示例**：
+    成功：
+    ```json
+    {
+      "patientId": "230043555_2",
+      "status": "SAVED",
+      "success": true,
+      "message": "质控评估任务已提交"
+    }
+    ```
+    无已确认病种：
+    ```json
+    {
+      "patientId": "230043555_2",
+      "status": "NO_CONFIRMED_DISEASE",
+      "success": false,
+      "message": "该患者无已确认病种，请先确认病种"
+    }
+    ```
+
+**章节来源**
+- [QcDiseaseMatchController:78-127](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/QcDiseaseMatchController.java#L78-L127)
+- [QcAssessmentService:137-223](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcAssessmentService.java#L137-L223)
+- [质控病种匹配接口:321-387](file://med_ai_assistant_1.0_bs_backend/doc/接口/质控病种匹配接口.md#L321-L387)
+- [qc.js:213-215](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L213-L215)
 
 ### 部署相关API（新增/更新）
 **更新** 新增后端自动部署API接口（POST /api/deploy/auto-deploy-backend）、增强前端自动部署功能、完善版本号管理API、更新CI/CD相关接口文档
@@ -668,6 +728,11 @@ I --> A
   - 部署脚本超时：检查服务器性能、磁盘IO、网络延迟
   - 后端部署失败：检查Docker镜像、配置文件、端口占用
   - 版本号不一致：检查主服务器和执行服务器的版本同步
+- **质控评估重新分析问题**
+  - 检查患者是否已确认病种：调用 GET /api/qc/disease-match/{patientId}/confirmed
+  - 确认质控指标配置是否有效：检查 QC_INDICATOR_CONFIG 表
+  - 验证 Prompt 模板是否存在：检查 PROMPT_TEMPLATE 表中 "QC-第三阶段-AI质控评估" 模板
+  - 检查 AIController.getPatientData 接口是否正常工作
 
 **章节来源**
 - [主服务器(Linux+Oracle)部署:282-346](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/README.md#L282-L346)
@@ -718,6 +783,11 @@ I --> A
   - 系统状态：GET/POST/PUT/DELETE /api/system/*
   - AI健康状态：GET /api/health/ai-status
   - 数据同步：POST /api/hospital-data/sync
+- **质控病种匹配API使用示例**
+  - 重新分析质控评估：POST /api/qc/assessment/{patientId}/reanalyze
+  - 获取最近匹配结果：GET /api/qc/disease-match/{patientId}/latest
+  - 病种确认：POST /api/qc/disease-match/confirm
+  - 查询已确认病种：GET /api/qc/disease-match/{patientId}/confirmed
 
 **章节来源**
 - [API文档:192-589](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L589)
@@ -751,10 +821,17 @@ I --> A
   - 配置项不存在：返回可用配置列表
   - 权限不足：返回管理员权限要求
   - 配置冲突：返回冲突的配置项和解决方案
+- **质控评估服务错误处理**
+  - 无已确认病种：返回 NO_CONFIRMED_DISEASE 状态
+  - 无有效指标配置：返回 NO_INDICATOR_CONFIG 状态
+  - 无 Prompt 模板：返回 NO_TEMPLATE 状态
+  - 处理异常：返回 ERROR 状态
+  - 患者数据获取失败：进行降级处理，仍保存 Prompt
 
 **章节来源**
 - [API文档:400-432](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L400-L432)
 - [告警规则接口文档:41-47](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_ALERT_RULES.md#L41-L47)
+- [QcAssessmentService:89-95](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcAssessmentService.java#L89-L95)
 
 ### 认证机制说明
 - 用户登录
@@ -775,6 +852,9 @@ I --> A
 - **配置管理服务认证**
   - 需要系统管理员权限
   - 支持审计日志记录
+- **质控评估服务认证**
+  - 需要医疗质量管理人员权限
+  - 支持基于科室的访问控制
 
 **章节来源**
 - [API文档:798-810](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L798-L810)
@@ -798,6 +878,10 @@ I --> A
   - 按功能模块独立版本控制
   - 支持文档版本对比和变更追踪
   - 建议使用语义化版本控制
+- **质控评估服务版本管理**
+  - 支持增量更新质控指标配置
+  - 保持 Prompt 模板向后兼容
+  - 支持历史评估结果查询
 
 **章节来源**
 - [API文档:452-464](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L452-L464)
@@ -907,6 +991,7 @@ I --> A
 7. **执行服务器配置接口**：执行服务器属性配置
 8. **监控配置接口**：监控系统参数配置
 9. **用户决策服务接口**：决策支持、历史记录
+10. **质控病种匹配接口**：病种确认、评估重新分析、指标配置
 
 #### 索引建立步骤
 1. **创建主索引文件**：在`doc/接口/接口文档索引.md`中建立分类导航
@@ -917,3 +1002,58 @@ I --> A
 **章节来源**
 - [接口文档索引建立方法:1-203](file://med_ai_assistant_1.0_bs_backend/doc/其他/接口文档索引建立方法.md#L1-L203)
 - [更新小结:124-235](file://更新小结.md#L124-L235)
+
+### 质控评估服务技术实现详解
+**新增** 质控评估服务的完整技术实现文档
+
+#### 服务架构设计
+- **服务定位**：QcAssessmentService 专门负责第三阶段质控评估的 Prompt 生成
+- **依赖注入**：通过构造函数注入所有必要的 Repository 和 Controller 依赖
+- **线程安全**：服务方法为纯函数式设计，无状态，天然线程安全
+- **日志记录**：详细的步骤日志记录，便于问题排查和性能分析
+
+#### 处理状态枚举
+服务定义了完整的 ProcessStatus 枚举，用于精确描述处理结果：
+- **SAVED**：Prompt 成功保存，等待执行服务器处理
+- **NO_CONFIRMED_DISEASE**：患者无已确认病种，无法继续处理
+- **NO_INDICATOR_CONFIG**：已确认病种无有效质控指标配置
+- **NO_TEMPLATE**：未找到对应的 Prompt 模板
+- **ERROR**：处理过程中发生异常
+
+#### 核心处理流程
+1. **数据准备阶段**
+   - 查询患者已确认病种（IS_ACTIVE=1）
+   - 加载各病种的质控指标配置
+   - 获取 Prompt 模板内容
+
+2. **数据获取阶段**
+   - 调用 AIController.getPatientData 获取患者临床数据
+   - 实现降级处理：即使数据获取失败也继续执行
+
+3. **内容组装阶段**
+   - 组装患者临床资料部分
+   - 生成质控指标评估清单的 Markdown 表格
+   - 合并所有内容形成 ObjectiveContent
+
+4. **持久化阶段**
+   - 创建 Prompt 实体并设置必要属性
+   - 保存到数据库，状态设为"待处理"
+   - 返回 SAVED 状态
+
+#### 性能优化特性
+- **批量处理**：支持单患者多病种、多指标的批量处理
+- **内存优化**：使用 StringBuilder 进行字符串拼接，减少内存分配
+- **异常降级**：患者数据获取异常不影响整体流程
+- **性能测试**：包含100指标和200指标跨10病种的性能测试用例
+
+#### 测试覆盖范围
+- **早期返回场景**：无病种、无指标配置、无模板三种早期退出场景
+- **降级处理场景**：患者数据为空时的处理逻辑
+- **正常流程场景**：完整的数据准备、组装、保存流程
+- **边界条件场景**：null 值处理、部分病种有效等边界情况
+- **异常处理场景**：Repository 异常、保存异常等异常情况
+- **性能基准场景**：大量指标场景的性能测试
+
+**章节来源**
+- [QcAssessmentService:20-296](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcAssessmentService.java#L20-L296)
+- [QcAssessmentServiceTest:35-678](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/qc/service/QcAssessmentServiceTest.java#L35-L678)
