@@ -8,23 +8,69 @@
 - [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
-- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
-- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
-- [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
-- [PatientInfo.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientInfo.vue)
-- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
-- [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
-- [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
-- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [AssessmentStatus.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/enums/AssessmentStatus.java)
+- [QcDiseaseConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcDiseaseConfig.java)
+- [QcIndicatorConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcIndicatorConfig.java)
+- [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
+- [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
+- [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
+- [qc_disease_config_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_config_init.sql)
+- [qc_assessment_result_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_assessment_result_init.sql)
+- [qc_indicator_detail_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_indicator_detail_init.sql)
+- [qc_diagnosis_snapshot_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_diagnosis_snapshot_init.sql)
+- [qc_disease_match_prompt_template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_match_prompt_template.sql)
+- [insert-qc-prompt-templates.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-qc-prompt-templates.sql)
+- [update-qc-disease-match-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/update-qc-disease-match-prompt-template.sql)
+- [verify-qc-templates.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/verify-qc-templates.sql)
+- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 </cite>
 
-## 更新摘要
-**已进行的变更**
-- 新增版本0.8.040的手术列表CRUD功能补充：实现双击编辑、新增、软删除、设主手术、主手术排序和日期展示的完整功能
-- 后端新增手术CRUD接口，包括新增手术、替换手术、软删除和设主手术接口
-- 数据库脚本更新，为surgeryname表添加IS_DELETED和MODIFICATION_TYPE列
-- 前端手术任务管理组件实现完整的CRUD操作界面和交互逻辑
+# 更新摘要
+
+## 已进行的变更
+
+**重大功能变更**：本次历史分叉中实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能
+
+### 质量控制系统完整实现
+
+**新增功能**
+- 质控疾病配置管理：支持ICD编码匹配、疾病分类、启用状态管理
+- 质控指标配置系统：支持指标类型、评估规则、数据需求、时限要求、目标值、优先级配置
+- 质控评估结果管理：支持达标状态、证据记录、改进建议、紧急程度管理
+- 病种匹配与确认：支持AI自动匹配、诊断变更检测、医师确认流程
+- 诊断快照管理：支持诊断历史记录、变更追踪、冲突检测
+
+**技术架构**
+- 完整的实体模型设计，包含QcDiseaseConfig、QcIndicatorConfig、QcAssessmentResult等核心实体
+- 丰富的枚举类型支持，包括AssessmentStatus、IndicatorType、KnowledgeSource等
+- 完善的数据库表结构，支持质控系统的完整数据存储需求
+- 前端API模块化设计，提供完整的质控功能接口
+
+**章节来源**
+- [AssessmentStatus.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/enums/AssessmentStatus.java)
+- [QcDiseaseConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcDiseaseConfig.java)
+- [QcIndicatorConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcIndicatorConfig.java)
+- [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
+
+### 手术列表CRUD功能补充
+
+**新增功能**
+- 双击编辑：支持双击手术列表中的任意单元格进行快速编辑
+- 新增手术：提供直观的新手术添加界面，包含表单输入和字典选择
+- 软删除机制：实现手术记录的软删除功能，保留完整的手术历史
+- 设主手术：支持将特定手术标记为主要手术，确保主要手术显示在列表顶部
+- 主手术排序：实现主手术的智能排序功能，按手术日期排序
+- 日期展示：提供直观的手术日期展示，支持日期列表和日期选择
+
+**技术实现**
+- 新增Surgery实体增强，包含isDeleted和modificationType字段
+- 新增SurgeryRepository方法扩展，支持软删除和排序查询
+- 新增SurgeryController CRUD接口，实现完整的手术管理功能
+- 新增数据库脚本add-surgery-columns.sql，更新表结构和序列
+
+**章节来源**
+- [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
+- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
 
 ## 目录
 1. [简介](#简介)
@@ -32,22 +78,25 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [版本0.8.040 - 手术列表CRUD功能补充](#版本08040---手术列表crud功能补充)
-7. [后端手术CRUD接口实现](#后端手术crud接口实现)
-8. [前端手术任务管理组件](#前端手术任务管理组件)
-9. [数据库脚本更新](#数据库脚本更新)
-10. [依赖分析](#依赖分析)
-11. [性能考虑](#性能考虑)
-12. [故障排除指南](#故障排除指南)
-13. [版本发布历史](#版本发布历史)
-14. [结论](#结论)
-15. [附录](#附录)
+6. [质量控制系统完整实现](#质量控制系统完整实现)
+7. [手术列表CRUD功能补充](#手术列表crud功能补充)
+8. [后端质量控制接口实现](#后端质量控制接口实现)
+9. [前端质量控制组件](#前端质量控制组件)
+10. [数据库架构设计](#数据库架构设计)
+11. [依赖分析](#依赖分析)
+12. [性能考虑](#性能考虑)
+13. [故障排除指南](#故障排除指南)
+14. [版本发布历史](#版本发布历史)
+15. [结论](#结论)
+16. [附录](#附录)
 
 ## 简介
 
 MedAiAssistant 是一个基于人工智能技术的医疗辅助系统，旨在为医疗机构提供智能化的诊断支持、病历管理、影像分析等功能。该项目采用前后端分离的架构设计，后端使用Spring Boot框架，前端使用Vue.js技术栈，通过Docker容器化部署实现系统的可扩展性和可维护性。
 
 该系统的核心目标是通过AI技术提升医疗服务质量和效率，为医生提供智能辅助决策支持，同时确保医疗数据的安全性和隐私保护。系统现已集成OpenClaw AI编排引擎，通过自然语言驱动多步骤API编排，实现更智能的临床工作流程自动化。
+
+**重大更新**：本次历史分叉中实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能，标志着系统在医疗质量管理和临床决策支持方面达到了新的高度。
 
 ## 项目结构
 
@@ -62,6 +111,8 @@ Frontend[前端模块<br/>med_ai_assistant_1.0_bs_vue]
 Docs[文档目录<br/>doc/]
 Config[配置文件<br/>config/]
 OpenClaw[OpenClaw集成<br/>doc/迭代/openclaw/]
+QC[质量控制模块<br/>model.qc/]
+Surgery[手术管理模块<br/>model.surgery/]
 end
 subgraph "后端模块结构"
 Backend --> SpringBoot[Spring Boot 应用]
@@ -69,17 +120,23 @@ Backend --> Deploy[部署配置]
 Backend --> MemoryBank[内存银行]
 Backend --> Config[配置管理]
 Backend --> OpenClawDoc[OpenClaw文档]
+Backend --> QC[质量控制模块]
+Backend --> Surgery[手术管理模块]
 end
 subgraph "前端模块结构"
 Frontend --> VueApp[Vue.js 应用]
 Frontend --> Deploy[部署配置]
 Frontend --> Components[组件库]
 Frontend --> OpenClawUI[OpenClaw界面]
+Frontend --> QCUI[质量控制界面]
+Frontend --> SurgeryUI[手术管理界面]
 end
 subgraph "工具和配置"
 Tools[开发工具]
 Scripts[启动脚本]
 Templates[Prompt模板]
+QCScripts[质量控制脚本]
+SurgeryScripts[手术管理脚本]
 end
 Root --> Backend
 Root --> Frontend
@@ -89,6 +146,8 @@ Root --> OpenClaw
 Root --> Tools
 Root --> Scripts
 Root --> Templates
+Root --> QCScripts
+Root --> SurgeryScripts
 ```
 
 **图表来源**
@@ -111,6 +170,7 @@ Root --> Templates
    - 电子病历查询
    - OpenClaw编排服务
    - **手术管理服务**（新增）
+   - **质量控制服务**（新增）
 
 2. **数据访问层**
    - 数据库连接池管理
@@ -118,6 +178,7 @@ Root --> Templates
    - 缓存策略管理
    - 数据同步机制
    - **手术数据访问**（新增）
+   - **质量控制数据访问**（新增）
 
 3. **配置管理**
    - 多环境配置支持
@@ -148,6 +209,12 @@ Root --> Templates
    - 编排流程可视化
    - 任务状态监控
 
+5. **质量控制界面**
+   - 病种匹配界面
+   - 指标评估界面
+   - 诊断快照界面
+   - 质控结果展示
+
 **章节来源**
 - [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
 - [logback-spring.xml](file://med_ai_assistant_1.0_bs_backend/src/main/resources/logback-spring.xml)
@@ -163,12 +230,16 @@ Web[Web浏览器]
 Mobile[移动应用]
 Desktop[桌面应用]
 OpenClawClient[OpenClaw客户端]
+QCClient[质量控制客户端]
+SurgeryClient[手术管理客户端]
 end
 subgraph "网关层"
 Gateway[API网关]
 Auth[认证授权]
 LoadBalancer[负载均衡]
 OpenClawGateway[OpenClaw网关]
+QCGateway[质量控制网关]
+SurgeryGateway[手术管理网关]
 end
 subgraph "业务服务层"
 Diagnosis[诊断服务]
@@ -177,7 +248,8 @@ Imaging[影像分析服务]
 Lab[实验室服务]
 Pharmacy[药房服务]
 OpenClawService[OpenClaw编排服务]
-Surgery[手术管理服务]
+SurgeryService[手术管理服务]
+QCService[质量控制服务]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库)]
@@ -185,11 +257,15 @@ Redis[(Redis缓存)]
 MinIO[(对象存储)]
 Elasticsearch[(搜索引擎)]
 Oracle[(Oracle数据库)]
+QCStore[(质量控制数据)]
+SurgeryStore[(手术管理数据)]
 end
 subgraph "AI编排层"
 OpenClawEngine[OpenClaw引擎]
 Skills[技能库]
 LLM[大语言模型]
+QCSkills[质量控制技能]
+SurgerySkills[手术管理技能]
 end
 subgraph "基础设施层"
 Docker[Docker容器]
@@ -266,6 +342,8 @@ Test[测试环境]
 Stage[预生产环境]
 Prod[生产环境]
 OpenClaw[OpenClaw环境]
+QC[质量控制环境]
+Surgery[手术管理环境]
 end
 subgraph "配置源"
 YAML[YAML配置文件]
@@ -280,6 +358,8 @@ Environment --> Test
 Environment --> Stage
 Environment --> Prod
 Environment --> OpenClaw
+Environment --> QC
+Environment --> Surgery
 Instance --> YAML
 Instance --> ENV
 Instance --> Secret
@@ -462,7 +542,78 @@ ScrollToCenter --> AutoScroll
 **章节来源**
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
 
-## 版本0.8.040 - 手术列表CRUD功能补充
+## 质量控制系统完整实现
+
+### 功能概述
+
+**重大更新**：本次历史分叉中实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能
+
+质量控制系统是MedAiAssistant系统的重要组成部分，旨在通过AI技术提升医疗服务质量，确保临床诊疗遵循最佳实践和质控标准。系统实现了从病种识别到指标评估的完整闭环，为医疗机构提供智能化的质量管理支持。
+
+### 核心功能特性
+
+#### 病种匹配与确认
+系统实现了智能的病种匹配功能，支持AI自动识别和医师手动确认：
+
+```mermaid
+graph TB
+subgraph "病种匹配流程"
+DiseaseMatch[AI病种匹配]
+DiagnosisCheck[诊断变更检测]
+Confirm[医师确认]
+History[历史记录]
+end
+subgraph "匹配算法"
+ICDMatch[ICD编码匹配]
+SymptomAnalysis[症状分析]
+EvidenceExtraction[证据抽取]
+end
+subgraph "确认机制"
+ManualReview[手动审核]
+ConflictDetection[冲突检测]
+AuditTrail[审计追踪]
+end
+DiseaseMatch --> ICDMatch
+DiseaseMatch --> SymptomAnalysis
+DiseaseMatch --> EvidenceExtraction
+DiagnosisCheck --> ManualReview
+Confirm --> ConflictDetection
+Confirm --> AuditTrail
+```
+
+**图表来源**
+- [qc_disease_match_prompt_template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_match_prompt_template.sql)
+
+#### 质控指标评估
+系统支持多维度的质控指标评估，涵盖过程指标、结局指标等多个类别：
+
+**指标类型**：
+- **过程指标**：关注诊疗过程的规范性，如"入院24小时内完成心电图"
+- **结局指标**：关注治疗效果和患者预后，如"30天再入院率"
+- **结构指标**：关注医疗资源配置和制度建设，如"床位使用率"
+
+**评估状态**：
+- **达标**：指标要求已满足，系统显示绿色标识
+- **未达标**：指标要求未满足，系统显示红色标识并提供改进建议
+- **数据不足**：缺乏足够数据进行评估，系统显示黄色标识
+- **不适用**：该指标不适用于当前患者，系统显示灰色标识
+
+#### 诊断快照管理
+系统提供完整的诊断历史记录和变更追踪功能：
+
+**快照功能**：
+- **自动快照**：每次诊断变更时自动创建快照记录
+- **历史对比**：支持不同时间点诊断的对比分析
+- **变更追踪**：详细记录诊断变更的时间、原因和责任人
+- **冲突检测**：自动检测诊断之间的潜在冲突和相互影响
+
+**章节来源**
+- [AssessmentStatus.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/enums/AssessmentStatus.java)
+- [QcDiseaseConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcDiseaseConfig.java)
+- [QcIndicatorConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcIndicatorConfig.java)
+- [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
+
+## 手术列表CRUD功能补充
 
 ### 功能概述
 
@@ -561,468 +712,587 @@ DoubleClick --> TaskManagement
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
 - [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
 
-## 后端手术CRUD接口实现
+## 后端质量控制接口实现
 
 ### 接口设计架构
 
-**更新** 新增了后端手术CRUD接口的完整实现
+**重大更新**：新增了质量控制系统的完整后端接口实现
 
-后端为手术管理功能提供了完整的RESTful API接口，支持所有基本的CRUD操作：
+后端为质量控制功能提供了完整的RESTful API接口，支持所有基本的CRUD操作和业务逻辑：
 
 ```mermaid
 graph TB
-subgraph "手术CRUD接口架构"
-PostSurgery[POST /api/surgeries/{patientId}] --> CreateSurgery[新增手术]
-PostReplace[POST /api/surgeries/replace] --> UpdateSurgery[修改手术]
-DeleteSurgery[DELETE /api/surgeries/{surgeryId}] --> SoftDelete[软删除]
-PutPrimary[PUT /api/surgeries/{surgeryId}/set-primary] --> SetPrimary[设为主手术]
-GetByPatient[GET /api/surgeries/by-patient/{patientId}] --> ListSurgery[查询手术列表]
+subgraph "质量控制接口架构"
+DiseaseMatch[病种匹配接口]
+IndicatorConfig[指标配置接口]
+AssessmentResult[评估结果接口]
+DiagnosisSnapshot[诊断快照接口]
 end
 subgraph "数据访问层"
-SurgeryRepository[SurgeryRepository] --> Database[Oracle数据库]
-SurgeryService[SurgeryService] --> Repository[数据访问]
+DiseaseRepository[QcDiseaseConfigRepository]
+IndicatorRepository[QcIndicatorConfigRepository]
+AssessmentRepository[QcAssessmentResultRepository]
+SnapshotRepository[QcDiagnosisSnapshotRepository]
 end
-subgraph "实体增强"
-SurgeryEntity[Surgery实体] --> IsDeleted[isDeleted字段]
-SurgeryEntity --> ModificationType[modificationType字段]
+subgraph "服务层"
+DiseaseService[QcDiseaseMatchService]
+IndicatorService[QcIndicatorConfigService]
+AssessmentService[QcAssessmentResultService]
+SnapshotService[QcDiagnosisSnapshotService]
 end
-CreateSurgery --> SurgeryEntity
-UpdateSurgery --> SurgeryEntity
-SoftDelete --> SurgeryEntity
-SetPrimary --> SurgeryEntity
-ListSurgery --> SurgeryEntity
+DiseaseMatch --> DiseaseService
+IndicatorConfig --> IndicatorService
+AssessmentResult --> AssessmentService
+DiagnosisSnapshot --> SnapshotService
+DiseaseService --> DiseaseRepository
+IndicatorService --> IndicatorRepository
+AssessmentService --> AssessmentRepository
+SnapshotService --> SnapshotRepository
 ```
 
 **图表来源**
-- [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
-- [SurgeryRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java)
+- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
+- [QcIndicatorConfigRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/qc/QcIndicatorConfigRepository.java)
 
-### 新增手术接口
+### 病种匹配接口
 
-#### POST /api/surgeries/{patientId}
-用于为指定患者新增手术记录：
-
-**请求参数**：
-- 路径参数：patientId（患者ID）
-- 请求体：手术基本信息（名称、日期、麻醉方式等）
-
-**响应内容**：
-- 返回新创建的手术任务ID
-- 包含完整的手术任务信息
-
-**业务逻辑**：
-- 验证患者存在性和权限
-- 创建新的手术任务记录
-- 设置默认状态为"计划中"
-- 返回创建成功的响应
-
-### 修改手术接口
-
-#### POST /api/surgeries/replace
-用于修改现有手术名称：
-
-**请求参数**：
-- 请求体：包含surgeryId、newSurgeryName、patientId的JSON对象
-
-**响应内容**：
-- 返回修改操作的结果状态
-- 包含更新后的手术信息
-
-**业务逻辑**：
-- 验证手术记录存在性
-- 执行手术名称替换操作
-- 更新相关联的任务状态
-- 记录修改历史
-
-### 软删除接口
-
-#### DELETE /api/surgeries/{surgeryId}
-用于软删除指定的手术记录：
-
-**请求参数**：
-- 路径参数：surgeryId（手术ID）
-
-**响应内容**：
-- 返回布尔值表示删除结果
-- true：删除成功
-- false：记录不存在
-
-**业务逻辑**：
-- 检查手术记录是否存在
-- 设置isDeleted标志为1
-- 不物理删除数据库记录
-- 返回操作结果
-
-### 设主手术接口
-
-#### PUT /api/surgeries/{surgeryId}/set-primary
-用于将指定手术标记为主要手术：
-
-**请求参数**：
-- 路径参数：surgeryId（手术ID）
-
-**响应内容**：
-- 返回设置主手术的操作结果
-- 包含更新后的手术列表
-
-**业务逻辑**：
-- 验证手术记录存在性
-- 将其他同患者手术的主手术标记重置
-- 设置当前手术为主要手术
-- 更新手术列表排序
-- 返回更新后的完整列表
-
-### 查询手术列表接口
-
-#### GET /api/surgeries/by-patient/{patientId}
-用于查询指定患者的手术列表：
+#### GET /api/qc/disease-match/{patientId}/latest
+用于获取指定患者的最近一次病种匹配结果：
 
 **请求参数**：
 - 路径参数：patientId（患者ID）
 
 **响应内容**：
-- 返回该患者的所有手术记录列表
-- 自动过滤已软删除的记录
-- 按主手术优先和日期排序
+- 返回最近一次AI自动匹配的病种结果
+- 包含匹配的ICD编码列表和匹配置信度
+- 包含匹配的诊断依据和证据
 
 **业务逻辑**：
-- 验证患者存在性
-- 查询该患者的所有手术记录
-- 应用软删除过滤条件
-- 执行主手术优先和日期排序
-- 返回排序后的手术列表
+- 查询患者最新的AI匹配结果
+- 如果没有匹配结果，返回空响应
+- 支持匹配结果的缓存和更新
+
+#### POST /api/qc/disease-match/{patientId}/check-and-trigger
+用于检查诊断变更并按需触发新的病种匹配：
+
+**请求参数**：
+- 路径参数：patientId（患者ID）
+
+**响应内容**：
+- 返回状态信息：TRIGGERED（已触发）、UP_TO_DATE（最新）、NO_RESULT（无结果）
+- 返回是否有历史匹配结果
+- 返回最新的匹配结果（如有）
+
+**业务逻辑**：
+- 检测患者诊断是否有变更
+- 如果有变更，自动提交新的匹配任务
+- 如果无变更，直接返回最近一次匹配结果
+- 如果无任何结果，返回NO_RESULT状态
+
+#### GET /api/qc/disease-configs
+用于获取启用的病种配置列表：
+
+**请求参数**：
+- 查询参数：diseaseId（可选，按病种ID筛选）
+- 查询参数：isActive（可选，按启用状态筛选）
+
+**响应内容**：
+- 返回所有启用的质控病种配置
+- 包含病种编码、名称、ICD编码匹配模式、分类等信息
+- 支持分页和排序
+
+**业务逻辑**：
+- 查询QC_DISEASE_CONFIG表中IS_ACTIVE=1的记录
+- 支持按条件筛选和排序
+- 返回完整的病种配置信息
+
+### 指标配置接口
+
+#### GET /api/qc/indicator-configs
+用于获取质控指标配置列表：
+
+**请求参数**：
+- 查询参数：diseaseId（可选，按病种ID筛选）
+- 查询参数：priority（可选，按优先级筛选）
+- 查询参数：isActive（可选，按启用状态筛选）
+
+**响应内容**：
+- 返回所有质控指标配置列表
+- 包含指标编码、名称、类型、知识来源、评估规则等信息
+- 支持分页和排序
+
+**业务逻辑**：
+- 查询QC_INDICATOR_CONFIG表中的记录
+- 支持多条件筛选和组合查询
+- 返回完整的指标配置信息
+
+#### GET /api/qc/indicator-configs/{indicatorId}
+用于获取指定指标的详细配置信息：
+
+**请求参数**：
+- 路径参数：indicatorId（指标ID）
+
+**响应内容**：
+- 返回单个指标的完整配置信息
+- 包含评估规则、数据需求、时限要求、目标值、优先级等
+- 包含关联的疾病信息和知识来源
+
+**业务逻辑**：
+- 查询指定ID的指标配置记录
+- 返回完整的指标配置详情
+- 支持关联查询获取疾病和知识来源信息
+
+### 评估结果接口
+
+#### GET /api/qc/assessment/{patientId}
+用于获取指定患者的质控评估结果：
+
+**请求参数**：
+- 路径参数：patientId（患者ID）
+- 查询参数：diseaseId（可选，按病种ID筛选）
+- 查询参数：status（可选，按状态筛选）
+- 查询参数：sortBy（可选，按优先级排序）
+
+**响应内容**：
+- 返回患者的所有质控指标评估结果
+- 包含指标编码、名称、状态、优先级、建议等信息
+- 返回汇总统计信息，包括总数、合规数量、不合规数量等
+
+**业务逻辑**：
+- 查询QC_ASSESSMENT_RESULT表中的记录
+- 支持按条件筛选和排序
+- 计算汇总统计信息并返回
+
+#### POST /api/qc/assessment/reanalyze
+用于触发对指定患者的质控指标重新评估：
+
+**请求参数**：
+- 请求体：包含patientId、diseaseIds、forceRefresh等参数
+
+**响应内容**：
+- 返回异步任务信息，包含任务ID和状态
+- 支持任务进度查询和结果获取
+- 返回重新分析的详细说明
+
+**业务逻辑**：
+- 验证患者ID和病种范围
+- 创建异步分析任务
+- 返回任务ID供后续查询
+- 支持强制刷新缓存选项
+
+### 诊断快照接口
+
+#### GET /api/qc/diagnosis-snapshots/{patientId}
+用于获取指定患者的诊断快照列表：
+
+**请求参数**：
+- 路径参数：patientId（患者ID）
+
+**响应内容**：
+- 返回患者的诊断历史快照列表
+- 包含快照时间、诊断内容、变更原因等信息
+- 支持按时间排序和筛选
+
+**业务逻辑**：
+- 查询QC_DIAGNOSIS_SNAPSHOT表中的记录
+- 支持按患者ID和时间排序
+- 返回完整的诊断历史信息
+
+#### GET /api/qc/diagnosis-snapshots/{snapshotId}
+用于获取指定诊断快照的详细信息：
+
+**请求参数**：
+- 路径参数：snapshotId（快照ID）
+
+**响应内容**：
+- 返回单个诊断快照的完整信息
+- 包含诊断内容、快照时间、变更记录等
+- 包含相关的证据和依据
+
+**业务逻辑**：
+- 查询指定ID的诊断快照记录
+- 返回完整的快照详情信息
+- 支持关联查询获取相关数据
 
 ### 数据库实体增强
 
-#### Surgery实体字段扩展
-为支持软删除和主手术功能，Surgery实体增加了以下字段：
+#### 质量控制实体字段扩展
+为支持完整的质量控制功能，系统新增了多个实体类：
 
-**新增字段**：
-1. **isDeleted**（NUMBER(1,0)）：软删除标志，0表示正常，1表示已删除
-2. **modificationType**（NUMBER）：数据来源类型，0表示EMR同步，1表示手动添加
+**QcDiseaseConfig实体**：
+- **diseaseId**（VARCHAR2(50)）：疾病配置ID，主键，字符串类型
+- **diseaseName**（VARCHAR2(200)）：疾病名称
+- **icdCodePattern**（VARCHAR2(500)）：ICD编码匹配模式
+- **diseaseCategory**（VARCHAR2(100)）：疾病分类
+- **isActive**（NUMBER(1)）：启用状态，1=启用，0=禁用
+- **description**（VARCHAR2(1000)）：疾病配置描述
 
-**字段作用**：
-- **软删除支持**：实现逻辑删除而非物理删除
-- **数据来源追踪**：区分数据是来自EMR系统还是手动录入
-- **历史记录保留**：保留完整的手术历史信息
+**QcIndicatorConfig实体**：
+- **indicatorId**（NUMBER GENERATED BY DEFAULT AS IDENTITY）：指标配置ID，主键
+- **diseaseId**（VARCHAR2(50)）：所属疾病ID
+- **indicatorCode**（VARCHAR2(100)）：指标编码
+- **indicatorName**（VARCHAR2(200)）：指标名称
+- **indicatorType**（ENUM）：指标类型（PROCESS、OUTCOME、STRUCTURE）
+- **knowledgeSource**（ENUM）：知识来源（QC_STANDARD、CLINICAL_GUIDELINE等）
+- **assessmentRule**（CLOB）：评估规则
+- **dataRequirements**（VARCHAR2(500)）：数据需求
+- **timeLimit**（VARCHAR2(200)）：时限要求
+- **targetValue**（VARCHAR2(200)）：目标值
+- **priority**（VARCHAR2(20)）：优先级（HIGH、MEDIUM、LOW）
+- **isActive**（NUMBER(1)）：启用状态
+
+**QcAssessmentResult实体**：
+- **resultId**（NUMBER GENERATED BY DEFAULT AS IDENTITY）：评估结果ID，主键
+- **patientId**（VARCHAR2(100)）：患者ID
+- **admissionId**（VARCHAR2(100)）：住院ID
+- **diseaseId**（VARCHAR2(50)）：疾病ID
+- **indicatorId**（NUMBER）：指标ID
+- **status**（ENUM）：评估状态（COMPLIANT、NON_COMPLIANT、INSUFFICIENT_DATA、NOT_APPLICABLE）
+- **evidence**（CLOB）：评估证据
+- **recommendation**（CLOB）：改进建议
+- **urgency**（VARCHAR2(20)）：紧急程度（HIGH、MEDIUM、LOW）
+- **assessedAt**（TIMESTAMP）：评估时间
+- **promptResultId**（NUMBER）：关联的AI Prompt结果ID
 
 ### 数据访问层增强
 
-#### SurgeryRepository方法扩展
-Repository层增加了以下关键方法：
+#### Repository层方法扩展
+为支持质量控制功能，Repository层增加了以下关键方法：
 
-**查询方法**：
-- `findByPatientIdAndIsDeletedOrderByPrimaryDescAndDateDesc()`：按患者ID查询，过滤软删除，按主手术优先和日期排序
-- `softDeleteById()`：按ID软删除手术记录
-- `resetPrimaryByPatientId()`：重置指定患者的所有主手术标记
+**QcDiseaseConfigRepository方法**：
+- `findByIsActiveTrue()`：查询所有启用的疾病配置
+- `findByDiseaseCategory()`：按疾病分类查询
+- `findByIcdCodePatternLike()`：按ICD编码模式模糊查询
 
-**业务方法**：
-- `findPrimarySurgeryByPatientId()`：查询指定患者的主要手术
-- `findSurgeryByPatientAndDate()`：按患者和日期查询手术记录
+**QcIndicatorConfigRepository方法**：
+- `findByDiseaseIdAndIsActiveTrue()`：按疾病ID查询启用的指标
+- `findByPriority()`：按优先级查询
+- `findByIndicatorType()`：按指标类型查询
+
+**QcAssessmentResultRepository方法**：
+- `findByPatientId()`：按患者ID查询评估结果
+- `findByStatus()`：按评估状态查询
+- `findByDiseaseIdAndIndicatorId()`：按疾病和指标查询
+
+**QcDiagnosisSnapshotRepository方法**：
+- `findByPatientIdOrderBySnapshotAtDesc()`：按患者ID查询并按时间倒序
+- `findBySnapshotAtBetween()`：按时间范围查询
+- `findLatestSnapshot()`：查询最新快照
 
 ### 数据库脚本更新
 
-#### add-surgery-columns.sql脚本
-为支持新的手术功能，数据库执行了以下变更：
+#### 质量控制数据库脚本
+为支持新的质量控制功能，数据库执行了以下变更：
 
 **表结构变更**：
-1. **添加IS_DELETED列**：支持软删除功能
-   - 类型：NUMBER(1,0)
-   - 默认值：0
-   - 说明：0=正常，1=已删除
+1. **QC_DISEASE_CONFIG表**：创建疾病配置表，支持ICD编码匹配和分类管理
+2. **QC_INDICATOR_CONFIG表**：创建指标配置表，支持多维度指标管理
+3. **QC_ASSESSMENT_RESULT表**：创建评估结果表，存储质控评估结果
+4. **QC_DIAGNOSIS_SNAPSHOT表**：创建诊断快照表，管理诊断历史记录
 
-2. **添加MODIFICATION_TYPE列**：追踪数据来源
-   - 类型：NUMBER
-   - 默认值：0
-   - 说明：0=EMR同步，1=手动添加
+**索引和约束**：
+1. **创建索引**：为常用查询字段创建索引，提升查询性能
+2. **添加约束**：添加外键约束和唯一性约束，确保数据完整性
+3. **序列和触发器**：为自增字段创建序列和触发器
 
-**序列和触发器**：
-1. **创建SURGERYNAME_SEQ序列**：支持自增ID生成
-2. **创建TRG_SURGERYNAME_ID触发器**：自动填充手术ID
-
-**数据迁移**：
-- 为现有记录设置默认值
-- 确保数据兼容性和平滑过渡
+**初始数据**：
+1. **病种配置初始化**：插入常用病种的配置信息
+2. **指标配置初始化**：插入质控指标的标准配置
+3. **Prompt模板初始化**：插入质量控制相关的Prompt模板
 
 **章节来源**
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
-- [SurgeryController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/SurgeryController.java)
-- [SurgeryRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/SurgeryRepository.java)
-- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+- [AssessmentStatus.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/enums/AssessmentStatus.java)
+- [QcDiseaseConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcDiseaseConfig.java)
+- [QcIndicatorConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcIndicatorConfig.java)
+- [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
+- [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
+- [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
+- [qc_disease_config_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_config_init.sql)
+- [qc_assessment_result_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_assessment_result_init.sql)
+- [qc_indicator_detail_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_indicator_detail_init.sql)
+- [qc_diagnosis_snapshot_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_diagnosis_snapshot_init.sql)
+- [qc_disease_match_prompt_template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_match_prompt_template.sql)
+- [insert-qc-prompt-templates.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/insert-qc-prompt-templates.sql)
+- [update-qc-disease-match-prompt-template.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/update-qc-disease-match-prompt-template.sql)
+- [verify-qc-templates.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/verify-qc-templates.sql)
 
-## 前端手术任务管理组件
+## 前端质量控制组件
 
 ### 组件架构设计
 
-**更新** 新增了前端手术任务管理组件的完整实现
+**重大更新**：新增了质量控制系统的完整前端组件实现
 
-前端实现了完整的手术任务管理界面，提供直观的用户交互体验：
+前端实现了完整的质量控制界面，提供直观的用户交互体验：
 
 ```mermaid
 graph TB
-subgraph "手术任务管理界面"
-LeftPanel[左侧手术日期列表]
-CenterPanel[中间手术信息表单]
-RightPanel[右侧手术任务列表]
+subgraph "质量控制界面架构"
+DiseaseMatch[病种匹配界面]
+IndicatorConfig[指标配置界面]
+AssessmentResult[评估结果界面]
+DiagnosisSnapshot[诊断快照界面]
 end
 subgraph "界面组件"
-DateList[日期列表表格]
-SurgeryForm[手术信息表单]
-TaskList[任务列表表格]
-ButtonGroup[操作按钮组]
+MatchCard[匹配结果卡片]
+ConfigTable[配置表格]
+ResultChart[结果图表]
+SnapshotTimeline[快照时间线]
 end
 subgraph "交互功能"
-DateSelection[日期选择]
-FormEditing[表单编辑]
-TaskCompletion[任务完成]
-Dictionary[字典选择]
-RiskAssessment[风险评估]
+AutoMatch[自动匹配]
+ManualConfirm[手动确认]
+Filter[筛选功能]
+Export[导出功能]
 end
-LeftPanel --> DateList
-CenterPanel --> SurgeryForm
-RightPanel --> TaskList
-ButtonGroup --> FormEditing
-DateSelection --> FormEditing
-Dictionary --> FormEditing
-RiskAssessment --> FormEditing
-TaskCompletion --> FormEditing
+DiseaseMatch --> MatchCard
+IndicatorConfig --> ConfigTable
+AssessmentResult --> ResultChart
+DiagnosisSnapshot --> SnapshotTimeline
+AutoMatch --> ManualConfirm
+Filter --> Export
 ```
 
 **图表来源**
-- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
+- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 
-### 左侧手术日期列表
+### 病种匹配界面
 
-#### 日期列表功能
-左侧区域显示患者的所有手术日期，支持快速导航：
+#### 病种匹配卡片组件
+病种匹配界面提供直观的匹配结果显示和操作功能：
 
 **核心功能**：
-- **日期展示**：显示所有手术日期，格式为YYYY-MM-DD
-- **日期选择**：点击日期选择器中的日期
-- **自动加载**：选择日期后自动加载对应日期的手术信息
-- **滚动定位**：支持滚动到指定日期位置
+- **匹配结果显示**：显示AI自动匹配的病种列表和匹配置信度
+- **诊断变更检测**：检测患者诊断是否有变更并提示
+- **手动确认功能**：支持医师对AI匹配结果进行确认或修改
+- **历史记录查看**：显示历史匹配记录和变更轨迹
 
 **界面设计**：
-- **固定宽度**：150px宽度，确保日期列表清晰可见
-- **垂直滚动**：支持大量日期的垂直滚动浏览
-- **响应式布局**：在小屏幕设备上自动调整布局
+- **匹配卡片**：显示匹配的病种信息，支持查看详情
+- **置信度显示**：用颜色和数值显示匹配的可信度
+- **操作按钮**：提供确认、修改、重新分析等操作按钮
+- **证据展示**：显示支持匹配的诊断依据和证据
 
-### 中间手术信息表单
+### 指标配置界面
 
-#### 表单设计架构
-中间区域提供完整的手术信息编辑界面：
+#### 指标配置表格组件
+指标配置界面提供完整的质控指标管理功能：
 
-**表单字段**：
-1. **手术名称**：支持手动输入和字典选择
-2. **手术日期**：日期选择器，支持手动输入
-3. **麻醉方式**：下拉选择器，支持常用麻醉方式
-4. **术前讨论主持**：默认值为"张医生"
-5. **术前讨论参加者**：默认值为"李医生, 王医生, 刘护士长"
-6. **手术风险评估**：文本域，支持多行输入
+**核心功能**：
+- **指标列表显示**：显示所有质控指标的配置信息
+- **筛选和排序**：支持按病种、优先级、状态等条件筛选
+- **详情查看**：点击查看指标的详细配置信息
+- **批量操作**：支持批量启用、禁用、修改优先级等操作
 
-**高级功能**：
-- **字典集成**：集成手术字典系统，提供标准手术名称
-- **风险评估**：自动获取和显示手术风险评估信息
-- **默认值填充**：预填充常用默认值
-- **数据验证**：实时验证表单数据的有效性
+**界面设计**：
+- **配置表格**：显示指标编码、名称、病种、优先级等信息
+- **状态标识**：用颜色和图标标识指标的启用状态
+- **优先级显示**：用不同颜色显示指标的优先级
+- **操作列**：提供编辑、删除、查看详情等操作按钮
 
-### 右侧手术任务列表
+### 评估结果界面
 
-#### 任务管理功能
-右侧区域显示与手术相关的任务列表：
+#### 评估结果图表组件
+评估结果界面提供直观的质控评估结果展示：
 
-**任务类型**：
-- **术前检查**：手术前必须完成的检查项目
-- **签署手术同意书**：法律程序要求
-- **术前准备**：手术前的各项准备工作
-- **术后护理计划**：手术后的护理安排
+**核心功能**：
+- **指标状态展示**：用颜色和图标展示各项指标的达标状态
+- **优先级排序**：按优先级对不合规指标进行排序
+- **统计汇总**：显示整体评估的统计信息和完成率
+- **建议展示**：对不合规指标显示具体的改进建议
 
-**交互功能**：
-- **任务勾选**：勾选已完成的任务
-- **状态同步**：任务完成状态与后端同步
-- **进度跟踪**：显示任务完成进度
-- **操作提示**：提供任务执行的操作指导
+**界面设计**：
+- **状态图表**：用饼图或柱状图展示各项指标的状态分布
+- **优先级列表**：按优先级显示不合规指标的详细信息
+- **统计面板**：显示总数、合规数、不合规数等统计信息
+- **时间轴**：显示最近的评估时间和历史趋势
 
-### 操作按钮组
+### 诊断快照界面
 
-#### 核心操作功能
-底部按钮组提供完整的CRUD操作：
+#### 诊断快照时间线组件
+诊断快照界面提供完整的诊断历史追踪功能：
 
-**按钮功能**：
-1. **新建**（+）：清空表单，准备新建手术任务
-2. **保存**（✓）：保存当前编辑的手术任务
-3. **刷新**（↻）：重新加载所有数据
-4. **删除**（🗑️）：删除当前选中的手术任务
+**核心功能**：
+- **快照时间线**：按时间顺序显示诊断的历史变更
+- **变更对比**：支持对比不同时期的诊断内容
+- **冲突检测**：自动检测诊断之间的潜在冲突
+- **详细记录**：显示每次诊断变更的详细信息和依据
 
-**操作流程**：
-- **新建**：清空表单，设置当前时间为默认日期
-- **保存**：根据状态调用相应API接口
-- **刷新**：重新获取所有数据，更新界面显示
-- **删除**：弹出确认对话框，执行软删除操作
+**界面设计**：
+- **时间轴视图**：用时间轴展示诊断的历史变更
+- **快照卡片**：每个快照显示为独立的卡片，包含变更时间和内容
+- **对比面板**：支持选择两个快照进行对比显示
+- **冲突标识**：用特殊标识显示可能存在冲突的诊断组合
 
-### 数据加载和管理
+### API接口集成
 
-#### 异步数据处理
-组件实现了完整的异步数据加载和管理机制：
+#### 质量控制API模块
+前端实现了完整的质量控制API模块，提供统一的接口调用：
 
-**数据加载顺序**：
-1. **组件挂载**：自动加载手术字典、默认数据
-2. **患者切换**：监听患者ID变化，自动重新加载
-3. **手动刷新**：用户点击刷新按钮时重新加载
-4. **操作后刷新**：新增、编辑、删除后自动刷新
+**接口分类**：
+1. **病种匹配接口**：`getDiseaseMatch()`、`triggerDiseaseMatch()`、`confirmDiseaseMatch()`
+2. **指标配置接口**：`getDiseaseConfigs()`、`getIndicatorConfigs()`
+3. **评估结果接口**：`getAssessmentResults()`、`reanalyzeAssessment()`
+4. **诊断快照接口**：`getDiagnosisSnapshots()`
 
-**数据同步机制**：
-- **并行加载**：多个API请求并行执行，提升加载速度
-- **错误处理**：完善的错误处理和用户提示
-- **状态管理**：使用loading状态指示数据加载进度
-- **缓存策略**：合理使用缓存避免重复请求
-
-### 用户交互优化
-
-#### 体验增强功能
-组件实现了多项用户体验优化：
-
-**输入优化**：
-- **自动补全**：手术名称输入时提供智能补全
-- **字典选择**：支持从字典中选择标准手术名称
-- **风险评估**：自动获取和显示手术风险评估
-- **默认值**：预填充常用默认值
-
-**操作便利性**：
-- **键盘快捷键**：支持Enter键快速保存，Esc键取消编辑
-- **拖拽排序**：支持任务列表的拖拽排序
-- **批量操作**：支持批量勾选和取消任务
-- **状态提示**：实时显示操作状态和结果
-
-**界面响应性**：
-- **移动端适配**：在移动设备上自动调整布局
-- **加载指示**：长时间操作显示加载动画
-- **错误提示**：操作失败时显示详细的错误信息
-- **成功反馈**：操作成功时显示确认提示
+**功能特性**：
+- **异步调用**：所有接口都支持Promise异步调用
+- **错误处理**：内置错误处理和用户提示
+- **数据缓存**：支持数据缓存和自动刷新
+- **参数验证**：对请求参数进行验证和格式化
 
 **章节来源**
-- [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
-- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 
-## 数据库脚本更新
+## 数据库架构设计
 
-### 脚本设计原理
+### 质量控制数据库架构
 
-**更新** 新增了数据库脚本的详细实现说明
+**重大更新**：新增了质量控制系统的完整数据库架构设计
 
-数据库脚本为支持新的手术功能，对surgeryname表进行了结构增强：
+质量控制系统的数据库架构采用了规范化的设计，支持复杂的多对多关系和丰富的业务逻辑：
 
 ```mermaid
 graph TB
-subgraph "数据库增强架构"
-Table[surgeryname表] --> IsDeleted[IS_DELETED列]
-Table --> ModificationType[MODIFICATION_TYPE列]
-Table --> Sequence[SURGERYNAME_SEQ序列]
-Table --> Trigger[TRG_SURGERYNAME_ID触发器]
+subgraph "质量控制数据库架构"
+DiseaseConfig[QC_DISEASE_CONFIG]
+IndicatorConfig[QC_INDICATOR_CONFIG]
+IndicatorDetail[QC_INDICATOR_DETAIL]
+AssessmentResult[QC_ASSESSMENT_RESULT]
+DiagnosisSnapshot[QC_DIAGNOSIS_SNAPSHOT]
+DiseaseMatchPrompt[QC_DISEASE_MATCH_PROMPT]
 end
-subgraph "字段说明"
-IsDeleted --> DefaultValue[默认值: 0]
-ModificationType --> SourceType[来源类型: 0=EMR, 1=手动]
-Sequence --> AutoIncrement[自动递增ID]
-Trigger --> AutoFill[自动填充ID]
+subgraph "关系设计"
+DiseaseConfig --> IndicatorConfig
+IndicatorConfig --> AssessmentResult
+AssessmentResult --> DiagnosisSnapshot
+DiseaseConfig --> DiseaseMatchPrompt
+IndicatorConfig --> IndicatorDetail
 end
-subgraph "数据迁移"
-OldData[旧数据] --> DefaultValue
-OldData --> SourceType
-DefaultValue --> Migration[数据迁移]
-SourceType --> Migration
+subgraph "索引设计"
+DiseaseIndex[疾病索引]
+IndicatorIndex[指标索引]
+ResultIndex[结果索引]
+SnapshotIndex[快照索引]
 end
-Migration --> NewData[新数据结构]
+DiseaseConfig --> DiseaseIndex
+IndicatorConfig --> IndicatorIndex
+AssessmentResult --> ResultIndex
+DiagnosisSnapshot --> SnapshotIndex
 ```
 
 **图表来源**
-- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+- [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
+- [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
 
-### 字段设计说明
+### 表结构设计
 
-#### IS_DELETED字段
-**字段类型**：NUMBER(1,0)
-**默认值**：0
-**取值含义**：
-- 0：记录正常，参与查询和显示
-- 1：记录已删除，系统自动过滤
+#### QC_DISEASE_CONFIG表
+**表用途**：存储质控模块中各疾病的配置信息
 
-**设计考虑**：
-- **兼容性**：保持与现有系统的兼容性
-- **性能**：软删除避免频繁的表结构变更
-- **安全性**：防止误删除重要数据
-- **审计**：保留完整的操作历史记录
+**核心字段**：
+- **DISEASE_ID**（主键，VARCHAR2(50)）：疾病配置ID，字符串类型，手动分配
+- **DISEASE_NAME**（VARCHAR2(200)）：疾病名称，如"急性心肌梗死"
+- **ICD_CODE_PATTERN**（VARCHAR2(500)）：ICD编码匹配模式，支持前缀或正则匹配
+- **DISEASE_CATEGORY**（VARCHAR2(100)）：疾病分类，如"心血管疾病"
+- **IS_ACTIVE**（NUMBER(1)，默认1）：启用状态，1=启用，0=禁用
+- **DESCRIPTION**（VARCHAR2(1000)）：疾病配置描述
 
-#### MODIFICATION_TYPE字段
-**字段类型**：NUMBER
-**默认值**：0
-**取值含义**：
-- 0：数据来自EMR系统同步
-- 1：数据由医护人员手动添加
-
-**设计目的**：
-- **数据溯源**：追踪数据的来源和可靠性
-- **质量控制**：区分系统数据和人工数据
-- **业务规则**：为不同来源的数据制定不同处理规则
-- **审计追踪**：提供完整的数据变更历史
-
-### 序列和触发器实现
-
-#### SURGERYNAME_SEQ序列
-**序列配置**：
-- **起始值**：1
-- **增量**：1
-- **缓存**：NO CACHE
-- **循环**：NO CYCLE
-
-**实现目的**：
-- **唯一标识**：为每条手术记录提供唯一ID
-- **自动分配**：避免手动ID管理的复杂性
-- **性能优化**：减少ID冲突和并发问题
-- **扩展性**：支持未来的数据增长需求
-
-#### TRG_SURGERYNAME_ID触发器
-**触发条件**：INSERT时NEW.SURGERYID为NULL
-**触发动作**：自动分配下一个序列值
 **设计特点**：
-- **条件触发**：仅在ID为空时才自动填充
-- **保护机制**：防止覆盖手动指定的ID值
-- **数据完整性**：确保每条记录都有唯一ID
-- **向后兼容**：不影响现有数据的ID值
+- **主键设计**：使用字符串类型的DISEASE_ID作为主键，直接采用ICD编码
+- **索引优化**：为DISEASE_CATEGORY和IS_ACTIVE字段创建索引
+- **灵活性**：支持ICD编码的前缀匹配和正则表达式匹配
 
-### 数据迁移策略
+#### QC_INDICATOR_CONFIG表
+**表用途**：存储质控模块中各疾病下各质控指标的配置信息
 
-#### 兼容性保证
-**迁移策略**：
-1. **渐进式迁移**：分批处理现有数据，避免系统停机
-2. **数据验证**：迁移前后进行数据完整性验证
-3. **回滚机制**：提供数据迁移失败时的回滚方案
-4. **性能监控**：监控迁移过程对系统性能的影响
+**核心字段**：
+- **INDICATOR_ID**（主键，NUMBER GENERATED BY DEFAULT AS IDENTITY）：指标配置ID
+- **DISEASE_ID**（外键，VARCHAR2(50)）：所属疾病ID，关联QC_DISEASE_CONFIG
+- **INDICATOR_CODE**（VARCHAR2(100)）：指标编码，唯一标识同一疾病下的指标
+- **INDICATOR_NAME**（VARCHAR2(200)）：指标名称，如"入院24小时内完成心电图"
+- **INDICATOR_TYPE**（VARCHAR2(50)）：指标类型，PROCESS、OUTCOME、STRUCTURE
+- **KNOWLEDGE_SOURCE**（VARCHAR2(50)）：知识来源，QC标准、临床指南等
+- **ASSESSMENT_RULE**（CLOB）：评估规则，描述评估逻辑和判定条件
+- **DATA_REQUIREMENTS**（VARCHAR2(500))：数据需求，描述所需的数据项
+- **TIME_LIMIT**（VARCHAR2(200)）：时限要求，如"入院24小时内"
+- **TARGET_VALUE**（VARCHAR2(200)）：目标值，如"≥95%"
+- **PRIORITY**（VARCHAR2(20)）：优先级，HIGH、MEDIUM、LOW
+- **IS_ACTIVE**（NUMBER(1)，默认1）：启用状态
 
-**迁移步骤**：
-1. **备份现有数据**：确保迁移前的数据安全
-2. **执行结构变更**：添加新列和约束条件
-3. **设置默认值**：为现有记录设置合理的默认值
-4. **验证数据完整性**：检查迁移后的数据质量
-5. **清理临时数据**：删除迁移过程中的临时数据
+**设计特点**：
+- **枚举类型**：使用VARCHAR2存储枚举值，便于扩展和维护
+- **CLOB字段**：评估规则和数据需求使用CLOB类型支持大文本
+- **索引设计**：为DISEASE_ID、IS_ACTIVE等常用查询字段创建索引
 
-### 脚本执行验证
+#### QC_ASSESSMENT_RESULT表
+**表用途**：存储质控模块中针对具体患者和指标的评估结果
 
-#### 验证机制
-**执行验证**：
-- **语法检查**：确保SQL语句语法正确
-- **权限验证**：验证执行用户具备必要权限
-- **依赖检查**：检查表结构和依赖关系
-- **回滚测试**：测试脚本的回滚能力
+**核心字段**：
+- **RESULT_ID**（主键，NUMBER GENERATED BY DEFAULT AS IDENTITY）：评估结果ID
+- **PATIENT_ID**（VARCHAR2(100)）：患者ID，标识被评估的患者
+- **ADMISSION_ID**（VARCHAR2(100)）：住院ID，标识具体住院记录
+- **DISEASE_ID**（VARCHAR2(50)）：疾病ID，标识评估的疾病分类
+- **INDICATOR_ID**（NUMBER）：指标ID，关联QC_INDICATOR_CONFIG
+- **STATUS**（VARCHAR2(50)）：评估状态，COMPLIANT、NON_COMPLIANT等
+- **EVIDENCE**（CLOB）：评估证据，支撑评估结论的原始数据
+- **RECOMMENDATION**（CLOB）：改进建议，针对未达标指标的建议
+- **URGENCY**（VARCHAR2(20)）：紧急程度，HIGH、MEDIUM、LOW
+- **ASSESSED_AT**（TIMESTAMP）：评估时间，记录评估执行时间
+- **PROMPT_RESULT_ID**（NUMBER）：关联的AI Prompt结果ID
 
-**错误处理**：
-- **异常捕获**：捕获并处理执行过程中的异常
-- **错误日志**：记录详细的错误信息和处理建议
-- **自动回滚**：发生错误时自动回滚已执行的变更
-- **用户提示**：向用户提供清晰的错误信息
+**设计特点**：
+- **枚举类型**：使用VARCHAR2存储评估状态和紧急程度
+- **CLOB字段**：证据和建议使用CLOB类型支持大文本
+- **时间戳**：使用TIMESTAMP类型精确记录评估时间
+- **关联设计**：通过外键关联到相关的配置表
+
+#### QC_DIAGNOSIS_SNAPSHOT表
+**表用途**：存储诊断历史快照，管理诊断变更记录
+
+**核心字段**：
+- **SNAPSHOT_ID**（主键，NUMBER GENERATED BY DEFAULT AS IDENTITY）：快照ID
+- **PATIENT_ID**（VARCHAR2(100)）：患者ID
+- **ADMISSION_ID**（VARCHAR2(100)）：住院ID
+- **SNAPSHOT_AT**（TIMESTAMP）：快照时间
+- **DIAGNOSIS_CONTENT**（CLOB）：诊断内容，存储当时的诊断信息
+- **CHANGE_REASON**（VARCHAR2(500)）：变更原因
+- **CHANGED_BY**（VARCHAR2(100)）：变更人
+- **CHANGE_TYPE**（VARCHAR2(50)）：变更类型，新增、修改、删除
+
+**设计特点**：
+- **时间序列**：通过SNAPSHOT_AT字段维护诊断的时间序列
+- **变更追踪**：记录每次诊断变更的详细信息
+- **内容存储**：使用CLOB存储完整的诊断内容
+
+### 索引和约束设计
+
+#### 索引设计
+**性能优化**：
+- **DISEASE_INDEX**：在QC_DISEASE_CONFIG的DISEASE_CATEGORY和IS_ACTIVE字段创建复合索引
+- **INDICATOR_INDEX**：在QC_INDICATOR_CONFIG的DISEASE_ID和IS_ACTIVE字段创建复合索引
+- **RESULT_INDEX**：在QC_ASSESSMENT_RESULT的PATIENT_ID、DISEASE_ID、STATUS字段创建复合索引
+- **SNAPSHOT_INDEX**：在QC_DIAGNOSIS_SNAPSHOT的PATIENT_ID和SNAPSHOT_AT字段创建复合索引
+
+**查询优化**：
+- **常用查询**：为经常使用的查询条件创建索引
+- **排序优化**：为排序字段创建索引提升查询性能
+- **唯一性约束**：为需要唯一性的字段创建唯一索引
+
+#### 约束设计
+**数据完整性**：
+- **主键约束**：所有表的主键字段设置NOT NULL和PRIMARY KEY约束
+- **外键约束**：设置适当的外键约束确保参照完整性
+- **检查约束**：对枚举字段设置CHECK约束限制取值范围
+- **默认值约束**：为IS_ACTIVE字段设置默认值1
 
 **章节来源**
-- [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+- [create-qc-disease-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-disease-config-table.sql)
+- [create-qc-indicator-config-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-indicator-config-table.sql)
+- [qc_disease_config_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_disease_config_init.sql)
+- [qc_assessment_result_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_assessment_result_init.sql)
+- [qc_indicator_detail_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_indicator_detail_init.sql)
+- [qc_diagnosis_snapshot_init.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/qc_diagnosis_snapshot_init.sql)
 
 ## 依赖分析
 
@@ -1040,6 +1310,7 @@ Vuex[Vuex状态管理]
 Router[Vue Router]
 OpenClawUI[OpenClaw界面组件]
 SurgicalTask[SurgicalTask组件]
+QCCard[QC界面组件]
 end
 subgraph "后端技术栈"
 SpringBoot[Spring Boot 2.x]
@@ -1049,12 +1320,15 @@ Security[Spring Security]
 MyBatis[MyBatis ORM]
 OpenClawService[OpenClaw服务]
 SurgeryController[SurgeryController]
+QCService[QC服务]
 end
 subgraph "数据库层"
 MySQL[MySQL 8.x]
 Redis[Redis 6.x]
 Elasticsearch[Elasticsearch 7.x]
 Oracle[Oracle 21c]
+QCStore[(质量控制数据)]
+SurgeryStore[(手术管理数据)]
 end
 subgraph "容器化"
 Docker[Docker 20.x]
@@ -1074,15 +1348,19 @@ Vue --> Vuex
 Vue --> Router
 Vue --> OpenClawUI
 Vue --> SurgicalTask
+Vue --> QCCard
 SpringBoot --> SpringWeb
 SpringBoot --> SpringData
 SpringBoot --> Security
 SpringBoot --> MyBatis
 SpringBoot --> OpenClawService
 SpringBoot --> SurgeryController
+SpringBoot --> QCService
 SpringBoot --> Oracle
 Vue --> Docker
 SpringBoot --> Docker
+QCService --> QCStore
+SurgeryController --> SurgeryStore
 OpenClawService --> OpenClawCLI
 Docker --> Compose
 Docker --> Kubernetes
@@ -1107,6 +1385,7 @@ EnvSpecific[环境特定配置]
 InstanceSpecific[实例特定配置]
 OpenClawConfig[OpenClaw配置]
 SurgeryConfig[手术配置]
+QCConfig[质量控制配置]
 end
 subgraph "环境类型"
 Oracle[Oracle数据库环境]
@@ -1114,6 +1393,8 @@ TestServer[测试服务器环境]
 Windows[Windows环境]
 Linux[Linux环境]
 OpenClawEnv[OpenClaw环境]
+QCEnv[质量控制环境]
+SurgeryEnv[手术管理环境]
 end
 subgraph "配置文件类型"
 DockerCompose[Docker Compose配置]
@@ -1122,22 +1403,27 @@ MemoryBank[内存银行配置]
 KnowledgeBase[知识库配置]
 OpenClawSkill[OpenClaw技能配置]
 SurgeryScript[手术脚本配置]
+QCSkill[质量控制技能配置]
 end
 BaseConfig --> EnvSpecific
 EnvSpecific --> InstanceSpecific
 EnvSpecific --> OpenClawConfig
 EnvSpecific --> SurgeryConfig
+EnvSpecific --> QCConfig
 EnvSpecific --> Oracle
 EnvSpecific --> TestServer
 EnvSpecific --> Windows
 EnvSpecific --> Linux
 EnvSpecific --> OpenClawEnv
+EnvSpecific --> QCEnv
+EnvSpecific --> SurgeryEnv
 InstanceSpecific --> DockerCompose
 InstanceSpecific --> SQLQueries
 InstanceSpecific --> MemoryBank
 InstanceSpecific --> KnowledgeBase
 OpenClawConfig --> OpenClawSkill
 SurgeryConfig --> SurgeryScript
+QCConfig --> QCSkill
 ```
 
 **图表来源**
@@ -1182,7 +1468,13 @@ SurgeryConfig --> SurgeryScript
    - LLM调用频率控制
    - 并发任务管理
 
-6. **手术功能性能优化**
+6. **质量控制性能优化**
+   - **索引优化**：为常用查询字段创建复合索引，提升查询性能
+   - **缓存策略**：缓存常用的病种配置和指标配置
+   - **分页查询**：对大量评估结果进行分页处理
+   - **异步处理**：对耗时的重新分析任务采用异步处理
+
+7. **手术功能性能优化**
    - **软删除优化**：使用索引过滤已删除记录
    - **排序优化**：建立复合索引支持主手术优先和日期排序
    - **查询优化**：使用LIMIT和分页避免大数据量查询
@@ -1224,8 +1516,35 @@ SurgeryConfig --> SurgeryScript
    - 验证数据同步机制
    - 实施补偿措施
 
+#### 质量控制功能相关问题
+**新增** 针对质量控制系统的故障排除指南
+
+1. **病种匹配失败**
+   - 检查ICD编码匹配规则
+   - 验证诊断数据的完整性
+   - 确认AI模型的可用性
+   - 查看匹配日志和错误信息
+
+2. **指标评估异常**
+   - 检查指标配置的正确性
+   - 验证数据需求的满足情况
+   - 确认评估规则的逻辑
+   - 查看评估过程的日志
+
+3. **诊断快照缺失**
+   - 检查快照创建的触发条件
+   - 验证诊断变更的检测逻辑
+   - 确认快照存储的完整性
+   - 查看快照生成的错误日志
+
+4. **评估结果不准确**
+   - 检查评估状态的映射逻辑
+   - 验证证据和建议的生成规则
+   - 确认紧急程度的计算方法
+   - 查看评估结果的验证日志
+
 #### 手术功能相关问题
-**新增** 针对版本0.8.040手术功能的故障排除指南
+**更新** 新增了针对版本0.8.040手术功能的故障排除指南
 
 1. **手术列表显示异常**
    - 检查数据库连接和权限
@@ -1358,6 +1677,30 @@ SurgeryConfig --> SurgeryScript
 - 新增：`src/components/patient/SurgicalTask.vue`
 - 新增：`src/api/patient.js`（新增手术相关API）
 - 更新：`package.json`（新增依赖项）
+
+##### v0.8.041 - 质量控制系统完整实现
+**新增功能**
+- 新增质量控制界面组件，支持病种匹配、指标评估、诊断快照
+- 实现完整的质量控制API接口，包括病种匹配、指标配置、评估结果
+- 集成质量控制数据库表结构，支持完整的质控数据管理
+- 实现质量控制相关的Prompt模板和AI编排
+
+**技术实现**
+- 使用Element Plus构建质量控制界面
+- 实现完整的API模块化设计
+- 集成质量控制数据库实体和Repository层
+- 实现质量控制相关的服务层逻辑
+
+**用户体验改进**
+- 提供完整的质量控制管理界面
+- 支持从AI到人工的完整质控流程
+- 实时显示质控评估结果和改进建议
+- 提供历史记录追踪和冲突检测
+
+**变更文件**
+- 新增：`src/api/qc.js`（质量控制API模块）
+- 新增：`src/components/qc/`（质量控制界面组件）
+- 更新：`package.json`（新增质量控制相关依赖）
 
 #### v0.8.036 - v0.8.040
 **更新** 完善了之前的版本更新记录
@@ -1536,6 +1879,45 @@ SurgeryConfig --> SurgeryScript
 - 新增：`src/main/java/com/example/medaiassistant/controller/SurgeryController.java`
 - 新增：`sql-scripts/add-surgery-columns.sql`
 
+##### v0.8.041 - 质量控制系统完整实现
+**新增功能**
+- 新增完整的质量控制实体模型，包括QcDiseaseConfig、QcIndicatorConfig、QcAssessmentResult等
+- 新增质量控制相关的枚举类型，包括AssessmentStatus、IndicatorType、KnowledgeSource等
+- 新增质量控制数据库表结构，支持完整的质控数据存储
+- 新增质量控制API接口，支持病种匹配、指标配置、评估结果等核心功能
+- 新增质量控制相关的Prompt模板和AI编排逻辑
+
+**技术实现**
+- 使用Spring Data JPA实现质量控制数据访问层
+- 实现完整的质量控制业务逻辑和服务层
+- 实现质量控制相关的前端界面和API模块
+- 实现质量控制数据的初始化和迁移
+
+**数据库变更**
+- 创建QC_DISEASE_CONFIG、QC_INDICATOR_CONFIG、QC_ASSESSMENT_RESULT、QC_DIAGNOSIS_SNAPSHOT等表
+- 为质量控制表创建索引和约束
+- 插入初始的病种配置和指标配置数据
+- 创建质量控制相关的Prompt模板
+
+**API接口**
+- GET /api/qc/disease-match/{patientId}/latest：获取最近一次病种匹配
+- POST /api/qc/disease-match/{patientId}/check-and-trigger：检查并触发病种匹配
+- GET /api/qc/disease-configs：获取病种配置列表
+- GET /api/qc/indicator-configs：获取指标配置列表
+- GET /api/qc/assessment/{patientId}：获取评估结果
+- POST /api/qc/assessment/reanalyze：重新分析评估
+- GET /api/qc/diagnosis-snapshots/{patientId}：获取诊断快照
+
+**变更文件**
+- 新增：`src/main/java/com/example/medaiassistant/model/qc/`（质量控制实体）
+- 新增：`src/main/java/com/example/medaiassistant/model/qc/enums/`（质量控制枚举）
+- 新增：`src/main/java/com/example/medaiassistant/repository/qc/`（质量控制Repository）
+- 新增：`src/main/java/com/example/medaiassistant/service/qc/`（质量控制Service）
+- 新增：`src/main/java/com/example/medaiassistant/controller/qc/`（质量控制Controller）
+- 新增：`sql-scripts/create-qc-*.sql`（质量控制数据库脚本）
+- 新增：`sql-scripts/qc_*.sql`（质量控制初始化脚本）
+- 新增：`sql-scripts/insert-qc-prompt-templates.sql`（质量控制Prompt模板）
+
 #### v0.8.036 - v0.8.040
 **更新** 完善了之前的版本更新记录
 
@@ -1620,7 +2002,8 @@ SurgeryConfig --> SurgeryScript
 
 MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过前后端分离、容器化部署、多环境配置管理等技术手段，实现了高可用性、可扩展性和易维护性的系统目标。
 
-**更新亮点**：
+**重大更新亮点**：
+- **质量控制系统完整实现**：本次历史分叉中实现了完整的质量控制系统，包括病种匹配、指标评估、诊断快照等核心功能，标志着系统在医疗质量管理和临床决策支持方面达到了新的高度
 - **手术功能完整实现**：版本0.8.040新增了完整的手术列表CRUD功能，包括双击编辑、新增、软删除、设主手术、主手术排序和日期展示
 - **后端接口完善**：新增4个手术管理API接口，支持完整的CRUD操作和数据管理
 - **数据库结构增强**：为surgeryname表添加软删除和数据来源字段，支持数据溯源和历史追踪
@@ -1628,16 +2011,18 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - **用户体验提升**：通过软删除、主手术排序、风险评估等功能，显著提升系统的实用性和易用性
 
 **技术价值**：
-- **功能完整性**：手术管理功能达到临床应用水平，满足医生的实际工作需求
+- **功能完整性**：质量控制系统和手术管理功能都达到临床应用水平，满足医生的实际工作需求
 - **数据安全性**：软删除机制确保数据安全，支持误操作后的数据恢复
 - **系统稳定性**：主手术优先排序和日期排序确保数据展示的逻辑正确性
 - **扩展性良好**：模块化设计支持未来功能的扩展和定制
+- **AI集成深度**：质量控制系统深度集成了OpenClaw AI编排引擎，提供智能化的质控支持
 
 **未来发展方向**：
-- 继续优化手术功能的用户体验，提升系统的易用性和效率
+- 继续优化质量控制系统的用户体验，提升系统的易用性和效率
 - 扩展OpenClaw编排能力，实现更多临床场景的智能化
 - 完善医疗术语标准化，提升系统的专业性和准确性
 - 加强系统监控和日志管理，提升运维效率
+- 深化AI在质量控制中的应用，实现更智能的质控评估和建议
 
 ## 附录
 
@@ -1744,6 +2129,35 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
    - 支持分类浏览和快速搜索
    - 选择标准手术名称自动填充
 
+#### 质量控制功能使用
+1. **访问质量控制界面**
+   - 在左侧导航菜单中选择"质量控制"
+   - 界面显示病种匹配、指标评估、诊断快照等功能
+   - 支持按患者ID筛选和功能切换
+
+2. **病种匹配**
+   - 点击"病种匹配"功能
+   - 系统自动显示AI匹配的病种结果
+   - 支持手动确认和修改
+   - 可查看匹配的证据和置信度
+
+3. **指标评估**
+   - 点击"指标评估"功能
+   - 显示患者的质控指标评估结果
+   - 支持按状态、优先级等条件筛选
+   - 可查看详细的评估证据和建议
+
+4. **诊断快照**
+   - 点击"诊断快照"功能
+   - 显示患者的诊断历史记录
+   - 支持查看诊断变更和冲突检测
+   - 可对比不同时期的诊断内容
+
+5. **重新分析**
+   - 在评估结果界面可触发重新分析
+   - 支持指定病种范围和强制刷新
+   - 可查看分析任务的进度和结果
+
 #### 重要程度术语使用
 1. **术语标准化**
    - "危急" → "关键"（红色警示）
@@ -1764,6 +2178,11 @@ MedAiAssistant项目展现了现代医疗AI系统的完整架构设计，通过�
 - [SurgicalTask.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/SurgicalTask.vue)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [add-surgery-columns.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-surgery-columns.sql)
+- [AssessmentStatus.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/enums/AssessmentStatus.java)
+- [QcDiseaseConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcDiseaseConfig.java)
+- [QcIndicatorConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcIndicatorConfig.java)
+- [QcAssessmentResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcAssessmentResult.java)
+- [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 - [2026-04-17.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-17.md)
 - [2026-04-16.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-16.md)
 - [PatientList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientList.vue)
