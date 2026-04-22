@@ -6,17 +6,20 @@
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 - [ClinicalGuidanceTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue)
 - [DiseaseConfirmationPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue)
+- [ToolbarPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue)
+- [QcDetailDrawer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue)
 - [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 - [qcDiseaseMatchParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增DiseaseConfirmationPanel组件，提供专业的病种确认功能
-- 更新ClinicalGuidanceTab组件，集成病种确认面板和确认流程
-- 增强跨去重机制，优化病种匹配结果的去重逻辑
-- 完善病种确认API集成，支持确认状态的持久化
-- 改进用户交互体验，提供直观的确认操作界面
+- 新增完整的病种确认区功能，提供专业的病种确认界面
+- 新增质控详情抽屉，支持详细的质控评估结果展示
+- 新增底部工具栏，集成病种管理、重新分析等功能
+- 完善病种确认流程，支持确认、忽略、恢复等操作
+- 增强质控评估系统，提供可视化的结果展示
+- 优化用户交互体验，提供直观的操作界面
 
 ## 目录
 1. [简介](#简介)
@@ -31,9 +34,9 @@
 
 ## 简介
 
-临床指引Tab是MedAiAssistant项目中的一个关键功能模块，为医生提供基于AI分析的个性化临床指导。该模块集成了病种匹配、质控评估、诊疗计划管理等功能，通过智能算法帮助医生制定最佳治疗方案。
+临床指引Tab是MedAiAssistant项目中的关键功能模块，为医生提供基于AI分析的个性化临床指导。该模块集成了病种匹配、质控评估、诊疗计划管理等功能，通过智能算法帮助医生制定最佳治疗方案。
 
-**更新** 新增了专业的病种确认面板功能，医生可以通过直观的界面确认AI识别的新病种，确保诊断的准确性和完整性。
+**更新** 0.8.045版本新增了完整的临床指引Tab功能，包括专业的病种确认区、质控详情抽屉、底部工具栏等全新功能模块，形成了更加完整的临床决策支持体系。
 
 该功能模块采用现代化的Vue.js架构，结合Element Plus组件库，提供了流畅的用户体验和强大的数据处理能力。系统支持实时数据分析、智能提醒、以及与后端服务的无缝集成。
 
@@ -48,10 +51,16 @@ PV[PatientView.vue<br/>患者视图容器]
 PT[PatientTabs.vue<br/>标签页容器]
 CGT[ClinicalGuidanceTab.vue<br/>临床指引主组件]
 DCP[DiseaseConfirmationPanel.vue<br/>病种确认面板]
+TP[TreatmentPlanTable.vue<br/>诊疗计划表]
+TB[ToolbarPanel.vue<br/>底部工具栏]
+QCD[QcDetailDrawer.vue<br/>质控详情抽屉]
 subgraph "组件层次"
 PV --> PT
 PT --> CGT
 CGT --> DCP
+CGT --> TP
+CGT --> TB
+CGT --> QCD
 end
 subgraph "API层"
 QC[qc.js<br/>质控API接口]
@@ -63,6 +72,8 @@ end
 CGT --> QC
 CGT --> PARSER
 DCP --> QC
+TB --> QC
+QCD --> QC
 QC --> AI
 end
 ```
@@ -70,8 +81,8 @@ end
 **图表来源**
 - [PatientView.vue:1-64](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L1-L64)
 - [PatientTabs.vue:1-136](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L1-L136)
-- [ClinicalGuidanceTab.vue:1-631](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L1-L631)
-- [DiseaseConfirmationPanel.vue:1-242](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L242)
+- [ClinicalGuidanceTab.vue:1-1025](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L1-L1025)
+- [DiseaseConfirmationPanel.vue:1-313](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L313)
 
 **章节来源**
 - [PatientView.vue:1-64](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L1-L64)
@@ -104,15 +115,17 @@ PatientTabs组件管理患者信息的各个标签页，包括基本信息、病
 
 ### ClinicalGuidanceTab - 临床指引主组件
 
-**更新** ClinicalGuidanceTab组件现在集成了专业的病种确认面板，提供了完整的病种确认流程。
+**更新** ClinicalGuidanceTab组件现在集成了完整的临床指引功能，包括专业的病种确认区、质控详情抽屉、底部工具栏等全新功能模块。
 
 ClinicalGuidanceTab是整个功能的核心组件，集成了病种确认、质控评估、诊疗计划管理等功能。该组件采用了先进的并发数据处理模式，确保系统的高效运行。
 
 **新增功能**：
-- 病种确认面板集成
-- 实时病种确认流程
-- 跨去重机制优化
-- 确认状态持久化
+- 病种确认区集成
+- 质控详情抽屉
+- 底部工具栏
+- 重新选择模式
+- 忽略病种管理
+- 病种恢复功能
 
 ### DiseaseConfirmationPanel - 病种确认面板
 
@@ -125,15 +138,41 @@ ClinicalGuidanceTab是整个功能的核心组件，集成了病种确认、质�
 - 忽略操作支持
 - 响应式设计
 
+### ToolbarPanel - 底部工具栏
+
+**新增组件** ToolbarPanel是临床指引Tab底部的工具栏组件，提供了统一的操作入口。
+
+主要功能特性：
+- 病种标签显示
+- 完成率信息展示
+- 忽略病种管理
+- 重新匹配功能
+- 质控详情查看
+- 重新分析操作
+
+### QcDetailDrawer - 质控详情抽屉
+
+**新增组件** QcDetailDrawer是一个专门用于展示质控评估详情的抽屉组件。
+
+主要功能特性：
+- 顶部汇总信息
+- 病种标签展示
+- 进度条显示
+- 指标列表分组
+- 筛选功能
+- 折叠展开
+
 **章节来源**
 - [PatientView.vue:14-54](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L14-L54)
 - [PatientTabs.vue:35-117](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L35-L117)
-- [ClinicalGuidanceTab.vue:79-554](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L79-L554)
+- [ClinicalGuidanceTab.vue:111-127](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L111-L127)
 - [DiseaseConfirmationPanel.vue:76-160](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L76-L160)
+- [ToolbarPanel.vue:103-112](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L103-L112)
+- [QcDetailDrawer.vue:119-131](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L119-L131)
 
 ## 架构概览
 
-**更新** 临床指引Tab现在包含了专业的病种确认流程，形成了更加完整的临床决策支持体系。
+**更新** 临床指引Tab现在包含了完整的功能模块，形成了更加完整的临床决策支持体系。
 
 ```mermaid
 graph TD
@@ -143,6 +182,7 @@ CT[ClinicalGuidanceTab]
 DCP[DiseaseConfirmationPanel]
 TP[TreatmentPlanTable]
 TB[ToolbarPanel]
+QCD[QcDetailDrawer]
 end
 subgraph "业务逻辑层"
 BC[业务控制器]
@@ -150,6 +190,8 @@ DM[病种匹配服务]
 QA[质控评估服务]
 TPB[诊疗计划服务]
 CONF[病种确认服务]
+IG[忽略病种服务]
+RES[恢复病种服务]
 end
 subgraph "数据访问层"
 API[API接口层]
@@ -167,28 +209,37 @@ BC --> DM
 BC --> QA
 BC --> TPB
 BC --> CONF
+BC --> IG
+BC --> RES
 DM --> API
 QA --> API
 TPB --> API
 CONF --> API
+IG --> API
+RES --> API
 API --> QC
 API --> AI
 API --> DB
 CT --> PARSER
 CT --> UTIL
 DCP --> CONF
+TB --> IG
+TB --> RES
+QCD --> QA
 ```
 
 **图表来源**
-- [ClinicalGuidanceTab.vue:80-93](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L80-L93)
-- [DiseaseConfirmationPanel.vue:86-112](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L86-L112)
-- [qc.js:1-449](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L449)
+- [ClinicalGuidanceTab.vue:89-138](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L89-L138)
+- [DiseaseConfirmationPanel.vue:74-91](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L74-L91)
+- [ToolbarPanel.vue:99-115](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L99-L115)
+- [QcDetailDrawer.vue:115-133](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L115-133)
+- [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
 
 ## 详细组件分析
 
 ### ClinicalGuidanceTab 组件详解
 
-**更新** ClinicalGuidanceTab组件现在包含了完整的病种确认流程，提供了专业的病种管理功能。
+**更新** ClinicalGuidanceTab组件现在包含了完整的临床指引功能，提供了专业的病种管理、质控评估、诊疗计划等一体化解决方案。
 
 ClinicalGuidanceTab组件是整个临床指引功能的核心，采用了模块化的架构设计，包含以下主要功能模块：
 
@@ -199,6 +250,8 @@ sequenceDiagram
 participant User as 医生用户
 participant Tab as ClinicalGuidanceTab
 participant Panel as DiseaseConfirmationPanel
+participant Drawer as QcDetailDrawer
+participant Toolbar as ToolbarPanel
 participant API as 后端API
 participant Store as Vuex Store
 User->>Tab : 打开"临床指引"标签页
@@ -217,6 +270,8 @@ API-->>Tab : 诊疗计划数据
 end
 Tab->>Tab : 更新组件状态
 Tab->>Panel : 显示病种确认面板
+Tab->>Toolbar : 更新工具栏状态
+Tab->>Drawer : 更新质控详情
 User->>Panel : 选择确认的病种
 Panel->>Tab : @confirm(selectedIds)
 Tab->>API : confirmDiseaseMatch(params)
@@ -226,9 +281,9 @@ Tab-->>User : 显示确认完成
 ```
 
 **图表来源**
-- [ClinicalGuidanceTab.vue:506-572](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L506-L572)
-- [ClinicalGuidanceTab.vue:261-301](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L261-L301)
-- [DiseaseConfirmationPanel.vue:144-159](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L144-L159)
+- [ClinicalGuidanceTab.vue:941-965](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L941-L965)
+- [ClinicalGuidanceTab.vue:289-330](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L289-L330)
+- [DiseaseConfirmationPanel.vue:183-230](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L183-L230)
 
 #### 病种确认流程
 
@@ -241,19 +296,27 @@ LoadData --> ShowPanel[显示病种确认面板]
 ShowPanel --> UserSelect{医生选择病种?}
 UserSelect --> |确认选择| ConfirmAPI[调用确认API]
 UserSelect --> |忽略| DismissPanel[收起面板]
+UserSelect --> |重新选择| ReselectMode[进入重新选择模式]
 ConfirmAPI --> FilterDiseases[筛选确认病种]
 FilterDiseases --> MergeHistory[合并历史记录]
 MergeHistory --> ClearNew[清空新病种队列]
 ClearNew --> RefreshAssess[刷新质控评估]
 RefreshAssess --> End([完成])
 DismissPanel --> End
+ReselectMode --> ShowAllDiseases[显示全量病种]
+ShowAllDiseases --> UserReselect{重新选择?}
+UserReselect --> |确认| ReselectConfirm[重新确认]
+UserReselect --> |忽略| ReselectIgnore[重新忽略]
+ReselectConfirm --> UpdateState[更新状态]
+ReselectIgnore --> UpdateState
+UpdateState --> End
 style Start fill:#e1f5fe
 style End fill:#c8e6c9
 ```
 
 **图表来源**
-- [ClinicalGuidanceTab.vue:433-482](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L433-L482)
-- [ClinicalGuidanceTab.vue:484-489](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L484-L489)
+- [ClinicalGuidanceTab.vue:647-692](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L647-L692)
+- [ClinicalGuidanceTab.vue:783-882](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L783-L882)
 
 #### 质控评估系统
 
@@ -270,6 +333,7 @@ class AssessmentResult {
 +string priority
 +string suggestion
 +string conflictNote
++string referenceSource
 }
 class AssessmentSummary {
 +number totalIndicators
@@ -305,8 +369,10 @@ TreatmentPlanItem --> AssessmentResult : "参考"
 - [qcDiseaseMatchParser.js:7-16](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js#L7-L16)
 
 **章节来源**
-- [ClinicalGuidanceTab.vue:228-554](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L228-L554)
-- [DiseaseConfirmationPanel.vue:1-242](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L242)
+- [ClinicalGuidanceTab.vue:289-1025](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L289-L1025)
+- [DiseaseConfirmationPanel.vue:1-313](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L313)
+- [ToolbarPanel.vue:1-368](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L1-L368)
+- [QcDetailDrawer.vue:1-461](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L1-L461)
 - [qcDiseaseMatchParser.js:106-182](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js#L106-L182)
 
 ### DiseaseConfirmationPanel 组件详解
@@ -322,6 +388,8 @@ class DiseaseConfirmationPanel {
 +Boolean loading
 +Array checkedIds
 +Boolean dismissed
++String mode
++Array confirmedDiseaseIds
 +handleConfirm()
 +handleDismiss()
 }
@@ -351,11 +419,12 @@ Panel->>Panel : 更新checkedIds
 User->>Panel : 点击"确认"
 Panel->>Panel : 发射@confirm事件
 User->>Panel : 点击"忽略"
-Panel->>Panel : 发射@dismiss事件
+Panel->>Panel : 弹出二次确认对话框
+Panel->>Panel : 发射@ignore事件
 ```
 
 **图表来源**
-- [DiseaseConfirmationPanel.vue:144-159](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L144-L159)
+- [DiseaseConfirmationPanel.vue:183-230](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L183-L230)
 
 #### 样式设计
 
@@ -368,7 +437,129 @@ Panel->>Panel : 发射@dismiss事件
 - **响应式布局**：适配不同屏幕尺寸
 
 **章节来源**
-- [DiseaseConfirmationPanel.vue:1-242](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L242)
+- [DiseaseConfirmationPanel.vue:1-313](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L313)
+
+### ToolbarPanel 组件详解
+
+**新增组件** ToolbarPanel是临床指引Tab底部的工具栏组件，提供了统一的操作入口。
+
+#### 组件架构
+
+```mermaid
+classDiagram
+class ToolbarPanel {
++Array matchedDiseases
++Number completionRate
++Boolean loading
++Number compliantCount
++Number totalCount
++Array ignoredDiseases
++Boolean reselectMode
++handleViewDetails()
++handleReanalyze()
++handleOpenReselect()
+}
+ToolbarPanel --> DiseaseTag : "显示"
+ToolbarPanel --> CompletionInfo : "显示"
+ToolbarPanel --> ActionButtons : "操作"
+```
+
+**图表来源**
+- [ToolbarPanel.vue:113-175](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L113-L175)
+
+#### 用户交互流程
+
+```mermaid
+sequenceDiagram
+participant User as 医生用户
+participant Toolbar as ToolbarPanel
+User->>Toolbar : 查看已匹配病种
+Toolbar->>Toolbar : 显示病种标签
+User->>Toolbar : 查看完成率
+Toolbar->>Toolbar : 显示进度条
+User->>Toolbar : 点击"忽略病种"
+Toolbar->>Toolbar : 弹出忽略列表
+User->>Toolbar : 点击"重新匹配"
+Toolbar->>Toolbar : 发射@open-reselect事件
+User->>Toolbar : 点击"查看质控详情"
+Toolbar->>Toolbar : 发射@view-details事件
+User->>Toolbar : 点击"重新分析"
+Toolbar->>Toolbar : 发射@reanalyze事件
+```
+
+**图表来源**
+- [ToolbarPanel.vue:36-95](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L36-L95)
+
+#### 样式设计
+
+组件采用了简洁的样式设计，提供了清晰的信息展示：
+
+- **左侧病种区**：显示已确认的病种标签
+- **中间完成率区**：显示指标完成率和详细信息
+- **右侧操作区**：提供各种操作按钮
+- **颜色编码**：根据完成率显示不同颜色
+
+**章节来源**
+- [ToolbarPanel.vue:1-368](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L1-L368)
+
+### QcDetailDrawer 组件详解
+
+**新增组件** QcDetailDrawer是一个专业的质控详情抽屉组件，提供了详细的质控评估结果展示。
+
+#### 组件架构
+
+```mermaid
+classDiagram
+class QcDetailDrawer {
++Boolean visible
++Array assessmentResults
++Array matchedDiseases
++Object summary
++String filterStatus
++Array activeGroups
++handleViewDetails()
++handleReanalyze()
++handleOpenReselect()
+}
+QcDetailDrawer --> SummarySection : "显示"
+QcDetailDrawer --> FilterBar : "显示"
+QcDetailDrawer --> IndicatorList : "显示"
+```
+
+**图表来源**
+- [QcDetailDrawer.vue:132-179](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L132-L179)
+
+#### 用户交互流程
+
+```mermaid
+sequenceDiagram
+participant User as 医生用户
+participant Drawer as QcDetailDrawer
+User->>Drawer : 打开质控详情抽屉
+Drawer->>Drawer : 显示顶部汇总信息
+Drawer->>Drawer : 显示筛选栏
+User->>Drawer : 选择筛选条件
+Drawer->>Drawer : 过滤指标列表
+User->>Drawer : 展开病种分组
+Drawer->>Drawer : 显示指标卡片
+User->>Drawer : 关闭抽屉
+Drawer->>Drawer : 隐藏抽屉
+```
+
+**图表来源**
+- [QcDetailDrawer.vue:195-325](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L195-L325)
+
+#### 样式设计
+
+组件采用了专业的样式设计，提供了详细的信息展示：
+
+- **顶部汇总区**：显示病种标签、进度条、评估时间
+- **筛选栏**：提供状态筛选功能
+- **指标列表**：按病种分组显示指标卡片
+- **折叠展开**：支持分组的折叠和展开
+
+**章节来源**
+- [QcDetailDrawer.vue:1-461](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L1-L461)
 
 ### API 接口分析
 
@@ -391,13 +582,15 @@ API->>Parser : 解析AI结果
 Parser-->>API : 返回结构化数据
 API->>DB : 查询已确认病种
 DB-->>API : 返回确认记录
+API->>DB : 查询已忽略病种
+DB-->>API : 返回忽略记录
 API-->>Client : 返回病种匹配列表
 Note over Client,DB : 支持多种数据格式解析
 ```
 
 **图表来源**
-- [qc.js:35-37](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L35-L37)
-- [ClinicalGuidanceTab.vue:308-343](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L308-L343)
+- [qc.js:36-38](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L36-L38)
+- [ClinicalGuidanceTab.vue:337-420](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L337-L420)
 
 #### 病种确认接口
 
@@ -416,22 +609,23 @@ Note over Client,DB : 支持批量确认和备注
 ```
 
 **图表来源**
-- [qc.js:114-116](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L114-L116)
-- [ClinicalGuidanceTab.vue:433-482](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L433-L482)
+- [qc.js:115-117](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L115-L117)
+- [ClinicalGuidanceTab.vue:647-692](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L647-L692)
 
 #### 质控评估接口
 
 质控评估接口提供了全面的医疗质量监控功能，支持指标级别的评估和统计。
 
 **章节来源**
-- [qc.js:168-287](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L168-L287)
-- [qc.js:316-327](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L316-L327)
+- [qc.js:242-244](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L242-L244)
+- [qc.js:274-276](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L274-L276)
+- [qc.js:300-302](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L300-L302)
 
 ## 依赖关系分析
 
 ### 组件依赖图
 
-**更新** 新增了DiseaseConfirmationPanel组件的依赖关系。
+**更新** 新增了DiseaseConfirmationPanel、ToolbarPanel、QcDetailDrawer组件的依赖关系。
 
 ```mermaid
 graph LR
@@ -460,32 +654,43 @@ PatientTabs --> TreatmentPlanTable
 PatientTabs --> ToolbarPanel
 PatientTabs --> QcDetailDrawer
 ClinicalGuidanceTab --> DiseaseConfirmationPanel
+ClinicalGuidanceTab --> TreatmentPlanTable
+ClinicalGuidanceTab --> ToolbarPanel
+ClinicalGuidanceTab --> QcDetailDrawer
 ClinicalGuidanceTab --> qcAPI
 ClinicalGuidanceTab --> parser
 DiseaseConfirmationPanel --> qcAPI
+ToolbarPanel --> qcAPI
+QcDetailDrawer --> qcAPI
 PatientView -.-> ElementPlus
 PatientTabs -.-> ElementPlus
 ClinicalGuidanceTab -.-> ElementPlus
 DiseaseConfirmationPanel -.-> ElementPlus
+ToolbarPanel -.-> ElementPlus
+QcDetailDrawer -.-> ElementPlus
 ClinicalGuidanceTab -.-> Vue
 DiseaseConfirmationPanel -.-> Vue
+ToolbarPanel -.-> Vue
+QcDetailDrawer -.-> Vue
 qcAPI -.-> Axios
 ```
 
 **图表来源**
 - [PatientTabs.vue:44-64](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L44-L64)
-- [ClinicalGuidanceTab.vue:80-93](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L80-L93)
-- [DiseaseConfirmationPanel.vue:86-112](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L86-L112)
+- [ClinicalGuidanceTab.vue:89-138](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L89-L138)
+- [DiseaseConfirmationPanel.vue:74-91](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L74-L91)
+- [ToolbarPanel.vue:99-115](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L99-L115)
+- [QcDetailDrawer.vue:115-139](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L115-L139)
 
 ### 数据流依赖
 
-**更新** 新增了病种确认流程的数据流依赖。
+**更新** 新增了病种确认流程、工具栏操作、抽屉展示等数据流依赖。
 
-临床指引Tab的数据流现在包含了专业的病种确认流程，确保系统的完整性和可靠性。
+临床指引Tab的数据流现在包含了完整的功能模块，确保系统的完整性和可靠性。
 
 **章节来源**
 - [PatientTabs.vue:102-115](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L102-L115)
-- [ClinicalGuidanceTab.vue:269-274](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L269-L274)
+- [ClinicalGuidanceTab.vue:941-965](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L941-L965)
 
 ## 性能考虑
 
@@ -497,6 +702,7 @@ qcAPI -.-> Axios
 - **质控评估**：多指标综合评估
 - **诊疗计划**：最新AI生成结果
 - **病种确认**：确认状态查询和管理
+- **忽略列表**：忽略病种状态管理
 
 ### 懒加载机制
 
@@ -505,6 +711,7 @@ qcAPI -.-> Axios
 - 检查报告标签页仅在用户访问时加载
 - 临床指引Tab在激活时才触发数据加载
 - 病种确认面板仅在有新病种时显示
+- 质控详情抽屉仅在用户主动打开时加载
 - 骨架屏提升加载体验
 
 ### 缓存策略
@@ -515,6 +722,7 @@ qcAPI -.-> Axios
 - 组件本地状态缓存
 - API响应缓存
 - 病种确认状态缓存
+- 抽屉内容缓存
 
 ### 跨去重机制优化
 
@@ -552,6 +760,26 @@ qcAPI -.-> Axios
 3. 查看组件的watch监听是否正常
 4. 检查确认事件的发射和接收
 
+#### 工具栏功能异常
+
+**新增问题** 当底部工具栏功能出现问题时，可以尝试以下解决方案：
+
+**解决步骤**：
+1. 检查病种标签数据是否正确
+2. 验证完成率计算逻辑
+3. 查看忽略病种列表是否正常
+4. 检查重新分析按钮的状态
+
+#### 质控详情抽屉异常
+
+**新增问题** 当质控详情抽屉显示出现问题时，可以尝试以下解决方案：
+
+**解决步骤**：
+1. 检查评估结果数据是否正确
+2. 验证分组逻辑是否正常
+3. 查看筛选功能是否工作
+4. 检查折叠展开功能
+
 #### 数据加载超时
 
 如果数据加载超过预期时间，系统会显示加载状态并提供重试机制。
@@ -573,13 +801,14 @@ qcAPI -.-> Axios
 4. 重启应用服务
 
 **章节来源**
-- [ClinicalGuidanceTab.vue:476-482](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L476-L482)
-- [DiseaseConfirmationPanel.vue:152-159](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L152-L159)
-- [ClinicalGuidanceTab.vue:541-572](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L541-L572)
+- [ClinicalGuidanceTab.vue:697-700](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L697-L700)
+- [DiseaseConfirmationPanel.vue:203-230](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L203-L230)
+- [ToolbarPanel.vue:36-95](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L36-L95)
+- [QcDetailDrawer.vue:279-282](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L279-L282)
 
 ## 结论
 
-**更新** 临床指引Tab经过重大升级，现在包含了专业的病种确认功能，形成了更加完整的临床决策支持体系。
+**更新** 临床指引Tab经过重大升级，现在包含了完整的功能模块，形成了更加完整的临床决策支持体系。
 
 临床指引Tab作为MedAiAssistant项目的核心功能模块，展现了现代医疗信息系统的设计理念和技术水平。该模块通过智能化的数据处理、专业的病种确认功能、优雅的用户界面设计、以及可靠的系统架构，为医生提供了全面的临床决策支持。
 
@@ -587,10 +816,11 @@ qcAPI -.-> Axios
 
 1. **智能化程度高**：基于AI的病种匹配和质控评估
 2. **专业确认功能**：提供直观的病种确认界面
-3. **用户体验优秀**：响应式设计和流畅的交互体验
-4. **系统稳定性强**：完善的错误处理和性能优化
-5. **扩展性强**：模块化设计便于功能扩展
-6. **去重机制完善**：智能的跨去重算法提升准确性
+3. **完整功能体系**：包含确认区、抽屉、工具栏等完整模块
+4. **用户体验优秀**：响应式设计和流畅的交互体验
+5. **系统稳定性强**：完善的错误处理和性能优化
+6. **扩展性强**：模块化设计便于功能扩展
+7. **去重机制完善**：智能的跨去重算法提升准确性
 
 ### 技术特色
 
@@ -600,7 +830,8 @@ qcAPI -.-> Axios
 - 支持多平台和多设备的自适应显示
 - 集成了专业的病种确认面板功能
 - 实现了高效的跨去重算法
+- 提供了完整的质控评估可视化展示
 
-**新增功能** 专业的病种确认面板为医生提供了直观的确认界面，支持批量确认和详细的病种信息展示，大大提升了诊断的准确性和效率。
+**新增功能** 完整的临床指引Tab功能模块为医生提供了从病种确认到质控评估的一体化解决方案，大大提升了诊断的准确性和效率。
 
 该功能模块不仅满足了当前的医疗需求，也为未来的功能扩展和技术升级奠定了坚实的基础。
