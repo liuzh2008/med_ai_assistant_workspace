@@ -1,4 +1,3 @@
-<docs>
 # OpenClaw集成方案
 
 <cite>
@@ -8,23 +7,17 @@
 - [接口文档索引.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/接口文档索引.md)
 - [DRG分析接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/DRG分析/DRG分析接口.md)
 - [语音识别接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/语音识别/语音识别接口.md)
-- [系统管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/系统管理/系统管理接口.md)
 - [AI服务接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/AI服务/AI服务接口.md)
-- [病历记录管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/病历记录管理接口.md)
-- [病人数据同步API接口文档.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/数据同步/病人数据同步API接口文档.md)
 - [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
-- [AppDataSourceProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AppDataSourceProperties.java)
-- [CustomProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CustomProperties.java)
 - [index.js](file://med_ai_assistant_1.0_bs_vue/src/api/index.js)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增完整的OpenClaw集成方案文档，包含7个临床编排场景分析
-- 更新系统现有能力概览，涵盖180+个API接口调研
-- 新增场景优先级矩阵和PoC部署验证计划
-- 完善技术架构设计，区分OpenClaw与QClaw的不同定位
-- 增加详细的实施计划和风险评估
+- 新增完整的7个临床编排场景分析，涵盖查房语音记录、MCC/DRG全流程分析、患者综合情况查询等核心应用场景
+- 更新PoC部署验证计划，包含环境准备、Skill开发、REST API验证等完整流程
+- 完善技术架构设计，明确OpenClaw与QClaw的不同定位和职责分工
+- 增加详细的实施计划和风险评估，为项目推进提供指导
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -46,7 +39,7 @@ OpenClaw集成方案旨在将OpenClaw AI代理引擎与现有的MedAiAssistant�
 
 MedAiAssistant系统已经实现了180+个REST API接口，涵盖10大模块，其中56个接口适合被OpenClaw编排调用。通过OpenClaw集成，可以将这些分散的API能力整合为统一的自然语言服务，显著提升系统的智能化水平和用户体验。
 
-**更新** 新增完整的7个临床编排场景分析，包括查房语音记录、智能MCC/DRG全流程分析、患者综合情况快速查询等核心应用场景。
+**更新** 新增完整的7个临床编排场景分析，包括查房语音记录、智能MCC/DRG全流程分析、患者综合情况快速查询等核心应用场景，为PoC验证提供明确的方向和优先级。
 
 ### 核心优势
 
@@ -162,8 +155,6 @@ Vue.js 3配合Element Plus组件库，提供现代化的用户界面：
 
 **章节来源**
 - [pom.xml:1-309](file://med_ai_assistant_1.0_bs_backend/pom.xml#L1-L309)
-- [AppDataSourceProperties.java:1-28](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AppDataSourceProperties.java#L1-L28)
-- [CustomProperties.java:1-28](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CustomProperties.java#L1-L28)
 
 ## 核心组件分析
 
@@ -607,19 +598,19 @@ OpenClaw集成方案为MedAiAssistant系统提供了强大的智能化能力，�
 - **实现难度**：需要完整的AI服务链路验证
 
 #### 场景5：数据同步与质量监控（P2）
-- **用户故事**：运维人员说"同步心内科数据并检查一致性"
+- **用户故事**：运维人员说"同步一下心内科的患者数据，然后检查数据一致性"
 - **编排流程**：科室患者同步 → 检验结果同步 → 一致性检测 → 自动修复
 - **业务价值**：自动化数据质量管理工作
 - **技术实现**：基于现有同步API的编排
 
 #### 场景6：病历分析转待办事项（P2）
-- **用户故事**：系统自动分析病历内容，提取待办事项
+- **用户故事**：系统自动分析病历内容，提取需要医生关注的待办事项
 - **编排流程**：科室患者获取 → 综合数据获取 → LLM分析 → 结果保存 → 汇总清单
 - **场景价值**：利用OpenClaw Cron实现每日自动生成待办
 - **技术实现**：定时任务编排
 
 #### 场景7：非计划再次手术风险预警（P3）
-- **用户故事**：质控人员问"最近有非计划再次手术风险的病例吗？"
+- **用户故事**：质控人员问"最近有没有可能是非计划再次手术的病例？"
 - **编排流程**：科室患者获取 → 手术记录分析 → 风险评估 → 结果汇总
 - **业务价值**：辅助质控工作，提升医疗质量
 - **实现复杂度**：相对较低，适合后期扩展
@@ -629,9 +620,9 @@ OpenClaw集成方案为MedAiAssistant系统提供了强大的智能化能力，�
 **更新** 基于详细的PoC规划，现提供完整的部署验证流程：
 
 #### 前置条件
-- 测试服务器访问后端API `http://10.120.11.43:8081`
-- 测试服务器具备Node.js 22.16+或Node.js 24（推荐）
-- 需要LLM API Key（OpenAI、Claude、DeepSeek等）
+- 测试服务器需能访问后端API `http://10.120.11.43:8081`
+- 测试服务器需有 Node.js 22.16+ 或 Node.js 24（推荐）
+- 需要一个 LLM API Key（如 OpenAI、Claude、DeepSeek 等）
 
 #### 环境准备与OpenClaw安装
 ```bash
