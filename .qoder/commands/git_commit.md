@@ -40,8 +40,8 @@ description:github提交并推送。需要注意版本号。
 检查点：确认临时文件已删除，调试语句已清除，代码注释已添加。
 
 ## 第3步：更新版本号
-分别在以下文件中更新版本号，在保持前缀 0.8 不变的前提下，将后面的数字整体加1
-- 格式为 "version": "0.8.xxx",
+分别在以下文件中更新版本号，在保持前缀 0.9 不变的前提下，将后面的数字整体加1
+- 格式为 "version": "0.9.xxx",
 - med_ai_assistant_1.0_bs_vue/package.json 中的 version 字段
 - med_ai_assistant_1.0_bs_backend/pom.xml 中的 version 字段
 

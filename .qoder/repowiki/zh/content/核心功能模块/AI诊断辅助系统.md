@@ -61,14 +61,18 @@
 - [Oracle序列同步修复脚本.sql](file://med_ai_assistant_1.0_bs_backend/sql/Oracle序列同步修复脚本.sql)
 - [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
 - [treatmentPlanParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js)
+- [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
+- [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [PatientView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- AI结果渲染优化：在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别
-- 治疗计划表重要程度术语优化：将"危急"替换为"关键"，提升临床术语准确性
-- 新增待办事项功能：治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项
-- 色标样式优化：为重要程度列添加圆角徽章样式，提供更好的视觉层次
+- 新增AI诊断辅助标签页功能：新增独立的AIDiagnosisTab.vue组件，提供AI诊断分析结果展示
+- 实现懒加载机制：通过v-if条件渲染确保仅在激活时才挂载组件，减少不必要的API请求
+- 集成状态管理：复用DiagnosisEditPanel组件，实现AI诊断列表与当前诊断的双向同步
+- 完善数据解析功能：支持extractDiagnosisBlocks和extractDiagnosisNames两种诊断解析模式
+- 优化用户体验：提供加载状态、错误处理、空状态提示和重试机制
 
 ## 目录
 1. [简介](#简介)
@@ -85,7 +89,7 @@
 ## 简介
 本文件面向AI诊断辅助系统，系统采用"主服务器 + 执行服务器"的双层架构：主服务器负责业务编排、数据聚合与对外API，执行服务器专注于高时延LLM调用与加密处理。系统通过专用RestTemplate优化LLM超时配置、实现指数退避重试、完善错误分类与恢复策略，并提供性能监控与统计接口，确保在复杂医疗文本分析场景下的稳定性与可靠性。
 
-**最新更新** 版本0.8.037新增AI结果渲染优化功能，实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别；同时优化治疗计划表重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。新增待办事项功能，支持一键将治疗计划项添加到待办事项。
+**最新更新** 版本0.8.037新增AI诊断辅助标签页功能，通过独立的AIDiagnosisTab.vue组件提供AI诊断分析结果展示，包含懒加载机制、状态管理和数据解析功能。该组件复用DiagnosisEditPanel组件，实现AI诊断列表与当前诊断的双向同步，支持多种诊断解析模式和完整的错误处理机制。
 
 ## 项目结构
 项目采用多模块/多文档组织方式，核心后端位于 `med_ai_assistant_1.0_bs_backend` 目录，前端位于 `med_ai_assistant_1.0_bs_vue` 目录，包含：
@@ -93,20 +97,21 @@
 - 前端AI服务：aiService.js提供统一的AI服务调用接口，drg.js提供DRG/MCC分析API
 - 模板管理：PromptTemplates.vue、PromptTemplateEditDialog.vue等模板管理组件
 - MCC分析模块：完整的MCC预筛选、相似度计算、Prompt生成功能
+- **AI诊断辅助标签页**：新增AIDiagnosisTab.vue组件，提供独立的AI诊断分析结果展示
 - **诊断编辑面板**：新增DiagnosisEditPanel.vue组件，提供内嵌诊断编辑功能
 - **流式AI对话**：优化AIResponse.vue和aiService.js，实现逐字流式显示
 - **增强的诊断解析**：新增diagnosisParser.js工具，修复正则表达式问题
 - **优化的诊断卡片**：DiagnosisCard.vue移除固定高度截断，支持自然撑开
 - **改进的诊断数据初始化**：_initDiagnosisData改为异步方法，确保fetchDiagnoses完成后执行初始化逻辑
-- **Oracle序列适配**：新增序列一致性检查和自动同步机制，防止ORA-00001主键冲突
-- **事务保障机制**：增强AI对话保存的数据库事务管理，确保原子性
-- **消息顺序保存**：实现有序保存机制，解决消息顺序显示问题
-- **ID排序优化**：通过序列同步确保AI对话ID的正确排序
-- **AI结果渲染优化**：新增诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别
-- **治疗计划表优化**：优化重要程度术语，新增待办事项功能
+- Oracle序列适配：新增序列一致性检查和自动同步机制，防止ORA-00001主键冲突
+- 事务保障机制：增强AI对话保存的数据库事务管理，确保原子性
+- 消息顺序保存：实现有序保存机制，解决消息顺序显示问题
+- ID排序优化：通过序列同步确保AI对话ID的正确排序
+- AI结果渲染优化：新增诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别
+- 治疗计划表优化：优化重要程度术语，新增待办事项功能
 - 文档：API文档、架构图、性能优化与问题分析报告
 - 部署与测试：部署说明、自动化构建配置、测试脚本等
-- **AI OCR数据采集**：监护仪呼吸机AI OCR数据采集完整技术方案
+- AI OCR数据采集：监护仪呼吸机AI OCR数据采集完整技术方案
 
 ```mermaid
 graph TB
@@ -143,6 +148,8 @@ AIResponse["AI对话组件<br/>AIResponse.vue + 流式响应"]
 DiagnosisCard["诊断卡片组件<br/>DiagnosisCard.vue + 优化"]
 DiagnosisParser["诊断解析工具<br/>diagnosisParser.js + 修复"]
 MedicalRecords["病历管理组件<br/>MedicalRecords.vue + voiceTextProcessor.js"]
+AIDiagnosisTab["AI诊断辅助标签页<br/>AIDiagnosisTab.vue + 懒加载"]
+PatientTabs["患者标签页容器<br/>PatientTabs.vue + 条件渲染"]
 EndDevice[("医疗设备")]
 end
 subgraph "外部系统"
@@ -182,6 +189,9 @@ DiagnosisEditPanel --> DiagnosisParser
 AIResponse --> AIService
 DiagnosisCard --> DiagnosisParser
 MedicalRecords --> AIService
+AIDiagnosisTab --> DiagnosisEditPanel
+AIDiagnosisTab --> LatestAPIFront
+PatientTabs --> AIDiagnosisTab
 ExternalSystem --> LatestAPI
 SequenceConsistency --> OracleSync
 OracleSync --> ConversationHistory
@@ -218,8 +228,9 @@ ConversationHistory --> DB
 - **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题。
 - **CLOB内存管理**：新增ClobManager工具类，优化大文本处理性能，防止内存泄漏。
 - **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理。
+- **AI诊断辅助标签页**：新增AIDiagnosisTab.vue组件，提供独立的AI诊断分析结果展示，包含懒加载机制、状态管理和数据解析功能。
 - **诊断编辑面板**：新增DiagnosisEditPanel.vue组件，提供内嵌诊断编辑功能，支持左右两栏布局。
-- **流式AI对话**：优化AIResponse.vue和aiService.js，实现逐字流式显示，大幅减少响应等待时间。
+- **流式AI对话**：优化AIResponse.vue和aiService.js，实现逐字流式显示，大幅减少响应等待时间感知。
 - **增强的诊断解析**：新增diagnosisParser.js工具，修复正则表达式问题，支持完整的诊断块提取。
 - **优化的诊断卡片**：DiagnosisCard.vue移除固定高度截断，支持诊断列表的自然撑开显示。
 - **改进的诊断数据初始化**：_initDiagnosisData改为异步方法，确保数据加载完成后执行初始化逻辑。
@@ -232,7 +243,7 @@ ConversationHistory --> DB
 - **治疗计划表优化**：优化重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。
 - **待办事项功能**：治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项。
 
-**最新更新** 版本0.8.037新增AI结果渲染优化功能，实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别；同时优化治疗计划表重要程度术语，将"危急"替换为"关键"，提升临床术语准确性。新增待办事项功能，支持一键将治疗计划项添加到待办事项。
+**最新更新** 版本0.8.037新增AI诊断辅助标签页功能，通过独立的AIDiagnosisTab.vue组件提供AI诊断分析结果展示，包含懒加载机制、状态管理和数据解析功能。
 
 **章节来源**
 - [AI模型配置类.java:29-398](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java#L29-L398)
@@ -250,6 +261,8 @@ ConversationHistory --> DB
 - [SequenceConsistencyService.java:57-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L57-L103)
 - [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
 - [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
+- [AIDiagnosisTab.vue:50-57](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L50-L57)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 ## 架构总览
 系统采用"主服务器 + 执行服务器"协作模式：
@@ -263,6 +276,7 @@ ConversationHistory --> DB
 - **数据库缓存修复**：解决Hibernate缓存导致的状态验证失败问题，提高系统稳定性。
 - **CLOB内存管理**：优化大文本处理性能，防止内存泄漏和系统性能下降。
 - **SQL执行缓存**：增强缓存清理和监控功能，支持动态配置管理。
+- **AI诊断辅助标签页**：新增独立的AIDiagnosisTab.vue组件，提供AI诊断分析结果的独立展示，包含懒加载机制和状态管理。
 - **诊断编辑面板**：提供内嵌诊断编辑功能，支持左右两栏布局和标签页切换。
 - **流式AI对话**：实现逐字流式显示，大幅减少响应等待时间感知。
 - **增强的诊断解析**：统一提取诊断名称和完整诊断块的逻辑，修复正则表达式问题。
@@ -387,6 +401,12 @@ ZZZZ["文档维护"]
 SequenceConsistency["序列一致性服务"] --> OracleSync["Oracle序列同步工具"]
 OracleSync --> ConversationHistory["对话历史表"]
 ConversationHistory --> O
+AIDiagnosisTab["AI诊断辅助标签页"] --> DiagnosisEditPanel["诊断编辑面板"]
+AIDiagnosisTab --> LatestAPIFront["最新提示结果API"]
+AIDiagnosisTab --> LazyLoading["懒加载机制"]
+AIDiagnosisTab --> StateManagement["状态管理"]
+AIDiagnosisTab --> DataParsing["数据解析功能"]
+PatientTabs["患者标签页容器"] --> AIDiagnosisTab
 ```
 
 **图表来源**
@@ -396,181 +416,206 @@ ConversationHistory --> O
 
 ## 详细组件分析
 
-### AI结果渲染优化系统
+### AI诊断辅助标签页组件（新增功能）
 - 设计要点
-  - **新增**：在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑
-  - 支持'关键/重要/一般'三种级别的重要程度显示
-  - 使用正则表达式匹配表格单元格中的重要程度文本
-  - 将纯文本替换为带颜色徽章样式的HTML元素
-  - 为每种重要程度级别提供对应的CSS样式类
-- 关键功能
-  - 色标渲染：将"关键"替换为红色徽章，"重要"替换为橙色徽章，"一般"替换为灰色徽章
-  - 圆角徽章：使用border-radius实现圆润外观，提供更好的视觉体验
-  - 颜色映射：severity-critical（红色）、severity-important（橙色）、severity-normal（绿色）
-  - 正则匹配：精确匹配表格单元格中的重要程度文本，避免误匹配
-  - 安全过滤：在DOMPurify过滤器中允许span元素和相关属性
-- 技术实现
-
-```mermaid
-flowchart TD
-Start(["开始AI结果渲染"]) --> ParseMarkdown["marked.parse解析Markdown"]
-ParseThinking["提取<thinking>块并用占位符替换"]
-ParseMain["解析主体Markdown内容"]
-ColorBadge["重要程度色标渲染"]
-ReplaceCritical["替换'关键'为红色徽章"]
-ReplaceImportant["替换'重要'为橙色徽章"]
-ReplaceNormal["替换'一般'为灰色徽章"]
-CategoryHighlight["分类标题行高亮"]
-AddClass["为符合条件的行添加category-row类"]
-DOMPurify["DOMPurify安全过滤"]
-AllowElements["允许span元素和相关属性"]
-FinalHTML["输出最终HTML内容"]
-ParseMarkdown --> ParseThinking --> ParseMain --> ColorBadge --> ReplaceCritical --> ReplaceImportant --> ReplaceNormal --> CategoryHighlight --> AddClass --> DOMPurify --> AllowElements --> FinalHTML
-```
-
-**最新更新** 新增AI结果渲染优化功能，在AIResults.vue中实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别，提升视觉层次和用户体验。
-
-**图表来源**
-- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
-
-**章节来源**
-- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
-
-### 治疗计划表重要程度术语优化
-- 设计要点
-  - **优化**：将"危急"替换为"关键"，提升临床术语准确性
-  - 更准确地描述临床优先级分类，符合医疗标准术语
-  - 保持与AI结果渲染色标的语义一致性
-  - 支持原有的重要程度分类体系
+  - **新增**：AIDiagnosisTab.vue组件提供独立的AI诊断分析结果展示
+  - 懒加载机制：通过v-if条件渲染确保仅在激活时才挂载组件，减少不必要的API请求
+  - 状态管理：集成Vuex store，管理AI诊断和当前诊断状态
+  - 数据解析：支持extractDiagnosisBlocks和extractDiagnosisNames两种诊断解析模式
+  - 错误处理：提供加载状态、错误状态、空状态和重试机制
 - 关键特性
-  - 术语替换：将"危急"替换为"关键"，提升术语准确性
-  - 下拉选项更新：治疗计划表中重要程度下拉框选项更新
-  - 颜色映射：保持与色标渲染的颜色映射一致性
-  - 数据结构：更新treatmentPlanParser.js中的枚举定义
-  - JSDoc注释：更新API文档中的示例代码
+  - 懒加载：仅在activeTab === 'ai-diagnosis'且currentPatient存在时才挂载
+  - 状态管理：loading、error、resultContent、executionTime状态管理
+  - 数据解析：优先使用extractDiagnosisBlocks，失败时降级到extractDiagnosisNames
+  - 执行时间格式化：支持数组格式和字符串格式的执行时间解析
+  - 组件销毁：beforeUnmount钩子中清空store中的诊断数据，避免污染其他页面
+  - 错误处理：统一的错误捕获和用户友好的错误提示
 - 前端集成
-  - 下拉选项：治疗计划表中重要程度下拉框显示"关键/重要/一般"
-  - 颜色显示：重要程度文本使用对应的颜色显示
-  - 数据保存：重要程度数据保存时使用新的术语
-  - 用户体验：提升临床术语的准确性和专业性
+  - PatientTabs容器：通过v-if条件渲染实现懒加载
+  - DiagnosisEditPanel集成：复用诊断编辑功能，实现AI诊断列表与当前诊断的双向同步
+  - API调用：使用getLatestPromptResult获取最近的诊断分析结果
+  - Vuex集成：使用mapState和mapMutations管理状态
+  - 诊断解析：使用diagnosisParser工具进行数据解析
 
 ```mermaid
 sequenceDiagram
-participant User as "用户"
-participant TreatmentPlan as "治疗计划表"
-participant Parser as "treatmentPlanParser"
-participant Renderer as "AI结果渲染"
-User->>TreatmentPlan : "选择重要程度"
-TreatmentPlan->>TreatmentPlan : "更新下拉选项"
-TreatmentPlan->>Parser : "保存重要程度数据"
-Parser->>Renderer : "传递重要程度数据"
-Renderer->>Renderer : "应用色标渲染"
-Renderer-->>User : "显示彩色重要程度"
+participant PatientTabs as "PatientTabs容器"
+participant AIDiagnosisTab as "AIDiagnosisTab组件"
+participant API as "getLatestPromptResult"
+participant Parser as "diagnosisParser工具"
+participant Store as "Vuex Store"
+PatientTabs->>AIDiagnosisTab : "v-if条件渲染激活"
+AIDiagnosisTab->>AIDiagnosisTab : "mounted钩子触发"
+AIDiagnosisTab->>API : "getLatestPromptResult(patientId, '诊断分析')"
+API-->>AIDiagnosisTab : "返回AI结果数据"
+AIDiagnosisTab->>Parser : "extractDiagnosisBlocks(resultContent)"
+alt "解析成功"
+Parser-->>AIDiagnosisTab : "返回诊断块数组"
+AIDiagnosisTab->>Store : "SET_AI_DIAGNOSIS(blocks)"
+else "解析失败"
+AIDiagnosisTab->>Parser : "extractDiagnosisNames(resultContent)"
+Parser-->>AIDiagnosisTab : "返回诊断名称数组"
+AIDiagnosisTab->>Store : "SET_AI_DIAGNOSIS(names)"
+end
+AIDiagnosisTab->>Store : "fetchDiagnoses(patientId)"
+Store-->>AIDiagnosisTab : "返回患者诊断列表"
+AIDiagnosisTab->>Store : "SET_CURRENT_DIAGNOSIS(diagnoses)"
+AIDiagnosisTab-->>PatientTabs : "显示诊断编辑面板"
 ```
 
-**最新更新** 优化治疗计划表重要程度术语，将"危急"替换为"关键"，提升临床术语准确性，与AI结果渲染色标保持一致。
+**最新更新** 新增AI诊断辅助标签页组件（AIDiagnosisTab.vue），提供独立的AI诊断分析结果展示，包含懒加载机制、状态管理和数据解析功能。
 
 **图表来源**
-- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
-- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
-- [2026-04-17更新日志.md:16-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L16-L21)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:229-245](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L229-L245)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 **章节来源**
-- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
-- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
-- [2026-04-17更新日志.md:16-21](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L16-L21)
+- [AIDiagnosisTab.vue:50-57](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L50-L57)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:229-245](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L229-L245)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
-### 待办事项功能增强
+### 患者标签页容器（懒加载集成）
 - 设计要点
-  - **新增**：治疗计划表操作列新增"加入待办"按钮功能
-  - 支持一键将治疗计划项添加到待办事项
-  - 自动添加"- [ ] "前缀，支持注意事项合并为单行传输
-  - 每行独立loading状态，避免操作冲突
-  - 支持内容匹配去重，同一患者同一内容仅入库一条
+  - **优化**：通过v-if条件渲染实现组件懒加载，避免不必要的API请求
+  - 标签页激活检测：仅在activeTab === 'ai-diagnosis'时才挂载AIDiagnosisTab组件
+  - 患者状态检查：确保currentPatient存在时才挂载组件
+  - 性能优化：减少组件初始化开销，提升页面响应速度
 - 关键流程
 
 ```mermaid
 sequenceDiagram
 participant User as "用户"
-participant TreatmentPlan as "治疗计划表"
-participant API as "createTodoFromTreatmentPlan"
-participant Store as "Vuex Store"
-User->>TreatmentPlan : "点击'加入待办'按钮"
-TreatmentPlan->>TreatmentPlan : "设置行loading状态"
-TreatmentPlan->>Store : "获取当前患者ID"
-Store-->>TreatmentPlan : "返回patientId"
-TreatmentPlan->>TreatmentPlan : "构建待办内容添加- [ ] 前缀"
-TreatmentPlan->>API : "调用createTodoFromTreatmentPlan"
-API-->>TreatmentPlan : "返回处理结果"
-alt "添加成功"
-TreatmentPlan->>TreatmentPlan : "显示成功提示"
-else "重复添加"
-TreatmentPlan->>TreatmentPlan : "显示重复提示"
-else "添加失败"
-TreatmentPlan->>TreatmentPlan : "显示错误提示"
+participant PatientTabs as "PatientTabs容器"
+participant TabPane as "标签页面板"
+User->>PatientTabs : "点击'AI诊断'标签页"
+PatientTabs->>PatientTabs : "activeTab = 'ai-diagnosis'"
+PatientTabs->>TabPane : "检查v-if条件"
+alt "activeTab === 'ai-diagnosis' 且 currentPatient存在"
+TabPane->>TabPane : "条件为真，挂载AIDiagnosisTab"
+TabPane-->>User : "显示AI诊断标签页内容"
+else "条件为假"
+TabPane->>TabPane : "条件为假，不挂载组件"
 end
-TreatmentPlan->>TreatmentPlan : "恢复行loading状态"
 ```
 
-**最新更新** 新增待办事项功能，治疗计划表操作列新增"加入待办"按钮，支持一键添加到待办事项，自动添加"- [ ] "前缀并支持注意事项合并。
+**最新更新** 优化患者标签页容器的懒加载机制，通过v-if条件渲染确保仅在激活时才挂载AIDiagnosisTab组件。
 
 **图表来源**
-- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
-- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 **章节来源**
-- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
-- [2026-04-17更新日志.md:6-11](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-17.md#L6-L11)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
-### 色标样式系统
+### 数据解析与状态管理
 - 设计要点
-  - **新增**：为重要程度列添加圆角徽章样式，提供更好的视觉层次
-  - 使用display: inline-block实现徽章效果，padding和border-radius提供圆润外观
-  - 为每种重要程度级别提供独特的颜色方案和边框样式
-  - 支持hover状态的颜色变化，提升交互体验
-- 关键样式
-  - 圆角徽章：border-radius: 10px，padding: 2px 8px，提供舒适的视觉比例
-  - 字体设置：font-size: 11px，font-weight: 600，white-space: nowrap
-  - 颜色方案：
-    - 关键：#fef0f0背景色，#f56c6c文字色，#fab6b6边框色（红色系）
-    - 重要：#fdf6ec背景色，#e6a23c文字色，#f5dab1边框色（橙色系）
-    - 一般：#f4f4f5背景色，#909399文字色，#d3d4d6边框色（灰色系）
-  - 悬停效果：支持hover状态的颜色变化和背景色调整
-- 前端集成
-  - CSS类：severity-badge、severity-critical、severity-important、severity-normal
-  - HTML结构：使用span元素包裹重要程度文本，应用相应的CSS类
-  - 响应式设计：支持不同屏幕尺寸下的显示效果
-  - 可访问性：提供足够的颜色对比度，确保可读性
+  - **优化**：实现双重诊断解析策略，提升数据解析的可靠性
+  - 状态管理：集成Vuex store，管理AI诊断和当前诊断状态
+  - 错误处理：统一的错误捕获和用户友好的错误提示
+  - 组件销毁：确保组件卸载时清理store中的诊断数据
+- 关键功能
+  - 双重解析策略：优先使用extractDiagnosisBlocks，失败时降级到extractDiagnosisNames
+  - 状态同步：维护AI诊断和当前诊断的状态同步，避免重复计算
+  - 执行时间格式化：支持数组格式和字符串格式的执行时间解析
+  - 错误恢复：提供重试机制和用户友好的错误提示
+  - 数据清理：组件销毁时清空store中的诊断数据，避免污染其他页面
+- 技术实现
 
 ```mermaid
 flowchart TD
-CSSClasses["CSS类定义"] --> BadgeStyle["徽章样式"]
-BadgeStyle --> CriticalStyle["关键样式"]
-BadgeStyle --> ImportantStyle["重要样式"]
-BadgeStyle --> NormalStyle["一般样式"]
-CriticalStyle --> RedScheme["红色系配色"]
-ImportantStyle --> OrangeScheme["橙色系配色"]
-NormalStyle --> GrayScheme["灰色系配色"]
-RedScheme --> RedBackground["#fef0f0背景"]
-RedScheme --> RedText["#f56c6c文字"]
-RedScheme --> RedBorder["#fab6b6边框"]
-OrangeScheme --> OrangeBackground["#fdf6ec背景"]
-OrangeScheme --> OrangeText["#e6a23c文字"]
-OrangeScheme --> OrangeBorder["#f5dab1边框"]
-GrayScheme --> GrayBackground["#f4f4f5背景"]
-GrayScheme --> GrayText["#909399文字"]
-GrayScheme --> GrayBorder["#d3d4d6边框"]
+Start(["开始数据解析"]) --> CheckContent{"resultContent是否存在？"}
+CheckContent --> |否| ResetState["重置状态为空"]
+CheckContent --> |是| TryBlocks["尝试extractDiagnosisBlocks解析"]
+TryBlocks --> BlocksSuccess{"解析成功？"}
+BlocksSuccess --> |是| SetBlocks["SET_AI_DIAGNOSIS(blocks)"]
+BlocksSuccess --> |否| TryNames["尝试extractDiagnosisNames解析"]
+TryNames --> NamesSuccess{"解析成功？"}
+NamesSuccess --> |是| SetNames["SET_AI_DIAGNOSIS(names)"]
+NamesSuccess --> |否| SetEmpty["SET_AI_DIAGNOSIS([])"]
+SetBlocks --> FetchDiagnoses["fetchDiagnoses(patientId)"]
+SetNames --> FetchDiagnoses
+ResetState --> End(["结束"])
+FetchDiagnoses --> SetCurrentDiagnosis["SET_CURRENT_DIAGNOSIS(diagnoses)"]
+SetCurrentDiagnosis --> End
 ```
 
-**最新更新** 新增色标样式系统，为重要程度列添加圆角徽章样式，提供'关键/重要/一般'三种级别的视觉区分。
+**最新更新** 优化数据解析与状态管理功能，实现双重诊断解析策略和完整的状态同步机制。
 
 **图表来源**
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [AIDiagnosisTab.vue:167-200](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L200)
 
 **章节来源**
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
+- [AIDiagnosisTab.vue:167-200](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L200)
+
+### 执行时间格式化功能
+- 设计要点
+  - **新增**：formatExecutionTime方法支持多种时间格式的解析和格式化
+  - 数组格式支持：支持后端返回的LocalDateTime数组格式[year, month, day, hour, minute, second, nano]
+  - 字符串格式支持：直接返回字符串格式的时间
+  - 安全处理：包含完整的类型检查和边界值处理
+- 关键特性
+  - 类型检测：检查输入参数的类型，确保正确处理
+  - 格式转换：将数组格式转换为标准日期时间字符串
+  - 边界处理：处理null、undefined、空数组等边界情况
+  - 格式化：使用padStart方法确保两位数格式
+- 前端集成
+  - API响应处理：在获取AI结果时调用formatExecutionTime格式化执行时间
+  - 用户显示：在结果信息区域显示格式化后的执行时间
+  - 兼容性：支持后端不同格式的返回值
+
+```mermaid
+flowchart TD
+FormatTime(["formatExecutionTime"]) --> CheckInput{"输入参数检查"}
+CheckInput --> |无参数| ReturnEmpty["返回空字符串"]
+CheckInput --> |字符串| ReturnString["直接返回字符串"]
+CheckInput --> |数组| CheckLength{"数组长度>=6？"}
+CheckLength --> |否| ReturnString
+CheckLength --> |是| ExtractValues["提取year, month, day, hour, minute, second"]
+ExtractValues --> PadValues["使用padStart确保两位数格式"]
+PadValues --> FormatDate["格式化为'YYYY-MM-DD HH:mm:ss'"]
+FormatDate --> ReturnFormatted["返回格式化时间"]
+```
+
+**最新更新** 新增执行时间格式化功能，支持多种时间格式的解析和格式化，确保用户界面显示的一致性。
+
+**图表来源**
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+
+**章节来源**
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+
+### 错误处理与状态管理
+- 设计要点
+  - **优化**：实现完整的错误处理机制，提供用户友好的错误提示
+  - 状态管理：管理loading、error、resultContent、executionTime四种状态
+  - 重试机制：提供重试按钮和自动重试功能
+  - 空状态处理：当无诊断分析记录时显示友好的提示信息
+  - 组件销毁：确保组件卸载时清理所有状态和store数据
+- 关键流程
+
+```mermaid
+stateDiagram-v2
+[*] --> 初始化
+初始化 --> 加载中 : mounted触发或watch监听
+加载中 --> 成功 : API调用成功
+加载中 --> 错误 : API调用失败
+成功 --> 显示结果 : 解析数据成功
+错误 --> 显示错误 : 显示错误提示和重试按钮
+显示错误 --> 加载中 : 用户点击重试
+显示结果 --> [*] : 组件销毁
+显示结果 --> [*] : 切换患者
+```
+
+**最新更新** 优化错误处理与状态管理功能，实现完整的加载状态、错误状态、空状态和重试机制。
+
+**图表来源**
+- [AIDiagnosisTab.vue:4-40](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L4-L40)
+- [AIDiagnosisTab.vue:135-142](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L135-L142)
+
+**章节来源**
+- [AIDiagnosisTab.vue:4-40](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L4-L40)
+- [AIDiagnosisTab.vue:135-142](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L135-L142)
 
 ### AI模型配置组件
 - 设计要点
@@ -1211,6 +1256,13 @@ ReturnCache --> Stats
   - 缓存清理：POST /api/hospital-config/clear-cache，支持按医院ID和数据库类型清理
   - 缓存统计：GET /api/hospital-config/cache-stats，获取缓存使用统计信息
   - SQL执行缓存：增强缓存清理和监控功能
+- **AI诊断辅助标签页API**
+  - 最新诊断分析结果：getLatestPromptResult(patientId, '诊断分析')
+  - 懒加载机制：通过v-if条件渲染实现组件懒加载
+  - 状态管理：管理loading、error、resultContent、executionTime状态
+  - 数据解析：支持extractDiagnosisBlocks和extractDiagnosisNames两种解析模式
+  - 执行时间格式化：支持数组格式和字符串格式的时间解析
+  - 组件销毁：清理store中的诊断数据，避免污染其他页面
 - **诊断编辑面板API**
   - 左侧表格：支持诊断选择、编辑、新增空白诊断
   - 右侧标签页：诊断说明（类别、依据、鉴别诊断、补充说明）和目前诊断
@@ -1270,6 +1322,7 @@ ReturnCache --> Stats
   - **最新提示结果**：GET `/api/ai/latestPromptResult?patientId=123&promptName=诊断分析`
   - **优化的待办查询**：GET `/api/medicalrecords/patient/990500001204401_1/todos`
   - **缓存清理**：POST `/api/hospital-config/clear-cache?hospitalId=cdwyy&databaseType=his`
+  - **AI诊断辅助标签页**：AIDiagnosisTab.vue组件 + 懒加载机制
   - **诊断编辑面板**：DiagnosisEditPanel.vue组件
   - **流式AI对话**：getAIResponseStream + AbortController
   - **诊断解析**：extractDiagnosisNames(content) / extractDiagnosisBlocks(content)
@@ -1302,7 +1355,7 @@ ReturnCache --> Stats
   - **自动化检索**：支持外部系统定时拉取最新的AI生成医疗洞察
   - **合规保障**：所有AI内容自动附加免责声明，确保法律合规
 
-**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的API接口，包括色标渲染、术语替换、下拉选项更新、颜色映射、加入待办、内容处理、去重机制等功能。
+**最新更新** 新增AI诊断辅助标签页功能的API接口，包括懒加载机制、状态管理、数据解析功能和执行时间格式化等。
 
 **章节来源**
 - [API文档.md:192-493](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md#L192-L493)
@@ -1311,7 +1364,7 @@ ReturnCache --> Stats
 - [DRG分析API接口.md:25-35](file://med_ai_assistant_1.0_bs_backend/doc/系统结构/DRG分析/DRG分析API接口.md#L25-L35)
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
-- [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
+- [ai.js:830-838](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L830-L838)
 - [MedicalRecordController.java:624-653](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L624-L653)
 - [HospitalConfigTestController.java:450-481](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/HospitalConfigTestController.java#L450-L481)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
@@ -1320,6 +1373,9 @@ ReturnCache --> Stats
 - [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
 - [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
 - [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 ### 最新提示结果接口（新增功能）
 - 设计要点
@@ -1331,7 +1387,7 @@ ReturnCache --> Stats
   - 参数验证：patientId和promptName必需参数
   - 结果包装：使用AIContentResponseWrapper自动添加免责声明
   - 错误处理：无结果时返回null而非抛出异常
-  - 性能优化：直接查询数据库，避免HTTP自调用开销
+  - 性能优化：直接数据库查询，避免HTTP自调用开销
 - 前端集成
   - getLatestPromptResult API函数封装请求逻辑
   - 支持Promise和错误处理机制
@@ -1355,12 +1411,12 @@ FrontendAPI-->>ExternalSystem : "返回AI免责声明 + 数据"
 **图表来源**
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
-- [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
+- [ai.js:830-838](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L830-L838)
 
 **章节来源**
 - [AIController.java:272-288](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java#L272-L288)
 - [PromptResultRepository.java:148-164](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java#L148-L164)
-- [ai.js:837-848](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L837-L848)
+- [ai.js:830-838](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L830-L838)
 
 ### 优化的待办事项查询系统
 - 设计要点
@@ -1639,6 +1695,7 @@ end
   - **SQL执行缓存**依赖JdbcTemplateFactory进行缓存管理
   - **科室特殊情况补充信息**依赖PromptTemplate模型扩展
   - **诊断编辑面板**依赖DiagnosisEditPanel组件和诊断解析工具
+  - **AI诊断辅助标签页**依赖AIDiagnosisTab组件、DiagnosisEditPanel组件和getLatestPromptResult API
   - **流式AI对话**依赖Fetch API、ReadableStream和NDJSON解析
   - **增强的诊断解析**提供统一的诊断提取和解析功能
   - **优化的诊断卡片**移除固定高度截断，支持自然撑开
@@ -1696,6 +1753,9 @@ end
   - **AI结果渲染问题**：通过正则表达式匹配和CSS样式确保色标正确显示
   - **治疗计划表术语问题**：通过术语替换和颜色映射确保重要程度准确显示
   - **待办事项功能问题**：通过内容处理和去重机制确保待办事项正确添加
+  - **AI诊断辅助标签页问题**：通过懒加载机制和状态管理确保组件正确加载
+  - **数据解析问题**：通过双重解析策略和错误处理确保数据正确解析
+  - **执行时间格式化问题**：通过类型检查和格式化确保时间正确显示
 
 ```mermaid
 graph TB
@@ -1769,23 +1829,13 @@ TodoFeature["待办事项功能"] --> AddTodoButton["加入待办按钮"]
 AddTodoButton --> ContentProcessing["内容处理"]
 ContentProcessing --> PrefixAddition["前缀添加"]
 ContentProcessing --> NoteMerging["注意事项合并"]
-subgraph "前端依赖"
-DRGAPI["DRG/MCC分析API"] --> VueComp["Vue组件"]
-DRGAPI --> BackendAPI["后端MCC接口"]
-AIService["AI服务模块"] --> VueComp
-AIService --> BackendAPI
-VueComp --> UIComponents["UI组件"]
-TemplateComp["模板管理组件"] --> ElementPlus["Element Plus"]
-TemplateComp --> promptUtils["promptUtils工具"]
-TemplateComp --> MessageBox["MessageBox对话框"]
-TopMenu["顶部菜单组件"] --> DeviceDetect["设备检测逻辑"]
-TopMenu --> Router["路由导航"]
-OCRAPI["OCR数据采集API"] --> OCRService["OCR服务端"]
-OCRAPI --> MainSystem["主系统集成"]
-LatestAPIFront["最新提示结果API"] --> ExternalSystem["外部医疗系统"]
-TodoFront["优化后的待办事项界面"] --> TodoOptimization
+AIDiagnosisTab["AI诊断辅助标签页"] --> DiagnosisEditPanel["诊断编辑面板"]
+AIDiagnosisTab --> LatestAPIFront["最新提示结果API"]
+AIDiagnosisTab --> LazyLoading["懒加载机制"]
+AIDiagnosisTab --> StateManagement["状态管理"]
+AIDiagnosisTab --> DataParsing["数据解析功能"]
+PatientTabs["患者标签页容器"] --> AIDiagnosisTab
 EndDevice["医疗设备"]
-end
 ```
 
 **图表来源**
@@ -1811,6 +1861,9 @@ end
 - [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
 - [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
 - [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 **章节来源**
 - [执行服务器控制器.java:84-145](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/ExecutionServerController.java#L84-L145)
@@ -1835,6 +1888,9 @@ end
 - [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
 - [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
 - [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 ## 性能考虑
 - 连接池与超时
@@ -1876,6 +1932,12 @@ end
   - 动态清理：支持按医院ID和数据库类型进行精细化缓存管理
   - 统计监控：提供详细的缓存使用情况统计
   - 性能优化：通过缓存清理提升系统整体性能
+- **AI诊断辅助标签页性能优化**
+  - 懒加载机制：通过v-if条件渲染确保仅在激活时才挂载组件
+  - 状态管理：使用Vuex store管理状态，避免重复计算
+  - 数据解析优化：实现双重解析策略，提升数据解析可靠性
+  - 错误处理：统一的错误捕获和用户友好的错误提示
+  - 组件销毁：确保组件卸载时清理store中的诊断数据
 - **诊断编辑面板性能优化**
   - 左右两栏布局：支持诊断列表和详细信息的并行显示
   - 标签页切换：支持诊断说明和目前诊断的快速切换
@@ -1962,6 +2024,7 @@ end
   - **模板管理性能**：树形结构渲染优化，表单验证实时处理
   - **OCR系统性能**：边缘计算优化，模板匹配优化，数据流优化
   - **诊断编辑面板性能**：左右两栏布局优化，标签页切换优化
+  - **AI诊断辅助标签页性能**：懒加载机制优化，状态管理优化，数据解析优化
   - **流式响应性能**：Fetch API + ReadableStream优化，NDJSON解析优化
   - **诊断解析性能**：正则表达式优化，字段提取优化，思维链清理优化
   - **诊断卡片性能**：自然撑开优化，左右分栏布局优化
@@ -1969,13 +2032,13 @@ end
   - **Oracle序列适配性能**：定时检查优化，批量修复提升效率
   - **事务保障性能**：锁竞争优化，性能监控提升系统稳定性
   - **消息顺序保存性能**：顺序验证优化，去重检查提升准确性
-  - **ID排序优化性能**：ID生成策略优化，冲突检测提升效率
+  - **ID排序性能**：ID生成策略优化，冲突检测提升效率
   - **500错误解决性能**：错误监控优化，自动恢复提升可靠性
   - **AI结果渲染性能**：正则表达式匹配优化，CSS样式优化，DOMPurify优化
   - **治疗计划表性能**：术语替换优化，下拉选项优化，颜色映射优化
   - **待办事项功能性能**：内容处理优化，去重机制优化，行级状态优化
 
-**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的性能优化措施，包括正则表达式优化、CSS样式优化、DOMPurify优化、术语替换优化、下拉选项优化、颜色映射优化、内容处理优化、去重机制优化、行级状态优化等。
+**最新更新** 新增AI诊断辅助标签页功能的性能优化措施，包括懒加载机制、状态管理、数据解析功能和执行时间格式化的性能优化。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
@@ -1986,11 +2049,9 @@ end
 - [Hibernate自动刷新机制CLOB异常问题分析与解决方案.md:47-116](file://med_ai_assistant_1.0_bs_backend/doc/其他/Hibernate自动刷新机制CLOB异常问题分析与解决方案.md#L47-L116)
 - [ClobManager.java:1-207](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/ClobManager.java#L1-L207)
 - [SqlExecutionService.java:436-450](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/SqlExecutionService.java#L436-L450)
-- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
-- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
-- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
-- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 ## 故障排查指南
 - 常见问题
@@ -2025,6 +2086,9 @@ end
   - **AI结果渲染问题**：检查正则表达式匹配和CSS样式是否正确
   - **治疗计划表术语问题**：检查术语替换和颜色映射是否正确
   - **待办事项功能问题**：检查内容处理和去重机制是否正确
+  - **AI诊断辅助标签页问题**：检查懒加载机制和状态管理是否正确
+  - **数据解析问题**：检查双重解析策略和错误处理是否正确
+  - **执行时间格式化问题**：检查类型检查和格式化逻辑是否正确
 - 排查步骤
   - 查看LLM调用统计接口，确认成功率与响应时间
   - 检查应用配置文件中的LLM专用参数
@@ -2060,6 +2124,9 @@ end
   - **检查AI结果渲染功能**：验证正则表达式匹配和CSS样式应用
   - **验证治疗计划表术语替换**：检查"危急"到"关键"的替换逻辑
   - **测试待办事项功能**：验证加入待办按钮和内容处理逻辑
+  - **验证AI诊断辅助标签页功能**：检查懒加载机制和状态管理
+  - **测试数据解析功能**：验证双重解析策略和错误处理
+  - **检查执行时间格式化功能**：验证类型检查和格式化逻辑
 - 相关文档
   - AI响应接口网络中断后连接失败问题分析与解决方案
   - 执行服务器架构简化实施报告
@@ -2088,23 +2155,26 @@ end
   - **AI结果渲染优化技术方案**
   - **治疗计划表优化技术方案**
   - **待办事项功能实现指南**
+  - **AI诊断辅助标签页功能实现指南**
+  - **数据解析与状态管理优化指南**
+  - **执行时间格式化功能实现指南**
 
-**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的故障排查指南，包括正则表达式匹配问题、CSS样式应用问题、术语替换问题、颜色映射问题、加入待办按钮问题、内容处理问题、去重机制问题等新功能的排查步骤。
+**最新更新** 新增AI诊断辅助标签页功能的故障排查指南，包括懒加载机制问题、状态管理问题、数据解析问题和执行时间格式化问题等新功能的排查步骤。
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
 - [执行服务器架构简化实施报告.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器架构简化实施报告.md)
 - [执行服务器性能优化方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器性能优化方案.md)
-- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
-- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
-- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
-- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [AIDiagnosisTab.vue:4-40](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L4-L40)
+- [AIDiagnosisTab.vue:135-142](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L135-L142)
+- [AIDiagnosisTab.vue:167-200](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L200)
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
 
 ## 结论
-系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的MCC分析功能模块进一步增强了系统的临床价值，提供了完整的MCC预筛选、相似度计算、排除规则检查、TopK筛选和Prompt生成保存能力。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的流式响应优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
+系统通过专用RestTemplate、指数退避重试、响应缓存与全面监控，有效提升了LLM调用的稳定性与性能。执行服务器专注于高时延推理与加密处理，主服务器负责业务编排与对外API，二者协同实现高可靠、可扩展的AI诊断辅助能力。**新增的AI诊断辅助标签页功能进一步增强了系统的用户体验，通过独立的AIDiagnosisTab.vue组件提供AI诊断分析结果的独立展示，包含懒加载机制、状态管理和数据解析功能。**前端DRG/MCC分析API的统一接口设计，配合视图优化和字段映射修复，显著提升了用户体验。**前端AI服务模块的流式响应优化进一步提升了用户体验，确保AI对话内容能够及时显示在界面上。**
 
-**最新更新** 版本0.8.037通过AI结果渲染优化、治疗计划表优化和待办事项功能的引入，显著提升了系统的用户体验和临床实用性。新增的AI结果渲染优化功能实现诊疗计划表重要程度色标替换逻辑，支持'关键/重要/一般'三种级别；治疗计划表优化将"危急"替换为"关键"，提升术语准确性；待办事项功能支持一键将治疗计划项添加到待办事项，提升工作效率。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
+**最新更新** 版本0.8.037通过AI诊断辅助标签页功能的引入，显著提升了系统的用户体验和临床实用性。新增的AIDiagnosisTab.vue组件提供独立的AI诊断分析结果展示，包含懒加载机制、状态管理和数据解析功能，支持多种诊断解析模式和完整的错误处理机制。这些新功能与现有的MCC分析、最新提示结果接口、待办事项查询优化、数据库缓存修复、CLOB内存管理工具和SQL执行缓存管理功能共同构成了完整的AI诊断辅助系统。
 
 建议持续基于监控数据进行配置调优与容量规划，确保系统在复杂医疗场景下的长期稳定运行。
 
@@ -2126,6 +2196,7 @@ end
   - **SQL执行缓存配置**：缓存清理策略和监控参数
   - **科室特殊内容配置**：SPECIAL_CONTENT字段的配置和加载策略
   - **诊断编辑面板配置**：左右两栏布局和标签页切换的配置
+  - **AI诊断辅助标签页配置**：懒加载机制、状态管理、数据解析功能的配置
   - **流式AI对话配置**：Fetch API、ReadableStream和NDJSON解析的参数配置
   - **诊断解析工具配置**：正则表达式和字段提取的参数配置
   - **诊断卡片组件配置**：自然撑开和左右分栏布局的配置
@@ -2141,7 +2212,7 @@ end
 - 部署策略
   - 分阶段部署：开发 -> 测试 -> 预生产 -> 灰度 -> 全量
   - 回滚计划：代码回滚、配置回滚、数据回滚与监控验证
-  - **版本管理**：版本号从0.4.071更新到0.8.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复、AI OCR数据采集系统、待办事项查询优化、数据库缓存修复、CLOB内存管理工具、SQL执行缓存管理功能、流式AI对话系统、诊断编辑面板组件、增强的诊断解析工具、优化的诊断卡片组件和诊断数据初始化时序优化
+  - **版本管理**：版本号从0.4.071更新到0.8.083，包含MCC分析功能、UI显示问题修复、模板管理功能增强、Android平板界面修复、AI OCR数据采集系统、待办事项查询优化、数据库缓存修复、CLOB内存管理工具、SQL执行缓存管理功能、流式AI对话系统、诊断编辑面板组件、增强的诊断解析工具、优化的诊断卡片组件、诊断数据初始化时序优化和AI诊断辅助标签页功能
   - **MCC字典部署**：独立部署MCC字典库，支持热重载和增量更新
   - **OCR系统部署**：独立部署OCR服务，与主系统通过API集成
   - **最新提示结果接口部署**：标准化API端点，支持外部系统访问
@@ -2151,6 +2222,7 @@ end
   - **SQL执行缓存部署**：缓存清理和监控功能部署，支持动态配置
   - **科室特殊内容部署**：SPECIAL_CONTENT字段配置部署，增强模板灵活性
   - **诊断编辑面板部署**：DiagnosisEditPanel组件和诊断解析工具部署
+  - **AI诊断辅助标签页部署**：AIDiagnosisTab组件、懒加载机制、状态管理和数据解析功能部署
   - **流式AI对话部署**：Fetch API、ReadableStream和NDJSON解析部署
   - **诊断解析工具部署**：diagnosisParser.js工具部署，修复正则表达式问题
   - **诊断卡片组件部署**：DiagnosisCard组件和自然撑开布局部署
@@ -2180,6 +2252,7 @@ end
   - **SQL执行缓存优化**：缓存清理策略和统计监控提升系统性能
   - **科室特殊内容优化**：SPECIAL_CONTENT字段配置提升模板灵活性
   - **诊断编辑面板优化**：左右两栏布局和标签页切换优化
+  - **AI诊断辅助标签页优化**：懒加载机制优化，状态管理优化，数据解析优化
   - **流式AI对话优化**：Fetch API + ReadableStream优化，NDJSON解析优化
   - **诊断解析工具优化**：正则表达式修复和字段提取优化
   - **诊断卡片组件优化**：自然撑开和左右分栏布局优化
@@ -2250,6 +2323,14 @@ end
   - **工具栏操作**：提供快捷操作按钮，减少用户交互步骤
   - **状态同步**：维护AI诊断和当前诊断的状态同步
   - **错误处理**：处理无AI结果或非诊断分析Prompt的情况
+- **AI诊断辅助标签页最佳 practice**
+  - **懒加载机制**：通过v-if条件渲染实现组件懒加载，减少不必要的API请求
+  - **状态管理**：集成Vuex store，管理AI诊断和当前诊断状态
+  - **数据解析**：实现双重诊断解析策略，提升数据解析的可靠性
+  - **错误处理**：提供加载状态、错误状态、空状态和重试机制
+  - **组件销毁**：确保组件卸载时清理store中的诊断数据
+  - **执行时间格式化**：支持多种时间格式的解析和格式化
+  - **用户交互**：提供友好的用户界面和交互体验
 - **流式AI对话最佳 practice**
   - **Fetch API配置**：正确配置Fetch API参数，支持流式响应
   - **ReadableStream处理**：实现高效的NDJSON流数据处理
@@ -2317,13 +2398,11 @@ end
   - **行级状态**：实现每行独立loading状态的管理
   - **API调用**：优化createTodoFromTreatmentPlan接口调用
 
-**最新更新** 新增AI结果渲染优化、治疗计划表优化和待办事项功能的最佳实践，包括正则表达式匹配、CSS样式应用、DOMPurify配置、术语替换、下拉选项更新、颜色映射、内容处理、去重机制、行级状态管理等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
+**最新更新** 新增AI诊断辅助标签页功能的最佳实践，包括懒加载机制、状态管理、数据解析功能、执行时间格式化、错误处理和组件销毁等方面的最佳实践。修复14个API路径重复'/api/'问题，统一API调用规范。优化MCC视图渲染性能，确保字段映射正确显示。
 
 **章节来源**
 - [执行服务器LLM调用优化敏捷迭代规划.md:361-430](file://med_ai_assistant_1.0_bs_backend/doc/其他/执行服务器LLM调用优化敏捷迭代规划.md#L361-L430)
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/src/main/resources/application.properties)
-- [AIResults.vue:444-456](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L444-L456)
-- [AIResults.vue:1080-1106](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1080-L1106)
-- [TreatmentPlanTable.vue:80-103](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L80-L103)
-- [treatmentPlanParser.js:13](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L13)
-- [TreatmentPlanTable.vue:638-682](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L638-L682)
+- [AIDiagnosisTab.vue:148-206](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L148-L206)
+- [AIDiagnosisTab.vue:214-222](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L214-L222)
+- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
