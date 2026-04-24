@@ -16,6 +16,9 @@
 - [Oracle数据库PGA内存超限错误修复-2026年03月14日.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md)
 - [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md)
 - [SequenceConsistencyService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java)
+- [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
+- [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
+- [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
 - [2026-03-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-03-14.md)
 - [2026-04-10.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-10.md)
 </cite>
@@ -25,6 +28,7 @@
 - 新增Oracle数据库PGA内存超限错误修复配置章节
 - 增强序列一致性检查服务，新增LONGTERMORDERS表序列检查
 - 添加LONGTERMORDERS表ORA-00001主键冲突修复方案
+- 新增triggerDiagnosis字段长度限制和截断机制章节
 - 更新数据库故障排除指南，包含内存管理和序列同步相关内容
 
 ## 目录
@@ -42,7 +46,7 @@
 
 本文档全面介绍了MedAiAssistant项目的数据库操作体系，涵盖了Oracle和MySQL双数据库支持、DRG数据分析、数据同步、状态管理等核心数据库功能。项目采用分层架构设计，通过存储过程、序列、触发器等数据库特性实现高性能的数据处理和状态管理。
 
-**更新** 新增Oracle数据库PGA内存超限错误修复配置、序列一致性检查服务增强、LONGTERMORDERS表ORA-00001主键冲突修复等关键变更。
+**更新** 新增Oracle数据库PGA内存超限错误修复配置、序列一致性检查服务增强、LONGTERMORDERS表ORA-00001主键冲突修复、triggerDiagnosis字段长度限制和截断机制等关键变更。
 
 ## 项目结构
 
@@ -67,6 +71,9 @@ D --> D2[LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年0
 E[src/main/java/com/example/medaiassistant/service/] --> E1[SequenceConsistencyService.java]
 F[doc/更新日志/] --> F1[2026-03-14.md]
 F --> F2[2026-04-10.md]
+G[src/main/java/com/example/medaiassistant/dto/qc/] --> G1[ConfirmDiseaseRequest.java]
+H[src/main/java/com/example/medaiassistant/model/qc/] --> H1[QcConfirmedDisease.java]
+I[sql-scripts/create-qc-confirmed-disease-table.sql] --> I1[QC确认疾病表.sql]
 end
 ```
 
@@ -228,7 +235,39 @@ SequenceConsistencyService --> 序列检查流程 : "执行"
 | LONGTERMORDERS | ORDERID | LONGTERMORDERS_ORDERID_SEQ | LONGTERMORDERS_ORDERID_TRIG | 长期医嘱主键生成 |
 
 **章节来源**
-- [SequenceConsistencyService.java:1-147](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L1-L147)
+- [SequenceConsistencyService.java:1-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/SequenceConsistencyService.java#L1-L151)
+
+### triggerDiagnosis字段长度限制和截断机制
+
+**新增** QC确认疾病表中的triggerDiagnosis字段存在长度限制问题，需要专门的截断机制来防止ORA-12899错误：
+
+```mermaid
+flowchart TD
+A[接收triggerDiagnosis输入] --> B{字段长度检查}
+B --> |<= 500字符| C[直接保存]
+B --> |> 500字符| D[截断处理]
+D --> E[截取前500字符]
+E --> F[保存到数据库]
+C --> G[数据库操作成功]
+F --> G
+```
+
+**图表来源**
+- [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
+- [ConfirmDiseaseRequest.java:60-64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java#L60-L64)
+
+#### 字段长度配置
+
+| 组件 | 字段名 | 数据库长度 | Java实体长度 | 截断机制 |
+|------|--------|------------|--------------|----------|
+| QC_CONFIRMED_DISEASE | TRIGGER_DIAGNOSIS | VARCHAR2(500) | 500字符 | 自动截断 |
+| ConfirmDiseaseRequest | triggerDiagnosis | - | 500字符 | 自动截断 |
+| QcConfirmedDisease | triggerDiagnosis | - | 500字符 | 自动截断 |
+
+**章节来源**
+- [create-qc-confirmed-disease-table.sql:32-33](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql#L32-L33)
+- [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
+- [ConfirmDiseaseRequest.java:60-64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java#L60-L64)
 
 ## 架构概览
 
@@ -250,16 +289,18 @@ G[序列一致性检查服务]
 H[PGA内存监控]
 I[LONGTERMORDERS表]
 J[LONGTERMORDERS序列]
+K[QC确认疾病表]
+L[triggerDiagnosis字段]
 end
 subgraph "MySQL数据库"
-K[初始化数据库]
-L[系统配置表]
-M[版本管理表]
+M[初始化数据库]
+N[系统配置表]
+O[版本管理表]
 end
 end
 subgraph "存储过程层"
-N[DRG分析输入快照存储过程]
-O[序列和触发器管理]
+P[DRG分析输入快照存储过程]
+Q[序列和触发器管理]
 end
 A --> B
 B --> C
@@ -273,14 +314,18 @@ B --> J
 B --> K
 B --> L
 B --> M
-N --> D
-O --> C
-O --> D
-O --> E
-O --> F
-O --> G
-O --> I
-O --> J
+B --> N
+B --> O
+P --> D
+Q --> C
+Q --> D
+Q --> E
+Q --> F
+Q --> G
+Q --> I
+Q --> J
+Q --> K
+Q --> L
 ```
 
 **图表来源**
@@ -470,6 +515,38 @@ B-->>A : 插入成功
 **章节来源**
 - [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md:1-127](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md#L1-L127)
 
+### triggerDiagnosis字段ORA-12899错误修复
+
+**新增** QC确认疾病表中的triggerDiagnosis字段存在ORA-12899错误风险，需要实施长度限制和截断机制：
+
+```mermaid
+flowchart TD
+A[输入triggerDiagnosis数据] --> B{检查长度}
+B --> |≤ 500字符| C[直接保存]
+B --> |> 500字符| D[截断处理]
+D --> E[截取前500字符]
+E --> F[保存到数据库]
+C --> G[操作成功]
+F --> G
+```
+
+**图表来源**
+- [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
+- [ConfirmDiseaseRequest.java:60-64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java#L60-L64)
+
+#### 截断机制实现
+
+| 实现层次 | 截断逻辑 | 触发时机 | 异常处理 |
+|----------|----------|----------|----------|
+| 数据库层 | VARCHAR2(500) | DDL定义 | ORA-12899错误 |
+| Java实体层 | 字符串截断 | 保存前处理 | 数据丢失风险 |
+| DTO层 | 参数验证 | 请求接收时 | 参数验证失败 |
+
+**章节来源**
+- [create-qc-confirmed-disease-table.sql:32-33](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql#L32-L33)
+- [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
+- [ConfirmDiseaseRequest.java:60-64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java#L60-L64)
+
 ## 依赖关系分析
 
 系统数据库组件之间的依赖关系如下：
@@ -489,17 +566,20 @@ H --> B
 H --> C
 H --> F
 I[LONGTERMORDERS表] --> J[LONGTERMORDERS序列]
+K[QC确认疾病表] --> L[triggerDiagnosis字段]
 end
 subgraph "存储过程依赖"
-K[DRG分析输入快照存储过程] --> B
-K --> D
-L[数据验证存储过程] --> A
-L --> F
+M[DRG分析输入快照存储过程] --> B
+M --> D
+N[数据验证存储过程] --> A
+N --> F
 end
 subgraph "服务依赖"
-M[序列一致性检查服务] --> H
-M --> I
-N[PGA内存监控服务] --> O[Oracle数据库实例]
+O[序列一致性检查服务] --> H
+O --> I
+P[PGA内存监控服务] --> Q[Oracle数据库实例]
+R[triggerDiagnosis截断服务] --> K
+S[triggerDiagnosis截断服务] --> L
 end
 ```
 
@@ -527,6 +607,8 @@ M[数据删除] --> N[软删除标记]
 N --> O[历史记录保留]
 P[序列检查] --> Q[自动修复不同步]
 Q --> R[预防ORA-00001错误]
+S[长度检查] --> T[自动截断处理]
+T --> U[预防ORA-12899错误]
 ```
 
 **图表来源**
@@ -548,6 +630,7 @@ Q --> R[预防ORA-00001错误]
 | DRG_ANALYSIS_RESULTS | 复合索引 | DRG_ID, FINAL_DRG_CODE | 分析结果检索 |
 | SYNC_LOG | 复合索引 | HOSPITAL_ID, STATUS | 同步状态查询 |
 | STATUS_TRANSITION_HISTORY | 复合索引 | PROMPT_ID, TRANSITION_TIME | 状态历史查询 |
+| QC_CONFIRMED_DISEASE | 复合索引 | PATIENT_ID, IS_ACTIVE | 病种确认查询 |
 
 ### 存储过程优化
 
@@ -599,6 +682,24 @@ N --> O
 **图表来源**
 - [Oracle数据库PGA内存超限错误修复-2026年03月14日.md:102-133](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库PGA内存超限错误修复-2026年03月14日.md#L102-L133)
 
+### triggerDiagnosis字段性能优化
+
+**新增** 针对triggerDiagnosis字段的性能优化策略：
+
+```mermaid
+flowchart TD
+A[字段长度检查] --> B{长度验证}
+B --> |≤ 500字符| C[快速处理]
+B --> |> 500字符| D[截断处理]
+D --> E[截断算法]
+E --> F[索引优化]
+C --> G[查询性能]
+F --> G
+```
+
+**图表来源**
+- [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
+
 ## 故障排除指南
 
 ### 常见数据库问题及解决方案
@@ -607,11 +708,12 @@ N --> O
 |----------|----------|----------|----------|
 | 主键约束错误 | ORA-01400 | 无法将NULL插入主键列 | 执行IDENTITY策略支持脚本 |
 | 唯一约束冲突 | ORA-00001 | 重复值违反唯一约束 | 清理重复数据后添加约束 |
-| CLOB字段过大 | ORA-12899 | 值超出VARCHAR2长度限制 | 修改字段类型为CLOB |
+| CLOB字段过大 | ORA-12899 | 值超出VARCHAR2长度限制 | 修改字段类型为CLOB或实施截断机制 |
 | 序列缓存不足 | ORA-08004 | 序列缓存耗尽 | 调整序列缓存大小 |
 | 触发器失效 | PL/SQL-00936 | 触发器语法错误 | 重新创建触发器 |
 | **PGA内存超限** | **ORA-04036** | **数据库实例PGA内存使用超过限制** | **调整PGA_AGGREGATE_LIMIT参数** |
 | **序列不同步** | **ORA-00001** | **主键序列值落后于表中最大ID** | **执行序列自动修复服务** |
+| **字段长度超限** | **ORA-12899** | **triggerDiagnosis字段超过500字符限制** | **实施自动截断机制** |
 
 ### 数据库连接问题
 
@@ -685,6 +787,27 @@ K --> M[优化导入流程]
 **图表来源**
 - [LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md:41-47](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md#L41-L47)
 
+### triggerDiagnosis字段ORA-12899故障排除
+
+**新增** 针对triggerDiagnosis字段ORA-12899错误的诊断和修复流程：
+
+```mermaid
+flowchart TD
+A[保存病种确认数据] --> B[检查triggerDiagnosis长度]
+B --> C{长度验证}
+C --> |≤ 500字符| D[直接保存]
+C --> |> 500字符| E[截断处理]
+E --> F[截断前500字符]
+F --> G[保存到数据库]
+D --> H[保存成功]
+G --> H
+H --> I[验证数据完整性]
+I --> J[恢复正常操作]
+```
+
+**图表来源**
+- [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
+
 **章节来源**
 - [Oracle数据库IDENTITY策略主键NULL插入错误修复.md:135-182](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库IDENTITY策略主键NULL插入错误修复.md#L135-L182)
 
@@ -703,6 +826,7 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 5. **性能优化策略**：多层次索引和序列管理优化查询性能
 6. **内存管理优化**：针对Oracle PGA内存超限问题提供专门的修复和预防方案
 7. **序列自动修复**：通过SequenceConsistencyService自动检测和修复序列不同步问题
+8. **字段长度保护**：通过triggerDiagnosis字段的截断机制防止ORA-12899错误
 
 ### 技术特色
 
@@ -711,6 +835,7 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 - **监控完善**：提供完整的数据库健康状态监控和性能指标
 - **故障恢复**：具备完善的错误处理和恢复机制
 - **预防性维护**：通过定期序列检查和内存监控预防数据库问题
+- **数据保护**：通过字段长度限制和截断机制确保数据完整性
 
 ### 新增功能价值
 
@@ -723,5 +848,10 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 - 新增LONGTERMORDERS表序列检查，完善了序列管理范围
 - 通过自动修复避免了ORA-00001主键冲突问题
 - 提升了批量数据导入的可靠性和效率
+
+**triggerDiagnosis字段长度保护**：
+- 通过500字符长度限制防止ORA-12899错误
+- 实施自动截断机制确保数据完整性
+- 提供了完整的字段长度验证和处理流程
 
 该数据库操作体系为整个MedAiAssistant系统的稳定运行奠定了坚实的基础，为后续的功能扩展和性能优化提供了良好的架构支撑。
