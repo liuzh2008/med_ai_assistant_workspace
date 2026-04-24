@@ -2,30 +2,23 @@
 
 <cite>
 **本文档引用的文件**
-- [更新小结.md](file://更新小结.md)
 - [2026-04-23.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md)
-- [QcDiseaseMatchService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java)
-- [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
-- [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
-- [create-identity-sequences.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql)
-- [DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md)
-- [MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md)
-- [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [qcDiseaseMatchParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js)
 - [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [tooltips.js](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js)
-- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增数据库约束违规修复章节，详细说明ORA-12899错误的修复过程和解决方案
-- 更新质量控制服务章节，重点介绍triggerDiagnosis字段的长度限制和截断机制
-- 新增数据库序列同步修复章节，说明Oracle数据库IDENTITY策略的修复方案
-- 更新数据模型映射章节，解释TRIGGER_DIAGNOSIS字段的VARCHAR2(500)限制
-- 新增预防性措施章节，介绍truncateIfNeeded方法的防御性编程策略
-- 新增序列不同步问题修复章节，详细说明ORA-00001唯一约束冲突的解决方案
-- 更新前端诊断解析章节，说明triggerDiagnosis字段的正则表达式修复
+- 新增诊断解析器Markdown标题级别鲁棒性增强章节，详细说明正则表达式从硬编码####改为#{3,4}的改进
+- 更新前端诊断解析章节，说明extractSingleLineField函数的引入和跨行误捕获修复
+- 新增AI诊断辅助标签页功能章节，介绍独立诊断结果展示和编辑功能
+- 新增tooltip功能配置章节，说明所有标签页的悬停提示信息实现
+- 更新PatientTabs组件章节，说明标签页重新排序和懒加载机制
+- 新增DiagnosisEditPanel组件章节，介绍诊断编辑面板的完整功能
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -33,23 +26,17 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [数据库约束违规修复](#数据库约束违规修复)
-7. [质量控制服务增强](#质量控制服务增强)
-8. [数据库序列同步修复](#数据库序列同步修复)
-9. [数据模型映射优化](#数据模型映射优化)
-10. [预防性措施实施](#预防性措施实施)
-11. [序列不同步问题修复](#序列不同步问题修复)
-12. [前端诊断解析优化](#前端诊断解析优化)
-13. [PatientTabs组件增强](#patienttabs组件增强)
-14. [新增AI诊断辅助标签页](#新增ai诊断辅助标签页)
-15. [懒加载机制实现](#懒加载机制实现)
-16. [标签页重新排序](#标签页重新排序)
-17. [tooltip功能配置](#tooltip功能配置)
-18. [依赖关系分析](#依赖关系分析)
-19. [性能考虑](#性能考虑)
-20. [故障排除指南](#故障排除指南)
-21. [结论](#结论)
-22. [附录](#附录)
+6. [诊断解析器Markdown标题级别鲁棒性增强](#诊断解析器markdown标题级别鲁棒性增强)
+7. [前端诊断解析优化](#前端诊断解析优化)
+8. [AI诊断辅助标签页功能](#ai诊断辅助标签页功能)
+9. [tooltip功能配置](#tooltip功能配置)
+10. [PatientTabs组件增强](#patienttabs组件增强)
+11. [DiagnosisEditPanel组件](#diagnosiseditpanel组件)
+12. [依赖关系分析](#依赖关系分析)
+13. [性能考虑](#性能考虑)
+14. [故障排除指南](#故障排除指南)
+15. [结论](#结论)
+16. [附录](#附录)
 
 ## 项目概述
 
@@ -62,13 +49,10 @@ MedAiAssistant V1.0 是一款集患者管理、AI辅助诊断、DRG分析、MCC/
 - 患者全景管理：整合多维度医疗数据，提供完整的患者视图
 - Prompt模板管理：支持多种诊疗场景的AI分析模板
 - 分布式执行架构：采用主服务器+执行服务器的双节点分离架构
-- **数据库约束防护**：通过长度截断机制防止ORA-12899错误
-- **序列同步修复**：解决Oracle数据库IDENTITY策略的主键冲突问题
+- **诊断解析器鲁棒性增强**：通过extractSingleLineField函数防止跨行误捕获
 - **新增完整tooltip功能**：为所有标签页提供详细的悬停提示信息
 - **新增AI诊断辅助标签页**：提供独立的AI诊断结果展示和编辑功能
 - **懒加载机制优化**：通过条件渲染提升应用性能和用户体验
-- **序列不同步问题修复**：解决ORA-00001唯一约束冲突的数据库问题
-- **前端诊断解析优化**：修复triggerDiagnosis字段的正则表达式跨行误捕获问题
 
 ## 项目结构
 
@@ -79,43 +63,29 @@ A[.gitignore]
 B[mvn.bat]
 C[npm.bat]
 end
-subgraph "项目相关"
-D[安装目录]
-E[测试目录]
-F[宣发文件夹]
-G[病人资料]
-H[软件著作权]
+subgraph "前端组件"
+D[Vue 3 应用]
+E[组件目录]
+F[工具函数]
+G[数据配置]
 end
-subgraph "宣发文件"
-F1[国家算力网络与基层医疗AI协同政策全景解析2024-2026.md]
+subgraph "后端服务"
+H[Spring Boot 应用]
+I[服务层]
+J[数据访问层]
+K[配置管理]
 end
-subgraph "软件著作权文档"
-H1[源代码文档.md]
-H2[用户操作手册.md]
-H3[软件著作权申请材料要求.md]
-end
-subgraph "开发工具"
-I[Mermaid 代码修复 Prompt 模板.txt]
-J[常用.txt]
-K[神级Prompt.txt]
-end
-F --> F1
-H --> H1
-H --> H2
-H --> H3
-I --> J
-J --> K
+D --> E
+D --> F
+D --> G
+H --> I
+H --> J
+H --> K
 ```
 
 **图表来源**
-- [.gitignore:1-43](file://.gitignore#L1-L43)
-- [mvn.bat:1-5](file://mvn.bat#L1-L5)
-- [npm.bat:1-3](file://npm.bat#L1-L3)
-
-**章节来源**
-- [.gitignore:1-43](file://.gitignore#L1-L43)
-- [mvn.bat:1-5](file://mvn.bat#L1-L5)
-- [npm.bat:1-3](file://npm.bat#L1-L3)
+- [PatientTabs.vue:1-187](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L1-L187)
+- [AIDiagnosisTab.vue:1-316](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L1-L316)
 
 ## 核心组件
 
@@ -130,7 +100,7 @@ class MedAiAssistantBackendApplication {
 }
 class AIModelConfig {
 -boolean stream
--Map~String, ModelConfig~ models
+-Map<String, ModelConfig> models
 +setStream(stream)
 +isStream()
 +getModelConfig(modelName)
@@ -163,9 +133,6 @@ MedAiAssistantBackendApplication --> EncryptionConfig
 **图表来源**
 - [源代码文档.md:21-47](file://项目相关/软件著作权/源代码文档.md#L21-L47)
 - [源代码文档.md:50-217](file://项目相关/软件著作权/源代码文档.md#L50-L217)
-- [源代码文档.md:220-363](file://项目相关/软件著作权/源代码文档.md#L220-L363)
-- [源代码文档.md:366-512](file://项目相关/软件著作权/源代码文档.md#L366-L512)
-- [源代码文档.md:515-572](file://项目相关/软件著作权/源代码文档.md#L515-L572)
 
 ### AI分析服务组件
 
@@ -205,14 +172,6 @@ PromptServiceConfig --> MonitoringConfig
 
 **图表来源**
 - [源代码文档.md:700-800](file://项目相关/软件著作权/源代码文档.md#L700-L800)
-- [源代码文档.md:575-697](file://项目相关/软件著作权/源代码文档.md#L575-L697)
-
-**章节来源**
-- [源代码文档.md:50-217](file://项目相关/软件著作权/源代码文档.md#L50-L217)
-- [源代码文档.md:220-363](file://项目相关/软件著作权/源代码文档.md#L220-L363)
-- [源代码文档.md:366-512](file://项目相关/软件著作权/源代码文档.md#L366-L512)
-- [源代码文档.md:515-572](file://项目相关/软件著作权/源代码文档.md#L515-L572)
-- [源代码文档.md:700-800](file://项目相关/软件著作权/源代码文档.md#L700-L800)
 
 ## 架构概览
 
@@ -224,33 +183,41 @@ subgraph "前端层"
 A[Vue 3 前端应用]
 B[用户界面]
 C[交互逻辑]
+D[诊断解析器]
+E[tooltip配置]
 end
 subgraph "后端层"
-D[Spring Boot 应用]
-E[主服务器]
-F[执行服务器]
+F[Spring Boot 应用]
+G[主服务器]
+H[执行服务器]
+I[质量控制服务]
 end
 subgraph "数据层"
-G[Oracle 数据库]
-H[HikariCP 连接池]
-I[缓存服务]
+K[Oracle 数据库]
+L[HikariCP 连接池]
+M[缓存服务]
+N[序列管理]
+O[触发器]
 end
 subgraph "AI服务层"
-J[大语言模型API]
-K[DeepSeek]
-L[阿里百炼]
+P[大语言模型API]
+Q[DeepSeek]
+R[阿里百炼]
 end
-A --> D
-B --> D
-C --> D
-D --> E
+A --> F
+B --> F
+C --> F
 D --> F
-E --> G
+E --> F
 F --> G
-G --> H
-D --> J
-J --> K
-J --> L
+F --> H
+G --> K
+H --> K
+K --> L
+F --> P
+P --> Q
+P --> R
+I --> N
 ```
 
 **图表来源**
@@ -281,7 +248,6 @@ Note over Config,Repo : 支持流式响应和重试机制
 
 **图表来源**
 - [源代码文档.md:64-217](file://项目相关/软件著作权/源代码文档.md#L64-L217)
-- [源代码文档.md:714-800](file://项目相关/软件著作权/源代码文档.md#L714-L800)
 
 ### DRG分析流程
 
@@ -305,12 +271,6 @@ NameMatch --> |相似度不足| Combine
 
 **图表来源**
 - [用户操作手册.md:582-632](file://项目相关/软件著作权/用户操作手册.md#L582-L632)
-- [用户操作手册.md:673-740](file://项目相关/软件著作权/用户操作手册.md#L673-L740)
-
-**章节来源**
-- [源代码文档.md:700-800](file://项目相关/软件著作权/源代码文档.md#L700-L800)
-- [用户操作手册.md:589-632](file://项目相关/软件著作权/用户操作手册.md#L589-L632)
-- [用户操作手册.md:673-740](file://项目相关/软件著作权/用户操作手册.md#L673-L740)
 
 ### 数据库连接池配置
 
@@ -343,367 +303,95 @@ HikariDataSource --> OracleDataSource
 
 **图表来源**
 - [源代码文档.md:270-328](file://项目相关/软件著作权/源代码文档.md#L270-L328)
-- [源代码文档.md:284-320](file://项目相关/软件著作权/源代码文档.md#L284-L320)
 
-**章节来源**
-- [源代码文档.md:220-363](file://项目相关/软件著作权/源代码文档.md#L220-L363)
+## 诊断解析器Markdown标题级别鲁棒性增强
 
-## 数据库约束违规修复
+### 正则表达式跨行误捕获问题分析
 
-### ORA-12899错误分析
+2026年4月23日更新修复了诊断解析器中的正则表达式跨行误捕获问题，该问题导致triggerDiagnosis字段值膨胀，影响了诊断解析的准确性。
 
-2026年4月23日更新修复了ORA-12899错误，该错误源于triggerDiagnosis字段值膨胀导致的Oracle数据库约束违反。错误日志显示：
+#### 1. 问题根本原因
+- **正则表达式缺陷**：原有的正则表达式在匹配triggerDiagnosis字段时会跨行捕获
+- **影响范围**：所有使用正则表达式解析诊断结果的组件
+- **后果**：将后续疗程块的内容也包含在triggerDiagnosis字段中，导致字段值异常膨胀
 
-- **错误类型**：ORA-12899：列值太大
-- **涉及表**：QC_CONFIRMED_DISEASE
-- **涉及字段**：TRIGGER_DIAGNOSIS
-- **实际长度**：664字符
-- **最大限制**：500字符
-- **根本原因**：AI诊断结果中的触发诊断信息过长
+#### 2. 解决方案实施
 
-### 修复方案实施
-
-#### 1. 后端截断机制
-在QcDiseaseMatchService中新增truncateIfNeeded方法，对超过500字符的triggerDiagnosis进行截断：
-
-```mermaid
-sequenceDiagram
-participant Service as QcDiseaseMatchService
-participant Request as ConfirmDiseaseRequest
-participant Entity as QcConfirmedDisease
-Service->>Request : 获取触发诊断信息
-Request-->>Service : 返回原始诊断文本
-Service->>Service : 调用 truncateIfNeeded(value, 500)
-Service->>Entity : 设置截断后的诊断文本
-Entity-->>Service : 保存到数据库
-Note over Service,Entity : 防御性编程，防止ORA-12899错误
-```
-
-**图表来源**
-- [QcDiseaseMatchService.java:541](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L541)
-- [QcDiseaseMatchService.java:651-656](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L651-L656)
-
-#### 2. 数据库字段限制
-确认TRIGGER_DIAGNOSIS字段的VARCHAR2(500)限制：
-
-```mermaid
-erDiagram
-QC_CONFIRMED_DISEASE {
-LONG CONFIRMED_ID PK
-STRING PATIENT_ID
-STRING DISEASE_ID
-STRING DISEASE_NAME
-STRING MATCH_REASON
-STRING TRIGGER_DIAGNOSIS UK
-INTEGER PROMPT_RESULT_ID
-DATE CONFIRMED_TIME
-INTEGER IS_ACTIVE
-STRING PHYSICIAN_DECISION
-}
-```
-
-**图表来源**
-- [QcConfirmedDisease.java:64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L64)
-
-#### 3. 预防性措施
-- **长度验证**：在数据入库前进行长度检查
-- **截断策略**：超过限制时自动截断，保留前500字符
-- **日志记录**：记录截断操作和相关信息
-- **数据完整性**：确保核心诊断信息的完整性
-
-**章节来源**
-- [2026-04-23.md:12-13](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L12-L13)
-- [QcDiseaseMatchService.java:541](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L541)
-- [QcDiseaseMatchService.java:651-656](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L651-L656)
-- [QcConfirmedDisease.java:64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L64)
-
-## 质量控制服务增强
-
-### triggerDiagnosis字段处理
-
-质量控制服务针对triggerDiagnosis字段进行了专门的处理，确保数据长度不超过数据库限制：
-
-#### 1. 确认病种保存流程
-在confirmDiseases方法中，对每个病种的triggerDiagnosis进行长度截断：
+##### extractSingleLineField函数引入
+新增`extractSingleLineField`局部函数，专门处理单行字段提取：
 
 ```mermaid
 flowchart TD
-Start([开始确认病种]) --> Loop{遍历病种列表}
-Loop --> GetTrigger[获取触发诊断信息]
-GetTrigger --> CheckLength{检查长度 > 500?}
-CheckLength --> |是| Truncate[截断至500字符]
-CheckLength --> |否| Keep[保持原值]
-Truncate --> SetField[设置截断后的值]
-Keep --> SetField
-SetField --> Save[保存到数据库]
-Save --> Loop
-Loop --> |完成| End([保存完成])
+Start([诊断解析开始]) --> ParseBlock[解析诊断块]
+ParseBlock --> ExtractField[提取字段值]
+ExtractField --> CheckMultiLine{检查是否多行?}
+CheckMultiLine --> |是| SingleLine[使用extractSingleLineField提取单行]
+CheckMultiLine --> |否| DirectExtract[直接提取字段值]
+SingleLine --> CleanValue[清理提取的值]
+DirectExtract --> CleanValue
+CleanValue --> Return[返回处理后的值]
 ```
 
 **图表来源**
-- [QcDiseaseMatchService.java:529-546](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L529-L546)
+- [2026-04-23.md:43-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L43-L47)
 
-#### 2. 忽略病种处理流程
-在ignoreDiseases方法中同样应用相同的截断策略：
+##### 正则表达式优化
+```javascript
+// 新的单行字段提取正则表达式
+const regex = new RegExp(`(?:#{3,4}\\s*)?${fieldName}[:：]\\s*([^\\n]+)`, 'i');
 
-```mermaid
-flowchart TD
-Start([开始忽略病种]) --> Loop{遍历忽略列表}
-Loop --> GetTrigger[获取触发诊断信息]
-GetTrigger --> CheckLength{检查长度 > 500?}
-CheckLength --> |是| Truncate[截断至500字符]
-CheckLength --> |否| Keep[保持原值]
-Truncate --> SetField[设置截断后的值]
-Keep --> SetField
-SetField --> Save[保存到数据库]
-Save --> Loop
-Loop --> |完成| End([保存完成])
+// 传统多行字段提取正则表达式
+const regex = new RegExp(`(?:#{3,4}\\s*)?${fieldName}[:：]\\s*([\\s\\S]*?)(?=(?:#{3,4}|$))`, 'i');
 ```
 
-**图表来源**
-- [QcDiseaseMatchService.java:577-612](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L577-L612)
+#### 3. QC病种匹配解析器增强
 
-#### 3. 数据传输对象
-ConfirmDiseaseRequest中的DiseaseItem类包含triggerDiagnosis字段：
+在`qcDiseaseMatchParser.js`中同样应用了相同的单行提取策略：
 
 ```mermaid
 classDiagram
-class ConfirmDiseaseRequest {
-+String patientId
-+DiseaseItem[] confirmedDiseases
-+String remarks
+class QcDiseaseMatchParser {
++parseDiseaseMatchBlock(blockContent)
++extractSingleLineField(fieldName, text)
++extractField(fieldName, text)
 }
-class DiseaseItem {
-+String diseaseId
-+String diseaseName
-+String matchReason
-+String triggerDiagnosis
+class ExtractSingleLineField {
++regex : /(? : #{3,4}\\s*)?字段名[ : ：]\\s*([^\\n]+)/i
++功能 : 提取单行字段值
++特点 : 不跨行，只匹配第一行内容
 }
-ConfirmDiseaseRequest --> DiseaseItem
+QcDiseaseMatchParser --> ExtractSingleLineField
 ```
 
 **图表来源**
-- [ConfirmDiseaseRequest.java:44-137](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java#L44-L137)
+- [qcDiseaseMatchParser.js:65-72](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js#L65-L72)
 
-**章节来源**
-- [QcDiseaseMatchService.java:507-550](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L507-L550)
-- [QcDiseaseMatchService.java:575-613](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L575-L613)
-- [ConfirmDiseaseRequest.java:44-137](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java#L44-L137)
+#### 4. 兼容性处理策略
 
-## 数据库序列同步修复
-
-### Oracle IDENTITY策略问题
-
-系统采用了Oracle数据库的IDENTITY策略来管理主键自增，但在某些情况下会出现序列不同步的问题，导致ORA-01400错误（无法将NULL插入主键列）。
-
-### 修复方案
-
-#### 1. 序列同步脚本
-create-identity-sequences.sql脚本提供了完整的序列同步解决方案：
-
-```mermaid
-flowchart TD
-Start([开始序列同步]) --> DropSeq[删除现有序列]
-DropSeq --> CreateSeq[创建新序列]
-CreateSeq --> CheckData{检查表中数据?}
-CheckData --> |有数据| AdjustInc[调整序列增量]
-CheckData --> |无数据| SkipAdj[跳过调整]
-AdjustInc --> ExecNext[执行NEXTVAL]
-ExecNext --> ResetInc[重置序列增量]
-ResetInc --> CreateTrigger[创建触发器]
-SkipAdj --> CreateTrigger
-CreateTrigger --> Verify[验证结果]
-Verify --> End([同步完成])
-```
-
-**图表来源**
-- [create-identity-sequences.sql:303-332](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L303-L332)
-
-#### 2. 触发器机制
-为每个表创建相应的触发器来自动填充主键：
+系统实现了双重解析策略，确保向前兼容：
 
 ```mermaid
 sequenceDiagram
-participant Insert as INSERT操作
-participant Trigger as TRG_DIAGNOSIS_ID
-participant Sequence as DIAGNOSIS_SEQ
-Insert->>Trigger : BEFORE INSERT触发
-Trigger->>Sequence : 查询下一个值
-Sequence-->>Trigger : 返回序列值
-Trigger->>Insert : 设置DIAGNOSISID
-Trigger-->>Insert : 完成插入
+participant Parser as 诊断解析器
+participant BlockParser as 诊断块解析
+participant NameParser as 诊断名称解析
+Parser->>BlockParser : 尝试解析完整诊断块
+BlockParser-->>Parser : 返回解析结果
+alt 解析失败
+Parser->>NameParser : 降级解析诊断名称
+NameParser-->>Parser : 返回名称列表
+end
+Parser-->>Parser : 返回最终解析结果
 ```
 
 **图表来源**
-- [create-identity-sequences.sql:324-332](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L324-L332)
-
-#### 3. 序列起始值调整
-通过查询表中最大ID来调整序列起始值，确保不会产生主键冲突：
-
-```mermaid
-flowchart TD
-QueryMax[查询MAX(ID)] --> CheckMax{检查最大值}
-CheckMax --> |> 0| CalcInc[计算增量]
-CheckMax --> |<= 0| SkipCalc[跳过计算]
-CalcInc --> ExecInc[执行INCREAMENT BY]
-ExecInc --> NextVal[获取NEXTVAL]
-NextVal --> ResetInc[重置INCREAMENT BY]
-ResetInc --> Done[完成调整]
-SkipCalc --> Done
-```
-
-**图表来源**
-- [create-identity-sequences.sql:312-321](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L312-L321)
+- [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
 
 **章节来源**
-- [create-identity-sequences.sql:303-332](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L303-L332)
-- [create-identity-sequences.sql:324-332](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L324-L332)
-- [create-identity-sequences.sql:312-321](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L312-L321)
-
-## 数据模型映射优化
-
-### TRIGGER_DIAGNOSIS字段映射
-
-QcConfirmedDisease实体类中的triggerDiagnosis字段采用了严格的长度限制：
-
-#### 1. JPA注解配置
-```java
-@Column(name = "TRIGGER_DIAGNOSIS", length = 500)
-private String triggerDiagnosis;
-```
-
-#### 2. 数据库约束
-- **字段类型**：VARCHAR2(500)
-- **约束类型**：非空约束
-- **用途**：存储触发AI诊断匹配的诊断名称或ICD编码
-
-#### 3. 预持久化处理
-```java
-@PrePersist
-protected void onCreate() {
-    if (this.confirmedTime == null) {
-        this.confirmedTime = new java.util.Date();
-    }
-    if (this.isActive == null) {
-        this.isActive = 1;
-    }
-    if (this.physicianDecision == null) {
-        this.physicianDecision = "CONFIRMED";
-    }
-}
-```
-
-**章节来源**
-- [QcConfirmedDisease.java:64](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L64)
-- [QcConfirmedDisease.java:99-110](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L99-L110)
-
-## 预防性措施实施
-
-### truncateIfNeeded方法
-
-QcDiseaseMatchService中实现了通用的字符串截断方法，作为数据库列容量的防御性保护：
-
-#### 1. 方法实现
-```java
-private String truncateIfNeeded(String value, int maxLength) {
-    if (value != null && value.length() > maxLength) {
-        return value.substring(0, maxLength);
-    }
-    return value;
-}
-```
-
-#### 2. 应用场景
-- **triggerDiagnosis字段**：防止ORA-12899错误
-- **其他可能超长的字段**：提供统一的截断策略
-- **数据迁移**：处理历史数据中的超长值
-
-#### 3. 防御性编程原则
-- **输入验证**：检查字符串是否为null
-- **长度比较**：只在必要时进行截断
-- **数据保留**：优先保留字符串开头部分
-- **日志记录**：记录截断操作和相关信息
-
-**章节来源**
-- [QcDiseaseMatchService.java:644-656](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L644-656)
-
-## 序列不同步问题修复
-
-### ORA-00001唯一约束冲突分析
-
-2026年4月3日和4月9日分别修复了两个重要的序列不同步问题，这些问题是由于历史数据导入绕过序列机制导致的。
-
-#### 1. DIAGNOSIS表序列不同步问题
-
-**问题描述**：
-- **错误类型**：ORA-00001 唯一约束违反
-- **涉及表**：DIAGNOSIS
-- **涉及字段**：DIAGNOSISID
-- **根本原因**：DIAGNOSIS_SEQ序列值仅为29，而表中最大ID已达2373
-
-**修复方案**：
-```mermaid
-flowchart TD
-Start([诊断序列不同步]) --> CheckSeq[检查序列当前值]
-CheckSeq --> CheckMax[检查表中最大ID]
-CheckMax --> CalcGap[计算差值: 2373-29+1=2345]
-CalcGap --> AdjustInc[临时增大序列增量]
-AdjustInc --> ExecNext[执行NEXTVAL]
-ExecNext --> ResetInc[重置序列增量为1]
-ResetInc --> Verify[验证修复结果]
-Verify --> End([修复完成])
-```
-
-**图表来源**
-- [DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md:45-54](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md#L45-L54)
-
-#### 2. MEDICAL_RECORDS和PROMPTS表序列不同步问题
-
-**问题描述**：
-- **错误类型**：ORA-00001 唯一约束违反
-- **涉及表**：MEDICAL_RECORDS和PROMPTS
-- **涉及字段**：RECORD_ID和PROMPTID
-- **根本原因**：触发器绑定的序列与预期不符，且序列检查未纳入自动检查服务
-
-**修复方案**：
-```mermaid
-flowchart TD
-Start([多表序列不同步]) --> CheckTriggers[检查触发器绑定序列]
-CheckTriggers --> FixSequence[修复实际使用的序列]
-FixSequence --> CheckCoverage[检查自动检查服务覆盖范围]
-CheckCoverage --> AddCheck[将表加入自动检查服务]
-AddCheck --> Verify[验证修复结果]
-Verify --> End([修复完成])
-```
-
-**图表来源**
-- [MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md:38-93](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md#L38-L93)
-
-#### 3. 自动序列一致性检查服务
-
-为防止类似问题再次发生，系统实现了自动序列一致性检查服务：
-
-```mermaid
-classDiagram
-class SequenceConsistencyService {
-+verifyAndSyncSequences()
-+syncSequence(tableName, pkColumn, seqName)
-+checkAllSequences()
-}
-class AutoCheckService {
-+定时任务执行
-+批量检查序列
-+自动修复序列
-}
-SequenceConsistencyService --> AutoCheckService
-```
-
-**图表来源**
-- [MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md:95-105](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md#L95-L105)
-
-**章节来源**
-- [DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md:1-105](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md#L1-L105)
-- [MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md:1-127](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md#L1-L127)
+- [2026-04-23.md:43-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L43-L47)
+- [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
+- [qcDiseaseMatchParser.js:65-72](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js#L65-L72)
+- [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
 
 ## 前端诊断解析优化
 
@@ -746,7 +434,7 @@ class DiagnosisParser {
 -stripThinkingTags(content)
 }
 class ExtractSingleLineField {
-+regex : /(? : ####\s*)?字段名[ : ：]\s*([^\n]*?)(?=(? : ####|$))/i
++regex : /(? : #{3,4}\\s*)?字段名[ : ：]\\s*([^\n]*?)(?=(? : #{3,4}|$))/i
 +功能 : 提取单行字段值
 +特点 : 不跨行，只匹配第一行内容
 }
@@ -781,93 +469,7 @@ Parser-->>Parser : 返回最终解析结果
 - [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
 - [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
 
-## PatientTabs组件增强
-
-### tooltip功能实现
-
-2026年4月23日更新为PatientTabs组件的所有标签页添加了完整的tooltip功能，提供了详细的悬停提示信息，显著提升了用户体验。
-
-### tooltip配置结构
-
-```mermaid
-graph TB
-subgraph "tooltip配置结构"
-A[tooltips.js] --> B[通用按钮配置]
-C[顶部菜单配置] --> D[患者相关配置]
-E[AI相关配置] --> F[病历相关配置]
-G[智录相关配置] --> H[完整配置树]
-end
-```
-
-**图表来源**
-- [tooltips.js:1-87](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js#L1-L87)
-
-### 各标签页tooltip内容
-
-#### 基础信息标签页
-- **tooltip内容**："患者基本信息"
-- **用途**：提供患者基本信息的详细说明
-- **显示位置**：底部悬停提示
-
-#### 病情小结标签页
-- **tooltip内容**："病情小结"
-- **用途**：说明该标签页展示患者当前病情总结
-- **显示位置**：底部悬停提示
-
-#### AI诊断辅助标签页
-- **tooltip内容**："AI诊断辅助"
-- **用途**：详细介绍AI诊断辅助功能的作用
-- **显示位置**：底部悬停提示
-
-#### 临床指引标签页
-- **tooltip内容**："临床指引"
-- **用途**：说明临床指引的指导作用
-- **显示位置**：底部悬停提示
-
-#### 病历记录标签页
-- **tooltip内容**："病历记录"
-- **用途**：提供病历记录的详细说明
-- **显示位置**：底部悬停提示
-
-#### 长期医嘱标签页
-- **tooltip内容**："长期医嘱"
-- **用途**：说明长期医嘱的管理功能
-- **显示位置**：底部悬停提示
-
-#### 临时医嘱标签页
-- **tooltip内容**："临时医嘱"
-- **用途**：介绍临时医嘱的使用场景
-- **显示位置**：底部悬停提示
-
-#### 检查报告标签页
-- **tooltip内容**："检查报告"
-- **用途**：提供检查报告的详细说明
-- **显示位置**：底部悬停提示
-
-#### 化验检验标签页
-- **tooltip内容**："化验检验"
-- **用途**：说明化验检验结果的查看功能
-- **显示位置**：底部悬停提示
-
-#### DRG分析标签页
-- **tooltip内容**："DRG数据分析"
-- **用途**：介绍DRG分析的专业含义
-- **显示位置**：底部悬停提示
-
-**章节来源**
-- [2026-04-23.md:5-16](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L5-L16)
-- [PatientTabs.vue:6-8](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L6-L8)
-- [PatientTabs.vue:14-16](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L14-L16)
-- [PatientTabs.vue:23-25](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L23-L25)
-- [PatientTabs.vue:32-34](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L32-L34)
-- [PatientTabs.vue:40-42](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L40-L42)
-- [PatientTabs.vue:48-50](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L48-L50)
-- [PatientTabs.vue:56-58](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L56-L58)
-- [PatientTabs.vue:64-66](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L64-L66)
-- [PatientTabs.vue:72-74](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L72-L74)
-- [PatientTabs.vue:80-82](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L80-L82)
-
-## 新增AI诊断辅助标签页
+## AI诊断辅助标签页功能
 
 ### 功能概述
 
@@ -915,91 +517,6 @@ end
 **章节来源**
 - [2026-04-23.md:22-28](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L22-L28)
 - [AIDiagnosisTab.vue:1-316](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L1-L316)
-
-## 懒加载机制实现
-
-### 性能优化策略
-
-AI诊断辅助标签页采用了智能的懒加载机制，通过条件渲染优化应用性能，减少不必要的资源消耗。
-
-### 懒加载实现原理
-
-```mermaid
-sequenceDiagram
-participant User as 用户
-participant Tabs as PatientTabs
-participant Tab as AIDiagnosisTab
-participant Store as Vuex Store
-User->>Tabs : 切换到AI诊断标签页
-Tabs->>Tabs : 检查 activeTab === 'ai-diagnosis'
-Tabs->>Tabs : 检查 currentPatient 存在
-Tabs->>Tab : 条件渲染组件 (v-if)
-Tab->>Store : 获取AI诊断数据
-Store-->>Tab : 返回诊断结果
-Tab-->>User : 显示诊断列表
-```
-
-**图表来源**
-- [PatientTabs.vue:20-29](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L20-L29)
-
-### 实现细节
-
-#### 1. 条件渲染逻辑
-- **激活判断**：使用`activeTab === 'ai-diagnosis'`确保只有在AI诊断辅助标签页激活时才渲染
-- **患者检查**：结合`currentPatient`确保只有在有选中患者时才挂载组件
-
-#### 2. 性能优化效果
-- **按需加载**：避免组件在后台预加载，减少初始渲染负担
-- **资源节约**：降低内存占用和网络请求频率
-- **用户体验**：提升页面切换响应速度
-
-#### 3. 数据同步机制
-- **状态管理**：与Vuex store保持数据同步
-- **组件通信**：通过props传递患者数据
-- **生命周期**：正确处理组件的挂载和卸载
-
-**章节来源**
-- [PatientTabs.vue:27-28](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L27-L28)
-
-## 标签页重新排序
-
-### 最终排列顺序
-
-经过2026年4月23日的更新，PatientTabs组件的标签页按照以下顺序重新排列：
-
-```mermaid
-graph LR
-A[基本信息] --> B[病情小结] --> C[AI诊断] --> D[临床指引] --> E[病历记录] --> F[长期医嘱] --> G[临时医嘱] --> H[检查] --> I[化验] --> J[DRG分析]
-```
-
-**图表来源**
-- [PatientTabs.vue:4-85](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L4-L85)
-
-### 排序逻辑说明
-
-#### 1. 信息获取优先级
-- **基本信息**：最左侧，便于快速查看患者基础信息
-- **病情小结**：紧随其后，提供患者当前病情概览
-
-#### 2. 诊断相关性
-- **AI诊断**：放置在临床指引之前，体现AI辅助诊断的重要性
-- **临床指引**：位于AI诊断之后，提供专业的临床指导
-
-#### 3. 医疗记录完整性
-- **病历记录**：位于诊断相关标签页之后，便于查看完整病史
-- **医嘱管理**：长期医嘱和临时医嘱相邻，方便对比管理
-
-#### 4. 检查检验分类
-- **检查报告**：检查类检查结果
-- **化验检验**：化验类检查结果
-- **DRG分析**：最后显示，作为整体分析总结
-
-#### 5. 用户体验优化
-- **功能相关性**：将相关的功能标签页相邻排列
-- **操作流畅性**：按照医生日常查看病人的习惯顺序排列
-
-**章节来源**
-- [PatientTabs.vue:4-85](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L4-L85)
 
 ## tooltip功能配置
 
@@ -1097,6 +614,162 @@ end
 **章节来源**
 - [tooltips.js:1-87](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js#L1-L87)
 
+## PatientTabs组件增强
+
+### tooltip功能实现
+
+2026年4月23日更新为PatientTabs组件的所有标签页添加了完整的tooltip功能，提供了详细的悬停提示信息，显著提升了用户体验。
+
+### tooltip配置结构
+
+```mermaid
+graph TB
+subgraph "tooltip配置结构"
+A[tooltips.js] --> B[通用按钮配置]
+C[顶部菜单配置] --> D[患者相关配置]
+E[AI相关配置] --> F[病历相关配置]
+G[智录相关配置] --> H[完整配置树]
+end
+```
+
+**图表来源**
+- [tooltips.js:1-87](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js#L1-L87)
+
+### 各标签页tooltip内容
+
+#### 基础信息标签页
+- **tooltip内容**："患者基本信息"
+- **用途**：提供患者基本信息的详细说明
+- **显示位置**：底部悬停提示
+
+#### 病情小结标签页
+- **tooltip内容**："病情小结"
+- **用途**：说明该标签页展示患者当前病情总结
+- **显示位置**：底部悬停提示
+
+#### AI诊断辅助标签页
+- **tooltip内容**："AI诊断辅助"
+- **用途**：详细介绍AI诊断辅助功能的作用
+- **显示位置**：底部悬停提示
+
+#### 临床指引标签页
+- **tooltip内容**："临床指引"
+- **用途**：说明临床指引的指导作用
+- **显示位置**：底部悬停提示
+
+#### 病历记录标签页
+- **tooltip内容**："病历记录"
+- **用途**：提供病历记录的详细说明
+- **显示位置**：底部悬停提示
+
+#### 长期医嘱标签页
+- **tooltip内容**："长期医嘱"
+- **用途**：说明长期医嘱的管理功能
+- **显示位置**：底部悬停提示
+
+#### 临时医嘱标签页
+- **tooltip内容**："临时医嘱"
+- **用途**：介绍临时医嘱的使用场景
+- **显示位置**：底部悬停提示
+
+#### 检查报告标签页
+- **tooltip内容**："检查报告"
+- **用途**：提供检查报告的详细说明
+- **显示位置**：底部悬停提示
+
+#### 化验检验标签页
+- **tooltip内容**："化验检验"
+- **用途**：说明化验检验结果的查看功能
+- **显示位置**：底部悬停提示
+
+#### DRG分析标签页
+- **tooltip内容**："DRG数据分析"
+- **用途**：介绍DRG分析的专业含义
+- **显示位置**：底部悬停提示
+
+**章节来源**
+- [2026-04-23.md:5-16](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L5-L16)
+- [PatientTabs.vue:6-8](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L6-L8)
+- [PatientTabs.vue:14-16](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L14-L16)
+- [PatientTabs.vue:23-25](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L23-L25)
+- [PatientTabs.vue:32-34](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L32-L34)
+- [PatientTabs.vue:40-42](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L40-L42)
+- [PatientTabs.vue:48-50](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L48-L50)
+- [PatientTabs.vue:56-58](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L56-L58)
+- [PatientTabs.vue:64-66](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L64-L66)
+- [PatientTabs.vue:72-74](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L72-L74)
+- [PatientTabs.vue:80-82](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L80-L82)
+
+## DiagnosisEditPanel组件
+
+### 组件架构
+
+DiagnosisEditPanel组件提供了完整的诊断编辑功能，采用左右两栏布局设计：
+
+```mermaid
+graph TB
+subgraph "DiagnosisEditPanel组件架构"
+A[左栏：AI诊断列表] --> B[表格显示]
+B --> C[选择功能]
+B --> D[编辑功能]
+A --> E[工具栏]
+E --> F[刷新按钮]
+E --> G[新增按钮]
+E --> H[插入按钮]
+E --> I[保存按钮]
+E --> J[删除按钮]
+E --> K[分析按钮]
+A --> L[事件处理]
+L --> M[selection-change]
+L --> N[row-click]
+A --> O[懒加载优化]
+O --> P[v-if条件渲染]
+end
+subgraph "右栏：标签页区域"
+Q[诊断说明标签页] --> R[诊断类别]
+Q --> S[诊断依据]
+Q --> T[鉴别诊断]
+Q --> U[补充说明]
+Q --> V[Markdown渲染]
+W[目前诊断标签页] --> X[当前诊断表格]
+X --> Y[选择功能]
+X --> Z[编辑功能]
+end
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:1-200](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L200)
+
+### 核心功能特性
+
+#### 1. 左侧AI诊断列表
+- **表格展示**：使用Element Plus表格组件展示AI诊断列表
+- **选择功能**：支持多选和单选操作
+- **编辑功能**：双击诊断名称进入编辑模式
+- **状态指示**：高亮显示与当前诊断不同的诊断项
+
+#### 2. 右侧标签页区域
+- **诊断说明标签页**：显示诊断的详细信息，包括诊断类别、诊断依据、鉴别诊断、补充说明
+- **目前诊断标签页**：管理患者的当前诊断列表
+- **Markdown渲染**：使用marked库和DOMPurify进行安全的Markdown渲染
+
+#### 3. 工具栏功能
+- **刷新**：刷新AI诊断列表
+- **新增**：新增空白诊断
+- **插入**：将选中的AI诊断插入到目前诊断中
+- **保存**：保存当前修改的目前诊断
+- **删除**：删除目前诊断中选中的诊断
+- **分析**：触发诊断分析
+
+#### 4. 事件处理机制
+- **selection-change**：监听表格选择变化
+- **row-click**：处理表格行点击事件
+- **blur**：处理输入框失焦事件
+- **keyup.enter**：处理回车键事件
+
+**章节来源**
+- [DiagnosisEditPanel.vue:1-200](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L200)
+
 ## 依赖关系分析
 
 ### 开发环境依赖
@@ -1122,6 +795,8 @@ I[Vue 3]
 J[Element UI]
 K[Webpack]
 L[ESLint]
+M[marked]
+N[dompurify]
 end
 A --> E
 B --> I
@@ -1133,15 +808,12 @@ E --> H
 I --> J
 I --> K
 I --> L
+I --> M
+I --> N
 ```
 
 **图表来源**
 - [用户操作手册.md:194-202](file://项目相关/软件著作权/用户操作手册.md#L194-L202)
-- [常用.txt:66-76](file://项目相关/常用.txt#L66-L76)
-
-**章节来源**
-- [用户操作手册.md:194-202](file://项目相关/软件著作权/用户操作手册.md#L194-L202)
-- [常用.txt:66-76](file://项目相关/常用.txt#L66-L76)
 
 ### 系统启动流程
 
@@ -1163,10 +835,6 @@ Note over Backend,Frontend : 双服务并行运行
 ```
 
 **图表来源**
-- [mvn.bat:1-5](file://mvn.bat#L1-L5)
-- [npm.bat:1-3](file://npm.bat#L1-L3)
-
-**章节来源**
 - [mvn.bat:1-5](file://mvn.bat#L1-L5)
 - [npm.bat:1-3](file://npm.bat#L1-L3)
 
@@ -1277,12 +945,6 @@ Note over Backend,Frontend : 双服务并行运行
 - 验证测试数据准备
 - 确认测试覆盖率统计
 
-**章节来源**
-- [用户操作手册.md:78-83](file://项目相关/软件著作权/用户操作手册.md#L78-L83)
-- [源代码文档.md:64-217](file://项目相关/软件著作权/源代码文档.md#L64-L217)
-- [create-identity-sequences.sql:303-332](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L303-L332)
-- [DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md:77-78](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md#L77-L78)
-
 ## 结论
 
 MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗系统。2026年4月23日的更新进一步增强了系统的实用性和用户体验。
@@ -1293,12 +955,13 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - **数据安全可靠**：支持数据加密存储、访问权限控制、操作日志审计
 - **部署灵活**：支持分布式部署，满足不同规模医疗机构需求
 - **用户体验优化**：新增完整tooltip功能，提供详细的界面提示
-- **数据库约束防护**：通过长度截断机制防止ORA-12899错误
-- **序列同步修复**：解决Oracle数据库IDENTITY策略的主键冲突问题
-- **性能持续改进**：通过懒加载和智能过滤机制优化系统性能
-- **质量保障完善**：全面实施TDD，确保代码质量功能稳定性
-- **配置管理统一**：通过tooltip配置文件实现统一的界面提示管理
-- **序列不同步问题解决**：通过自动检查服务和修复脚本解决ORA-00001唯一约束冲突
+- **诊断解析鲁棒性增强**：通过extractSingleLineField函数防止跨行误捕获
+- **新增完整tooltip功能**：为所有标签页提供详细的悬停提示信息
+- **新增AI诊断辅助标签页**：提供独立的AI诊断结果展示和编辑功能
+- **懒加载机制优化**：通过条件渲染提升应用性能和用户体验
+- **标签页重新排序**：按照医疗工作流程优化标签页排列顺序
+- **统一配置管理**：通过tooltip.js实现tooltip功能的集中管理
+- **组件复用设计**：通过诊断编辑面板实现功能模块化和代码复用
 - **前端解析优化**：通过正则表达式修复解决triggerDiagnosis字段的跨行误捕获问题
 
 ### 新功能价值
@@ -1308,10 +971,6 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - **标签页重新排序**：按照医疗工作流程优化标签页排列顺序
 - **统一配置管理**：通过tooltip.js实现tooltip功能的集中管理
 - **组件复用设计**：通过诊断编辑面板实现功能模块化和代码复用
-- **数据库约束防护**：通过truncateIfNeeded方法实现防御性编程
-- **序列同步修复**：通过create-identity-sequences.sql脚本解决主键冲突
-- **预防性措施实施**：通过统一的截断策略保护数据库约束
-- **序列不同步问题解决**：通过自动检查服务和修复脚本确保数据完整性
 - **前端解析优化**：通过extractSingleLineField函数解决正则表达式跨行问题
 
 ### 发展建议
@@ -1347,16 +1006,11 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - 新增tooltip配置管理，实现统一的提示信息管理
 - 完善诊断编辑面板的功能和交互设计
 - 更新DRG分析页面的界面和展示逻辑
-- **修复ORA-12899错误**：通过长度截断机制防止数据库约束违反
-- **修复序列不同步问题**：通过SQL脚本解决Oracle数据库IDENTITY策略冲突
-- **实施预防性措施**：通过truncateIfNeeded方法实现防御性编程
 - **修复正则表达式跨行误捕获**：通过extractSingleLineField函数解决triggerDiagnosis字段解析问题
 - **优化诊断解析算法**：通过双重解析策略提升解析准确性和兼容性
 
 **章节来源**
-- [更新小结.md:1-340](file://更新小结.md#L1-L340)
 - [2026-04-23.md:1-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L1-L47)
-- [QcDiseaseMatchService.java:541](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/qc/QcDiseaseMatchService.java#L541)
-- [create-identity-sequences.sql:303-332](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-identity-sequences.sql#L303-L332)
-- [DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md:77-78](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/DIAGNOSIS表序列不同步导致添加诊断失败-2026年04月03日.md#L77-L78)
-- [MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md:107-112](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/MEDICAL_RECORDS和PROMPTS表序列不同步导致ORA-00001唯一约束冲突-2026年04月09日.md#L107-L112)
+- [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
+- [qcDiseaseMatchParser.js:65-72](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js#L65-L72)
+- [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
