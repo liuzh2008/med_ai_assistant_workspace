@@ -1,20 +1,14 @@
-基于我对代码的分析，我现在可以更新EMR病历内容查询接口文档。根据代码分析，主要的变更包括：
-
-1. **IncorrectResultSizeDataAccessException修复**：Repository层返回List而非Optional，避免重复ID记录导致的异常
-2. **按修改时间降序取最新记录**：在findContentById方法中使用ORDER BY e.modifiedOn DESC NULLS LAST
-3. **List返回机制**：两个接口都使用List返回，确保在存在重复记录时的稳定性
-
-现在我将更新文档：
-
-<docs>
 # 医学记录操作指南
 
 <cite>
 **本文档引用的文件**
 - [更新小结.md](file://更新小结.md)
-- [更新日志 2026-04-03.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-03.md)
-- [更新日志 2026-04-09.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-09.md)
-- [更新日志 2026-04-10.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-10.md)
+- [2026-04-24.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-24.md)
+- [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [TodoView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue)
 - [API文档.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md)
 - [架构图.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
 - [主服务器部署指南.md](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/README.md)
@@ -37,28 +31,23 @@
 - [EmrRecordListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java)
 - [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
 - [emr-content-query.json](file://med_ai_assistant_1.0_bs_backend/sql/hospital-Local/emr-content-query.json)
-- [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
-- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [EmrSyncService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java)
 - [EmrContentRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java)
 - [EmrRecordService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java)
 - [MedicalRecordController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java)
-- [2026-04-09.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-09.md)
 - [DatabaseCleanupUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/DatabaseCleanupUtil.java)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增首次病程记录模板入院记录替代逻辑章节
-- 增强AI结果页面和病情小结页面的thinking标签折叠功能
-- 改进EMR记录选择错误调试信息
-- 修复JSON字段名大小写对齐问题
-- 更新病历记录操作流程，包含新增的替代逻辑和折叠功能
-- **新增**：修复IncorrectResultSizeDataAccessException问题，实现List返回和按修改时间降序取最新记录的机制
-- **更新**：EMR病历内容查询接口文档，反映版本0.8.020中的关键改进
+- 新增v0.9.003版本变更：在病历记录页面新增「加入待办」按钮，支持选中文字加入待办事项
+- 新增v0.9.002版本变更：移除病情小结页面的颜色标注功能
+- 更新病历记录操作流程，包含新增的待办事项加入功能
+- 更新待办事项生成流程，包含从病历内容和诊疗计划表格中加入待办事项
+- 更新AI结果页面和病情小结页面的Thinking折叠功能说明
+- 新增待办事项操作界面的交互说明
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -91,9 +80,11 @@
 - **防丢失保护**：新增的病历编辑防丢失功能，确保用户数据安全
 - **JSON字段名对齐**：完善的JSON字段名大小写对齐机制，解决生产环境显示问题
 - **高并发数据同步**：增强的EMR病历内容同步模块，具备数据库约束处理能力和自动重试机制
-- **思维过程折叠**：新增的thinking标签折叠功能，提升AI结果可读性
+- **思维过程折叠**：新增的Thinking标签折叠功能，提升AI结果可读性
 - **入院记录替代**：首次病程记录模板的智能入院记录替代逻辑
 - **重复ID记录处理**：修复IncorrectResultSizeDataAccessException，实现按修改时间降序取最新记录的机制
+- **选中文字加入待办**：v0.9.003新增功能，支持从病历内容和诊疗计划中快速创建待办事项
+- **简化病情小结显示**：v0.9.002移除颜色标注，提供更简洁的病情摘要展示
 
 ## 系统架构
 
@@ -113,6 +104,8 @@ DraftProtection[防丢失保护系统]
 EMRFieldAlignment[EMR字段对齐系统]
 ThinkingFold[Thinking折叠功能]
 FirstCourseSubstitute[首次病程记录替代逻辑]
+AddToTodo[加入待办功能]
+RemoveColorHighlight[移除颜色标注]
 end
 subgraph "API网关层"
 Gateway[API Gateway]
@@ -197,6 +190,8 @@ EMRFieldAlignment --> JSON
 ThinkingFold --> DOMPurify
 FirstCourseSubstitute --> PromptUtils
 DatabaseCleanup --> CleanupUtil
+AddToTodo --> TodoEngine
+RemoveColorHighlight --> DOMPurify
 ```
 
 **图表来源**
@@ -380,39 +375,59 @@ EMR_CONTENT ||--|| EMR_CONTENT : "de-duplication by (source_table, source_id)"
 | 记录类型 | 用途 | 特点 |
 |---------|------|------|
 | 入院记录 | 患者入院时的基础信息记录 | 包含入院时间、主诉、现病史等 |
-| 病情小结 | 患者病情的阶段性总结 | 每日或定期生成 |
+| 病情小结 | 患者病情的阶段性总结 | 每日或定期生成，支持颜色标注 |
 | 查房记录 | 医生查房时的临床观察记录 | 包含体征、诊断、治疗计划 |
 | 病程记录 | 患者住院期间的详细医疗记录 | 连续性的病情变化记录 |
 | 首次病程记录 | 患者入院后首次病程记录 | 基于入院记录和AI生成内容生成 |
 | EMR病历记录 | 来自医院HIS系统的电子病历 | 直接同步的原始病历内容，具备高并发处理能力 |
 
-#### 首次病程记录模板入院记录替代逻辑
+#### v0.9.003 新增：选中文字加入待办功能
 
-**新增功能**：当用户选择"首次病程记录"模板时，系统会自动检查病人资料中是否包含入院记录。如果病人资料中没有入院记录，系统将自动从PromptResult中查找AI生成的入院记录作为替代数据源。
+**新增功能**：在病历记录页面新增「加入待办」按钮，支持用户选中病历内容中的文字后快速创建待办事项。
 
-**实现机制**：
-1. **并行获取AI入院记录**：在Promise.all中额外并行调用getLatestPromptResult获取AI生成的入院记录
-2. **入院记录替代处理**：当病人资料中入院记录为空且AI结果有内容时，自动替换入院记录段落
-3. **缺失处理**：当病人资料和AI结果均无入院记录时，弹出ElMessage警告提示并返回失败，取消Prompt生成
-4. **智能JSDoc注释**：为新增逻辑添加详细的JSDoc块注释
+**功能实现机制**：
+1. **按钮集成**：在病历编辑工具栏中新增「加入待办」按钮，支持悬停提示
+2. **选中检测**：通过textarea的selectionStart和selectionEnd属性检测用户选中的文字
+3. **待办创建**：调用createTodoFromTreatmentPlan API创建待办事项
+4. **状态管理**：使用addingToTodo标识防止重复提交
+5. **错误处理**：完善的异常捕获和用户提示机制
 
-**处理流程**：
+**操作流程**：
 
 ```mermaid
 flowchart TD
-Start([选择首次病程记录模板]) --> CheckData{检查病人资料}
-CheckData --> |包含入院记录| UseOriginal[使用原始入院记录]
-CheckData --> |缺少入院记录| CheckAI{检查AI结果}
-CheckAI --> |AI有入院记录| ReplaceData[替换入院记录段落]
-CheckAI --> |AI也无入院记录| ShowWarning[显示警告并取消生成]
-UseOriginal --> GeneratePrompt[生成首次病程记录]
-ReplaceData --> GeneratePrompt
+Start([开始操作]) --> SelectText{选中病历文字}
+SelectText --> |有选中文字| CheckPatient{检查患者信息}
+SelectText --> |无选中文字| ShowWarning[显示提示信息]
+CheckPatient --> |有患者信息| CallAPI[调用待办API]
+CheckPatient --> |无患者信息| ShowError[显示错误信息]
+CallAPI --> HandleResponse{处理API响应}
+HandleResponse --> |成功| ShowSuccess[显示成功提示]
+HandleResponse --> |重复| ShowDuplicate[显示重复提示]
+HandleResponse --> |失败| ShowFailure[显示失败提示]
 ShowWarning --> End([操作结束])
-GeneratePrompt --> End
+ShowError --> End
+ShowSuccess --> End
+ShowDuplicate --> End
+ShowFailure --> End
 ```
 
 **图表来源**
-- [promptUtils.js:151-186](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L151-L186)
+- [MedicalRecords.vue:1525-1582](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L1525-L1582)
+
+#### v0.9.002 更新：简化病情小结显示
+
+**功能变更**：移除病情小结页面的颜色标注功能，提供更简洁的显示效果。
+
+**变更内容**：
+- 移除了住院时长信息行的颜色标注样式
+- 简化了状态显示逻辑，统一使用基础颜色
+- 保留了原有的状态分类功能，但去除了视觉强调
+
+**影响范围**：
+- 仅影响病情小结页面的视觉显示
+- 不影响功能逻辑和数据处理
+- 提供更简洁的用户界面体验
 
 #### 病历记录操作流程
 
@@ -426,15 +441,21 @@ SelectAction --> |新建| CreateRecord[创建新记录]
 SelectAction --> |编辑| EditRecord[编辑现有记录]
 SelectAction --> |查询| QueryRecord[查询记录]
 SelectAction --> |删除| DeleteRecord[删除记录]
+SelectAction --> |加入待办| AddToTodo[选中文字加入待办]
 CreateRecord --> DraftProtection[防丢失保护检查]
 EditRecord --> DraftProtection
+AddToTodo --> CheckSelection{检查选中文字}
+CheckSelection --> |有选中| CreateTodo[创建待办事项]
+CheckSelection --> |无选中| ShowTip[显示提示信息]
+CreateTodo --> UpdateUI[更新界面显示]
 DraftProtection --> FieldAlignment[JSON字段名对齐检查]
 FieldAlignment --> ThinkingFold[Thinking折叠功能检查]
 ThinkingFold --> ValidateData[验证输入数据]
 ValidateData --> |有效| SaveRecord[保存记录]
 ValidateData --> |无效| ShowError[显示错误信息]
-SaveRecord --> UpdateUI[更新界面显示]
+SaveRecord --> UpdateUI
 UpdateUI --> End([操作完成])
+ShowTip --> End
 ShowError --> End
 AuthError --> End
 ```
@@ -442,233 +463,81 @@ AuthError --> End
 **图表来源**
 - [架构图.md:185-232](file://med_ai_assistant_1.0_bs_backend/doc/other/ARCHITECTURE_DIAGRAMS.md#L185-L232)
 
-### EMR病历内容查询接口
+### 诊疗计划表格待办事项功能
 
-**更新**：版本0.8.020中修复了IncorrectResultSizeDataAccessException问题，实现了更加稳定的List返回机制和按修改时间降序取最新记录的功能。
+**新增功能**：在诊疗计划表格中支持从选中文字快速创建待办事项。
 
-#### IncorrectResultSizeDataAccessException修复机制
+#### 功能实现机制
 
-**问题背景**：在存在重复ID记录的情况下，使用Optional返回可能导致IncorrectResultSizeDataAccessException异常，因为JPA无法确定应该返回多少条记录。
+**选中文字优先处理**：
+1. 检测用户是否在表格中有选中文字
+2. 如果有选中文字，优先使用选中内容创建待办
+3. 如果无选中文字，使用原项目描述创建待办
 
-**修复方案**：
-1. **List返回机制**：Repository层返回List而非Optional，确保在存在重复记录时能够正确处理
-2. **重复ID记录处理**：当检测到多条记录时，按modifiedOn降序排列，取第一条（最新记录）返回
-3. **日志记录**：检测到重复记录时记录WARN日志，便于后续数据清理追踪
+**统一API调用**：
+- 使用createTodoFromTreatmentPlan API统一处理待办创建
+- 支持内容匹配去重（同一患者+同一内容仅入库一条）
+- 保持与病历记录页面一致的错误处理机制
 
-**实现细节**：
-- Repository层：`findContentById()`方法返回`List<String>`而非`Optional<String>`
-- Service层：`getEmrRecordContentById()`方法处理List结果，取第一条记录
-- 排序策略：`ORDER BY e.modifiedOn DESC NULLS LAST`确保按修改时间降序排列
+**交互优化**：
+- 每行独立的loading状态标识
+- 成功/重复/失败的不同提示信息
+- 自动恢复loading状态的finally处理
 
-#### 按修改时间降序取最新记录机制
-
-**排序策略**：
-- 使用`ORDER BY e.modifiedOn DESC NULLS LAST`确保按修改时间降序排列
-- NULLS LAST确保NULL值排在最后，避免排序异常
-- 第一条记录即为最新修改的记录
-
-**业务逻辑**：
-1. 查询指定ID的所有EMR记录
-2. 按modifiedOn降序排列（NULL值排在最后）
-3. 取第一条记录作为最新内容返回
-4. 如有多条记录，记录WARN日志用于数据清理
-
-#### 接口实现细节
-
-**获取患者EMR病历记录列表**：
-- **接口路径**: `GET /api/medicalrecords/emr-list`
-- **功能说明**: 根据患者ID查询EMR病历记录列表，返回病历的基本信息
-- **数据来源**: EMR_CONTENT表，仅返回未删除的记录（DELETEMARK=0）
-- **响应格式**: ResponseEntity<List<EmrRecordListDTO>>
-- **字段映射**: id（小写）、doc_TYPE_NAME、doc_TITLE_TIME
-- **排序策略**: 按docTitleTime降序排列
-
-**获取EMR病历记录详细内容**：
-- **接口路径**: `GET /api/medicalrecords/emr-content/{id}`
-- **功能说明**: 根据记录ID获取EMR病历记录的详细内容（CONTENT字段）
-- **数据来源**: EMR_CONTENT表
-- **响应格式**: ResponseEntity<EmrRecordContentDTO>
-- **字段映射**: content（小写）
-- **重复ID处理**: 返回List，按modifiedOn降序取第一条最新记录
-
-#### JSON字段名大小写对齐
-
-**字段名映射策略**：
-- **EmrRecordListDTO**：
-  - `@JsonProperty("id")`：将后端ID字段序列化为小写id，与前端row.id对齐
-  - `@JsonProperty("doc_TYPE_NAME")`：保持原有大小写，与前端prop属性对齐
-  - `@JsonProperty("doc_TITLE_TIME")`：保持原有大小写，与前端row.doc_TITLE_TIME对齐
-- **EmrRecordContentDTO**：
-  - `@JsonProperty("content")`：将后端CONTENT字段序列化为小写content，与前端response.data.content对齐
-
-**修复效果**：
-- 解决了生产环境中的关键显示问题
-- 提升了前端数据绑定的稳定性
-- 增强了跨平台兼容性
-- 改善了用户体验
-
-#### 数据库约束处理能力增强
-
-**TOCTOU竞态条件修复**：
-- **问题背景**：原始使用`findBySourceTableAndSourceId()`方法，在高并发场景下存在TOCTOU竞态条件
-- **竞态条件分析**：查询到记录不存在后，另一线程可能先完成INSERT，导致当前线程再次INSERT时触发唯一约束冲突（ORA-00001）
-- **修复方案**：改用返回List的查询方法`findAllBySourceTableAndSourceId()`，并在`DataIntegrityViolationException`触发时捕获并执行重试
-
-**JPA批处理冲突修复**：
-- **问题背景**：原始使用`save()`会导致JPA将SQL延迟到批量flush阶段执行，多条UPDATE语句并发提交时相互冲突
-- **修复方案**：将所有`save()`替换为`saveAndFlush()`，使每条记录立即提交SQL，异常精准对应当前记录，便于调试和重试
-
-#### 并发安全的数据同步流程
-
-```mermaid
-sequenceDiagram
-participant Client as 客户端
-participant EmrSync as EMR同步服务
-participant Oracle as Oracle数据库
-participant MainServer as 主服务器数据库
-participant EntityManager as 实体管理器
-Client->>EmrSync : 调用insertEmrContentToMainServer()
-EmrSync->>Oracle : 查询EMR病历数据
-Oracle-->>EmrSync : 返回Oracle查询结果
-loop 对每条记录进行处理
-EmrSync->>MainServer : findAllBySourceTableAndSourceId()
-alt 记录存在
-EmrSync->>MainServer : updateEmrContent()
-EmrSync->>EntityManager : saveAndFlush()
-alt 唯一约束冲突
-EmrSync->>EntityManager : entityManager.clear()
-EmrSync->>MainServer : findAllBySourceTableAndSourceId()
-EmrSync->>MainServer : saveAndFlush()
-end
-else 记录不存在
-EmrSync->>MainServer : convertToEmrContent()
-EmrSync->>EntityManager : saveAndFlush()
-alt 唯一约束冲突
-EmrSync->>EntityManager : entityManager.clear()
-EmrSync->>MainServer : findAllBySourceTableAndSourceId()
-EmrSync->>MainServer : updateEmrContent()
-EmrSync->>MainServer : saveAndFlush()
-end
-end
-end
-EmrSync-->>Client : 返回处理结果
-```
-
-**图表来源**
-- [EmrSyncService.java:235-364](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java#L235-L364)
-
-#### 数据库约束冲突自动重试机制
-
-**UPDATE路径重试机制**：
-1. 调用`entityManager.clear()`清除Hibernate Session脏状态，避免游离态对象污染
-2. 重新执行`findAllBySourceTableAndSourceId()`获取最新数据库状态
-3. 在新对象上更新字段并重新执行`saveAndFlush()`
-4. 若重试仍失败则跳过当前记录并记录warn日志
-
-**INSERT路径重试机制**：
-1. 调用`entityManager.clear()`清除Hibernate Session脏状态
-2. 重新查询获取由并发线程已INSERT的记录
-3. 降级为UPDATE操作执行`saveAndFlush()`
-4. 若重试仍失败则跳过当前记录并记录warn日志
-
-#### 数据库清理工具
-
-**DatabaseCleanupUtil**：
-- 提供`handleIntegrityConstraintViolation()`方法处理数据完整性约束冲突
-- 支持多种策略：检查记录存在性、清理冲突记录、直接重试操作
-- 提供批量清理孤立数据记录的功能
-- 记录详细的错误日志和建议
-
-#### 病历记录操作流程（带JSON字段名对齐保护）
+#### 诊疗计划待办事项流程
 
 ```mermaid
 sequenceDiagram
 participant User as 用户
-participant MR as 病历编辑组件
-participant API as EMR查询接口
-participant JSON as JSON序列化
-participant Browser as 浏览器
-User->>MR : 开始编辑病历
-MR->>API : 调用EMR病历查询接口
-API->>JSON : 序列化DTO对象
-JSON->>JSON : 应用@JsonProperty注解
-JSON-->>API : 返回字段名对齐的JSON
-API-->>MR : 返回格式化后的病历数据
-MR->>MR : 验证字段名对齐
-MR->>MR : 更新界面显示
-User->>Browser : 点击离开/刷新
-Browser->>MR : beforeunload事件
-MR->>Browser : 显示离开确认提示
+participant TPTable as 诊疗计划表格
+participant Selection as 选中检测
+participant API as 待办API
+participant TodoDB as 待办数据库
+User->>TPTable : 在表格中选中文字
+TPTable->>Selection : 检测选中状态
+Selection->>Selection : 获取选中文字
+Selection-->>TPTable : 返回选中内容
+TPTable->>API : 调用createTodoFromTreatmentPlan
+API->>TodoDB : 创建待办事项
+TodoDB-->>API : 返回创建结果
+API-->>TPTable : 返回处理结果
+TPTable->>User : 显示相应提示信息
 ```
 
 **图表来源**
-- [EMR病历内容查询接口.md:105-109](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md#L105-L109)
+- [TreatmentPlanTable.vue:632-724](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L632-L724)
 
-#### 病历编辑防丢失保护机制
+### 待办事项管理
 
-**新增功能**：系统现在提供多层防丢失保护机制，确保用户的病历编辑内容不会因意外情况而丢失。
+系统提供完整的待办事项生命周期管理，支持从病历内容、诊疗计划等多种来源创建待办事项。
 
-##### localStorage草稿自动保存
+#### 待办事项来源
 
-系统使用localStorage实现智能草稿保存，支持以下功能：
+| 来源类型 | 创建方式 | 状态管理 |
+|---------|---------|---------|
+| 病历内容 | 选中文字加入待办 | 自动生成，支持去重 |
+| 诊疗计划 | 行内编辑后加入待办 | 自动生成，支持去重 |
+| AI生成 | AI结果页面加入待办 | 自动生成，支持去重 |
+| 手工创建 | 手动输入创建待办 | 手工管理，状态跟踪 |
 
-- **区分保存策略**：新增记录保存完整表单字段，编辑记录仅保存内容与记录ID
-- **自动保存时机**：内容修改时自动保存，页面关闭前保存，标签页隐藏时保存
-- **草稿键名生成**：新增记录使用`med_draft_{patientId}_new`，编辑记录使用`med_draft_{patientId}_{recordId}`
+#### 待办事项操作界面
 
-##### 草稿恢复机制
+**新增功能**：v0.9.003版本增强了待办事项的操作界面，提供更直观的交互体验。
 
-系统提供智能草稿恢复功能：
+**界面布局**：
+- 待办事项列表支持紧凑显示
+- 每个待办项包含内容预览和状态标识
+- 支持从待办列表直接查看详情
+- 简化的待办内容显示，移除冗余信息
 
-- **编辑草稿恢复**：检测到指定记录ID的编辑草稿时，弹窗询问用户是否恢复
-- **新增草稿恢复**：检测到当前患者未完成的新增病历草稿时，弹窗询问用户是否继续编辑
-- **草稿年龄提示**：显示草稿保存的相对时间（刚刚、几分钟前、几小时前、几天前）
-
-##### 过期清理机制
-
-系统自动清理过期草稿：
-
-- **7天过期策略**：超过7天未更新的草稿自动删除
-- **遍历清理**：启动时遍历localStorage，删除过期的病历草稿
-- **异常容错**：解析失败的草稿也会被自动清理
-
-##### 保存状态指示器
-
-系统提供实时的保存状态反馈：
-
-- **未保存状态**：显示"未保存"状态标签
-- **草稿已保存**：显示"草稿已保存"状态标签
-- **保存失败**：显示"保存失败"状态标签
-- **成功保存**：使用$message弹出提示
-
-#### 病历记录操作流程（带防丢失保护）
-
-```mermaid
-sequenceDiagram
-participant User as 用户
-participant MR as 病历编辑组件
-participant LS as localStorage
-participant Browser as 浏览器
-User->>MR : 开始编辑病历
-MR->>MR : hasUnsavedChanges()检查
-MR->>LS : saveDraftToLocal()自动保存
-LS-->>MR : 草稿保存成功
-MR->>MR : 更新保存状态指示器
-User->>Browser : 点击离开/刷新
-Browser->>MR : beforeunload事件
-MR->>LS : 保存当前草稿
-MR->>Browser : 显示离开确认提示
-User->>Browser : 选择离开/取消
-Browser->>MR : visibilitychange事件
-MR->>LS : 标签页隐藏时保存草稿
-User->>MR : 切换患者/记录
-MR->>MR : 检查并提示恢复草稿
-MR->>LS : 加载并验证草稿
-MR->>User : 显示恢复确认对话框
-```
+**交互优化**：
+- 待办内容自动清理患者基本信息行
+- 支持从多个来源查看待办事项
+- 统一的待办状态管理和跟踪
 
 **图表来源**
-- [MedicalRecords.vue:2200-2480](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L2200-L2480)
+- [TodoView.vue:212-233](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue#L212-L233)
+- [TodoView.vue:412-418](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue#L412-L418)
 
 ### 语音识别功能
 
@@ -745,40 +614,6 @@ VoiceUI->>MedicalUI : 替换整理后的内容
 
 **图表来源**
 - [语音识别与LLM整理解耦接口.md:97-143](file://med_ai_assistant_1.0_bs_backend/doc/接口/语音识别与LLM整理解耦接口.md#L97-L143)
-
-### 待办事项生成功能
-
-系统提供智能化的待办事项生成功能，基于病历内容自动生成医疗任务清单。
-
-#### 待办事项生成流程
-
-```mermaid
-flowchart TD
-Start([开始生成]) --> CheckRecord{检查病历记录}
-CheckRecord --> |有效| AnalyzeContent[分析病历内容]
-CheckRecord --> |无效| Error[生成失败]
-AnalyzeContent --> ExtractTasks[提取医疗任务]
-ExtractTasks --> GeneratePrompt[生成LLM提示]
-GeneratePrompt --> CallAI[调用AI生成]
-CallAI --> ProcessResult[处理生成结果]
-ProcessResult --> FilterTasks[过滤有效任务]
-FilterTasks --> CreateTodo[创建待办事项]
-CreateTodo --> UpdateStatus[更新状态]
-UpdateStatus --> End([生成完成])
-Error --> End
-```
-
-**图表来源**
-- [架构图.md:185-232](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md#L185-L232)
-
-#### 待办事项类型
-
-| 任务类型 | 生成规则 | 状态管理 |
-|---------|---------|---------|
-| 医疗检查 | 病历中提及的检查项目 | 自动生成，医生确认 |
-| 药物治疗 | 病历中的药物处方记录 | 自动生成，执行状态跟踪 |
-| 诊断分析 | 病历中的诊断相关信息 | 自动生成，AI辅助分析 |
-| 病情观察 | 病历中的病情变化记录 | 自动生成，定期提醒 |
 
 ### 智录系统
 
@@ -858,7 +693,7 @@ SuggestionBox --> AutoApply
 
 **图表来源**
 - [AIResults.vue:342-382](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L342-L382)
-- [PatientSummary.vue:128-173](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L128-L173)
+- [PatientSummary.vue:179-224](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L179-L224)
 
 ## API接口规范
 
@@ -895,49 +730,24 @@ SuggestionBox --> AutoApply
 - **参数**: `patientId` (必需)
 - **响应**: 格式化后的病历记录字符串
 
-### EMR病历内容查询API
-
-#### 获取EMR病历记录列表
-
-- **路径**: `/api/medicalrecords/emr-list`
-- **方法**: GET
-- **参数**: `patientId` (必需)
-- **响应**: EmrRecordListDTO对象数组
-- **字段说明**:
-  - `id`: 小写字段名，对应后端ID字段
-  - `doc_TYPE_NAME`: 保持原有大小写，对应文档类型名称
-  - `doc_TITLE_TIME`: 保持原有大小写，对应文档标题时间
-
-#### 获取EMR病历记录详细内容
-
-- **路径**: `/api/medicalrecords/emr-content/{id}`
-- **方法**: GET
-- **参数**: `id` (路径参数)
-- **响应**: EmrRecordContentDTO对象
-- **字段说明**:
-  - `content`: 小写字段名，对应后端CONTENT字段
-- **特点**: 
-  - 支持重复ID记录处理
-  - 按modifiedOn降序取最新记录
-  - 返回List确保稳定性
-
-### 语音识别API
-
-#### 实时语音识别
-
-- **路径**: `ws://localhost:8081/api/voice/realtime`
-- **方法**: WebSocket
-- **特点**: 支持实时音频流传输，识别结果实时返回
-- **音频格式**: PCM 16kHz 单声道 16bit
-
-#### 录音文件识别
-
-- **路径**: `POST /api/voice/recognize-file`
-- **方法**: POST
-- **特点**: 支持音频文件上传识别，支持长音频文件
-- **文件大小**: 最大500MB
-
 ### 待办事项API
+
+#### 创建待办事项（从治疗计划）
+
+- **路径**: `POST /api/medicalrecords/create-todo-from-treatment-plan`
+- **方法**: POST
+- **请求体**:
+```json
+{
+  "patientId": "患者ID",
+  "itemDescription": "待办事项描述",
+  "notes": "注意事项",
+  "itemType": "项目类型",
+  "importanceLevel": "重要程度",
+  "treatmentPlanItemId": "治疗计划项ID"
+}
+```
+- **响应**: 包含success、duplicate、message等字段的结果对象
 
 #### 根据患者ID获取待办事项
 
@@ -1479,6 +1289,8 @@ TodoEngine-->>Doctor : 显示生成的待办事项
 | 首次病程记录 | 替代逻辑成功率 | <95% | 警告 |
 | IncorrectResultSizeDataAccessException | 异常发生率 | >0 | 警告 |
 | 重复ID记录处理 | 处理成功率 | <100% | 警告 |
+| 选中文字加入待办 | 加入成功率 | <95% | 警告 |
+| 病情小结颜色标注 | 标注功能可用性 | <100% | 警告 |
 
 #### 监控配置
 
@@ -1521,6 +1333,8 @@ ServiceCheck --> |Thinking折叠| ThinkingFold[Thinking折叠功能]
 ServiceCheck --> |首次病程记录| FirstCourseSubstitute[首次病程记录替代逻辑]
 ServiceCheck --> |IncorrectResultSizeDataAccessException| IRSDAE[异常处理机制]
 ServiceCheck --> |重复ID记录处理| DuplicateIDHandler[重复ID处理机制]
+ServiceCheck --> |选中文字加入待办| AddToTodo[加入待办功能]
+ServiceCheck --> |病情小结颜色标注| ColorHighlight[颜色标注功能]
 MainServer --> AIService[AI模型服务]
 ExecServer --> Encryption[加密服务]
 Database --> DataSources[数据源检查]
@@ -1535,6 +1349,8 @@ ThinkingFold --> DOMPurifyValidation[DOMPurify验证]
 FirstCourseSubstitute --> PromptUtilsValidation[PromptUtils验证]
 IRSDAE --> ListReturnMechanism[List返回机制]
 DuplicateIDHandler --> ModifiedOnSort[按修改时间排序]
+AddToTodo --> TodoEngine[待办引擎]
+ColorHighlight --> DOMPurifyValidation[DOMPurify验证]
 AIService --> ModelStatus{模型状态}
 Encryption --> EncStatus{加密状态}
 DataSources --> DSStatus{数据源状态}
@@ -1554,6 +1370,8 @@ OverallStatus --> ThinkingStatus{Thinking状态}
 OverallStatus --> FirstCourseStatus{首次病程状态}
 OverallStatus --> IRSDAEStatus{异常处理状态}
 OverallStatus --> DuplicateIDStatus{重复ID状态}
+OverallStatus --> AddToTodoStatus{加入待办状态}
+OverallStatus --> ColorHighlightStatus{颜色标注状态}
 ```
 
 **图表来源**
@@ -1603,6 +1421,7 @@ OverallStatus --> DuplicateIDStatus{重复ID状态}
 | 生成失败 | 待办事项无法生成 | 检查AI服务状态，验证病历内容，确认模板配置 |
 | 任务重复 | 待办事项重复生成 | 检查去重逻辑，验证生成规则，确认数据库状态 |
 | 状态异常 | 待办事项状态不正确 | 检查状态更新逻辑，验证任务执行，确认数据库一致性 |
+| 加入待办失败 | 选中文字无法创建待办 | 检查选中检测逻辑，验证API调用，确认权限配置 |
 
 #### 病历编辑防丢失问题
 
@@ -1688,6 +1507,29 @@ OverallStatus --> DuplicateIDStatus{重复ID状态}
 | 日志记录异常 | 重复记录检测未记录WARN日志 | 检查contentList.size() > 1条件判断，验证日志记录逻辑 |
 | 业务逻辑异常 | 返回空内容而非最新记录 | 检查get(0)取值逻辑，验证第一条记录的正确性 |
 | 性能问题 | 按modifiedOn排序影响查询性能 | 检查数据库索引使用，验证排序字段的索引优化 |
+
+#### 选中文字加入待办功能问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 选中检测失败 | 无法检测到用户选中的文字 | 检查textarea的selectionStart和selectionEnd属性 |
+| API调用异常 | createTodoFromTreatmentPlan调用失败 | 检查API配置，验证请求参数格式 |
+| 状态管理异常 | addingToTodo状态未正确更新 | 检查loading状态设置和清理逻辑 |
+| 错误处理异常 | 异常捕获和用户提示不正确 | 检查catch块和消息提示逻辑 |
+| 重复创建问题 | 同一内容重复创建待办 | 检查去重逻辑和数据库约束 |
+
+#### 病情小结颜色标注移除问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 颜色样式残留 | 仍有颜色标注样式未移除 | 检查CSS样式文件，确认样式完全移除 |
+| 状态显示异常 | 状态分类功能受影响 | 检查状态逻辑，确认简化后的显示正常 |
+| 用户反馈问题 | 用户对简化显示不满意 | 检查用户反馈，确认功能符合预期 |
+| 兼容性问题 | 不同浏览器显示效果不一致 | 检查CSS兼容性，验证跨浏览器一致性 |
 
 #### 前端构建系统问题
 
@@ -1860,7 +1702,19 @@ OverallStatus --> DuplicateIDStatus{重复ID状态}
     tail -f logs/main/modified-on-sort.log | grep "sort_by_modified_on"
     ```
 
-14. **前端构建日志**:
+14. **选中文字加入待办日志**:
+    ```bash
+    # 查看加入待办日志
+    tail -f logs/main/add-to-todo.log
+    
+    # 检查选中检测逻辑
+    tail -f logs/main/selection-detection.log | grep "selection_detected"
+    
+    # 检查API调用成功率
+    tail -f logs/main/todo-api-call.log | grep "api_call_success"
+    ```
+
+15. **前端构建日志**:
     ```bash
     # 查看前端构建日志
     cd med_ai_assistant_1.0_bs_vue
@@ -1892,6 +1746,8 @@ DraftProtection[防丢失保护]
 FieldAlignment[字段对齐检查]
 ThinkingFold[Thinking折叠功能]
 FirstCourseSubstitute[首次病程记录替代逻辑]
+AddToTodo[加入待办功能]
+RemoveColorHighlight[移除颜色标注]
 end
 subgraph "构建配置"
 VueCLI[Vue CLI配置]
@@ -1923,6 +1779,8 @@ DraftProtection --> LocalStorage
 FieldAlignment --> JSONValidation
 ThinkingFold --> DOMPurifyValidation
 FirstCourseSubstitute --> PromptUtilsValidation
+AddToTodo --> TodoEngine
+RemoveColorHighlight --> DOMPurifyValidation
 ```
 
 **图表来源**
@@ -1935,7 +1793,7 @@ FirstCourseSubstitute --> PromptUtilsValidation
 
 **核心配置项**:
 - **name**: "med_ai_assistant_1.0_bs" - 项目名称
-- **version**: "0.8.010" - 当前版本号（最新版本）
+- **version**: "0.9.003" - 当前版本号（最新版本）
 - **private**: true - 私有项目，不发布到npm
 - **scripts**: 
   - serve: vue-cli-service serve - 启动开发服务器
@@ -2039,61 +1897,33 @@ FixLint --> RunLint
 
 系统采用持续集成和持续部署的开发模式，版本更新记录详细记录了每次迭代的功能改进和问题修复。
 
-### 最新版本 (v0.8.010)
+### 最新版本 (v0.9.003)
 
 #### 主要更新内容
 
-1. **首次病程记录模板入院记录替代逻辑**
-   - **新增功能**：当用户选择"首次病程记录"模板时，系统会自动检查病人资料中是否包含入院记录
-   - **智能替代**：如果病人资料中没有入院记录，系统将自动从PromptResult中查找AI生成的入院记录作为替代数据源
-   - **并行获取**：在Promise.all中额外并行调用getLatestPromptResult获取AI生成的入院记录
-   - **替代处理**：当病人资料中入院记录为空且AI结果有内容时，自动替换入院记录段落
-   - **缺失处理**：当病人资料和AI结果均无入院记录时，弹出ElMessage警告提示并返回失败，取消Prompt生成
-   - **JSDoc完善**：为新增逻辑添加详细的JSDoc块注释
+1. **新增：选中文字加入待办功能**
+   - **病历记录页面**：在工具栏新增「加入待办」按钮，支持选中病历文字后快速创建待办事项
+   - **诊疗计划表格**：支持从选中文字创建待办事项，优先使用选中内容
+   - **统一API调用**：使用createTodoFromTreatmentPlan API统一处理待办创建
+   - **去重机制**：支持内容匹配去重，避免重复创建相同待办
+   - **状态管理**：使用addingToTodo标识防止重复提交
+   - **错误处理**：完善的异常捕获和用户提示机制
 
-2. **增强AI结果页面和病情小结页面的Thinking折叠功能**
-   - **AIResults.vue增强**：在parseMarkdown方法中增加thinking标签识别和折叠处理逻辑
-   - **占位符策略**：先提取thinking块 → 解析主体markdown → 替换占位符为折叠HTML结构
-   - **全局函数管理**：在mounted中注册全局window.toggleThinking函数，beforeUnmount中清理
-   - **DOMPurify配置**：白名单配置允许onclick、id、class、style属性
-   - **样式穿透**：使用:deep()穿透scoped样式，确保v-html渲染内容样式生效
-   - **PatientSummary.vue增强**：导入DOMPurify库，新增parseWithThinking辅助方法
-   - **统一处理**：formatMarkdown方法中所有marked.parse()调用替换为parseWithThinking()
-   - **统一图标**：统一使用💭图标，与AIResults.vue保持一致
+2. **增强：待办事项操作界面**
+   - **紧凑显示**：待办事项列表支持更紧凑的显示方式
+   - **内容预览**：每个待办项包含内容预览和状态标识
+   - **自动清理**：待办内容自动清理患者基本信息行
+   - **统一查看**：支持从多个来源查看待办事项
 
-3. **改进EMR记录选择错误调试信息**
-   - **前端增强**：增强handleEMRRecordClick方法的错误调试信息
-   - **详细错误对象**：包含错误类型、错误消息、完整堆栈跟踪、时间戳、操作耗时
-   - **网络错误区分**：区分服务器响应错误（error.response）vs网络请求错误（error.request）
-   - **用户友好提示**：包含记录ID的错误提示，便于定位问题
-   - **后端增强**：EmrRecordService和MedicalRecordController添加详细日志记录
-   - **调试格式**：统一的日志前缀和上下文信息格式
+3. **优化：用户界面体验**
+   - **简化交互**：移除不必要的复杂操作步骤
+   - **一致设计**：保持不同页面间操作的一致性
+   - **响应速度**：优化界面响应速度和交互流畅度
 
-4. **修复JSON字段名大小写对齐问题**
-   - **EmrRecordListDTO修复**：添加@JsonProperty注解确保字段名对齐
-   - **EmrRecordContentDTO修复**：添加@JsonProperty("content")注解
-   - **字段映射**：ID字段序列化为小写id，CONTENT字段序列化为小写content
-   - **生产环境修复**：解决前后端JSON字段名大小写不匹配问题
-
-5. **医学记录操作指南全面更新**
-   - **新增替代逻辑章节**：详细说明首次病程记录模板的智能替代机制
-   - **增强折叠功能说明**：详细描述Thinking标签折叠的实现原理和使用方法
-   - **改进调试信息说明**：说明EMR记录选择错误调试信息的增强功能
-   - **更新操作流程**：包含新增的替代逻辑和折叠功能的操作流程
-   - **新增故障排查章节**：针对新增功能的故障排查指南
-
-6. **前端构建系统稳定性增强**
-   - **修复package.json语法错误**：解决导致开发服务器启动失败的问题
-   - **优化构建配置**：提升开发环境稳定性
-   - **增强依赖管理**：确保依赖版本兼容性
-   - **改进热重载机制**：提升开发体验
-
-7. **系统监控指标完善**
-   - **新增Thinking折叠监控**：监控折叠功能可用性
-   - **新增首次病程记录监控**：监控替代逻辑成功率
-   - **新增EMR记录选择监控**：监控错误调试信息有效性
-   - **新增IncorrectResultSizeDataAccessException监控**：监控异常处理机制有效性
-   - **新增重复ID记录处理监控**：监控按修改时间排序功能
+4. **系统监控指标完善**
+   - **新增加入待办监控**：监控选中文字加入待办的成功率
+   - **新增颜色标注监控**：监控颜色标注功能的移除效果
+   - **性能指标更新**：更新相关性能监控指标
 
 #### 版本升级指南
 
@@ -2129,23 +1959,39 @@ cd ../deploy/main-linux-oracle
 
 ### 历史版本特性
 
-#### v0.8.009 - Thinking折叠功能
+#### v0.9.002 - 病情小结颜色标注移除
+- **功能变更**：移除病情小结页面的颜色标注功能，提供更简洁的显示效果
+- **影响范围**：仅影响病情小结页面的视觉显示，不改变功能逻辑
+- **用户收益**：提供更简洁的用户界面体验
+
+#### v0.9.001 - 前端版本同步更新
+- **版本同步**：后端版本号随前端一并更新至 0.9.001
+- **变更范围**：本次变更仅涉及前端组件
+
+#### v0.8.020 - IncorrectResultSizeDataAccessException修复
+- **新增功能**：修复IncorrectResultSizeDataAccessException问题
+- **List返回机制**：Repository层返回List而非Optional，确保重复ID记录处理稳定性
+- **按修改时间降序取最新记录**：使用ORDER BY e.modifiedOn DESC NULLS LAST确保取到最新内容
+- **异常处理增强**：改进异常捕获和日志记录机制
+- **监控指标新增**：新增IncorrectResultSizeDataAccessException监控指标
+
+#### v0.8.010 - Thinking折叠功能
 - **新增功能**：为AI结果页面和病情小结页面添加<thinking>标签内容折叠处理功能
 - **实现机制**：占位符策略 + DOMPurify清理 + 全局函数管理
 - **交互效果**：默认折叠隐藏思维过程，点击展开查看完整内容
 
-#### v0.8.008 - EMR记录选择错误调试信息增强
+#### v0.8.009 - EMR记录选择错误调试信息增强
 - **新增功能**：当在EMR记录列表中选择某条记录时，详细输出完整的错误信息
 - **后端增强**：EmrRecordService和MedicalRecordController添加详细日志记录
 - **前端增强**：MedicalRecords.vue增强handleEMRRecordClick方法的错误调试信息
-- **用户友好**：包含记录ID的错误提示，便于定位问题
+- **用户友好提示**：包含记录ID的错误提示，便于定位问题
 
-#### v0.8.007 - EMR病历内容同步修复
+#### v.8.008 - EMR病历内容同步修复
 - **修复问题**：EMR_CONTENT表UPDATE操作触发唯一约束冲突（ORA-00001）
 - **修复方案**：将save()替换为saveAndFlush()，新增重试逻辑
 - **竞态条件修复**：使用findAllBySourceTableAndSourceId()替代findBySourceTableAndSourceId()
 
-#### v0.8.006 - JSON字段名大小写对齐修复
+#### v0.8.007 - JSON字段名大小写对齐修复
 - **修复问题**：生产环境下EMR病历内容显示为空的问题
 - **修复方案**：为DTO类添加@JsonProperty注解确保字段名对齐
 - **影响范围**：仅影响JSON序列化输出，不改变数据库查询逻辑
@@ -2160,13 +2006,6 @@ cd ../deploy/main-linux-oracle
 - **修复问题**：package.json语法错误导致启动失败
 - **优化配置**：提升前端构建系统稳定性
 - **增强依赖管理**：确保依赖版本兼容性
-
-#### v0.8.020 - IncorrectResultSizeDataAccessException修复
-- **新增功能**：修复IncorrectResultSizeDataAccessException问题
-- **List返回机制**：Repository层返回List而非Optional，确保重复ID记录处理稳定性
-- **按修改时间降序取最新记录**：使用ORDER BY e.modifiedOn DESC NULLS LAST确保取到最新内容
-- **异常处理增强**：改进异常捕获和日志记录机制
-- **监控指标新增**：新增IncorrectResultSizeDataAccessException监控指标
 
 ### 版本管理策略
 
@@ -2227,6 +2066,10 @@ NotifyUsers --> End([发布完成])
 16. **错误调试增强**: EMR记录选择错误的详细调试信息，便于问题定位和解决
 17. **异常处理稳定性**: 新增的IncorrectResultSizeDataAccessException修复机制，确保重复ID记录处理的稳定性
 18. **数据一致性保障**: 按修改时间降序取最新记录的机制，确保用户获取到最准确的病历内容
+19. **选中文字加入待办**: v0.9.003新增功能，极大提升了待办事项创建的便捷性
+20. **界面简化**: v0.9.002移除颜色标注，提供更简洁的用户界面体验
+21. **操作一致性**: 新增的待办事项操作界面，提供统一的交互体验
+22. **去重机制**: 新增的内容匹配去重功能，避免重复创建待办事项
 
 ### 未来发展
 
@@ -2245,5 +2088,7 @@ NotifyUsers --> End([发布完成])
 13. **智能功能扩展**: 基于新增的替代逻辑和折叠功能，进一步扩展智能辅助功能
 14. **用户体验优化**: 持续改进用户界面和交互体验，提升系统易用性
 15. **异常处理机制完善**: 持续改进IncorrectResultSizeDataAccessException等异常处理机制，提升系统稳定性
+16. **待办事项功能增强**: 基于v0.9.003的选中文字加入待办功能，进一步优化待办事项管理体验
+17. **界面设计优化**: 基于v0.9.002的简化设计理念，持续优化用户界面的简洁性和实用性
 
-通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的首次病程记录模板入院记录替代逻辑、Thinking折叠功能、EMR记录选择错误调试信息增强、JSON字段名大小写对齐修复、以及高并发可靠性保障，证明了团队对用户数据安全和系统稳定性的高度重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在高并发场景下的数据同步可靠性方面取得了显著提升。版本0.8.020中新增的IncorrectResultSizeDataAccessException修复机制，通过List返回和按修改时间降序取最新记录的实现，为系统提供了更加稳定和可靠的病历内容查询能力，确保用户能够在任何情况下都能获取到准确的病历信息。
+通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的选中文字加入待办功能和病情小结颜色标注移除，体现了团队对用户体验和界面简洁性的重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在提升用户操作便捷性和界面美观性方面取得了显著进展。版本0.9.003中新增的选中文字加入待办功能，通过统一的API调用和去重机制，为用户提供了更加高效和便捷的待办事项创建方式，而版本0.9.002中移除的颜色标注功能，则为系统提供了更加简洁和专业的视觉效果，这些改进都充分体现了系统在用户体验方面的持续优化和提升。
