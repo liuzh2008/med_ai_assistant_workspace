@@ -23,12 +23,14 @@
 - [application.properties](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/config/application.properties)
 - [auto-deploy.sh](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue_test/auto-deploy.sh)
 - [.env.production](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue_test/.env.production)
+- [README.md](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md)
+- [auto-deploy.sh](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh)
 </cite>
 
 ## 更新摘要
 **所做更改**
+- 新增main-linux-testServer部署配置的详细说明，涵盖测试环境专用配置和Git集成部署流程
 - 新增自动化部署脚本章节，详细介绍后端和前端的自动下载与部署流程
-- 新增main-linux-oracle和main-linux-testServer部署配置的详细说明
 - 新增SSH远程连接能力的配置和使用方法
 - 更新容器编排示例，包含多环境部署配置和健康检查机制
 - 增强容器健康检查配置，提供更精确的服务状态监控
@@ -49,12 +51,13 @@
 ## 简介
 本指南面向MedAiAssistant后端系统的Docker容器化部署，涵盖最新的本地JAR+Docker复制构建流程，该流程专门针对阿里云Maven仓库SSL连接不稳定问题进行了优化。文档详细说明了多阶段构建过程，包括基础镜像选择、依赖安装、应用打包和最终镜像优化策略；提供容器运行参数配置，端口映射，卷挂载和环境变量设置；包含容器编排示例，如docker-compose配置文件；解释容器健康检查配置和日志管理；提供容器部署的最佳实践和故障排查方法。
 
-**更新** 新增自动化部署脚本章节，详细介绍后端和前端的自动下载与部署流程，包括版本检测、防重复部署机制、备份恢复等功能。新增main-linux-oracle和main-linux-testServer部署配置的详细说明，涵盖SSH远程连接能力和多环境部署策略。重点介绍了本地JAR+Docker复制构建模式，该模式通过避免容器内Maven依赖下载，显著提升了构建稳定性。
+**更新** 新增main-linux-testServer测试环境专用部署配置，提供Git集成的自动化部署流程。新增自动化部署脚本章节，详细介绍后端和前端的自动下载与部署流程，包括版本检测、防重复部署机制、备份恢复等功能。新增SSH远程连接能力的配置和使用方法。重点介绍了本地JAR+Docker复制构建模式，该模式通过避免容器内Maven依赖下载，显著提升了构建稳定性。
 
 ## 项目结构
 - 后端工程位于 `med_ai_assistant_1.0_bs_backend/` 目录，包含多份Dockerfile与部署脚本。
 - 主服务器与执行服务器分别提供独立的Dockerfile与部署脚本。
 - 配置文件位于 `config/` 与 `deploy/*/config/` 目录，用于控制应用行为与监控策略。
+- **新增**：main-linux-testServer测试环境部署配置，包含专用的部署脚本和Git集成功能。
 - **新增**：自动化部署脚本位于 `deploy/main-linux-oracle/auto-deploy-backend.sh` 和 `deploy/main-linux-testServer/auto-deploy.sh`。
 - **新增**：前端自动化部署脚本位于 `med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh`。
 - **新增**：SSH远程连接配置和使用方法。
@@ -76,6 +79,7 @@ A --> L["config/application-github-release.properties.example<br/>GitHub发布�
 A --> M["deploy/main-linux-oracle/auto-deploy-backend.sh<br/>后端自动部署脚本"]
 A --> N["deploy/main-linux-testServer/auto-deploy.sh<br/>测试服务器自动部署脚本"]
 A --> O["med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh<br/>前端自动部署脚本"]
+A --> P["deploy/main-linux-testServer/README.md<br/>测试环境部署指南"]
 ```
 
 **图表来源**
@@ -92,15 +96,16 @@ A --> O["med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh<br/>前端�
 - [auto-deploy-backend.sh:1-478](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L1-L478)
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 - [auto-deploy-frontend.sh:1-282](file://med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh#L1-L282)
+- [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md#L1-L396)
 
 **章节来源**
 - [README.md:1-250](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L1-L250)
 
 ## 核心组件
 - **本地JAR+Docker复制构建模式**：主服务器采用多阶段构建，第一阶段使用本地已构建的JAR文件，避免容器内Maven依赖下载问题，特别解决阿里云Maven仓库SSL连接不稳定问题。
-- **自动化部署脚本**：后端提供auto-deploy-backend.sh，前端提供auto-deploy-frontend.sh，支持版本检测、防重复部署、备份恢复和错误恢复机制。
+- **自动化部署脚本**：后端提供auto-deploy-backend.sh，前端提供auto-deploy-frontend.sh，支持版本检测、防重复部署、备份恢复和错误恢复机制。**新增**：测试服务器提供auto-deploy.sh，支持Git集成的自动化部署流程。
 - **SSH远程连接能力**：支持通过SSH连接到远程服务器进行部署和维护操作。
-- **多环境部署配置**：main-linux-oracle和main-linux-testServer提供不同的部署配置和环境变量设置。
+- **多环境部署配置**：main-linux-oracle和main-linux-testServer提供不同的部署配置和环境变量设置，满足生产环境和测试环境的不同需求。
 - 运行时镜像：基于Eclipse Temurin 21 JRE，减少镜像体积与攻击面。
 - 健康检查：内置HTTP健康检查端点，结合容器健康状态保障服务可用性。
 - 入口脚本：通过入口脚本启动应用，支持环境变量注入与JVM参数传递。
@@ -117,16 +122,15 @@ A --> O["med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh<br/>前端�
 - [application-github-release.properties.example:1-48](file://med_ai_assistant_1.0_bs_backend/config/application-github-release.properties.example#L1-L48)
 - [auto-deploy-backend.sh:1-478](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L1-L478)
 - [auto-deploy-frontend.sh:1-282](file://med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh#L1-L282)
+- [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 
 ## 架构总览
-系统包含主服务器与执行服务器两个角色，通过HTTP API进行交互，并依赖Redis缓存与Oracle数据库。新的构建流程通过本地JAR复制模式提高了构建稳定性。新增的自动化部署脚本提供了完整的版本管理和部署流程。
+系统包含主服务器与执行服务器两个角色，通过HTTP API进行交互，并依赖Redis缓存与Oracle数据库。新的构建流程通过本地JAR复制模式提高了构建稳定性。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括Git集成的测试环境部署和生产环境的自动下载部署。
 
 ```mermaid
 graph TB
 subgraph "主服务器"
 M["端口: 8081<br/>健康检查: /api/health<br/>构建模式: 本地JAR+Docker复制"]
-end
-subgraph "执行服务器"
 E["端口: 8082<br/>健康检查: /api/execute/health<br/>构建模式: 多阶段构建"]
 end
 subgraph "基础设施"
@@ -139,7 +143,7 @@ end
 subgraph "自动化部署"
 ADB["后端自动部署脚本<br/>auto-deploy-backend.sh"]
 ADF["前端自动部署脚本<br/>auto-deploy-frontend.sh"]
-ATS["测试服务器自动部署脚本<br/>auto-deploy.sh"]
+ATS["测试服务器自动部署脚本<br/>auto-deploy.sh<br/>Git集成"]
 SSH["SSH远程连接<br/>支持远程部署"]
 end
 M -- "HTTP 推送/回调" --> E
@@ -324,10 +328,33 @@ Complete --> End
 - [auto-deploy-frontend.sh:1-282](file://med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh#L1-L282)
 
 #### 测试服务器自动部署脚本（auto-deploy.sh）
-- **Git版本控制**：自动检测Git仓库更新，支持强制拉取和版本重置。
+- **Git集成**：自动检测Git仓库更新，支持强制拉取和版本重置。
 - **完整部署流程**：从代码拉取到构建再到部署的完整自动化流程。
 - **环境变量管理**：支持测试环境配置文件的自动应用和恢复。
 - **健康检查**：部署完成后进行健康检查和日志收集。
+- **日志记录**：完整的部署日志记录，便于故障排查和审计。
+
+```mermaid
+flowchart TD
+Start(["开始自动部署"]) --> Fetch["git fetch 远程更新"]
+Fetch --> Compare["比较本地与远程版本"]
+Compare --> Update{"有代码更新?"}
+Update --> |否| Exit["跳过部署"]
+Update --> |是| Pull["git pull 拉取最新代码"]
+Pull --> Build["执行 build-and-export.sh 构建"]
+Build --> CheckTar{"镜像文件生成?"}
+CheckTar --> |否| Error["部署失败"]
+CheckTar --> |是| Deploy["执行 deploy.sh 部署"]
+Deploy --> Success{"部署成功?"}
+Success --> |是| Log["记录成功日志"]
+Success --> |否| Diagnose["收集诊断信息并失败"]
+Diagnose --> Error
+Log --> End(["部署完成"])
+Exit --> End
+```
+
+**图表来源**
+- [auto-deploy.sh:28-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L28-L88)
 
 **章节来源**
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
@@ -345,12 +372,13 @@ Complete --> End
 - [application.properties:1-214](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/config/application.properties#L1-L214)
 
 ### main-linux-testServer部署配置
-- **测试环境专用**：专门为测试服务器设计的部署配置。
-- **Git集成**：自动检测代码更新，支持Git拉取和版本管理。
-- **前端构建**：完整的前端构建和部署流程，支持测试环境配置。
-- **健康检查**：部署完成后进行健康检查和日志收集。
+- **测试环境专用**：专门为测试服务器设计的部署配置，支持Git集成的自动化部署。
+- **Git集成部署**：自动检测代码更新，支持Git拉取和版本管理，提供完整的自动化部署流程。
+- **环境配置**：包含测试环境专用的环境变量配置和应用配置文件。
+- **部署流程**：从代码检测到构建、部署的完整自动化流程，支持日志记录和错误恢复。
 
 **章节来源**
+- [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md#L1-L396)
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 
 ### GitHub Actions工作流配置
@@ -379,6 +407,7 @@ Complete --> End
 - **部署脚本依赖**：Docker/Compose、环境变量文件、镜像tar文件。
 - **新增**：GitHub Actions依赖：GitHub API、Maven镜像源、Docker Registry。
 - **新增**：自动化部署脚本依赖：curl、ssh、docker、docker compose等系统工具。
+- **新增**：Git集成依赖：Git客户端、远程仓库访问权限。
 
 ```mermaid
 graph LR
@@ -392,6 +421,7 @@ GHA --> DockerRegistry["Docker Registry"]
 AutoDeploy["自动化部署脚本"] --> Curl["curl工具"]
 AutoDeploy --> SSH["SSH连接"]
 AutoDeploy --> DockerTools["Docker/Compose"]
+AutoDeploy --> Git["Git客户端"]
 ```
 
 **图表来源**
@@ -401,6 +431,7 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - [Dockerfile.execution.linux:60-71](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/Dockerfile.execution.linux#L60-L71)
 - [application-github-release.properties.example:1-48](file://med_ai_assistant_1.0_bs_backend/config/application-github-release.properties.example#L1-L48)
 - [auto-deploy-backend.sh:26-41](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L26-L41)
+- [auto-deploy.sh:30-50](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L30-L50)
 
 **章节来源**
 - [Dockerfile:4-15](file://med_ai_assistant_1.0_bs_backend/Dockerfile#L4-L15)
@@ -419,6 +450,7 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - **新增**：BuildKit性能优化：通过DOCKER_BUILDKIT=1启用BuildKit，显著提升构建性能。
 - **新增**：版本号管理：自动从pom.xml提取版本号，便于部署时版本追踪和回滚。
 - **新增**：自动化部署优化：通过版本检测和文件大小校验，避免不必要的重复部署。
+- **新增**：Git集成优化：通过远程仓库状态检查，避免无意义的部署尝试。
 
 ## 故障排查指南
 - **容器启动失败**：检查端口占用、查看容器日志、核对环境变量配置。
@@ -431,12 +463,13 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - **新增**：版本号显示异常：检查pom.xml格式、确认版本号格式规范、验证build-and-export.sh脚本执行。
 - **新增**：自动化部署失败：检查网络连接、验证版本检测API、确认备份恢复机制。
 - **新增**：SSH连接问题：检查SSH密钥配置、验证远程服务器可达性、确认防火墙规则。
+- **新增**：Git集成失败：检查Git仓库访问权限、验证远程分支状态、确认网络连接。
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
 
 ## 结论
-通过采用本地JAR+Docker复制构建模式，MedAiAssistant实现了更加稳定、高效的容器化部署。该模式特别解决了阿里云Maven仓库SSL连接不稳定的问题，显著提升了构建可靠性。配合多阶段构建与精简运行时镜像，系统在生产环境中能够稳定运行。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括版本检测、防重复部署、备份恢复等功能。新增的main-linux-oracle和main-linux-testServer部署配置涵盖了不同的部署场景和环境需求。新增的GitHub Actions工作流配置进一步完善了CI/CD管道，实现了自动化构建、测试和部署流程。建议在生产部署前完成环境变量与配置文件的定制，并定期更新系统与依赖包。
+通过采用本地JAR+Docker复制构建模式，MedAiAssistant实现了更加稳定、高效的容器化部署。该模式特别解决了阿里云Maven仓库SSL连接不稳定的问题，显著提升了构建可靠性。配合多阶段构建与精简运行时镜像，系统在生产环境中能够稳定运行。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括版本检测、防重复部署、备份恢复等功能。新增的main-linux-oracle和main-linux-testServer部署配置涵盖了不同的部署场景和环境需求，其中测试环境配置支持Git集成的自动化部署流程。新增的GitHub Actions工作流配置进一步完善了CI/CD管道，实现了自动化构建、测试和部署流程。建议在生产部署前完成环境变量与配置文件的定制，并定期更新系统与依赖包。
 
 ## 附录
 
@@ -447,6 +480,7 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - 时区设置：Asia/Shanghai。
 - 健康检查：基于HTTP端点的健康检查。
 - **新增**：SSH配置：支持通过SSH连接到远程服务器进行部署和维护操作。
+- **新增**：Git配置：支持Git仓库的自动检测和部署。
 
 **章节来源**
 - [Dockerfile:47-65](file://med_ai_assistant_1.0_bs_backend/Dockerfile#L47-L65)
@@ -456,6 +490,7 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 ### 容器编排与部署流程
 - **开发环境**：使用构建脚本生成镜像tar，复制到目标服务器，执行一键部署脚本。
 - **生产环境**：在CI/CD流水线中集成构建与导出步骤，通过Compose进行编排与管理。
+- **测试环境**：通过Git集成的自动化部署脚本，实现代码更新的自动检测和部署。
 - **本地JAR复制模式**：推荐使用本地JAR+Docker复制模式，避免网络依赖问题。
 - **新增**：GitHub Actions自动化部署：通过工作流实现代码提交后的自动构建、测试和部署。
 - **新增**：自动化部署脚本：支持版本检测、防重复部署、备份恢复和错误恢复机制。
@@ -466,6 +501,7 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - [deploy.sh:1-121](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux/deploy.sh#L1-L121)
 - [auto-deploy-backend.sh:1-478](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L1-L478)
 - [auto-deploy-frontend.sh:1-282](file://med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh#L1-L282)
+- [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 
 ### 新增：GitHub Actions工作流配置
 - **版本管理配置**：通过application-github-release.properties.example配置GitHub Release功能，支持私有仓库访问和本地缓存目录。
@@ -506,6 +542,7 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - **错误处理机制**：完善的错误捕获和恢复逻辑，支持多种部署场景
 - **环境配置管理**：支持多种环境变量配置，适应不同部署环境需求
 - **SSH远程连接**：支持通过SSH连接到远程服务器进行部署和维护
+- **Git集成部署**：支持Git仓库的自动检测和部署，实现持续集成
 
 **章节来源**
 - [auto-deploy-backend.sh:1-478](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L1-L478)
@@ -523,6 +560,17 @@ AutoDeploy --> DockerTools["Docker/Compose"]
 - [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/README.md#L1-L396)
 - [application.properties:1-214](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/config/application.properties#L1-L214)
 - [.env.main:1-73](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/.env.main#L1-L73)
+
+### 新增：main-linux-testServer部署配置详解
+- **测试环境专用**：专为测试环境设计的部署配置，支持Git集成的自动化部署
+- **Git集成功能**：自动检测代码更新，支持Git拉取和版本管理
+- **日志记录**：完整的部署日志记录，便于故障排查和审计
+- **错误恢复**：部署失败时自动收集诊断信息，支持问题定位
+- **环境隔离**：测试环境与生产环境的配置隔离，避免相互影响
+
+**章节来源**
+- [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md#L1-L396)
+- [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 
 ### 新增：SSH远程连接配置
 - **密钥配置**：支持通过SSH密钥进行无密码登录

@@ -14,6 +14,8 @@
 - [PatientView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
 - [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
 - [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
+- [drg.js](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js)
 - [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 - [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
@@ -29,7 +31,7 @@
 
 ## 更新摘要
 **所做更改**
-- 新增PromptTemplates组件的重大UI重构：从传统下拉菜单改为Overlay下拉面板系统
+- 新增DrgAnalysis组件的重大UI优化：DRG分析结果显示逻辑优化，临时隐藏DRG分析结果以优化显示效果
 - 更新AIView组件以支持新的Overlay面板系统和CSS过渡动画
 - 新增小屏模式下的Prompt模板列表显示控制机制
 - 更新思维过程折叠显示功能的技术实现细节
@@ -45,11 +47,12 @@
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
 6. [诊断编辑与卡片组件优化](#诊断编辑与卡片组件优化)
-7. [PromptTemplates组件重大UI重构](#prompttemplates组件重大ui重构)
-8. [依赖分析](#依赖分析)
-9. [性能考虑](#性能考虑)
-10. [故障排除指南](#故障排除指南)
-11. [结论](#结论)
+7. [DRG分析结果显示逻辑优化](#drg分析结果显示逻辑优化)
+8. [PromptTemplates组件重大UI重构](#prompttemplates组件重大ui重构)
+9. [依赖分析](#依赖分析)
+10. [性能考虑](#性能考虑)
+11. [故障排除指南](#故障排除指南)
+12. [结论](#结论)
 
 ## 简介
 
@@ -312,36 +315,46 @@ M[VoiceTextProcessor<br/>流式文本处理]
 N[App<br/>根组件]
 O[PromptTemplates<br/>Prompt模板管理]
 P[AIView<br/>AI视图容器]
+Q[DrgAnalysis<br/>DRG分析组件]
+R[DRG API接口]
 end
 subgraph "业务功能层"
-Q[AI诊断系统]
-R[患者管理系统]
-S[服务器维护]
-T[用户设置]
-U[轮询服务监控]
-V[待办事项管理]
-W[病历记录管理]
-X[语音识别处理]
-Y[诊断编辑管理]
-Z[思维过程显示]
-AA[模板管理]
-BB[小屏模式适配]
+S[AI诊断系统]
+T[患者管理系统]
+U[服务器维护]
+V[用户设置]
+W[轮询服务监控]
+X[待办事项管理]
+Y[病历记录管理]
+Z[语音识别处理]
+AA[诊断编辑管理]
+BB[思维过程显示]
+CC[模板管理]
+DD[小屏模式适配]
+EE[DRG分析系统]
+FF[DRG费用计算]
+GG[MCC预筛选]
+HH[AI分析集成]
 end
 subgraph "基础设施层"
-CC[API接口层]
-DD[工具函数库]
-EE[数据配置]
-FF[Markdown渲染引擎]
-GG[DOM净化器]
-HH[颜色编码系统]
-II[流式处理服务]
-JJ[AI服务类]
-KK[诊断解析工具]
-LL[诊断数据管理]
-MM[模板树形结构]
-NN[Overlay面板系统]
-OO[CSS过渡动画]
-PP[自动折叠机制]
+II[API接口层]
+JJ[工具函数库]
+KK[数据配置]
+LL[Markdown渲染引擎]
+MM[DOM净化器]
+NN[颜色编码系统]
+OO[流式处理服务]
+PP[AI服务类]
+QQ[诊断解析工具]
+RR[诊断数据管理]
+SS[模板树形结构]
+TT[Overlay面板系统]
+UU[CSS过渡动画]
+VV[自动折叠机制]
+WW[DRG分析API]
+XX[费用查询API]
+YY[MCC筛选API]
+ZZ[AI分析API]
 end
 A --> E
 A --> F
@@ -355,36 +368,41 @@ A --> M
 A --> N
 A --> O
 A --> P
-F --> Q
-F --> R
+A --> Q
 F --> S
 F --> T
 F --> U
 F --> V
 F --> W
 F --> X
-H --> Y
-H --> Z
-I --> Y
-I --> Z
-J --> Y
-J --> Z
-L --> CC
-M --> II
-M --> JJ
-N --> CC
-A --> DD
-A --> EE
-I --> KK
-J --> KK
-H --> KK
-O --> MM
-O --> NN
-O --> OO
-O --> PP
-P --> NN
-P --> OO
-P --> PP
+F --> Y
+F --> Z
+H --> AA
+H --> BB
+I --> AA
+I --> BB
+J --> AA
+J --> BB
+L --> II
+M --> OO
+M --> PP
+N --> II
+A --> JJ
+A --> KK
+I --> QQ
+J --> QQ
+H --> QQ
+O --> SS
+O --> TT
+O --> VV
+O --> WW
+P --> TT
+P --> UU
+P --> VV
+Q --> WW
+Q --> XX
+Q --> YY
+Q --> ZZ
 ```
 
 **图表来源**
@@ -1274,6 +1292,137 @@ RecalculateHeight --> MaintainScroll[保持滚动位置]
 - [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
 - [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
 
+## DRG分析结果显示逻辑优化
+
+### DrgAnalysis组件重大UI优化
+
+**新增** DrgAnalysis组件经历了重大UI优化，其中最重要的改进是DRG分析结果显示逻辑的优化，通过临时隐藏某些分析结果来优化显示效果：
+
+#### 临时隐藏的分析结果组件
+
+在DrgAnalysis组件中，可以看到多个分析结果卡片被临时隐藏（v-if="false"）：
+
+```mermaid
+flowchart TD
+DrgAnalysis[DRG分析组件] --> AnalysisCard[DRG主要诊断及操作分析结果<br/>v-if="false"<br/>临时隐藏]
+DrgAnalysis --> MedicalInfoCard[诊断与手术信息卡片<br/>v-if="false"<br/>临时隐藏]
+DrgAnalysis --> DiagnosisSection[诊断列表<br/>v-if="false"<br/>临时隐藏]
+DrgAnalysis --> SurgerySection[手术列表<br/>v-if="false"<br/>临时隐藏]
+```
+
+**图表来源**
+- [DrgAnalysis.vue:194-208](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L194-L208)
+- [DrgAnalysis.vue:271-343](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L271-L343)
+
+#### 优化的显示逻辑
+
+**新增功能亮点：**
+- **临时隐藏机制**：通过v-if="false"临时隐藏DRG主要诊断及操作分析结果卡片
+- **用户体验改进**：减少界面复杂度，提升主要DRG分析功能的可见性
+- **渐进式功能展示**：未来可以逐步启用这些隐藏的功能模块
+- **性能优化**：避免不必要的DOM节点渲染，提升页面加载性能
+
+**隐藏功能的潜在用途：**
+- **DRG主要诊断及操作分析结果**：可能用于展示AI生成的详细分析报告
+- **诊断与手术信息卡片**：可能用于展示更详细的诊断和手术列表
+- **诊断列表和手术列表**：可能用于提供更丰富的交互功能
+
+#### DRG分析结果显示优化
+
+**新增功能亮点：**
+- **严格标准推荐列表**：作为主要的DRG分析结果展示
+- **合并症或并发症分析历史结果**：展示MCC/CC分析的历史记录
+- **DRG费用卡片**：展示DRG匹配的费用信息和盈亏计算
+- **优化的布局结构**：通过隐藏非关键功能来优化主要功能的显示效果
+
+**章节来源**
+- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
+
+### DRG API接口集成
+
+**新增** DrgAnalysis组件集成了完整的DRG分析API接口：
+
+#### DRG分析API架构
+
+```mermaid
+classDiagram
+class DrgAnalysis {
++Array diagnosisList
++Array surgeryList
++Array drgMatchResults
++Object patientFeeData
++Array strictRecommendations
++Object savedDrgResult
++loadMedicalData() Promise~void~
++startAnalysis() Promise~void~
++performMccAnalysis() Promise~void~
++generateDrgAnalysisPrompt() Promise~void~
++calculateProfitLossForDrg() Promise~void~
++saveSelectedDrg() Promise~void~
+}
+class DRGAPI {
++batchMatchDrgRecords(diagnosisNames, procedureNames) Promise~Response~
++screenMccCandidates(diagnoses) Promise~Response~
++generateMccPrompt(patientId, mccResults) Promise~Response~
++calculatePatientProfitLoss(patiId, visitId, drgCode) Promise~Response~
++saveDrgSelection(params) Promise~Response~
++getLatestDrgAnalysisResult(patientId) Promise~Response~
+}
+class FeeAPI {
++getPatientFee(patiId, visitId) Promise~Response~
+}
+class PromptAPI {
++getLatestPromptResult(patientId, promptType) Promise~Response~
+}
+DrgAnalysis --> DRGAPI : "使用"
+DrgAnalysis --> FeeAPI : "使用"
+DrgAnalysis --> PromptAPI : "使用"
+```
+
+**图表来源**
+- [DrgAnalysis.vue:366-374](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L366-L374)
+- [drg.js:495-643](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L495-L643)
+
+#### DRG分析流程
+
+**新增功能亮点：**
+- **批量DRG匹配**：支持多个诊断和手术的组合匹配
+- **MCC预筛选**：自动识别可能的并发症和合并症
+- **AI分析集成**：支持AI生成的DRG分析结果
+- **费用计算**：集成HIS系统费用查询和DRG盈亏计算
+- **结果保存**：支持用户选择的DRG结果保存
+
+**分析流程：**
+
+```mermaid
+sequenceDiagram
+participant User as 用户
+participant Component as DrgAnalysis
+participant DRGAPI as DRG API
+participant FeeAPI as 费用API
+participant PromptAPI as Prompt API
+User->>Component : 开始DRG分析
+Component->>Component : loadMedicalData()
+Component->>DRGAPI : batchMatchDrgRecords()
+DRGAPI-->>Component : DRG匹配结果
+Component->>Component : calculateAllRowsProfitLoss()
+User->>Component : 选择DRG方案
+Component->>DRGAPI : saveDrgSelection()
+DRGAPI-->>Component : 保存结果
+User->>Component : 加载费用数据
+Component->>FeeAPI : getPatientFee()
+FeeAPI-->>Component : 费用数据
+Component->>Component : calculateSelectedDrgProfitLoss()
+```
+
+**图表来源**
+- [DrgAnalysis.vue:639-746](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L639-L746)
+- [DrgAnalysis.vue:1769-1816](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1769-L1816)
+
+**章节来源**
+- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
+- [drg.js:1-644](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L1-L644)
+
 ## PromptTemplates组件重大UI重构
 
 ### Overlay下拉面板系统
@@ -1521,6 +1670,7 @@ App[App.vue]
 MainLayout[MainLayout.vue]
 PatientView[PatientView.vue]
 AIView[AIView.vue]
+DrgAnalysis[DrgAnalysis.vue]
 end
 subgraph "导航组件"
 TopMenu[TopMenu.vue]
@@ -1542,6 +1692,7 @@ API[API接口层]
 Store[Vuex状态]
 Router[路由系统]
 DiagnosisParser[诊断解析工具]
+DRGAPI[DRG API接口]
 end
 App --> MainLayout
 MainLayout --> TopMenu
@@ -1554,6 +1705,7 @@ MainLayout --> PatientTabs
 MainLayout --> VoiceTextProcessor
 MainLayout --> AIView
 AIView --> PromptTemplates
+AIView --> DrgAnalysis
 TopMenu --> API
 UserLookup --> API
 ServerLogViewer --> API
@@ -1564,11 +1716,8 @@ PromptExecutor --> API
 PatientSummary --> API
 PatientTabs --> API
 VoiceTextProcessor --> API
-AIView --> API
-AIResults --> DiagnosisEditPanel
-AIResults --> DiagnosisCard
-DiagnosisEditPanel --> DiagnosisParser
-DiagnosisCard --> DiagnosisParser
+DrgAnalysis --> DRGAPI
+DrgAnalysis --> DiagnosisParser
 ```
 
 **图表来源**
@@ -1689,6 +1838,40 @@ APIService --> BackendServer[backend server]
 - [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
 - [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
 
+### DrgAnalysis组件依赖关系
+
+**新增** DrgAnalysis组件的完整依赖关系：
+
+```mermaid
+graph TD
+DrgAnalysis[DrgAnalysis.vue] --> ElMessageBox[Element Plus MessageBox]
+DrgAnalysis --> ElTable[Element Plus Table]
+DrgAnalysis --> ElCard[Element Plus Card]
+DrgAnalysis --> ElButton[Element Plus Button]
+DrgAnalysis --> ElTag[Element Plus Tag]
+DrgAnalysis --> ElIcon[Element Plus Icon]
+DrgAnalysis --> ElEmpty[Element Plus Empty]
+DrgAnalysis --> VuexStore[Vuex Store]
+DrgAnalysis --> DRGAPI[drg.js]
+DrgAnalysis --> PromptUtils[promptUtils.js]
+DrgAnalysis --> marked[marked库]
+DrgAnalysis --> DOMPurify[DOMPurify库]
+DRGAPI --> BatchMatchDrgRecords[batchMatchDrgRecords]
+DRGAPI --> ScreenMccCandidates[screenMccCandidates]
+DRGAPI --> GenerateMccPrompt[generateMccPrompt]
+DRGAPI --> CalculatePatientProfitLoss[calculatePatientProfitLoss]
+DRGAPI --> SaveDrgSelection[saveDrgSelection]
+DRGAPI --> GetLatestDrgAnalysisResult[getLatestDrgAnalysisResult]
+```
+
+**图表来源**
+- [DrgAnalysis.vue:366-374](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L366-L374)
+- [drg.js:495-643](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L495-L643)
+
+**章节来源**
+- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
+- [drg.js:1-644](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L1-L644)
+
 ## 性能考虑
 
 ### 内存管理优化
@@ -1703,6 +1886,7 @@ APIService --> BackendServer[backend server]
 8. **思维过程处理**：AIResults的<thinking>标签处理使用占位符机制，避免DOM节点过多
 9. **Overlay面板优化**：PromptTemplates的Overlay面板使用绝对定位，避免影响其他元素布局
 10. **CSS动画优化**：panel-slide过渡动画使用transform而非改变布局属性，提升渲染性能
+11. **DRG分析优化**：通过临时隐藏非关键功能模块，减少DOM节点数量，提升页面加载性能
 
 ### 渲染性能优化
 
@@ -1716,6 +1900,7 @@ APIService --> BackendServer[backend server]
 8. **标签页懒加载**：PatientTabs组件支持标签页的懒加载，减少初始渲染压力
 9. **Overlay面板延迟渲染**：PromptTemplates面板仅在展开时渲染，减少初始DOM节点数量
 10. **CSS过渡优化**：使用transform-origin: top right确保动画性能最佳
+11. **DRG分析模块化**：通过v-if="false"临时隐藏功能模块，避免不必要的渲染
 
 ### 网络请求优化
 
@@ -1729,6 +1914,7 @@ APIService --> BackendServer[backend server]
 8. **组件状态管理**：诊断组件的状态变化通过Vuex集中管理，避免重复请求
 9. **模板数据缓存**：PromptTemplates的模板数据通过Vuex缓存，避免重复请求
 10. **小屏模式优化**：PromptTemplates在小屏模式下支持条件渲染，减少不必要的DOM节点
+11. **DRG分析按需加载**：通过条件渲染优化DRG分析相关组件的加载时机
 
 ### 患者数据管理优化
 
@@ -1756,6 +1942,13 @@ APIService --> BackendServer[backend server]
 - **CSS动画**：使用transform实现动画，避免触发布局重排
 - **事件委托**：通过@template-executed事件实现自动折叠，减少DOM操作
 - **小屏适配**：在小屏模式下支持条件渲染，减少不必要的DOM节点
+
+**更新** DrgAnalysis组件的性能优化：
+- **模块化显示**：通过v-if="false"临时隐藏非关键功能，减少DOM节点数量
+- **按需渲染**：主要DRG分析功能优先显示，其他功能延后加载
+- **缓存机制**：DRG匹配结果和费用数据的缓存
+- **异步处理**：费用计算和盈亏分析采用异步处理，避免阻塞UI
+- **条件加载**：只有在用户需要时才加载详细的诊断和手术信息
 
 ## 故障排除指南
 
@@ -1926,6 +2119,33 @@ APIService --> BackendServer[backend server]
 - 验证node.level判断逻辑
 - 确认ElTree配置
 
+#### DrgAnalysis组件问题
+
+**更新** **问题**：DRG分析结果显示异常
+- 检查v-if="false"条件渲染
+- 验证组件状态管理
+- 确认API接口调用
+
+**问题**：DRG匹配结果不显示
+- 检查batchMatchDrgRecords调用
+- 验证数据格式和结构
+- 确认组件渲染逻辑
+
+**问题**：费用计算功能异常
+- 检查getPatientFee接口
+- 验证费用数据格式
+- 确认计算逻辑
+
+**问题**：MCC分析功能失效
+- 检查screenMccCandidates调用
+- 验证MCC候选数据
+- 确认Prompt生成逻辑
+
+**问题**：DRG保存功能异常
+- 检查saveDrgSelection调用
+- 验证保存参数格式
+- 确认后端接口响应
+
 **章节来源**
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
@@ -1940,6 +2160,7 @@ APIService --> BackendServer[backend server]
 - [voiceTextProcessor.js:85-134](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L85-L134)
 - [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
 - [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
+- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
 
 ## 结论
 
@@ -1964,6 +2185,8 @@ APIService --> BackendServer[backend server]
 - **PromptTemplates组件的重大UI重构：从传统下拉菜单改为Overlay下拉面板系统**
 - **Overlay面板的绝对定位、CSS过渡动画和自动折叠行为**
 - **小屏模式下的Prompt模板列表显示控制机制**
+- **DrgAnalysis组件的DRG分析结果显示逻辑优化：通过v-if="false"临时隐藏非关键功能模块**
+- **DRG分析功能的模块化显示和性能优化**
 - 整体性能和稳定性的提升
 
 **更新** PromptTemplates组件的Overlay面板系统包括：
@@ -1974,6 +2197,13 @@ APIService --> BackendServer[backend server]
 - **树形结构展示**：使用Element Plus Tree组件展示模板层级结构
 - **节点交互优化**：区分一级节点展开和二级节点执行的不同交互逻辑
 
+**更新** DrgAnalysis组件的DRG分析结果显示逻辑优化包括：
+- **模块化显示**：通过v-if="false"临时隐藏DRG主要诊断及操作分析结果、诊断与手术信息卡片等非关键功能
+- **用户体验改进**：减少界面复杂度，提升主要DRG分析功能的可见性
+- **性能优化**：避免不必要的DOM节点渲染，提升页面加载性能
+- **渐进式功能展示**：为未来逐步启用隐藏功能模块预留空间
+- **DRG分析API的完整集成**：包括批量匹配、MCC预筛选、费用计算、结果保存等功能
+
 **更新** 诊断组件的滚动优化和布局重构包括：
 - **独立滚动区域**：左右两栏均支持独立滚动，提升用户体验
 - **最大高度限制**：使用max-height: 60vh限制滚动区域，避免内存溢出
@@ -1981,4 +2211,13 @@ APIService --> BackendServer[backend server]
 - **工具栏集成**：底部工具栏提供统一的操作入口
 - **标签页优化**：右侧标签页支持诊断说明和目前诊断的切换
 
-建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和诊断组件优化方面持续改进。新增的诊断编辑面板和卡片组件、以及PromptTemplates组件的Overlay面板系统为医疗AI助手的应用场景提供了更加专业和实用的解决方案，值得进一步推广和应用。
+**更新** DRG分析系统的完整功能包括：
+- **批量DRG匹配**：支持多个诊断和手术的组合匹配
+- **MCC预筛选**：自动识别可能的并发症和合并症
+- **AI分析集成**：支持AI生成的DRG分析结果
+- **费用计算**：集成HIS系统费用查询和DRG盈亏计算
+- **结果保存**：支持用户选择的DRG结果保存
+- **严格标准推荐列表**：提供DRG方案的详细信息和比较
+- **合并症分析历史**：展示MCC/CC分析的历史记录
+
+建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理和诊断组件优化方面持续改进。新增的诊断编辑面板和卡片组件、以及PromptTemplates组件的Overlay面板系统和DrgAnalysis组件的DRG分析结果显示逻辑优化，为医疗AI助手的应用场景提供了更加专业和实用的解决方案，值得进一步推广和应用。

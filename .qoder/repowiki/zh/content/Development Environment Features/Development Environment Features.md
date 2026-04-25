@@ -27,6 +27,7 @@
 - [Cypress全局支持文件](file://med_ai_assistant_1.0_bs_vue/cypress/support/e2e.js)
 - [Cypress自定义命令](file://med_ai_assistant_1.0_bs_vue/cypress/support/commands.js)
 - [Vue前端package.json](file://med_ai_assistant_1.0_bs_vue/package.json)
+- [端口转发脚本](file://scripts/medai-port-forward.bat)
 </cite>
 
 ## 更新摘要
@@ -35,6 +36,7 @@
 - 添加Cypress E2E测试工作流配置
 - 更新测试环境配置和工具链
 - 新增截图上传和视频录制功能说明
+- 新增端口转发自动化脚本章节，支持远程开发环境与本地服务的无缝连接
 
 ## 目录
 1. [简介](#简介)
@@ -43,14 +45,15 @@
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
 6. [前端自动化测试框架](#前端自动化测试框架)
-7. [依赖关系分析](#依赖关系分析)
-8. [性能考虑](#性能考虑)
-9. [故障排除指南](#故障排除指南)
-10. [结论](#结论)
+7. [端口转发自动化脚本](#端口转发自动化脚本)
+8. [依赖关系分析](#依赖关系分析)
+9. [性能考虑](#性能考虑)
+10. [故障排除指南](#故障排除指南)
+11. [结论](#结论)
 
 ## 简介
 
-MedAiAssistant是一个基于Spring Boot和Vue.js的医疗AI助手系统，采用前后端分离架构。该项目提供了完整的开发环境配置，包括多环境支持、容器化部署、自动化测试和监控功能。**更新**：新增了Cypress前端自动化测试框架集成，提供完整的端到端测试能力。
+MedAiAssistant是一个基于Spring Boot和Vue.js的医疗AI助手系统，采用前后端分离架构。该项目提供了完整的开发环境配置，包括多环境支持、容器化部署、自动化测试和监控功能。**更新**：新增了Cypress前端自动化测试框架集成，提供完整的端到端测试能力；新增端口转发自动化脚本，为开发环境提供重要的网络连接自动化功能，支持远程开发环境与本地服务的无缝连接。
 
 ## 项目结构概览
 
@@ -65,6 +68,7 @@ DB[MySQL数据库<br/>端口: 3306]
 REDIS[Redis缓存<br/>端口: 6379]
 NGINX[Nginx反向代理<br/>端口: 80/443]
 CYPRESS[Cypress E2E测试<br/>端口: 8083]
+PORT_FORWARD[端口转发脚本<br/>端口: 8080]
 end
 subgraph "开发工具链"
 DOCKER[Docker容器化]
@@ -75,6 +79,7 @@ GIT[Git版本控制]
 CYPRESS[Cypress测试框架]
 ENDTOEND[E2E测试执行]
 SCREENSHOT[截图上传]
+PORTAUTOMATION[端口转发自动化]
 end
 FE --> NGINX
 BE --> DB
@@ -88,12 +93,14 @@ VUECLI --> FE
 GIT --> DOCKER
 CYPRESS --> ENDTOEND
 ENDTOEND --> SCREENSHOT
+PORT_FORWARD --> PORTAUTOMATION
 ```
 
 **图表来源**
 - [docker-compose.yml:1-97](file://med_ai_assistant_1.0_bs_backend/docker-compose.yml#L1-L97)
 - [Vue前端docker-compose.yml:1-93](file://med_ai_assistant_1.0_bs_vue/docker-compose.yml#L1-L93)
 - [Cypress配置:26-86](file://med_ai_assistant_1.0_bs_vue/cypress.config.js#L26-L86)
+- [端口转发脚本:1-5](file://scripts/medai-port-forward.bat#L1-L5)
 
 **章节来源**
 - [pom.xml:1-309](file://med_ai_assistant_1.0_bs_backend/pom.xml#L1-L309)
@@ -201,6 +208,11 @@ CYPRESS_TESTS[Cypress E2E测试]
 TEST_REPORTS[测试报告]
 SCREENSHOT_CAPTURE[截图捕获]
 end
+subgraph "网络层"
+PORT_FORWARDING[端口转发]
+NETWORK_PROXY[网络代理]
+REMOTE_ACCESS[远程访问]
+end
 WEB --> API_GATEWAY
 MOBILE --> API_GATEWAY
 API_GATEWAY --> AUTHENTICATION
@@ -220,6 +232,8 @@ MAIN_SERVER --> HEALTH_CHECK
 EXECUTION_SERVER --> HEALTH_CHECK
 CYPRESS_TESTS --> TEST_REPORTS
 TEST_REPORTS --> SCREENSHOT_CAPTURE
+PORT_FORWARDING --> REMOTE_ACCESS
+REMOTE_ACCESS --> NETWORK_PROXY
 ```
 
 **图表来源**
@@ -320,6 +334,7 @@ BROWSER[浏览器开发者工具]
 CYPRESS[Cypress E2E测试]
 TEST_SCRIPTS[测试脚本]
 SCREENSHOT_TOOL[截图工具]
+PORT_FORWARD[端口转发工具]
 end
 subgraph "测试工具"
 UNIT_TEST[JUnit 5]
@@ -344,6 +359,7 @@ UNIT_TEST --> LOGSTASH
 INTEGRATION --> LOGSTASH
 CYPRESS --> TEST_SCRIPTS
 TEST_SCRIPTS --> SCREENSHOT_TOOL
+PORT_FORWARD --> TEST_SCRIPTS
 ```
 
 **图表来源**
@@ -665,6 +681,115 @@ REPORT --> CUSTOM_PATH
 **章节来源**
 - [Cypress配置:57-86](file://med_ai_assistant_1.0_bs_vue/cypress.config.js#L57-L86)
 
+## 端口转发自动化脚本
+
+### 脚本概述
+
+项目新增了端口转发自动化脚本，专门用于解决远程开发环境与本地服务之间的网络连接问题。该脚本通过Windows系统的netsh命令实现端口转发功能，确保远程开发环境能够无缝访问本地运行的服务。
+
+```mermaid
+graph TB
+subgraph "端口转发架构"
+REMOTE_DEV[远程开发环境<br/>IP: 100.66.1.3]
+LOCAL_HOST[本地主机<br/>IP: 192.168.110.130]
+PORT_8080[端口8080]
+NETSH[netsh interface portproxy]
+end
+subgraph "转发流程"
+REMOTE_DEV --> NETSH
+NETSH --> LOCAL_HOST
+LOCAL_HOST --> PORT_8080
+PORT_8080 --> FRONTEND_APP[前端应用<br/>localhost:8080]
+end
+```
+
+**图表来源**
+- [端口转发脚本:1-5](file://scripts/medai-port-forward.bat#L1-L5)
+
+### 脚本配置详解
+
+#### 基础配置参数
+
+| 参数 | 值 | 描述 |
+|------|-----|------|
+| 监听地址 | 0.0.0.0 | 监听所有网络接口 |
+| 监听端口 | 8080 | 远程访问端口 |
+| 连接地址 | 192.168.110.130 | 本地主机IP地址 |
+| 连接端口 | 8080 | 本地服务端口 |
+| 转发协议 | v4tov4 | IPv4到IPv4转发 |
+
+#### 转发规则说明
+
+```mermaid
+flowchart LR
+subgraph "端口转发规则"
+LISTEN_ADDR[监听地址: 0.0.0.0]
+LISTEN_PORT[监听端口: 8080]
+CONNECT_ADDR[连接地址: 192.168.110.130]
+CONNECT_PORT[连接端口: 8080]
+end
+subgraph "转发效果"
+REMOTE_ACCESS[远程访问<br/>100.66.1.3:8080]
+LOCAL_ACCESS[本地访问<br/>localhost:8080]
+end
+REMOTE_ACCESS --> LISTEN_ADDR
+LISTEN_ADDR --> CONNECT_ADDR
+CONNECT_ADDR --> LOCAL_ACCESS
+```
+
+**图表来源**
+- [端口转发脚本:3-4](file://scripts/medai-port-forward.bat#L3-L4)
+
+### 使用场景和优势
+
+#### 主要应用场景
+
+1. **远程开发环境**：开发人员在远程服务器上进行开发工作
+2. **本地服务访问**：需要访问本地运行的前端开发服务器
+3. **团队协作**：多人协作开发时的网络资源共享
+4. **测试环境**：模拟真实生产环境的网络连接
+
+#### 技术优势
+
+| 优势 | 说明 |
+|------|------|
+| 自动化配置 | 一键启动，无需手动配置网络 |
+| 稳定可靠 | Windows系统原生命令，稳定性高 |
+| 性能优化 | 零额外开销，直接网络转发 |
+| 易于维护 | 简单的批处理脚本，易于理解和修改 |
+| 跨平台兼容 | 仅需Windows系统支持 |
+
+### 配置管理和维护
+
+#### 脚本管理
+
+```mermaid
+flowchart TD
+SCRIPT_MANAGEMENT[脚本管理] --> CREATE_SCRIPT[创建脚本文件]
+CREATE_SCRIPT --> CONFIGURE_PARAMS[配置转发参数]
+CONFIGURE_PARAMS --> TEST_CONNECTIVITY[测试网络连通性]
+TEST_CONNECTIVITY --> VERIFY_FUNCTION[验证转发功能]
+VERIFY_FUNCTION --> DEPLOY_SCRIPT[部署到开发环境]
+DEPLOY_SCRIPT --> MONITOR_USAGE[监控使用情况]
+MONITOR_USAGE --> MAINTAIN_SCRIPT[维护和更新]
+MAINTAIN_SCRIPT --> SCRIPT_MANAGEMENT
+```
+
+**图表来源**
+- [端口转发脚本:1-5](file://scripts/medai-port-forward.bat#L1-L5)
+
+#### 环境适配
+
+| 环境类型 | 配置调整 | 说明 |
+|----------|----------|------|
+| 开发环境 | 本地IP地址 | 使用127.0.0.1或本机IP |
+| 测试环境 | 测试服务器IP | 使用测试环境的服务器地址 |
+| 生产环境 | 生产服务器IP | 使用生产环境的真实地址 |
+| 远程环境 | 远程服务器IP | 使用远程开发服务器地址 |
+
+**章节来源**
+- [端口转发脚本:1-5](file://scripts/medai-port-forward.bat#L1-L5)
+
 ## 依赖关系分析
 
 ### 技术栈依赖关系
@@ -679,6 +804,7 @@ ROUTER[Vue Router]
 STORE[Vuex]
 CYPRESS[Cypress 15.13.1]
 END_TO_END[E2E测试]
+PORT_FORWARD[端口转发]
 end
 subgraph "后端技术栈"
 SPRING[Spring Boot 3.5.8]
@@ -696,6 +822,7 @@ VITE[Vite]
 ESLINT[ESLint]
 CYPRESS_CLI[Cypress CLI]
 TEST_SCRIPTS[测试脚本]
+PORT_SCRIPT[端口转发脚本]
 end
 VUE --> ELEMENT
 VUE --> AXIOS
@@ -715,6 +842,7 @@ VITE --> VUE
 ESLINT --> VUE
 CYPRESS_CLI --> CYPRESS
 TEST_SCRIPTS --> CYPRESS
+PORT_SCRIPT --> PORT_FORWARD
 ```
 
 **图表来源**
@@ -733,6 +861,7 @@ TEST_SCRIPTS --> CYPRESS
 | 前端依赖 | npm包管理 | 版本控制、依赖解析 |
 | 测试依赖 | 隔离环境 | 避免污染生产环境 |
 | E2E测试依赖 | Cypress框架 | 端到端测试能力 |
+| 网络依赖 | 端口转发脚本 | 远程开发环境支持 |
 
 **章节来源**
 - [pom.xml:216-239](file://med_ai_assistant_1.0_bs_backend/pom.xml#L216-L239)
@@ -770,6 +899,7 @@ MONITORING --> METRICS[指标收集<br/>Micrometer]
 | 网络加速 | 阿里云镜像源 | 依赖下载更快 |
 | 日志优化 | 结构化日志 | 调试效率提升 |
 | E2E测试 | Cypress并行执行 | 测试效率提升 |
+| 端口转发 | 自动化脚本 | 远程开发便利性提升 |
 
 ### 性能监控配置
 
@@ -783,6 +913,8 @@ MEMORY_USAGE[内存使用]
 CPU_USAGE[CPU使用]
 E2E_TEST_TIME[E2E测试时间]
 END_TO_END_TESTS[E2E测试覆盖率]
+PORT_FORWARD_LATENCY[端口转发延迟]
+REMOTE_ACCESS_SUCCESS[远程访问成功率]
 end
 subgraph "监控工具"
 ACTUATOR[Spring Boot Actuator]
@@ -790,6 +922,7 @@ PROMETHEUS[Prometheus]
 GRAFANA[Grafana仪表板]
 LOGS[日志聚合]
 CYPRESS_METRICS[Cypress指标]
+PORT_MONITOR[端口转发监控]
 end
 subgraph "告警机制"
 THRESHOLD[阈值告警]
@@ -803,10 +936,13 @@ MEMORY_USAGE --> ACTUATOR
 CPU_USAGE --> ACTUATOR
 E2E_TEST_TIME --> CYPRESS_METRICS
 END_TO_END_TESTS --> CYPRESS_METRICS
+PORT_FORWARD_LATENCY --> PORT_MONITOR
+REMOTE_ACCESS_SUCCESS --> PORT_MONITOR
 ACTUATOR --> PROMETHEUS
 PROMETHEUS --> GRAFANA
 ACTUATOR --> LOGS
 CYPRESS_METRICS --> PROMETHEUS
+PORT_MONITOR --> PROMETHEUS
 GRAFANA --> THRESHOLD
 PROMETHEUS --> THRESHOLD
 LOGS --> THRESHOLD
@@ -899,6 +1035,17 @@ stateDiagram-v2
 | 截图不生成 | 失败时无截图 | 检查screenshotOnRunFailure配置 |
 | 视频录制问题 | 录制失败或文件过大 | 调整视频配置或禁用录制 |
 
+#### 端口转发问题
+
+| 问题类型 | 症状 | 解决方案 |
+|----------|------|----------|
+| 转发失败 | 远程无法访问本地服务 | 检查netsh命令权限 |
+| 端口冲突 | 转发配置失败 | 更改监听端口或停止占用进程 |
+| 网络权限 | 需要管理员权限 | 以管理员身份运行脚本 |
+| IP地址错误 | 连接目标不可达 | 验证本地IP地址配置 |
+| 防火墙阻拦 | 网络连接被阻止 | 配置防火墙允许转发规则 |
+| 转发失效 | 重启后配置丢失 | 检查系统启动项和脚本执行 |
+
 **章节来源**
 - [后端部署脚本:1-174](file://med_ai_assistant_1.0_bs_backend/deploy.bat#L1-L174)
 - [后端.gitignore:1-50](file://med_ai_assistant_1.0_bs_backend/.gitignore#L1-L50)
@@ -917,6 +1064,8 @@ stateDiagram-v2
 | 性能分析 | JProfiler | JVM性能分析 |
 | E2E测试 | Cypress Debugger | 端到端测试调试 |
 | 截图工具 | 浏览器开发者工具 | 测试截图分析 |
+| 网络诊断 | netstat/telnet | 端口和连接状态检查 |
+| 端口转发诊断 | netsh show interface portproxy | 转发规则状态检查 |
 
 #### 监控和诊断
 
@@ -928,6 +1077,7 @@ participant PROMETHEUS as Prometheus
 participant GRAFANA as Grafana
 participant LOGS as 日志系统
 participant CYPRESS as Cypress测试
+participant PORT_MONITOR as 端口转发监控
 DEV->>ACTUATOR : 访问健康检查
 ACTUATOR-->>DEV : 返回健康状态
 DEV->>ACTUATOR : 请求指标数据
@@ -938,6 +1088,8 @@ DEV->>LOGS : 查询应用日志
 LOGS-->>DEV : 返回日志信息
 DEV->>CYPRESS : 运行E2E测试
 CYPRESS-->>DEV : 返回测试结果
+DEV->>PORT_MONITOR : 检查端口转发状态
+PORT_MONITOR-->>DEV : 返回转发配置
 DEV->>DEV : 分析问题并修复
 ```
 
@@ -956,6 +1108,7 @@ MedAiAssistant项目展现了现代全栈开发的最佳实践，具有以下突
 4. **自动化测试**：多层次测试框架保证代码质量
 5. **性能监控**：完善的监控体系支持系统运维
 6. **前端自动化测试**：Cypress集成提供完整的端到端测试能力
+7. **网络连接自动化**：端口转发脚本支持远程开发环境与本地服务的无缝连接
 
 ### 开发体验
 
@@ -964,6 +1117,7 @@ MedAiAssistant项目展现了现代全栈开发的最佳实践，具有以下突
 3. **可维护性**：清晰的项目结构和文档
 4. **扩展性**：模块化设计支持功能扩展
 5. **测试友好**：完整的测试框架支持持续集成
+6. **远程开发支持**：端口转发脚本提升远程开发效率
 
 ### 建议和改进方向
 
@@ -973,5 +1127,7 @@ MedAiAssistant项目展现了现代全栈开发的最佳实践，具有以下突
 4. **性能优化**：实施APM监控和性能基准测试
 5. **测试覆盖**：提高单元测试覆盖率和测试质量
 6. **测试报告**：完善测试报告生成和分享机制
+7. **端口转发增强**：支持动态端口配置和多服务转发
+8. **远程开发工具**：集成更多远程开发辅助工具
 
-该项目为医疗AI应用的开发提供了一个成熟、可靠的基础设施，适合团队协作和长期维护。**更新**：新增的Cypress前端自动化测试框架进一步增强了系统的质量和可靠性，为持续集成和部署提供了坚实的技术基础。
+该项目为医疗AI应用的开发提供了一个成熟、可靠的基础设施，适合团队协作和长期维护。**更新**：新增的Cypress前端自动化测试框架和端口转发自动化脚本进一步增强了系统的质量和可靠性，为持续集成、部署和远程开发提供了坚实的技术基础。这些改进显著提升了开发效率和用户体验，为项目的长期发展奠定了良好基础。
