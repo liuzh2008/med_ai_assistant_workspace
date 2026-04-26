@@ -43,6 +43,7 @@
 - 新增多个组件的诊断分析按钮集成，包括AIDiagnosisTab、DiagnosisCard、DiagnosisEditPanel
 - 新增handlePromptExecution工具函数的统一诊断分析执行机制
 - 新增完整的诊断分析确认对话框和数据就绪提醒机制
+- 项目版本已升级至0.9.012，反映了版本0.9.012的增强功能，包括依赖版本更新和维护性改进
 
 ## 目录
 1. [简介](#简介)
@@ -63,9 +64,9 @@
 
 ## 简介
 
-这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.9.007）增强了AI结果处理能力、轮询服务稳定性，并新增了治疗计划表格UI优化、选中文字处理机制、QC质量控制集成等前端功能增强，显著提升了用户体验和医疗信息管理能力。
+这是一个基于 Vue 3 的医疗AI助手前端应用，提供了完整的组件化架构和丰富的功能特性。该应用采用现代化的前端技术栈，包括 Vue 3、Element Plus、Vuex 状态管理和 Vue Router 路由系统。最新版本（0.9.012）增强了AI结果处理能力、轮询服务稳定性，并新增了治疗计划表格UI优化、选中文字处理机制、QC质量控制集成等前端功能增强，显著提升了用户体验和医疗信息管理能力。
 
-**更新** 项目版本已升级至0.9.007，反映了版本0.9.007的增强功能，包括治疗计划表格操作列的精简优化、AI结果的智能文本选择和复制功能、完整的QC质量控制API集成，以及新增的treatmentPlanParser.js结构化治疗计划信息提取工具。
+**更新** 项目版本已升级至0.9.012，反映了版本0.9.007的增强功能，包括治疗计划表格操作列的精简优化、AI结果的智能文本选择和复制功能、完整的QC质量控制API集成，以及新增的treatmentPlanParser.js结构化治疗计划信息提取工具。同时，依赖版本也进行了更新，包括Element Plus升级至2.10.2、Vue升级至3.2.13等。
 
 ## 项目结构
 
@@ -117,7 +118,7 @@ views --> patient_components
 
 **章节来源**
 - [main.js:1-267](file://med_ai_assistant_1.0_bs_vue/src/main.js#L1-L267)
-- [package.json:1-56](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L56)
+- [package.json:1-59](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L59)
 
 ## 核心组件
 
@@ -200,7 +201,7 @@ Success --> End
 ```
 
 **图表来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIResults.vue:650-710](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L710)
 
 ### 治疗计划表格组件
 
@@ -642,7 +643,7 @@ Success --> End
 ```
 
 **图表来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIResults.vue:650-710](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L710)
 
 #### 思维过程折叠系统
 
@@ -667,10 +668,10 @@ Success --> End
 ```
 
 **图表来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIResults.vue:650-710](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L710)
 
 **章节来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIResults.vue:650-710](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L710)
 
 ### TreatmentPlanTable 组件深度分析
 
@@ -1431,7 +1432,6 @@ UserConfirm --> |否| CancelAction[取消操作]
 ExecuteAnalysis --> ShowLoading[显示加载提示]
 ShowLoading --> SubmitRequest[提交分析请求]
 SubmitRequest --> ShowResult[显示结果反馈]
-ShowResult --> End
 CancelAction --> End
 ```
 
@@ -2242,7 +2242,7 @@ promptUtils --> VuexStore
 - [router/index.js:1-118](file://med_ai_assistant_1.0_bs_vue/src/router/index.js#L1-L118)
 
 **章节来源**
-- [package.json:1-56](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L56)
+- [package.json:1-59](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L59)
 
 ### API接口依赖关系
 
@@ -2893,7 +2893,7 @@ BackendAPI --> AIEngine[AI引擎]
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
 - [UserLookup.vue:49-51](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue#L49-L51)
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIResults.vue:650-710](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L710)
 - [TreatmentPlanTable.vue:270-520](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L270-L520)
 - [DiagnosisEditPanel.vue:593-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L593-L611)
 - [DiagnosisCard.vue:495-501](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L495-L501)
@@ -2960,5 +2960,14 @@ BackendAPI --> AIEngine[AI引擎]
 - **错误处理**：完善的错误处理和用户提示机制
 - **数据完整性**：通过就绪检查确保分析结果的准确性
 - **操作便利性**：通过一键按钮和确认对话框提升操作便利性
+
+**更新** 项目版本升级至0.9.012，反映了以下依赖版本更新：
+- Vue升级至3.2.13
+- Element Plus升级至2.10.2
+- Vue Router升级至4.5.1
+- Axios升级至1.10.0
+- Marked升级至16.1.1
+- MD Editor V3升级至5.7.1
+- DOMPurify升级至3.2.6
 
 建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI诊断分析、用户交互体验、数据完整性检查、组件间协作等方面持续改进。新增的诊断分析按钮、确认对话框、数据就绪提醒机制和统一执行机制，为医疗AI助手的诊断分析场景提供了更加专业和实用的解决方案，值得进一步推广和应用。
