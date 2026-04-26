@@ -4,6 +4,7 @@
 **本文档引用的文件**
 - [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 - [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
 - [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
@@ -11,7 +12,6 @@
 - [TopMenu.vue](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue)
 - [UserLookup.vue](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue)
 - [ServerLogViewer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue)
-- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
 - [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
@@ -40,6 +40,9 @@
 - 新增诊断分析确认对话框的临床数据就绪提醒功能，确保分析准确性
 - 完善诊断分析流程的用户引导和数据完整性检查
 - 增强AI诊断页面的用户体验和操作便利性
+- 新增多个组件的诊断分析按钮集成，包括AIDiagnosisTab、DiagnosisCard、DiagnosisEditPanel
+- 新增handlePromptExecution工具函数的统一诊断分析执行机制
+- 新增完整的诊断分析确认对话框和数据就绪提醒机制
 
 ## 目录
 1. [简介](#简介)
@@ -238,7 +241,7 @@ Success --> End
 - 工具栏集成：底部工具栏提供统一的操作入口
 
 **章节来源**
-- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
+- [DiagnosisEditPanel.vue:1-792](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L792)
 
 ### 诊断卡片组件
 
@@ -259,7 +262,7 @@ Success --> End
 - 标签页集成：右侧标签页支持诊断说明和目前诊断两个选项卡
 
 **章节来源**
-- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
 
 ### QC质量控制API
 
@@ -855,7 +858,7 @@ DetailPane --> DetailScroll[详情内容滚动<br/>min-height: 255px<br/>overflo
 ```
 
 **图表来源**
-- [DiagnosisEditPanel.vue:572-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L572-L716)
+- [DiagnosisEditPanel.vue:572-792](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L572-L792)
 
 #### 思维过程显示系统
 
@@ -884,7 +887,7 @@ ToggleState --> UpdateUI[更新UI状态]
 - [DiagnosisEditPanel.vue:563-567](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L563-L567)
 
 **章节来源**
-- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
+- [DiagnosisEditPanel.vue:1-792](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L792)
 
 ### DiagnosisCard 组件深度分析
 
@@ -965,7 +968,7 @@ Tabs --> CurrentPane[目前诊断<br/>表格形式]
 ```
 
 **图表来源**
-- [DiagnosisCard.vue:470-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L470-L644)
+- [DiagnosisCard.vue:470-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L470-L709)
 
 #### 诊断解析系统
 
@@ -991,7 +994,7 @@ ReturnBlocks --> UseInUI[在UI中使用]
 - [DiagnosisCard.vue:203-231](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L203-L231)
 
 **章节来源**
-- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
 
 ### PromptExecutor 组件深度分析
 
@@ -1993,7 +1996,7 @@ TemplateAlert --> ExecuteAnalysis
 
 **图表来源**
 - [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
-- [DiagnosisCard.vue:312-321](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L312-321)
+- [DiagnosisCard.vue:312-321](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L312-L321)
 
 **章节来源**
 - [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
@@ -2316,8 +2319,8 @@ AIResults --> DiagnosisCard
 - [DiagnosisCard.vue:125-127](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L125-L127)
 
 **章节来源**
-- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
-- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
+- [DiagnosisEditPanel.vue:1-792](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L792)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
 - [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
 
 ### PromptTemplates组件依赖关系

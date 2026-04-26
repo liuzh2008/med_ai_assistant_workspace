@@ -9,17 +9,21 @@
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 - [AI模型配置类](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
 - [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
 - [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 - [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
 - [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [PromptListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/PromptListDTO.java)
+- [PromptResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增AI诊断页面空状态处理机制，添加诊断分析按钮提升用户体验
-- 诊断分析确认对话框增加临床数据就绪提醒，确保分析质量
-- 优化医生工作流程，减少因数据不完整导致的分析误差
+- 新增病情小结模板过滤功能，前端PromptList组件在AI助手页面中排除了'病情小结'模板
+- 后端AIController提供支持的API接口，包括患者综合信息获取和病情小结数据处理
+- PromptResultRepository优化了病情小结、查房记录、入院记录的查询逻辑
+- TimerPromptGenerator定时任务中新增病情小结生成逻辑
 
 ## 目录
 1. [简介](#简介)
@@ -28,11 +32,12 @@
 4. [架构总览](#架构总览)
 5. [详细组件分析](#详细组件分析)
 6. [AI诊断页面增强功能](#ai诊断页面增强功能)
-7. [依赖关系分析](#依赖关系分析)
-8. [性能考虑](#性能考虑)
-9. [故障排除指南](#故障排除指南)
-10. [结论](#结论)
-11. [附录](#附录)
+7. [病情小结模板过滤功能](#病情小结模板过滤功能)
+8. [依赖关系分析](#依赖关系分析)
+9. [性能考虑](#性能考虑)
+10. [故障排除指南](#故障排除指南)
+11. [结论](#结论)
+12. [附录](#附录)
 
 ## 简介
 本文件面向AI诊断辅助系统的使用者与维护者，系统性阐述AI模型集成机制、诊断算法实现与结果处理流程，重点覆盖以下方面：
@@ -45,6 +50,7 @@
 - 实际使用示例与最佳实践：接口调用、参数配置、运维排障
 - 与主服务器和执行服务器的协作关系：加密传输、远程推理、状态同步
 - **新增**：AI诊断页面空状态处理与临床数据就绪提醒机制
+- **新增**：病情小结模板过滤功能，优化AI助手页面的模板展示
 
 ## 项目结构
 系统采用分层架构，核心围绕AI控制器、AI响应控制器、模型配置与网络恢复服务展开，配合Prompt执行引擎与数据服务模块，形成完整的AI诊断辅助闭环。
@@ -55,6 +61,7 @@ subgraph "前端层"
 FE[前端应用]
 AIView[AI视图组件]
 AIDiagnosisTab[AI诊断标签页]
+PromptList[Prompt列表组件]
 DiagnosisCard[诊断卡片组件]
 DiagnosisEditPanel[诊断编辑面板]
 end
@@ -72,9 +79,11 @@ subgraph "核心服务层"
 PromptSvc[Prompt执行引擎<br/>PromptService]
 DataSvc[数据处理服务<br/>各种Service]
 EncryptSvc[加密解密服务<br/>AESEncryptionUtil]
+TimerSvc[定时任务服务<br/>TimerPromptGenerator]
 end
 subgraph "数据访问层"
 Repo[Repository层<br/>JPA接口]
+PromptResultRepo[PromptResultRepository]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库<br/>患者数据)]
@@ -86,6 +95,7 @@ AIModel[AI模型服务<br/>DeepSeek等]
 end
 FE --> AIView
 AIView --> AIDiagnosisTab
+AIView --> PromptList
 AIDiagnosisTab --> DiagnosisCard
 AIDiagnosisTab --> DiagnosisEditPanel
 Gateway --> AI
@@ -94,10 +104,12 @@ Gateway --> Patient
 Gateway --> User
 Gateway --> Encrypt
 AI --> PromptSvc
+AI --> TimerSvc
 AIResp --> AIModel
 Patient --> DataSvc
 Encrypt --> EncryptSvc
 PromptSvc --> Repo
+PromptResultRepo --> Repo
 DataSvc --> Repo
 Repo --> MySQL
 Repo --> Oracle
@@ -119,6 +131,8 @@ PromptSvc --> AIModel
 - 加密服务与执行服务器：在加密传输模式下，主服务器将敏感数据加密后发送至执行服务器，执行服务器解密后调用AI模型，再加密返回。
 - **新增**：AI诊断标签页组件：负责AI诊断结果的展示、空状态处理、诊断分析触发等功能。
 - **新增**：诊断卡片组件：提供诊断列表展示、工具栏操作、诊断分析触发等交互功能。
+- **新增**：Prompt列表组件：负责展示Prompt执行历史，包含病情小结模板过滤功能。
+- **新增**：定时任务服务：负责定期生成诊断分析、诊疗计划、病情小结等Prompt任务。
 
 **章节来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
@@ -127,6 +141,8 @@ PromptSvc --> AIModel
 - [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 - [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 - [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
+- [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 ## 架构总览
 系统整体分为前端层、API网关层、业务服务层、核心服务层、数据访问层与数据存储层，以及外部AI模型与执行服务器。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，Prompt执行引擎与数据服务模块提供数据支撑，加密服务与执行服务器实现安全的远程推理。
@@ -136,7 +152,9 @@ graph TB
 subgraph "业务编排"
 AI[AI控制器]
 PromptSvc[Prompt执行引擎]
+TimerSvc[定时任务服务]
 AIDiagnosisTab[AI诊断标签页]
+PromptList[Prompt列表组件]
 DiagnosisCard[诊断卡片组件]
 end
 subgraph "模型调用"
@@ -154,21 +172,25 @@ Repo[Repository层]
 MySQL[(MySQL)]
 Oracle[(Oracle)]
 apiAI[AI API模块]
+PromptResultRepo[PromptResultRepository]
 end
 subgraph "安全与执行"
 Encrypt[加密服务]
 ExecServer[执行服务器]
 end
 AI --> PromptSvc
+AI --> TimerSvc
 AIDiagnosisTab --> DiagnosisCard
 AIDiagnosisTab --> handlePromptExecution
 AIDiagnosisTab --> getLatestPromptResult
 AIDiagnosisTab --> apiAI
+PromptList --> PromptResultRepo
 handlePromptExecution --> getPatientData
 handlePromptExecution --> getPromptTemplate
 handlePromptExecution --> addPrompt
 AIResp --> AIModel
 PromptSvc --> Repo
+TimerSvc --> PromptResultRepo
 DataSvc --> Repo
 Encrypt --> ExecServer
 PromptSvc --> AIModel
@@ -189,6 +211,7 @@ PromptSvc --> AIModel
   - 三层降级策略：入院记录优先使用PromptResult中的"入院记录总结"，其次使用EMR_CONTENT原始记录，最后输出统一标记"无入院记录数据"。
   - 连续性功能：当模板名为"诊疗计划表"时，追加上次生成的治疗计划文本与QC质控评估结果。
   - 对话历史保存：事务性保存会话消息，及时暴露持久化异常。
+  - **新增**：病情小结数据处理：直接查询medicalRecordRepository，过滤recordType包含"病情小结"的记录，提供最新的病情小结内容。
 - 性能优化
   - 消除HTTP自调用，直接Repository查询，响应时间从5-30秒降至0.5-2秒，显著降低超时错误。
   - 时间过滤：查房记录模板对长期/临时医嘱与化验/检查结果应用时间范围过滤，减少无关数据。
@@ -204,7 +227,11 @@ DecideTypes --> |是| UseConfig["使用模板配置<br/>自动补充'手术记�
 DecideTypes --> |否| UseDefault["使用默认11种数据类型"]
 UseConfig --> FetchData["逐项获取数据<br/>直接数据库查询"]
 UseDefault --> FetchData
-FetchData --> FormatData["格式化数据<br/>Markdown分段"]
+FetchData --> ProcessDataType{"处理数据类型"}
+ProcessDataType --> |病情小结| GetMedicalSummary["查询最新病情小结<br/>过滤recordType包含'病情小结'"]
+ProcessDataType --> |其他类型| GetData["获取对应数据类型"]
+GetData --> FormatData["格式化数据<br/>Markdown分段"]
+GetMedicalSummary --> FormatData
 FormatData --> AddContinuity{"模板是否为'诊疗计划表'？"}
 AddContinuity --> |是| AppendPlan["追加上次治疗计划文本"]
 AddContinuity --> |是| AppendQC["追加QC质控评估结果"]
@@ -414,6 +441,64 @@ AI API模块提供了诊断分析结果的获取接口。
 **章节来源**
 - [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
 
+## 病情小结模板过滤功能
+
+### 前端过滤实现
+PromptList组件实现了病情小结模板的过滤逻辑，确保AI助手页面不显示病情小结模板。
+
+- **过滤逻辑**
+  - 排除DRG分析专用模板：主要诊断、手术/操作分析，合并症或并发症分析
+  - 排除质控评估模板：QC-第一阶段-AI诊断匹配，QC-第三阶段-AI质控评估
+  - **新增**：排除'病情小结'模板，避免与AI诊断辅助页面重复
+  - 排除包含'诊断分析'的模板，这些模板已移至AI诊断辅助标签页
+
+- **模板分类**
+  - 已执行列表：statusName === "已完成"的Prompt（有PromptResult记录）
+  - 未执行列表：statusName !== "已完成"的Prompt（包括"已处理"、"待处理"等，无PromptResult）
+
+```mermaid
+flowchart TD
+Start(["加载Prompt列表"]) --> FilterTemplates["过滤模板"]
+FilterTemplates --> CheckExcluded{"检查是否在排除列表"}
+CheckExcluded --> |是| Exclude["排除该模板"]
+CheckExcluded --> |否| CheckContains{"检查是否包含'诊断分析'"}
+CheckContains --> |是| Exclude
+CheckContains --> |否| Include["包含该模板"]
+Exclude --> Classify["分类到相应列表"]
+Include --> Classify
+Classify --> Sort["按执行时间排序"]
+Sort --> End(["完成"])
+```
+
+**图表来源**
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
+
+**章节来源**
+- [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
+
+### 后端数据支持
+AI控制器和Repository层提供了完整的数据支持，包括病情小结的查询和处理。
+
+- **AI控制器数据处理**
+  - 病情小结数据类型处理：直接查询medicalRecordRepository
+  - 过滤recordType包含"病情小结"的记录
+  - 提供最新的病情小结内容，格式化输出
+
+- **Repository查询优化**
+  - PromptResultRepository优化了病情小结、查房记录、入院记录的查询
+  - 使用LIKE操作符进行模板名称匹配
+  - 支持多种记录类型的组合查询
+
+- **定时任务支持**
+  - TimerPromptGenerator定时任务中新增病情小结生成逻辑
+  - 生成基础Prompt（诊断分析、诊疗计划、病情小结）
+  - 支持每日自动化的病情小结生成
+
+**章节来源**
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [PromptResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java)
+- [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+
 ## 依赖关系分析
 - 组件耦合
   - AI控制器依赖Prompt执行引擎与各类数据服务，直接数据库查询降低耦合度与超时风险。
@@ -421,6 +506,8 @@ AI API模块提供了诊断分析结果的获取接口。
   - 加密服务与执行服务器形成独立的安全通道，避免敏感数据在主服务器驻留。
   - **新增**：AIDiagnosisTab组件依赖DiagnosisCard组件和DiagnosisEditPanel组件，形成完整的诊断展示体系。
   - **新增**：AI诊断页面通过handlePromptExecution工具函数与后端API进行交互。
+  - **新增**：PromptList组件依赖PromptResultRepository进行数据查询，实现模板过滤功能。
+  - **新增**：TimerPromptGenerator服务依赖AI控制器的定时任务生成逻辑。
 
 - 外部依赖
   - 外部AI模型服务（如DeepSeek）与执行服务器，健康状态通过健康检查接口反馈。
@@ -430,11 +517,12 @@ AI API模块提供了诊断分析结果的获取接口。
 ```mermaid
 graph TB
 AI["AI控制器"] --> PromptSvc["Prompt执行引擎"]
-AI --> DataSvc["数据处理服务"]
+AI --> TimerSvc["定时任务服务"]
 AIResp["AI响应控制器"] --> AIModelCfg["AI模型配置"]
 AIResp --> NetRecovery["网络恢复服务"]
 Encrypt["加密服务"] --> ExecServer["执行服务器"]
 PromptSvc --> Repo["Repository层"]
+TimerSvc --> PromptResultRepo["PromptResultRepository"]
 DataSvc --> Repo
 Repo --> MySQL["MySQL"]
 Repo --> Oracle["Oracle"]
@@ -442,6 +530,7 @@ PromptSvc --> AIModel["AI模型服务"]
 AIDiagnosisTab["AI诊断标签页"] --> DiagnosisCard["诊断卡片组件"]
 AIDiagnosisTab --> DiagnosisEditPanel["诊断编辑面板"]
 AIDiagnosisTab --> handlePromptExecution["Prompt执行工具"]
+PromptList["Prompt列表组件"] --> PromptResultRepo
 handlePromptExecution --> getLatestPromptResult["获取最新结果"]
 handlePromptExecution --> getPatientData["获取患者数据"]
 handlePromptExecution --> getPromptTemplate["获取模板"]
@@ -463,11 +552,14 @@ handlePromptExecution --> addPrompt["保存Prompt"]
   - 指数退避与抖动，避免重试风暴；仅对可重试异常生效，提升成功率。
 - 数据查询优化
   - 直接数据库查询替代HTTP自调用，显著降低响应时间与超时风险。
+  - **新增**：PromptResultRepository使用LIKE操作符优化模板名称查询，提升查询性能。
+  - **新增**：定时任务批量生成Prompt，减少重复查询开销。
 - 超时与重试参数
   - 连接超时30秒、读取超时300秒、最大重试3次，平衡用户体验与资源消耗。
 - **新增**：前端组件优化
   - 空状态处理：避免不必要的API调用，提升页面响应速度
   - 并行数据获取：通过handlePromptExecution工具函数实现多接口并发请求
+  - **新增**：模板过滤：前端直接过滤不需要显示的模板，减少数据传输
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -487,6 +579,8 @@ handlePromptExecution --> addPrompt["保存Prompt"]
   - 空状态按钮无响应：检查handlePromptExecution函数调用和ElMessageBox配置
   - 诊断分析确认对话框显示异常：验证HTML格式的提醒内容和dangerouslyUseHTMLString配置
   - 诊断结果不显示：检查getLatestPromptResult API调用和数据格式
+  - **新增**：病情小结模板不显示：检查PromptList组件的过滤逻辑和后端模板名称匹配
+  - **新增**：定时任务生成异常：检查TimerPromptGenerator的配置和数据库连接
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -498,6 +592,8 @@ handlePromptExecution --> addPrompt["保存Prompt"]
 - AI诊断页面空状态处理：通过友好的空状态界面和明确的操作按钮，提升了用户体验
 - 诊断分析确认机制：通过临床数据就绪提醒，确保分析质量，减少因数据不完整导致的误诊风险
 - 工作流程优化：为医生提供了更清晰的诊断分析流程，提高了工作效率
+- **新增**：病情小结模板过滤功能：优化AI助手页面的模板展示，避免重复显示，提升用户体验
+- **新增**：完整的数据支持：后端提供病情小结的查询、处理和定时生成支持，确保数据完整性
 
 ## 附录
 - 实际使用示例
@@ -505,6 +601,8 @@ handlePromptExecution --> addPrompt["保存Prompt"]
   - 保存AI结果：POST /api/ai/saveAIResult（请求体包含promptId与结果内容）
   - 健康检查：GET /api/ai/health/ai-status
   - **新增**：获取最新诊断分析结果：GET /api/ai/latestPromptResult?patientId={id}&promptName=诊断分析
+  - **新增**：获取患者综合信息：GET /api/ai/patient-comprehensive-info?patientId={id}
+  - **新增**：获取Prompt列表详情：GET /api/ai/patientPromptDetails?patientId={id}
 - 最佳实践
   - 优先使用模板驱动的数据类型配置，确保数据完整性与一致性。
   - 在网络波动环境中启用响应式重试与自动恢复，避免人工干预。
@@ -512,3 +610,5 @@ handlePromptExecution --> addPrompt["保存Prompt"]
   - 对敏感数据采用加密传输，确保合规与安全。
   - **新增**：在进行诊断分析前，确保所有必要的临床数据已就绪，以获得准确的分析结果。
   - **新增**：利用AI诊断页面的空状态提示，及时触发诊断分析，避免遗漏重要的诊断信息。
+  - **新增**：合理使用病情小结模板过滤功能，确保AI助手页面的整洁性和用户体验。
+  - **新增**：定期检查定时任务的执行情况，确保病情小结等自动化功能正常运行。
