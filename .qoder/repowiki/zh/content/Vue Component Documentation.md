@@ -2,23 +2,25 @@
 
 <cite>
 **本文档引用的文件**
-- [ServerLogViewer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue)
+- [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
+- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
+- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
+- [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 - [TopMenu.vue](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue)
 - [UserLookup.vue](file://med_ai_assistant_1.0_bs_vue/src/components/UserLookup.vue)
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [ServerLogViewer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue)
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
-- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 - [PromptExecutor.vue](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptExecutor.vue)
 - [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 - [PatientView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
 - [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
-- [AIView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
 - [DrgAnalysis.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue)
 - [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
 - [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 - [drg.js](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js)
-- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
 - [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 - [voiceTextProcessor.js](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js)
 - [treatmentPlanParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js)
@@ -34,12 +36,10 @@
 
 ## 更新摘要
 **所做更改**
-- 新增治疗计划表格组件的重大UI优化：操作列从3个按钮精简为「待办」+「更多」下拉菜单
-- 新增选中文字处理机制：AIResults组件支持智能文本选择和去换行符复制功能
-- 新增QC质量控制API集成：完整的病种匹配、确认、评估结果查询等QC功能接口
-- 更新项目版本至0.9.007，反映最新的组件优化和功能增强
-- 新增治疗计划Markdown解析工具函数，支持标准4列表格解析和去标记处理
-- 新增QC评估结果API，支持按病种和状态筛选的质控指标评估查询
+- 新增AI诊断页面空状态诊断分析按钮的实现，提供一键触发诊断分析功能
+- 新增诊断分析确认对话框的临床数据就绪提醒功能，确保分析准确性
+- 完善诊断分析流程的用户引导和数据完整性检查
+- 增强AI诊断页面的用户体验和操作便利性
 
 ## 目录
 1. [简介](#简介)
@@ -47,12 +47,12 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [治疗计划表格UI优化](#治疗计划表格ui优化)
-7. [选中文字处理机制](#选中文字处理机制)
-8. [QC质量控制集成](#qc质量控制集成)
-9. [诊断编辑与卡片组件优化](#诊断编辑与卡片组件优化)
-10. [DRG分析结果显示逻辑优化](#drg分析结果显示逻辑优化)
-11. [PromptTemplates组件重大UI重构](#prompttemplates组件重大ui重构)
+6. [AI诊断页面空状态处理](#ai诊断页面空状态处理)
+7. [诊断分析确认对话框](#诊断分析确认对话框)
+8. [诊断分析流程优化](#诊断分析流程优化)
+9. [临床数据就绪提醒机制](#临床数据就绪提醒机制)
+10. [诊断分析按钮集成](#诊断分析按钮集成)
+11. [用户交互体验提升](#用户交互体验提升)
 12. [依赖分析](#依赖分析)
 13. [性能考虑](#性能考虑)
 14. [故障排除指南](#故障排除指南)
@@ -276,7 +276,7 @@ Success --> End
 - **病种匹配**：getDiseaseMatch、triggerDiseaseMatch、confirmDiseaseMatch
 - **忽略管理**：ignoreDiseaseMatch、restoreDiseaseMatch、getIgnoredDiseases
 - **评估查询**：getAssessmentResults、getIndicatorDetails、reanalyzeAssessment
-- **指标配置**：getIndicatorConfigs、getDiseaseConfigs
+- **指标配置**：getDiseaseConfigs、getIndicatorConfigs
 
 **章节来源**
 - [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
@@ -363,52 +363,38 @@ Q[DrgAnalysis<br/>DRG分析组件]
 R[TreatmentPlanTable<br/>治疗计划表格]
 S[QC API模块<br/>质量控制接口]
 T[QC评估结果<br/>质控指标查询]
-end
-subgraph "业务功能层"
-U[AI诊断系统]
-V[患者管理系统]
-W[服务器维护]
-X[用户设置]
-Y[轮询服务监控]
-Z[待办事项管理]
-AA[病历记录管理]
-BB[语音识别处理]
-CC[诊断编辑管理]
-DD[思维过程显示]
-EE[模板管理]
-FF[小屏模式适配]
-GG[DRG分析系统]
-HH[DRG费用计算]
-II[MCC预筛选]
-JJ[AI分析集成]
-KK[治疗计划管理]
-LL[质量控制评估]
-MM[病种匹配确认]
-NN[质控指标查询]
-OO[重新分析触发]
-PP[指标配置管理]
-QQ[忽略病种管理]
-RR[恢复病种管理]
-end
-subgraph "基础设施层"
-SS[API接口层]
-TT[工具函数库]
-UU[数据配置]
-VV[Markdown渲染引擎]
-WW[DOM净化器]
-XX[颜色编码系统]
-YY[流式处理服务]
-ZZ[AI服务类]
-AAA[诊断解析工具]
-BBB[治疗计划解析]
-CCC[QC评估工具]
-DDD[DRG分析API]
-EEE[FeeAPI]
-FFF[PromptAPI]
-GGG[QC API]
-HHH[QC评估API]
-III[QC配置API]
-JJJ[QC忽略API]
+U[AIDiagnosisTab<br/>AI诊断标签页]
+V[诊断分析确认对话框<br/>临床数据就绪提醒]
+W[诊断分析按钮<br/>空状态处理]
+X[handlePromptExecution<br/>Prompt执行工具]
+Y[ElMessageBox<br/>确认对话框]
+Z[localStorage<br/>用户信息存储]
+AA[getLatestPromptResult<br/>最新结果获取]
+BB[getPromptTemplate<br/>模板获取]
+CC[addPrompt<br/>Prompt保存]
+DD[并发请求<br/>并行处理]
+EE[错误处理<br/>异常捕获]
+FF[用户反馈<br/>消息提示]
+GG[状态管理<br/>Vuex Store]
+HH[组件通信<br/>事件传递]
+II[模板执行<br/>handlePromptExecution]
+JJ[诊断分析流程<br/>完整实现]
+KK[空状态处理<br/>一键触发]
+LL[数据完整性检查<br/>就绪提醒]
+MM[用户体验优化<br/>交互设计]
+NN[性能优化<br/>渲染提升]
+OO[功能增强<br/>新特性集成]
+PP[系统稳定性<br/>错误恢复]
+QQ[安全性保障<br/>权限控制]
+RR[可扩展性设计<br/>模块化架构]
+SS[可维护性<br/>代码组织]
+TT[可测试性<br/>单元测试]
+UU[可部署性<br/>构建优化]
+VV[可监控性<br/>日志记录]
+WW[可诊断性<br/>错误追踪]
+XX[可国际化<br/>多语言支持]
+YY[可无障碍<br/>辅助功能]
+ZZ[可性能<br/>优化策略]
 ```
 
 **图表来源**
@@ -1351,897 +1337,791 @@ SortResults --> ReturnResults[返回评估结果]
 **章节来源**
 - [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
 
-## 治疗计划表格UI优化
+## AI诊断页面空状态处理
 
-### 操作列精简优化
+### 空状态诊断分析按钮实现
 
-**新增** TreatmentPlanTable组件的重大UI优化，将操作列从3个按钮精简为「待办」+「更多」下拉菜单：
+**新增** AIDiagnosisTab组件实现了完整的空状态处理机制，为用户提供了一键触发诊断分析的功能：
 
-#### UI优化架构
+#### 空状态架构
 
 ```mermaid
 classDiagram
-class TreatmentPlanTable {
-+Array items
-+String operationColumn
-+String todoButton
-+String moreDropdown
-+Array dropdownItems
-+collapseButtons() void
-+expandButtons() void
+class AIDiagnosisTab {
++Boolean loading
++String error
++String resultContent
++String executionTime
++Boolean emptyState
++triggerDiagnosisAnalysis() Promise~void~
++handleEmptyState() void
 }
-class OperationColumnOptimization {
-+String optimizedLayout
-+Array dropdownActions
-+Boolean isCollapsed
-+collapseButtons() void
-+expandButtons() void
+class EmptyStateHandling {
++Boolean hasResult
++String emptyMessage
++String buttonText
++String icon
++triggerAnalysis() void
 }
 class UserInteraction {
 +String userAction
 +String buttonType
-+String dropdownAction
-+handleUserAction(action) void
++String confirmation
++handleUserAction() Promise~void~
 }
-TreatmentPlanTable --> OperationColumnOptimization : "使用"
-TreatmentPlanTable --> UserInteraction : "响应"
-OperationColumnOptimization --> UserInteraction : "触发"
+AIDiagnosisTab --> EmptyStateHandling : "管理"
+AIDiagnosisTab --> UserInteraction : "响应"
+EmptyStateHandling --> UserInteraction : "触发"
 ```
 
 **图表来源**
-- [TreatmentPlanTable.vue:270-520](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L270-L520)
+- [AIDiagnosisTab.vue:16-24](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L16-L24)
 
-#### 精简优化实现
+#### 空状态显示逻辑
 
 **新增功能亮点：**
-- **操作列整合**：将原来的3个独立按钮（编辑、删除、查看详情）整合为「待办」和「更多」下拉菜单
-- **布局简化**：减少表格列宽，提升整体可读性
-- **交互优化**：通过下拉菜单提供更多的操作选项，同时保持界面简洁
-- **响应式设计**：在小屏设备上更好地适配精简后的布局
+- **空状态检测**：通过resultContent的存在与否判断是否显示空状态
+- **一键触发按钮**：提供明显的诊断分析按钮，引导用户进行手动分析
+- **图标提示**：使用InfoFilled图标和DataAnalysis图标增强视觉提示
+- **样式优化**：统一的空状态样式，包含图标、提示文本和操作按钮
 
-**精简优化流程：**
+**空状态实现流程：**
 
 ```mermaid
 flowchart TD
-OriginalButtons[原3个独立按钮] --> TodoButton[待办按钮]
-OriginalButtons --> MoreButton[更多按钮]
-MoreButton --> DropdownMenu[下拉菜单]
-DropdownMenu --> EditAction[编辑操作]
-DropdownMenu --> DeleteAction[删除操作]
-DropdownMenu --> RestoreAction[恢复操作]
-DropdownMenu --> ViewAction[查看详情]
-TodoButton --> CreateTodo[创建待办]
-MoreButton --> BatchOperations[批量操作]
-BatchOperations --> BatchSave[批量保存]
-BatchOperations --> BatchDelete[批量删除]
-BatchOperations --> BatchRestore[批量恢复]
+LoadData[加载诊断数据] --> CheckResult{resultContent存在?}
+CheckResult --> |是| ShowResult[显示AI结果]
+CheckResult --> |否| CheckError{error存在?}
+CheckResult --> |否| ShowEmpty[显示空状态]
+CheckError --> |是| ShowError[显示错误状态]
+CheckError --> |否| ShowEmpty
+ShowEmpty --> DisplayIcon[显示InfoFilled图标]
+DisplayIcon --> DisplayMessage[显示提示文本]
+DisplayMessage --> DisplayButton[显示诊断分析按钮]
+DisplayButton --> UserClick[用户点击按钮]
+UserClick --> TriggerAnalysis[触发诊断分析]
 ```
 
 **图表来源**
-- [TreatmentPlanTable.vue:270-520](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L270-L520)
+- [AIDiagnosisTab.vue:16-24](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L16-L24)
 
-#### 交互优化机制
+#### 诊断分析按钮交互
 
 **新增功能亮点：**
-- **智能展开**：用户悬停或点击更多按钮时自动展开下拉菜单
-- **快捷操作**：待办按钮提供最常用的操作入口
-- **批量处理**：支持多选后的批量操作，提升效率
-- **状态反馈**：操作完成后提供即时的状态反馈
+- **按钮样式**：使用el-button组件，type="primary"提供醒目的视觉效果
+- **图标集成**：结合DataAnalysis图标和"诊断分析"文本
+- **事件绑定**：@click="triggerDiagnosisAnalysis"绑定点击事件
+- **间距优化**：设置margin-top: 4px提供适当的上下间距
 
-**交互实现流程：**
+**按钮交互实现流程：**
 
 ```mermaid
 flowchart TD
-UserHover[用户悬停按钮] --> CheckButton{检查按钮类型}
-CheckButton --> |更多按钮| ExpandDropdown[展开下拉菜单]
-CheckButton --> |待办按钮| ShowTodo[显示待办操作]
-ExpandDropdown --> UserSelect[用户选择操作]
-ShowTodo --> UserSelect
-UserSelect --> ExecuteAction[执行选择的操作]
-ExecuteAction --> UpdateUI[更新界面状态]
-UpdateUI --> ShowFeedback[显示操作反馈]
+UserHover[用户悬停按钮] --> ShowTooltip[显示工具提示]
+UserClick[用户点击按钮] --> ValidatePatient{验证患者选择}
+ValidatePatient --> |未选择| ShowWarning[显示警告提示]
+ValidatePatient --> |已选择| ShowConfirmation[显示确认对话框]
+ShowWarning --> End[结束]
+ShowConfirmation --> UserConfirm{用户确认?}
+UserConfirm --> |是| ExecuteAnalysis[执行诊断分析]
+UserConfirm --> |否| CancelAction[取消操作]
+ExecuteAnalysis --> ShowLoading[显示加载提示]
+ShowLoading --> SubmitRequest[提交分析请求]
+SubmitRequest --> ShowResult[显示结果反馈]
+ShowResult --> End
+CancelAction --> End
 ```
 
 **图表来源**
-- [TreatmentPlanTable.vue:270-520](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L270-L520)
+- [AIDiagnosisTab.vue:20-23](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L20-L23)
 
 **章节来源**
-- [TreatmentPlanTable.vue:1-267](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue#L1-L267)
+- [AIDiagnosisTab.vue:16-24](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L16-L24)
 
-## 选中文字处理机制
+## 诊断分析确认对话框
 
-### 智能文本选择功能
+### 临床数据就绪提醒功能
 
-**新增** AIResults组件的选中文字处理机制，支持用户选中文本后的智能处理：
+**新增** 诊断分析确认对话框实现了完整的临床数据就绪提醒功能，确保诊断分析的准确性和完整性：
 
-#### 文本选择架构
+#### 确认对话框架构
 
 ```mermaid
 classDiagram
-class AIResults {
-+String content
-+String selectedText
-+Boolean hasSelection
-+String copyStatus
-+handleTextSelection() void
-+removeNewlines(text) String
-+copyToClipboard(text) void
-+showWarning() void
+class DiagnosisAnalysisConfirmation {
++String patientId
++Object confirmationDialog
++String dialogTitle
++String dialogMessage
++Array checklistItems
++Boolean showHTML
++String dialogType
++handleUserConfirmation() Promise~void~
 }
-class TextSelectionManager {
-+String selectedText
-+Boolean hasSelection
-+Array selectionEvents
-+handleSelectionChange() void
-+validateSelection() boolean
+class ChecklistSystem {
++Array checklistItems
++String admissionRecord
++String ordersSync
++String labResults
++validateDataIntegrity() boolean
 }
-class ClipboardIntegration {
-+String clipboardText
-+String processedText
-+copyToClipboard(text) Promise~void~
+class UserFeedback {
++String successMessage
++String errorMessage
++String infoMessage
 +showSuccess() void
 +showError() void
++showInfo() void
 }
-AIResults --> TextSelectionManager : "使用"
-AIResults --> ClipboardIntegration : "集成"
+DiagnosisAnalysisConfirmation --> ChecklistSystem : "使用"
+DiagnosisAnalysisConfirmation --> UserFeedback : "提供"
 ```
 
 **图表来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
 
-#### 选中文字处理流程
+#### 确认对话框内容结构
 
 **新增功能亮点：**
-- **智能选择检测**：自动检测用户是否选择了文本
-- **条件处理**：仅在有选中文本时显示处理选项
-- **去换行符处理**：自动去除选中文本中的换行符和空白字符
-- **剪贴板集成**：一键复制处理后的文本到系统剪贴板
-- **用户反馈**：操作成功和失败的即时提示
+- **标题设计**：使用"诊断分析确认"作为明确的对话框标题
+- **内容结构**：包含HTML格式的提示文本和清单列表
+- **确认按钮**：使用"确定分析"提供明确的操作选项
+- **取消按钮**：使用"取消"提供安全的退出选项
+- **类型设置**：type: 'warning'使用警告样式突出重要性
 
-**选中文字处理实现流程：**
+**确认对话框实现流程：**
 
 ```mermaid
 flowchart TD
-UserSelect[用户选择文本] --> DetectSelection[检测选中文本]
-DetectSelection --> CheckSelection{检查选中状态}
-CheckSelection --> |无选中| ShowWarning[显示警告提示]
-CheckSelection --> |有选中| RemoveNewlines[去除换行符]
-RemoveNewlines --> CopyToClipboard[复制到剪贴板]
-CopyToClipboard --> ShowSuccess[显示成功提示]
+ButtonClick[用户点击诊断分析按钮] --> ValidatePatient{验证患者ID}
+ValidatePatient --> |无效| ShowWarning[显示警告提示]
+ValidatePatient --> |有效| ShowConfirmation[显示确认对话框]
+ShowConfirmation --> DisplayTitle[显示对话框标题]
+DisplayTitle --> DisplayMessage[显示提示文本]
+DisplayMessage --> DisplayChecklist[显示清单列表]
+DisplayChecklist --> UserDecision{用户做出决策}
 ShowWarning --> End[结束]
-ShowSuccess --> End
+UserDecision --> |确定| ProceedAnalysis[继续分析流程]
+UserDecision --> |取消| CancelAnalysis[取消分析]
+ProceedAnalysis --> ShowLoading[显示加载提示]
+ShowLoading --> ExecuteAnalysis[执行诊断分析]
+ExecuteAnalysis --> ShowResult[显示结果反馈]
+CancelAnalysis --> End
 ```
 
 **图表来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
+
+#### 临床数据清单系统
+
+**新增功能亮点：**
+- **入院记录检查**：确认入院记录已完成书写并同步
+- **医嘱同步验证**：确保医嘱数据已同步到系统
+- **辅助检查完整性**：验证辅助检查结果已同步
+- **提醒信息**：提供"以上信息不完整可能导致分析结果不准确"的警告
+- **HTML格式**：使用dangerouslyUseHTMLString支持富文本显示
+
+**数据完整性检查流程：**
+
+```mermaid
+flowchart TD
+ShowConfirmation[显示确认对话框] --> DisplayChecklist[显示清单项目]
+DisplayChecklist --> CheckAdmission{入院记录已就绪?}
+CheckAdmission --> |否| HighlightAdmission[高亮提醒]
+CheckAdmission --> |是| CheckOrders{医嘱已同步?}
+HighlightAdmission --> CheckOrders
+CheckOrders --> |否| HighlightOrders[高亮提醒]
+CheckOrders --> |是| CheckLab{辅助检查已同步?}
+HighlightOrders --> CheckLab
+CheckLab --> |否| HighlightLab[高亮提醒]
+CheckLab --> |是| AllChecksPass[所有检查通过]
+HighlightLab --> AllChecksPass
+AllChecksPass --> UserProceed[用户继续分析]
+UserProceed --> ShowInfo[显示信息提示]
+ShowInfo --> ExecuteAnalysis[执行分析]
+```
+
+**图表来源**
+- [AIDiagnosisTab.vue:267-273](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L267-L273)
+
+#### 用户反馈机制
+
+**新增功能亮点：**
+- **加载提示**：显示"正在生成诊断分析请求..."的信息提示
+- **成功反馈**：显示"诊断分析请求已提交"的成功消息
+- **错误处理**：显示"诊断分析请求提交失败"的错误消息
+- **异常捕获**：捕获用户取消操作，避免错误提示
+
+**反馈实现流程：**
+
+```mermaid
+flowchart TD
+ExecuteAnalysis[执行诊断分析] --> ShowInfo[显示信息提示]
+ShowInfo --> CallHandleExecution[调用handlePromptExecution]
+CallHandleExecution --> CheckResult{分析结果}
+CheckResult --> |成功| ShowSuccess[显示成功消息]
+CheckResult --> |失败| ShowError[显示错误消息]
+ShowSuccess --> End[结束]
+ShowError --> End
+```
+
+**图表来源**
+- [AIDiagnosisTab.vue:293-306](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L293-L306)
+
+**章节来源**
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
+
+## 诊断分析流程优化
+
+### Prompt执行工具集成
+
+**新增** 诊断分析流程通过handlePromptExecution工具实现了完整的Prompt执行机制：
+
+#### Prompt执行架构
+
+```mermaid
+classDiagram
+class PromptExecutionFlow {
++String patientId
++String promptType
++String promptName
++Object options
++handlePromptExecution() Promise~ExecutionResult~
+}
+class ExecutionOptions {
++Number UserId
++Number Priority
++Number SortNumber
++Number RetryCount
++String GeneratedBy
++String StatusName
+}
+class DataValidation {
++String patientId
++String promptName
++Object userInfo
++validateInputs() boolean
+}
+class APIIntegration {
++getPatientData() Promise~PatientData~
++getPromptTemplate() Promise~TemplateContent~
++addPrompt() Promise~PromptResult~
+}
+PromptExecutionFlow --> ExecutionOptions : "使用"
+PromptExecutionFlow --> DataValidation : "验证"
+PromptExecutionFlow --> APIIntegration : "集成"
+```
+
+**图表来源**
+- [promptUtils.js:63-260](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L63-L260)
+
+#### 执行选项配置
+
+**新增功能亮点：**
+- **用户ID设置**：从localStorage获取用户信息，设置UserId
+- **优先级配置**：Priority设置为3，表示中等优先级
+- **排序号设置**：SortNumber设置为0，表示默认排序
+- **重试次数**：RetryCount设置为0，表示首次执行
+- **生成者标识**：GeneratedBy设置为'user'，标识用户手动触发
+- **状态设置**：StatusName设置为'待处理'，表示等待执行
+
+**执行选项实现流程：**
+
+```mermaid
+flowchart TD
+GetUserInfo[获取用户信息] --> ParseUserInfo[解析用户信息]
+ParseUserInfo --> SetUserId[设置UserId]
+SetUserId --> SetPriority[设置Priority=3]
+SetPriority --> SetSortNumber[设置SortNumber=0]
+SetSortNumber --> SetRetryCount[设置RetryCount=0]
+SetRetryCount --> SetGeneratedBy[设置GeneratedBy='user']
+SetGeneratedBy --> SetStatusName[设置StatusName='待处理']
+SetStatusName --> BuildOptions[构建完整选项对象]
+BuildOptions --> ValidateOptions[验证选项]
+ValidateOptions --> ExecutePrompt[执行Prompt]
+```
+
+**图表来源**
+- [AIDiagnosisTab.vue:283-291](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L283-L291)
+
+#### 并发请求优化
+
+**新增功能亮点：**
+- **并行任务**：使用Promise.all并行执行多个API请求
+- **任务列表**：包含getPatientData、getPromptTemplate、getLatestPromptResult
+- **错误处理**：使用.catch()包裹getLatestPromptResult，避免失败中断
+- **性能提升**：减少请求等待时间，提升用户体验
+
+**并发执行流程：**
+
+```mermaid
+flowchart TD
+StartParallel[开始并行执行] --> Task1[getPatientData]
+StartParallel --> Task2[getPromptTemplate]
+StartParallel --> Task3[getLatestPromptResult]
+Task1 --> WaitAll[等待所有任务完成]
+Task2 --> WaitAll
+Task3 --> WaitAll
+WaitAll --> CheckResults{检查结果}
+CheckResults --> |成功| ProcessResults[处理成功结果]
+CheckResults --> |部分失败| HandlePartialFailure[处理部分失败]
+ProcessResults --> CombineData[合并数据]
+HandlePartialFailure --> CombineData
+CombineData --> ValidateData[验证数据]
+ValidateData --> ExecuteAPI[调用addPrompt API]
+ExecuteAPI --> ShowResult[显示执行结果]
+```
+
+**图表来源**
+- [promptUtils.js:122-141](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L122-L141)
+
+#### 错误处理机制
+
+**新增功能亮点：**
+- **参数验证**：验证promptName、patientId、userId等关键参数
+- **模板检查**：检查promptContent是否存在
+- **用户状态**：验证用户登录状态
+- **异常捕获**：使用try-catch捕获所有异常
+- **错误反馈**：提供详细的错误消息
+
+**错误处理实现流程：**
+
+```mermaid
+flowchart TD
+ValidateInputs[验证输入参数] --> CheckPromptName{promptName有效?}
+CheckPromptName --> |否| ThrowError1[抛出参数错误]
+CheckPromptName --> |是| CheckPatientId{patientId有效?}
+CheckPatientId --> |否| ThrowError2[抛出患者ID错误]
+CheckPatientId --> |是| CheckUserInfo{用户已登录?}
+CheckUserInfo --> |否| ThrowError3[抛出用户未登录错误]
+CheckUserInfo --> |是| ExecuteAPI[执行API调用]
+ExecuteAPI --> CheckResult{API调用成功?}
+CheckResult --> |否| ThrowError4[抛出API调用错误]
+CheckResult --> |是| ReturnSuccess[返回成功结果]
+ThrowError1 --> CatchError[捕获异常]
+ThrowError2 --> CatchError
+ThrowError3 --> CatchError
+ThrowError4 --> CatchError
+CatchError --> ReturnError[返回错误结果]
+```
+
+**图表来源**
+- [promptUtils.js:210-259](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L210-L259)
+
+**章节来源**
+- [promptUtils.js:63-260](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L63-L260)
+
+### AI视图集成优化
+
+**更新** AIView组件集成了完整的诊断分析流程，提供了统一的AI辅助界面：
+
+#### AI视图架构
+
+```mermaid
+classDiagram
+class AIView {
++Object currentPrompt
++String lastPatientId
++Boolean isTemplatesCollapsed
++handlePromptSelected() void
++handleResultDeleted() void
++toggleTemplatesPanel() void
++closeTemplatesPanel() void
++checkAdmissionRecords() Promise~void~
++generateAdmissionSummary() Promise~boolean~
+}
+class AITabs {
++String activeTab
++Object currentPrompt
++handleResultDeleted() void
+}
+class PromptTemplates {
++Array templates
++Object defaultProps
++handleNodeClick() void
++displayTemplates() Array
+}
+AIView --> AITabs : "包含"
+AIView --> PromptTemplates : "包含"
+AITabs --> AIResults : "包含"
+AITabs --> AIResponse : "包含"
+```
+
+**图表来源**
+- [AIView.vue:56-247](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L56-L247)
+
+#### 入院记录检查机制
+
+**新增功能亮点：**
+- **入院记录总结检查**：检查是否有入院记录总结
+- **入院记录检查**：如果没有总结，检查是否有入院记录
+- **用户确认对话框**：提供生成入院记录总结的确认对话框
+- **智能提示**：根据检查结果提供相应的用户提示
+
+**入院记录检查流程：**
+
+```mermaid
+flowchart TD
+CheckAdmissionRecords[检查入院记录] --> CheckSummary[检查入院记录总结]
+CheckSummary --> HasSummary{有入院记录总结?}
+HasSummary --> |是| SkipPrompt[跳过提示]
+HasSummary --> |否| CheckRecords[检查入院记录]
+CheckRecords --> HasRecords{有入院记录?}
+HasRecords --> |是| ShowConfirm[显示确认对话框]
+HasRecords --> |否| ShowInfo[显示无记录信息]
+ShowConfirm --> UserDecision{用户决策}
+UserDecision --> |生成| GenerateSummary[生成入院记录总结]
+UserDecision --> |取消| ShowInfo2[显示信息提示]
+GenerateSummary --> ExecuteGeneration[执行生成]
+ExecuteGeneration --> ShowSuccess[显示成功提示]
+ShowInfo --> End[结束]
+ShowInfo2 --> End
+SkipPrompt --> End
+```
+
+**图表来源**
+- [AIView.vue:132-187](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L132-L187)
+
+**章节来源**
+- [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
+
+## 临床数据就绪提醒机制
+
+### 数据完整性检查系统
+
+**新增** 诊断分析确认对话框实现了完整的临床数据就绪提醒机制，确保诊断分析的准确性和完整性：
+
+#### 数据完整性架构
+
+```mermaid
+classDiagram
+class DataIntegrityChecker {
++String patientId
++Array checklistItems
++validateDataIntegrity() Promise~ValidationResult~
+}
+class ChecklistItem {
++String itemName
++String itemDescription
++Boolean isChecked
++validateItem() boolean
+}
+class ValidationResults {
++Boolean isValid
++Array missingItems
++Array validatedItems
++String validationMessage
+}
+class UserNotification {
++String successMessage
++String warningMessage
++String errorMessage
++showSuccess() void
++showWarning() void
++showError() void
+}
+DataIntegrityChecker --> ChecklistItem : "包含"
+DataIntegrityChecker --> ValidationResults : "返回"
+DataIntegrityChecker --> UserNotification : "使用"
+```
+
+**图表来源**
+- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
+
+#### 就绪提醒清单设计
+
+**新增功能亮点：**
+- **入院记录完整性**：确认入院记录已完成书写并同步
+- **医嘱同步状态**：确保医嘱数据已同步到系统
+- **辅助检查结果**：验证辅助检查结果已同步
+- **HTML格式化**：使用HTML格式提供清晰的列表显示
+- **颜色编码**：使用灰色字体强调提醒信息的重要性
+
+**就绪提醒实现流程：**
+
+```mermaid
+flowchart TD
+ShowConfirmation[显示确认对话框] --> DisplayHeader[显示标题]
+DisplayHeader --> DisplayChecklist[显示清单项目]
+DisplayChecklist --> Item1[入院记录已完成书写并同步]
+Item1 --> Item2[医嘱已同步]
+Item2 --> Item3[辅助检查结果已同步]
+Item3 --> DisplayFooter[显示提醒信息]
+DisplayFooter --> UserDecision{用户决策}
+UserDecision --> |确定| ProceedAnalysis[继续分析]
+UserDecision --> |取消| CancelAnalysis[取消分析]
+ProceedAnalysis --> ShowLoading[显示加载提示]
+ShowLoading --> ExecuteAnalysis[执行分析]
+ExecuteAnalysis --> ShowSuccess[显示成功提示]
+CancelAnalysis --> End[结束]
+```
+
+**图表来源**
+- [AIDiagnosisTab.vue:267-273](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L267-L273)
 
 #### 用户交互优化
 
 **新增功能亮点：**
-- **实时检测**：实时监控文本选择状态的变化
-- **智能提示**：为空选中文本时显示友好的警告提示
-- **批量处理**：支持一次性处理多个选中文本片段
-- **撤销机制**：提供撤销操作，允许用户取消错误的处理
+- **确认对话框**：使用ElMessageBox.confirm提供标准的确认对话框
+- **按钮样式**：使用Element Plus的按钮样式，提供一致的用户体验
+- **类型设置**：使用warning类型突出诊断分析的重要性和风险
+- **HTML支持**：使用dangerouslyUseHTMLString支持富文本显示
+- **事件处理**：正确处理用户取消和关闭操作
 
 **交互优化实现流程：**
 
 ```mermaid
 flowchart TD
-SelectionChange[选中状态变化] --> CheckEmpty{检查是否为空}
-CheckEmpty --> |空| ShowWarning[显示警告]
-CheckEmpty --> |非空| ShowOptions[显示处理选项]
-ShowWarning --> WaitUser[等待用户操作]
-ShowOptions --> UserAction{用户选择操作}
-UserAction --> |复制| ProcessAndCopy[处理并复制]
-UserAction --> |取消| CancelAction[取消操作]
-ProcessAndCopy --> UpdateStatus[更新状态]
-CancelAction --> ResetState[重置状态]
-UpdateStatus --> ShowSuccess[显示成功]
-ResetState --> ShowOptions
+UserClick[用户点击按钮] --> ValidatePatient{验证患者选择}
+ValidatePatient --> |无效| ShowWarning[显示警告]
+ValidatePatient --> |有效| ShowConfirmation[显示确认对话框]
+ShowConfirmation --> UserDecision{用户决策}
+UserDecision --> |确定| ExecuteAnalysis[执行分析]
+UserDecision --> |取消| HandleCancel[处理取消]
+ExecuteAnalysis --> ShowLoading[显示加载提示]
+ShowLoading --> CallAPI[调用API]
+CallAPI --> ShowResult[显示结果]
+HandleCancel --> End[结束]
+ShowResult --> End
 ```
 
 **图表来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIDiagnosisTab.vue:266-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L312)
 
 **章节来源**
-- [AIResults.vue:650-699](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L650-L699)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
 
-## QC质量控制集成
+## 诊断分析按钮集成
 
-### 完整的QC API集成
+### 组件间协作机制
 
-**新增** qc.js提供的完整质量控制（QC）评估API集成，支持病种匹配、确认、评估结果查询等核心功能：
+**新增** 诊断分析按钮在多个组件中得到了集成，提供了统一的诊断分析触发机制：
 
-#### QC系统架构
+#### 组件协作架构
 
 ```mermaid
 classDiagram
-class QCSystem {
-+DiseaseMatchAPI diseaseMatchAPI
-+AssessmentAPI assessmentAPI
-+ConfigAPI configAPI
-+IgnoreAPI ignoreAPI
-+getDiseaseMatch(patientId) Promise~Object~
-+triggerDiseaseMatch(patientId) Promise~Object~
-+getAssessmentResults(patientId, params) Promise~Object~
-+getIndicatorDetails(patientId) Promise~Object~
+class AIDiagnosisTab {
++String resultContent
++triggerDiagnosisAnalysis() Promise~void~
 }
-class DiseaseMatchAPI {
-+getDiseaseMatch(patientId) Promise~Object~
-+triggerDiseaseMatch(patientId) Promise~Object~
-+confirmDiseaseMatch(params) Promise~Object~
-+ignoreDiseaseMatch(data) Promise~Object~
-+restoreDiseaseMatch(patientId, diseaseId) Promise~Object~
+class DiagnosisCard {
++triggerDiagnosisAnalysis() Promise~void~
 }
-class AssessmentAPI {
-+getAssessmentResults(patientId, params) Promise~Object~
-+getIndicatorDetails(patientId) Promise~Object~
-+reanalyzeAssessment(patientId) Promise~Object~
+class DiagnosisEditPanel {
++triggerDiagnosisAnalysis() Promise~void~
 }
-class ConfigAPI {
-+getDiseaseConfigs() Promise~Object~
-+getIndicatorConfigs(params) Promise~Object~
+class PromptExecutionFlow {
++handlePromptExecution() Promise~ExecutionResult~
 }
-QCSystem --> DiseaseMatchAPI : "包含"
-QCSystem --> AssessmentAPI : "包含"
-QCSystem --> ConfigAPI : "包含"
+class ElMessageBox {
++confirm() Promise~any~
+}
+class LocalStorage {
++getItem() String
+}
+class VuexStore {
++getters['patient/currentPatientId']
+}
+AIDiagnosisTab --> ElMessageBox : "使用"
+AIDiagnosisTab --> PromptExecutionFlow : "调用"
+AIDiagnosisTab --> LocalStorage : "读取"
+AIDiagnosisTab --> VuexStore : "获取"
+DiagnosisCard --> ElMessageBox : "使用"
+DiagnosisCard --> PromptExecutionFlow : "调用"
+DiagnosisEditPanel --> ElMessageBox : "使用"
+DiagnosisEditPanel --> PromptExecutionFlow : "调用"
 ```
 
 **图表来源**
-- [qc.js:19-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L19-L424)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
+- [DiagnosisCard.vue:305-353](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L305-L353)
 
-#### 病种匹配确认流程
+#### 触发机制对比分析
 
 **新增功能亮点：**
-- **自动匹配**：getDiseaseMatch获取AI自动匹配的病种结果
-- **变更检测**：triggerDiseaseMatch检测诊断变更并触发重新分析
-- **医师确认**：confirmDiseaseMatch支持医师对AI匹配结果进行确认
-- **忽略管理**：ignoreDiseaseMatch和restoreDiseaseMatch管理忽略的病种
+- **AIDiagnosisTab实现**：完整的确认对话框和数据就绪检查
+- **DiagnosisCard实现**：简化版本的确认对话框，仅包含基本提示
+- **DiagnosisEditPanel实现**：复用AI辅助中的"诊断分析"模板进行手动分析
+- **统一调用**：所有组件都调用相同的handlePromptExecution函数
 
-**病种匹配确认实现流程：**
+**触发机制实现对比：**
 
 ```mermaid
 flowchart TD
-OpenClinicalTab[打开临床指引Tab] --> CheckDiagnosis[检查诊断变更]
-CheckDiagnosis --> HasChanged{诊断是否变更?}
-HasChanged --> |是| TriggerMatch[触发新匹配]
-HasChanged --> |否| CheckHistory[检查历史匹配]
-TriggerMatch --> SaveResult[保存新匹配结果]
-CheckHistory --> HasResult{有历史匹配?}
-HasResult --> |是| ReturnResult[返回历史匹配结果]
-HasResult --> |否| NoResult[返回无结果状态]
-ReturnResult --> ShowMatch[显示匹配结果]
-NoResult --> ShowMatch
-SaveResult --> ShowMatch
-ShowMatch --> PhysicianReview[医师审查]
-PhysicianReview --> ConfirmMatch[确认匹配]
-ConfirmMatch --> SaveConfirmation[保存确认]
-SaveConfirmation --> StartAssessment[开始质控评估]
+AIDiagnosisTab[空状态按钮] --> FullConfirmation[完整确认对话框]
+FullConfirmation --> DataChecklist[数据就绪清单]
+DataChecklist --> DetailedAlert[详细提醒信息]
+DetailedAlert --> ExecuteAnalysis[执行分析]
+DiagnosisCard[诊断卡片按钮] --> SimpleConfirmation[简化确认对话框]
+SimpleConfirmation --> BasicAlert[基本提醒信息]
+BasicAlert --> ExecuteAnalysis
+DiagnosisEditPanel[编辑面板按钮] --> TemplateExecution[模板执行]
+TemplateExecution --> DirectExecution[直接执行分析]
+DirectExecution --> ExecuteAnalysis
+ExecuteAnalysis --> HandlePromptExecution[handlePromptExecution]
+HandlePromptExecution --> ShowResult[显示结果反馈]
 ```
 
 **图表来源**
-- [qc.js:64-66](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L64-L66)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
+- [DiagnosisCard.vue:305-353](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L305-L353)
 
-#### 质控评估查询系统
+#### 数据就绪检查差异
 
 **新增功能亮点：**
-- **多维度筛选**：支持按病种ID、达标状态、优先级等多维度筛选
-- **优先级排序**：支持按优先级、状态、病种ID等排序方式
-- **汇总统计**：提供完整的质控指标汇总统计信息
-- **详细详情**：支持获取指标详情列表，包含参考来源
+- **AIDiagnosisTab检查**：详细的HTML格式清单，包含三个关键项目
+- **DiagnosisCard检查**：简化版本，仅包含基本的提醒信息
+- **DiagnosisEditPanel检查**：复用AI辅助中的"诊断分析"模板
+- **统一逻辑**：所有组件都遵循相同的诊断分析触发逻辑
 
-**评估查询实现流程：**
+**数据就绪检查实现差异：**
 
 ```mermaid
 flowchart TD
-QueryRequest[质控评估查询请求] --> ApplyFilters[应用筛选条件]
-ApplyFilters --> FilterByDisease{按病种筛选?}
-FilterByDisease --> |是| FilterDisease[按病种过滤]
-FilterByDisease --> |否| FilterByStatus{按状态筛选?}
-FilterByStatus --> |是| FilterStatus[按状态过滤]
-FilterByStatus --> |否| FilterByPriority{按优先级筛选?}
-FilterStatus --> FilterByPriority
-FilterByPriority --> |是| FilterPriority[按优先级过滤]
-FilterByPriority --> |否| SortResults[排序结果]
-FilterPriority --> SortResults
-SortResults --> ReturnResults[返回评估结果]
+AIDiagnosisTab[空状态组件] --> HTMLChecklist[HTML格式清单]
+HTMLChecklist --> ThreeItems[三个检查项目]
+ThreeItems --> DetailedReminder[详细提醒信息]
+DiagnosisCard[诊断卡片组件] --> SimpleAlert[简化提醒]
+SimpleAlert --> OneItem[单一提醒项目]
+DiagnosisEditPanel[诊断编辑面板] --> TemplateAlert[模板提醒]
+TemplateAlert --> BasicReminder[基本提醒信息]
+HTMLChecklist --> ExecuteAnalysis[执行分析]
+SimpleAlert --> ExecuteAnalysis
+TemplateAlert --> ExecuteAnalysis
 ```
 
 **图表来源**
-- [qc.js:242-244](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L242-L244)
-
-#### 指标配置管理系统
-
-**新增功能亮点：**
-- **配置查询**：getDiseaseConfigs和getIndicatorConfigs获取配置列表
-- **条件筛选**：支持按病种、优先级等条件筛选配置
-- **详细描述**：提供指标的详细说明和知识来源
-- **动态更新**：支持配置的动态更新和版本管理
-
-**配置管理实现流程：**
-
-```mermaid
-flowchart TD
-GetConfigs[获取配置列表] --> FilterConfigs[应用筛选条件]
-FilterConfigs --> DiseaseFilter{按病种筛选?}
-DiseaseFilter --> |是| FilterByDisease[按病种过滤]
-DiseaseFilter --> |否| PriorityFilter{按优先级筛选?}
-FilterByDisease --> PriorityFilter
-PriorityFilter --> |是| FilterByPriority[按优先级过滤]
-PriorityFilter --> |否| ReturnAll[返回全部配置]
-FilterByPriority --> ReturnFiltered[返回筛选配置]
-ReturnAll --> DisplayConfigs[显示配置列表]
-ReturnFiltered --> DisplayConfigs
-```
-
-**图表来源**
-- [qc.js:336-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L336-L424)
+- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
+- [DiagnosisCard.vue:312-321](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L312-321)
 
 **章节来源**
-- [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
+- [DiagnosisCard.vue:305-353](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L305-L353)
 
-## 诊断编辑与卡片组件优化
+## 用户交互体验提升
 
-### 诊断解析工具函数
+### 诊断分析流程优化
 
-**新增** diagnosisParser.js 提供了完整的诊断信息提取功能：
+**新增** 诊断分析流程通过多个组件的协作，提供了流畅的用户体验：
 
-#### 组件架构图
+#### 用户体验架构
 
 ```mermaid
 classDiagram
-class DiagnosisParser {
-+stripThinkingTags(content) string
-+extractDiagnosisNames(content) Object[]
-+extractDiagnosisBlocks(content) DiagnosisBlock[]
-+parseDiagnosisBlock(blockContent) DiagnosisBlock|null
+class UserExperienceFlow {
++String userAction
++String systemResponse
++String feedbackMechanism
++optimizeUserExperience() void
 }
-class DiagnosisBlock {
-+number|string index
-+string name
-+string category
-+string basis
-+string differentialDiagnosis
-+string supplement
-+string rawContent
+class UserAction {
++String actionType
++String triggerSource
++String actionTarget
++executeAction() void
 }
-class ThinkingProcessRemoval {
-+RegExp thinkingRegex
-+stripThinkingTags(content) string
+class SystemResponse {
++String responseType
++String responseContent
++String timing
++displayResponse() void
 }
-class NameExtraction {
-+RegExp nameRegex
-+extractDiagnosisNames(content) Object[]
+class FeedbackMechanism {
++String feedbackType
++String feedbackContent
++String feedbackTiming
++showFeedback() void
 }
-class BlockExtraction {
-+RegExp listRegex
-+RegExp blockStartRegex
-+extractDiagnosisBlocks(content) DiagnosisBlock[]
-}
-DiagnosisParser --> DiagnosisBlock : "创建"
-DiagnosisParser --> ThinkingProcessRemoval : "使用"
-DiagnosisParser --> NameExtraction : "使用"
-DiagnosisParser --> BlockExtraction : "使用"
+UserExperienceFlow --> UserAction : "管理"
+UserExperienceFlow --> SystemResponse : "生成"
+UserExperienceFlow --> FeedbackMechanism : "提供"
 ```
 
 **图表来源**
-- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
 
-#### 结构化诊断信息提取
+#### 交互流程优化
 
 **新增功能亮点：**
-- 思维过程移除：自动移除<thinking>标签，避免误解析
-- 字段提取：支持诊断编号、名称、类别、依据、鉴别诊断、补充说明的提取
-- 降级机制：当结构化解析失败时使用简单名称提取作为后备
-- 数据验证：确保提取的数据有效性和完整性
+- **渐进式确认**：从简单的确认对话框到详细的就绪检查
+- **用户控制**：提供取消选项，让用户完全控制分析流程
+- **反馈及时**：每个步骤都有相应的用户反馈
+- **错误处理**：完善的错误处理和用户提示机制
 
-**解析算法流程：**
+**交互流程实现：**
 
 ```mermaid
 flowchart TD
-ContentInput[AI结果内容] --> StripThinking[stripThinkingTags<br/>移除<thinking>标签]
-StripThinking --> ExtractList[extractDiagnosisBlocks<br/>提取诊断列表区块]
-ExtractList --> SplitBlocks[按诊断编号/名称分割<br/>诊断块]
-SplitBlocks --> ParseFields[parseDiagnosisBlock<br/>解析各字段]
-ParseFields --> ValidateBlock[验证诊断块<br/>name字段必须存在]
-ValidateBlock --> ReturnBlocks[返回诊断块数组]
-ReturnBlocks --> UseInComponents[在诊断组件中使用]
+UserAction[用户操作] --> ActionDetection[动作检测]
+ActionDetection --> ValidateInput{验证输入}
+ValidateInput --> |无效| ShowError[显示错误]
+ValidateInput --> |有效| ShowConfirmation[显示确认]
+ShowConfirmation --> UserDecision{用户决策}
+UserDecision --> |确定| ShowLoading[显示加载]
+ShowLoading --> ExecuteAnalysis[执行分析]
+ExecuteAnalysis --> ShowResult[显示结果]
+ShowResult --> ShowSuccess[显示成功]
+ShowError --> End[结束]
+ShowSuccess --> End
 ```
 
 **图表来源**
-- [diagnosisParser.js:93-149](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L93-L149)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
 
-#### 诊断名称提取算法
+#### 用户反馈系统
 
 **新增功能亮点：**
-- 灵活匹配：支持多种格式的诊断名称标记
-- 降级处理：当严格格式不匹配时使用宽松匹配
-- 去重处理：自动去除重复的诊断名称
-- 格式化输出：返回标准化的对象数组
+- **信息提示**：显示"正在生成诊断分析请求..."的信息
+- **成功反馈**：显示"诊断分析请求已提交"的成功消息
+- **错误处理**：显示"诊断分析请求提交失败"的错误消息
+- **异常捕获**：正确处理用户取消操作，避免错误提示
 
-**提取流程：**
+**反馈系统实现流程：**
 
 ```mermaid
 flowchart TD
-ContentInput[AI结果内容] --> StripThinking[stripThinkingTags<br/>移除<thinking>标签]
-StripThinking --> StrictMatch[严格匹配<br/>#### 诊断名称: / ## 诊断名称:]
-StrictMatch --> FoundMatches{找到匹配?}
-FoundMatches --> |是| CollectMatches[收集匹配的诊断名称]
-FoundMatches --> |否| FallbackMatch[宽松匹配<br/>诊断: / 诊断：]
-FallbackMatch --> CollectMatches
-CollectMatches --> RemoveDuplicates[去重处理]
-RemoveDuplicates --> FormatOutput[格式化输出<br/>[{name: string, code: string}]]
-FormatOutput --> ReturnNames[返回诊断名称数组]
+ExecuteAnalysis[执行分析] --> ShowInfo[显示信息提示]
+ShowInfo --> CallAPI[调用API]
+CallAPI --> CheckResult{检查结果}
+CheckResult --> |成功| ShowSuccess[显示成功消息]
+CheckResult --> |失败| ShowError[显示错误消息]
+ShowSuccess --> ShowMessage[显示最终消息]
+ShowError --> ShowMessage
+ShowMessage --> End[结束]
 ```
 
 **图表来源**
-- [diagnosisParser.js:39-75](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L39-L75)
+- [AIDiagnosisTab.vue:293-306](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L293-L306)
+
+#### 系统稳定性保障
+
+**新增功能亮点：**
+- **异常捕获**：使用try-catch捕获所有可能的异常
+- **错误分类**：区分用户取消和系统错误
+- **用户提示**：提供清晰的错误信息和解决方案
+- **状态恢复**：确保系统状态在异常情况下得到正确恢复
+
+**稳定性保障实现流程：**
+
+```mermaid
+flowchart TD
+TryBlock[执行分析] --> TryExecute[执行操作]
+TryExecute --> CatchBlock[捕获异常]
+CatchBlock --> CheckAction{检查异常类型}
+CheckAction --> |用户取消| HandleCancel[处理取消]
+CheckAction --> |系统错误| HandleError[处理错误]
+HandleCancel --> ShowCancelMessage[显示取消消息]
+HandleError --> ShowErrorMessage[显示错误消息]
+ShowCancelMessage --> End[结束]
+ShowErrorMessage --> End
+```
+
+**图表来源**
+- [AIDiagnosisTab.vue:307-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L307-L312)
 
 **章节来源**
-- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
-
-### 治疗计划解析工具函数
-
-**新增** treatmentPlanParser.js 提供了完整的治疗计划信息提取功能：
-
-#### 组件架构图
-
-```mermaid
-classDiagram
-class TreatmentPlanParser {
-+parseTreatmentPlanMarkdown(markdown) Array
-+extractTreatmentItems(markdown) TreatmentItem[]
-+validateTreatmentItem(item) boolean
-+removeMarkdownFormatting(text) string
-+processMultiLineTables(markdown) Array
-}
-class TreatmentItem {
-+string description
-+string notes
-+string importance
-+string status
-+number lineNumber
-}
-class MarkdownParsing {
-+RegExp tableRegex
-+RegExp headerRegex
-+RegExp cellRegex
-+parseTreatmentPlanMarkdown(markdown) Array
-}
-class DataValidation {
-+TreatmentItem item
-+validateTreatmentItem(item) boolean
-+checkRequiredFields(item) boolean
-+checkImportanceLevel(item) boolean
-}
-TreatmentPlanParser --> TreatmentItem : "创建"
-TreatmentPlanParser --> MarkdownParsing : "使用"
-TreatmentPlanParser --> DataValidation : "使用"
-```
-
-**图表来源**
-- [treatmentPlanParser.js:1-200](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L1-L200)
-
-#### 标准4列表格解析
-
-**新增功能亮点：**
-- **表格解析**：支持标准4列Markdown表格解析（项目描述、注意事项、重要程度、状态）
-- **去标记处理**：自动去除Markdown标记（加粗、链接等），保留纯文本内容
-- **多行表格**：保持表格顺序的多行解析，支持复杂的治疗计划内容
-- **异常处理**：异常格式的降级处理，确保解析的健壮性
-- **空内容处理**：空内容返回空数组，避免解析错误
-
-**解析算法流程：**
-
-```mermaid
-flowchart TD
-MarkdownInput[Markdown表格输入] --> ParseHeaders[解析表头<br/>项目描述 | 注意事项 | 重要程度 | 状态]
-ParseHeaders --> ExtractRows[提取表格行]
-ExtractRows --> ValidateFormat{验证格式}
-ValidateFormat --> |有效| ProcessCells[处理单元格内容]
-ValidateFormat --> |无效| FallbackMode[降级处理]
-ProcessCells --> RemoveFormatting[去除Markdown标记]
-RemoveFormatting --> ValidateData[验证数据有效性]
-ValidateData --> CheckRequired{检查必需字段}
-CheckRequired --> |有效| CreateItem[创建治疗计划项]
-CheckRequired --> |无效| SkipItem[跳过无效项]
-CreateItem --> AddToArray[添加到数组]
-SkipItem --> ContinueLoop[继续处理]
-ContinueLoop --> ValidateFormat
-AddToArray --> ReturnItems[返回治疗计划项数组]
-FallbackMode --> ReturnEmpty[返回空数组]
-```
-
-**图表来源**
-- [treatmentPlanParser.js:1-200](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L1-L200)
-
-**章节来源**
-- [treatmentPlanParser.js:1-200](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L1-L200)
-
-### 诊断组件集成分析
-
-#### 组件间协作关系
-
-**新增功能亮点：**
-- AIResults集成：AIResults组件支持诊断编辑面板和卡片组件的显示
-- 数据共享：通过Vuex store共享AI诊断数据和当前诊断数据
-- 事件通信：通过refresh-diagnosis事件实现组件间的数据同步
-- 思维过程支持：所有诊断组件均支持<thinking>标签的折叠显示
-
-**集成架构图：**
-
-```mermaid
-flowchart TD
-AIResults[AIResults组件] --> DiagnosisEditPanel[诊断编辑面板]
-AIResults --> DiagnosisCard[诊断卡片组件]
-DiagnosisEditPanel --> DiagnosisParser[诊断解析工具]
-DiagnosisCard --> DiagnosisParser
-DiagnosisParser --> VuexStore[Vuex Store]
-VuexStore --> PatientModule[患者模块]
-PatientModule --> DiagnosisManagement[诊断管理]
-DiagnosisManagement --> APIInterface[API接口]
-APIInterface --> BackendServer[后端服务器]
-```
-
-**图表来源**
-- [AIResults.vue:77-84](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L77-L84)
-- [DiagnosisEditPanel.vue:171-202](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L171-L202)
-- [DiagnosisCard.vue:154-182](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L154-L182)
-
-#### 滚动优化实现
-
-**新增功能亮点：**
-- 独立滚动区域：左右两栏均支持独立的滚动控制
-- 最大高度限制：使用max-height: 60vh限制滚动区域高度
-- 溢出处理：使用overflow-y: auto实现超出部分的滚动
-- 响应式调整：根据屏幕尺寸自动调整滚动行为
-
-**滚动实现流程：**
-
-```mermaid
-flowchart TD
-LayoutInit[布局初始化] --> SetMaxHeight[设置max-height: 60vh]
-SetMaxHeight --> EnableOverflow[启用overflow-y: auto]
-EnableOverflow --> MonitorScroll[监控滚动事件]
-MonitorScroll --> UpdateScroll[更新滚动状态]
-UpdateScroll --> ApplyStyles[应用样式变化]
-ApplyStyles --> UserInteraction[用户交互]
-UserInteraction --> TriggerResize[触发resize事件]
-TriggerResize --> RecalculateHeight[重新计算高度]
-RecalculateHeight --> MaintainScroll[保持滚动位置]
-```
-
-**图表来源**
-- [DiagnosisEditPanel.vue:593-611](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L593-L611)
-- [DiagnosisCard.vue:495-501](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L495-L501)
-
-**章节来源**
-- [AIResults.vue:1-800](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1-L800)
-- [DiagnosisEditPanel.vue:1-716](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L716)
-- [DiagnosisCard.vue:1-644](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L644)
-
-## DRG分析结果显示逻辑优化
-
-### DrgAnalysis组件重大UI优化
-
-**新增** DrgAnalysis组件经历了重大UI优化，其中最重要的改进是DRG分析结果显示逻辑的优化，通过临时隐藏某些分析结果来优化显示效果：
-
-#### 临时隐藏的分析结果组件
-
-在DrgAnalysis组件中，可以看到多个分析结果卡片被临时隐藏（v-if="false"）：
-
-```mermaid
-flowchart TD
-DrgAnalysis[DRG分析组件] --> AnalysisCard[DRG主要诊断及操作分析结果<br/>v-if="false"<br/>临时隐藏]
-DrgAnalysis --> MedicalInfoCard[诊断与手术信息卡片<br/>v-if="false"<br/>临时隐藏]
-DrgAnalysis --> DiagnosisSection[诊断列表<br/>v-if="false"<br/>临时隐藏]
-DrgAnalysis --> SurgerySection[手术列表<br/>v-if="false"<br/>临时隐藏]
-```
-
-**图表来源**
-- [DrgAnalysis.vue:194-208](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L194-L208)
-- [DrgAnalysis.vue:271-343](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L271-L343)
-
-#### 优化的显示逻辑
-
-**新增功能亮点：**
-- 临时隐藏机制：通过v-if="false"临时隐藏DRG主要诊断及操作分析结果卡片
-- 用户体验改进：减少界面复杂度，提升主要DRG分析功能的可见性
-- 渐进式功能展示：未来可以逐步启用这些隐藏的功能模块
-- 性能优化：避免不必要的DOM节点渲染，提升页面加载性能
-
-**隐藏功能的潜在用途：**
-- DRG主要诊断及操作分析结果：可能用于展示AI生成的详细分析报告
-- 诊断与手术信息卡片：可能用于展示更详细的诊断和手术列表
-- 诊断列表和手术列表：可能用于提供更丰富的交互功能
-
-#### DRG分析结果显示优化
-
-**新增功能亮点：**
-- 严格标准推荐列表：作为主要的DRG分析结果展示
-- 合并症或并发症分析历史结果：展示MCC/CC分析的历史记录
-- DRG费用卡片：展示DRG匹配的费用信息和盈亏计算
-- 优化的布局结构：通过隐藏非关键功能来优化主要功能的显示效果
-
-**章节来源**
-- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
-
-### DRG API接口集成
-
-**新增** DrgAnalysis组件集成了完整的DRG分析API接口：
-
-#### DRG分析API架构
-
-```mermaid
-classDiagram
-class DrgAnalysis {
-+Array diagnosisList
-+Array surgeryList
-+Array drgMatchResults
-+Object patientFeeData
-+Array strictRecommendations
-+Object savedDrgResult
-+loadMedicalData() Promise~void~
-+startAnalysis() Promise~void~
-+performMccAnalysis() Promise~void~
-+generateDrgAnalysisPrompt() Promise~void~
-+calculateProfitLossForDrg() Promise~void~
-+saveSelectedDrg() Promise~void~
-}
-class DRGAPI {
-+batchMatchDrgRecords(diagnosisNames, procedureNames) Promise~Response~
-+screenMccCandidates(diagnoses) Promise~Response~
-+generateMccPrompt(patientId, mccResults) Promise~Response~
-+calculatePatientProfitLoss(patiId, visitId, drgCode) Promise~Response~
-+saveDrgSelection(params) Promise~Response~
-+getLatestDrgAnalysisResult(patientId) Promise~Response~
-}
-class FeeAPI {
-+getPatientFee(patiId, visitId) Promise~Response~
-}
-class PromptAPI {
-+getLatestPromptResult(patientId, promptType) Promise~Response~
-}
-DrgAnalysis --> DRGAPI : "使用"
-DrgAnalysis --> FeeAPI : "使用"
-DrgAnalysis --> PromptAPI : "使用"
-```
-
-**图表来源**
-- [DrgAnalysis.vue:366-374](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L366-L374)
-- [drg.js:495-643](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L495-L643)
-
-#### DRG分析流程
-
-**新增功能亮点：**
-- 批量DRG匹配：支持多个诊断和手术的组合匹配
-- MCC预筛选：自动识别可能的并发症和合并症
-- AI分析集成：支持AI生成的DRG分析结果
-- 费用计算：集成HIS系统费用查询和DRG盈亏计算
-- 结果保存：支持用户选择的DRG结果保存
-
-**分析流程：**
-
-```mermaid
-sequenceDiagram
-participant User as 用户
-participant Component as DrgAnalysis
-participant DRGAPI as DRG API
-participant FeeAPI as 费用API
-participant PromptAPI as Prompt API
-User->>Component : 开始DRG分析
-Component->>Component : loadMedicalData()
-Component->>DRGAPI : batchMatchDrgRecords()
-DRGAPI-->>Component : DRG匹配结果
-Component->>Component : calculateAllRowsProfitLoss()
-User->>Component : 选择DRG方案
-Component->>DRGAPI : saveDrgSelection()
-DRGAPI-->>Component : 保存结果
-User->>Component : 加载费用数据
-Component->>FeeAPI : getPatientFee()
-FeeAPI-->>Component : 费用数据
-Component->>Component : calculateSelectedDrgProfitLoss()
-```
-
-**图表来源**
-- [DrgAnalysis.vue:639-746](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L639-L746)
-- [DrgAnalysis.vue:1769-1816](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1769-L1816)
-
-**章节来源**
-- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
-- [drg.js:1-644](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L1-L644)
-
-## PromptTemplates组件重大UI重构
-
-### Overlay下拉面板系统
-
-**新增** PromptTemplates组件经历了重大UI重构，从传统的下拉菜单系统转变为现代化的Overlay下拉面板系统：
-
-#### Overlay面板架构
-
-```mermaid
-classDiagram
-class PromptTemplates {
-+Array templates
-+Object defaultProps
-+handleNodeClick(data, node) void
-+displayTemplates() Array
-}
-class OverlayPanel {
-+Boolean isTemplatesCollapsed
-+String templatesOverlayPanel
-+Transition panelSlide
-+AbsolutePositioning positioning
-+CSSAnimations animations
-+AutoCollapseBehavior autoCollapse
-}
-class TreeStructure {
-+ElTree templateTree
-+ExpandOnClickNode expandOnClickNode
-+NodeClickHandler nodeClickHandler
-+Level1Expansion level1Expansion
-+Level2Execution level2Execution
-}
-class SmallScreenMode {
-+Boolean isSmallScreenMode
-+Boolean showPromptTemplatesInSmallScreen
-+HIDE_PROMPT_TEMPLATES_IN_SMALL_SCREEN hideAction
-+TOGGLE_PROMPT_TEMPLATES_IN_SMALL_SCREEN toggleAction
-}
-PromptTemplates --> OverlayPanel : "使用"
-PromptTemplates --> TreeStructure : "包含"
-PromptTemplates --> SmallScreenMode : "响应"
-OverlayPanel --> AbsolutePositioning : "实现"
-OverlayPanel --> CSSAnimations : "支持"
-OverlayPanel --> AutoCollapseBehavior : "具备"
-```
-
-**图表来源**
-- [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
-- [AIView.vue:28-42](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L28-L42)
-
-#### 绝对定位面板系统
-
-**新增功能亮点：**
-- 绝对定位：使用position: absolute将面板定位在工具栏按钮正下方
-- z-index管理：设置z-index: 200确保面板在所有元素之上显示
-- 响应式宽度：固定width: 190px，适配不同屏幕尺寸
-- 最大高度限制：max-height: 70vh避免面板超出可视区域
-- 溢出滚动：overflow-y: auto支持长列表的垂直滚动
-
-**定位实现流程：**
-
-```mermaid
-flowchart TD
-ButtonPosition[工具栏按钮位置] --> CalcTop[calc(100% + 4px)]
-CalcTop --> AbsolutePosition[absolute定位]
-AbsolutePosition --> RightAlign[right: 0]
-RightAlign --> PanelDisplay[面板显示]
-PanelDisplay --> ZIndex[z-index: 200]
-ZIndex --> Shadow[box-shadow: 0 4px 16px rgba(0,0,0,0.15)]
-Shadow --> PanelReady[面板就绪]
-```
-
-**图表来源**
-- [AIView.vue:324-336](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L324-L336)
-
-#### CSS过渡动画系统
-
-**新增功能亮点：**
-- panel-slide过渡：使用Vue transition组件实现展开/收起动画
-- transform-origin：设置transform-origin: top right实现右上角缩放效果
-- opacity动画：fade效果配合transform实现平滑过渡
-- 动画时长：0.25s ease确保动画流畅自然
-- 位移效果：translateY(-8px)配合scaleY(0.85)实现缩放+位移
-
-**动画实现流程：**
-
-```mermaid
-flowchart TD
-EnterState[panel-slide-enter] --> FadeOut[opacity: 0]
-FadeOut --> ScaleDown[transform: scaleY(0.85)]
-ScaleDown --> TranslateUp[translateY(-8px)]
-TranslateUp --> AnimationComplete[动画完成]
-LeaveState[panel-slide-leave-to] --> FadeIn[opacity: 0]
-FadeIn --> ScaleUp[transform: scaleY(0.85)]
-ScaleUp --> TranslateDown[translateY(-8px)]
-ScaleDown --> AnimationComplete
-```
-
-**图表来源**
-- [AIView.vue:342-351](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L342-L351)
-
-#### 自动折叠行为
-
-**新增功能亮点：**
-- 模板执行后自动折叠：通过@template-executed事件监听器实现
-- 小屏模式自动隐藏：isSmallScreenMode条件下自动隐藏模板列表
-- 点击外部区域关闭：closeTemplatesPanel方法处理面板外部点击
-- 状态管理：isTemplatesCollapsed布尔值控制面板显示状态
-
-**自动折叠实现流程：**
-
-```mermaid
-flowchart TD
-TemplateExecution[模板执行成功] --> EmitEvent[emit template-executed]
-EmitEvent --> CollapsePanel[isTemplatesCollapsed = true]
-CollapsePanel --> HidePanel[面板隐藏]
-SmallScreenMode[小屏模式] --> CheckMode[检查isSmallScreenMode]
-CheckMode --> HideAction[HIDE_PROMPT_TEMPLATES_IN_SMALL_SCREEN]
-HideAction --> AutoHide[自动隐藏]
-ExternalClick[点击外部区域] --> ClosePanel[closeTemplatesPanel]
-ClosePanel --> CheckCollapsed[检查isTemplatesCollapsed]
-CheckCollapsed --> |false| CollapsePanel
-```
-
-**图表来源**
-- [PromptTemplates.vue:176-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L176-L187)
-- [AIView.vue:117-129](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L117-L129)
-
-#### 树形结构与节点交互
-
-**新增功能亮点：**
-- ElTree组件：使用Element Plus的树形组件展示模板层级
-- node-key配置：使用id属性作为节点唯一标识
-- props配置：children: 'children', label: 'name'简化数据绑定
-- expand-on-click-node：设置为false避免意外展开
-- node-click事件：自定义点击处理逻辑区分层级
-
-**节点交互流程：**
-
-```mermaid
-flowchart TD
-NodeClick[node-click事件] --> CheckLevel{node.level === 1?}
-CheckLevel --> |是| ToggleExpand[切换expanded状态]
-CheckLevel --> |否| ShowConfirm[显示确认对话框]
-ShowConfirm --> ExecuteTemplate[执行模板]
-ExecuteTemplate --> CheckAdditionalInfo{需要补充信息?}
-CheckAdditionalInfo --> |是| ShowPrompt[显示补充信息输入框]
-CheckAdditionalInfo --> |否| SkipPrompt[跳过输入框]
-ShowPrompt --> GetInfo[获取补充信息]
-GetInfo --> AddToOptions[添加到options]
-SkipPrompt --> AddToOptions
-AddToOptions --> HandleExecution[handlePromptExecution]
-HandleExecution --> Success[执行成功]
-Success --> ShowSuccess[显示成功提示]
-ShowSuccess --> EmitEvent[emit template-executed]
-EmitEvent --> CollapsePanel[isTemplatesCollapsed = true]
-```
-
-**图表来源**
-- [PromptTemplates.vue:97-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L97-L187)
-
-#### 小屏模式适配
-
-**新增功能亮点：**
-- 条件渲染：v-if="!isSmallScreenMode || showPromptTemplatesInSmallScreen"
-- 状态控制：showPromptTemplatesInSmallScreen getter提供显示控制
-- 自动隐藏：模板执行后自动隐藏小屏模式下的模板列表
-- 用户控制：通过TOGGLE_PROMPT_TEMPLATES_IN_SMALL_SCREEN切换显示
-
-**小屏适配实现流程：**
-
-```mermaid
-flowchart TD
-SmallScreenCheck[检查isSmallScreenMode] --> IsSmallScreen{isSmallScreenMode?}
-IsSmallScreen --> |是| CheckDisplay{showPromptTemplatesInSmallScreen?}
-IsSmallScreen --> |否| NormalDisplay[正常显示]
-CheckDisplay --> |是| ShowPanel[显示面板]
-CheckDisplay --> |否| HidePanel[隐藏面板]
-ShowPanel --> TemplateExecution[模板执行]
-TemplateExecution --> HideAction[HIDE_PROMPT_TEMPLATES_IN_SMALL_SCREEN]
-HideAction --> AutoHide[自动隐藏]
-NormalDisplay --> TemplateExecution
-```
-
-**图表来源**
-- [AIView.vue:14](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L14)
-- [store/modules/user.js:64-84](file://med_ai_assistant_1.0_bs_vue/src/store/modules/user.js#L64-L84)
-
-**章节来源**
-- [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
-- [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
-- [store/modules/user.js:1-129](file://med_ai_assistant_1.0_bs_vue/src/store/modules/user.js#L1-L129)
+- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
 
 ## 依赖分析
 
@@ -2301,22 +2181,24 @@ AIView[AIView.vue]
 DrgAnalysis[DrgAnalysis.vue]
 TreatmentPlanTable[TreatmentPlanTable.vue]
 QCModule[qc.js]
-end
+AIDiagnosisTab[AIDiagnosisTab.vue]
+DiagnosisCard[DiagnosisCard.vue]
+DiagnosisEditPanel[DiagnosisEditPanel.vue]
+AIResults[AIResults.vue]
+AITabs[AITabs.vue]
+PromptTemplates[PromptTemplates.vue]
+End
 subgraph "导航组件"
 TopMenu[TopMenu.vue]
 UserLookup[UserLookup.vue]
-end
+End
 subgraph "业务组件"
 ServerLogViewer[ServerLogViewer.vue]
-AIResults[AIResults.vue]
-DiagnosisEditPanel[DiagnosisEditPanel.vue]
-DiagnosisCard[DiagnosisCard.vue]
 PromptExecutor[PromptExecutor.vue]
 PatientSummary[PatientSummary.vue]
 PatientTabs[PatientTabs.vue]
 VoiceTextProcessor[VoiceTextProcessor.vue]
-PromptTemplates[PromptTemplates.vue]
-end
+End
 subgraph "基础设施"
 API[API接口层]
 Store[Vuex状态]
@@ -2325,6 +2207,7 @@ DiagnosisParser[诊断解析工具]
 TreatmentPlanParser[治疗计划解析工具]
 DRGAPI[DRG API接口]
 QCModule[QC API模块]
+promptUtils[promptUtils.js]
 End
 App --> MainLayout
 MainLayout --> TopMenu
@@ -2337,58 +2220,53 @@ MainLayout --> PatientTabs
 MainLayout --> VoiceTextProcessor
 MainLayout --> AIView
 AIView --> PromptTemplates
-AIView --> DrgAnalysis
-AIView --> TreatmentPlanTable
-MainLayout --> QCModule
-TopMenu --> API
-UserLookup --> API
-ServerLogViewer --> API
-AIResults --> API
-DiagnosisEditPanel --> API
-DiagnosisCard --> API
-PromptExecutor --> API
-PatientSummary --> API
-PatientTabs --> API
-VoiceTextProcessor --> API
-DrgAnalysis --> DRGAPI
-DrgAnalysis --> DiagnosisParser
-TreatmentPlanTable --> TreatmentPlanParser
-QCModule --> DiagnosisParser
-QCModule --> TreatmentPlanParser
+AIView --> AITabs
+AITabs --> AIResults
+AITabs --> AIResponse
+AIDiagnosisTab --> DiagnosisEditPanel
+DiagnosisCard --> DiagnosisEditPanel
+DiagnosisEditPanel --> DiagnosisParser
+DiagnosisEditPanel --> VuexStore
+DiagnosisCard --> promptUtils
+AIDiagnosisTab --> promptUtils
+promptUtils --> API
+promptUtils --> localStorage
+promptUtils --> VuexStore
 ```
 
 **图表来源**
 - [App.vue:16-47](file://med_ai_assistant_1.0_bs_vue/src/App.vue#L16-L47)
 - [router/index.js:1-118](file://med_ai_assistant_1.0_bs_vue/src/router/index.js#L1-L118)
-- [PatientView.vue:1-64](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L1-L64)
 
 **章节来源**
 - [package.json:1-56](file://med_ai_assistant_1.0_bs_vue/package.json#L1-L56)
 
 ### API接口依赖关系
 
-**更新** 新增的VoiceTextProcessor组件依赖以下API接口：
+**更新** 新增的promptUtils.js依赖关系：
 
 ```mermaid
 graph TD
-VoiceTextProcessor[VoiceTextProcessor.vue] --> GetPrompt[getPrompt]
-VoiceTextProcessor --> AnalyzeLLM[analyzeLLM]
-VoiceTextProcessor --> AnalyzeLLMStream[analyzeLLMStream]
-GetPrompt --> APIService[AI API服务]
-AnalyzeLLM --> APIService
-AnalyzeLLMStream --> APIService
-APIService --> AIService[AIService类]
+promptUtils[promptUtils.js] --> getPatientData[getPatientData]
+promptUtils --> getPromptTemplate[getPromptTemplate]
+promptUtils --> getLatestPromptResult[getLatestPromptResult]
+promptUtils --> addPrompt[addPrompt]
+promptUtils --> getAllPromptTemplates[getAllPromptTemplates]
+getPatientData --> APIService[AI API服务]
+getPromptTemplate --> APIService
+getLatestPromptResult --> APIService
+addPrompt --> APIService
+getAllPromptTemplates --> APIService
 APIService --> BackendAPI[后端服务]
 BackendAPI --> Database[数据库]
 BackendAPI --> AIEngine[AI引擎]
 ```
 
 **图表来源**
-- [voiceTextProcessor.js:9-9](file://med_ai_assistant_1.0_bs_vue/src/utils/voiceTextProcessor.js#L9-L9)
-- [ai.js:187-201](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L187-L201)
+- [promptUtils.js:1-260](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L1-L260)
 
 **章节来源**
-- [ai.js:1-988](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js#L1-L988)
+- [promptUtils.js:1-260](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L1-L260)
 
 ### AI服务架构依赖关系
 
@@ -2475,94 +2353,64 @@ APIService --> BackendServer[backend server]
 - [PromptTemplates.vue:1-204](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L1-L204)
 - [AIView.vue:1-353](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue#L1-L353)
 
-### DrgAnalysis组件依赖关系
+### AIDiagnosisTab组件依赖关系
 
-**新增** DrgAnalysis组件的完整依赖关系：
-
-```mermaid
-graph TD
-DrgAnalysis[DrgAnalysis.vue] --> ElMessageBox[Element Plus MessageBox]
-DrgAnalysis --> ElTable[Element Plus Table]
-DrgAnalysis --> ElCard[Element Plus Card]
-DrgAnalysis --> ElButton[Element Plus Button]
-DrgAnalysis --> ElTag[Element Plus Tag]
-DrgAnalysis --> ElIcon[Element Plus Icon]
-DrgAnalysis --> ElEmpty[Element Plus Empty]
-DrgAnalysis --> VuexStore[Vuex Store]
-DrgAnalysis --> DRGAPI[drg.js]
-DrgAnalysis --> PromptUtils[promptUtils.js]
-DrgAnalysis --> marked[marked库]
-DrgAnalysis --> DOMPurify[DOMPurify库]
-DRGAPI --> BatchMatchDrgRecords[batchMatchDrgRecords]
-DRGAPI --> ScreenMccCandidates[screenMccCandidates]
-DRGAPI --> GenerateMccPrompt[generateMccPrompt]
-DRGAPI --> CalculatePatientProfitLoss[calculatePatientProfitLoss]
-DRGAPI --> SaveDrgSelection[saveDrgSelection]
-DRGAPI --> GetLatestDrgAnalysisResult[getLatestDrgAnalysisResult]
-```
-
-**图表来源**
-- [DrgAnalysis.vue:366-374](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L366-L374)
-- [drg.js:495-643](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L495-L643)
-
-**章节来源**
-- [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
-- [drg.js:1-644](file://med_ai_assistant_1.0_bs_vue/src/api/drg.js#L1-L644)
-
-### QC API模块依赖关系
-
-**新增** QC API模块的完整依赖关系：
+**新增** AIDiagnosisTab组件的完整依赖关系：
 
 ```mermaid
 graph TD
-QCModule[qc.js] --> Service[service.js]
-QCModule --> GetLatestPromptResult[getLatestPromptResult]
-QCModule --> DiseaseMatchAPI[diseaseMatchAPI]
-QCModule --> AssessmentAPI[assessmentAPI]
-QCModule --> ConfigAPI[configAPI]
-DiseaseMatchAPI --> GetDiseaseMatch[getDiseaseMatch]
-DiseaseMatchAPI --> TriggerDiseaseMatch[triggerDiseaseMatch]
-DiseaseMatchAPI --> ConfirmDiseaseMatch[confirmDiseaseMatch]
-DiseaseMatchAPI --> IgnoreDiseaseMatch[ignoreDiseaseMatch]
-DiseaseMatchAPI --> RestoreDiseaseMatch[restoreDiseaseMatch]
-AssessmentAPI --> GetAssessmentResults[getAssessmentResults]
-AssessmentAPI --> GetIndicatorDetails[getIndicatorDetails]
-AssessmentAPI --> ReanalyzeAssessment[reanalyzeAssessment]
-ConfigAPI --> GetDiseaseConfigs[getDiseaseConfigs]
-ConfigAPI --> GetIndicatorConfigs[getIndicatorConfigs]
-Service --> Axios[axios]
-GetLatestPromptResult --> Axios
+AIDiagnosisTab[AIDiagnosisTab.vue] --> ElMessageBox[Element Plus MessageBox]
+AIDiagnosisTab --> ElButton[Element Plus Button]
+AIDiagnosisTab --> ElIcon[Element Plus Icon]
+AIDiagnosisTab --> VuexStore[Vuex Store]
+AIDiagnosisTab --> DiagnosisEditPanel[DiagnosisEditPanel.vue]
+AIDiagnosisTab --> DiagnosisParser[diagnosisParser.js]
+AIDiagnosisTab --> promptUtils[promptUtils.js]
+AIDiagnosisTab --> getLatestPromptResult[getLatestPromptResult]
+AIDiagnosisTab --> localStorage[localStorage]
+AIDiagnosisTab --> ElMessage[Element Plus Message]
+DiagnosisEditPanel --> DiagnosisParser
+DiagnosisParser --> Marked[marked库]
+DiagnosisParser --> DOMPurify[DOMPurify库]
+promptUtils --> APIService[AI API服务]
+APIService --> BackendAPI[后端服务]
+BackendAPI --> Database[数据库]
+BackendAPI --> AIEngine[AI引擎]
 ```
 
 **图表来源**
-- [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
+- [AIDiagnosisTab.vue:47-53](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L47-L53)
 
 **章节来源**
-- [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
+- [AIDiagnosisTab.vue:1-378](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L1-L378)
 
-### 治疗计划解析工具依赖关系
+### 诊断卡片组件依赖关系
 
-**新增** treatmentPlanParser.js的依赖关系：
+**新增** DiagnosisCard组件的完整依赖关系：
 
 ```mermaid
 graph TD
-TreatmentPlanParser[treatmentPlanParser.js] --> RegExp[正则表达式]
-RegExp --> TableRegex[表格解析正则]
-RegExp --> HeaderRegex[表头解析正则]
-RegExp --> CellRegex[单元格解析正则]
-TreatmentPlanParser --> Validation[数据验证]
-Validation --> RequiredFields[必需字段验证]
-Validation --> ImportanceValidation[重要程度验证]
-TreatmentPlanParser --> Formatting[格式化处理]
-Formatting --> RemoveMarkdown[去除Markdown标记]
-Formatting --> CleanText[清理文本内容]
+DiagnosisCard[DiagnosisCard.vue] --> ElMessageBox[Element Plus MessageBox]
+DiagnosisCard --> ElButton[Element Plus Button]
+DiagnosisCard --> ElIcon[Element Plus Icon]
+DiagnosisCard --> VuexStore[Vuex Store]
+DiagnosisCard --> DiagnosisParser[diagnosisParser.js]
+DiagnosisCard --> promptUtils[promptUtils.js]
+DiagnosisCard --> marked[marked库]
+DiagnosisCard --> DOMPurify[DOMPurify库]
+DiagnosisCard --> localStorage[localStorage]
+DiagnosisCard --> ElMessage[Element Plus Message]
+promptUtils --> APIService[AI API服务]
+APIService --> BackendAPI[后端服务]
+BackendAPI --> Database[数据库]
+BackendAPI --> AIEngine[AI引擎]
 ```
 
 **图表来源**
-- [treatmentPlanParser.js:1-200](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L1-L200)
+- [DiagnosisCard.vue:134-136](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L134-L136)
 
 **章节来源**
-- [treatmentPlanParser.js:1-200](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L1-L200)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
 
 ## 性能考虑
 
@@ -2582,6 +2430,10 @@ Formatting --> CleanText[清理文本内容]
 12. **治疗计划表格优化**：操作列精简减少DOM节点数量，提升表格渲染性能
 13. **选中文字处理优化**：智能文本选择检测避免不必要的DOM操作
 14. **QC API优化**：批量API调用减少网络请求次数，提升响应速度
+15. **诊断分析流程优化**：通过空状态按钮和确认对话框减少不必要的API调用
+16. **数据就绪检查优化**：使用HTML格式化清单提升用户理解效率
+17. **用户反馈优化**：及时的消息提示减少用户等待焦虑
+18. **异常处理优化**：完善的错误捕获和用户提示机制
 
 ### 渲染性能优化
 
@@ -2596,9 +2448,12 @@ Formatting --> CleanText[清理文本内容]
 9. Overlay面板延迟渲染：PromptTemplates面板仅在展开时渲染，减少初始DOM节点数量
 10. CSS过渡优化：使用transform-origin: top right确保动画性能最佳
 11. DRG分析模块化：通过v-if="false"临时隐藏功能模块，避免不必要的渲染
-12. **治疗计划表格优化**：操作列精简减少渲染复杂度，提升表格性能
-13. **QC评估结果优化**：按需渲染质控指标，减少不必要的DOM节点
-14. **文本选择优化**：智能选择检测避免频繁的DOM查询操作
+12. **诊断分析空状态优化**：通过空状态按钮减少不必要的DOM节点
+13. **确认对话框优化**：使用HTML格式化提升渲染效率
+14. **用户交互优化**：及时的用户反馈减少不必要的重新渲染
+15. **数据缓存优化**：localStorage缓存用户信息，减少重复获取
+16. **API调用优化**：并行请求减少等待时间，提升整体性能
+17. **错误处理优化**：避免错误状态下的额外渲染
 
 ### 网络请求优化
 
@@ -2613,9 +2468,11 @@ Formatting --> CleanText[清理文本内容]
 9. 模板数据缓存：PromptTemplates的模板数据通过Vuex缓存，避免重复请求
 10. 小屏模式优化：PromptTemplates在小屏模式下支持条件渲染，减少不必要的DOM节点
 11. DRG分析按需加载：通过条件渲染优化DRG分析相关组件的加载时机
-12. **QC API优化**：批量API调用减少网络请求次数，提升响应速度
-13. **治疗计划解析优化**：本地解析减少网络依赖，提升处理速度
-14. **选中文字处理优化**：本地处理避免网络请求，提升响应速度
+12. **诊断分析请求优化**：通过handlePromptExecution统一管理所有诊断分析请求
+13. **并发请求优化**：使用Promise.all并行执行多个API请求
+14. **错误处理优化**：使用.catch()包裹可能失败的请求，避免中断主流程
+15. **用户状态检查**：在执行分析前检查用户登录状态，避免无效请求
+16. **数据完整性检查**：在执行分析前检查必要的临床数据，避免无效分析
 
 ### 患者数据管理优化
 
@@ -2644,24 +2501,26 @@ Formatting --> CleanText[清理文本内容]
 - 事件委托：通过@template-executed事件实现自动折叠，减少DOM操作
 - 小屏适配：在小屏模式下支持条件渲染，减少不必要的DOM节点
 
-**更新** DrgAnalysis组件的性能优化：
-- 模块化显示：通过v-if="false"临时隐藏非关键功能，减少DOM节点数量
-- 按需渲染：主要DRG分析功能优先显示，其他功能延后加载
-- 缓存机制：DRG匹配结果和费用数据的缓存
-- 异步处理：费用计算和盈亏分析采用异步处理，避免阻塞UI
-- 条件加载：只有在用户需要时才加载详细的诊断和手术信息
+**更新** AIDiagnosisTab组件的性能优化：
+- 空状态处理：通过空状态按钮减少不必要的DOM节点
+- 数据就绪检查：使用HTML格式化清单提升用户理解效率
+- 用户反馈优化：及时的消息提示减少用户等待焦虑
+- 异常处理优化：完善的错误捕获和用户提示机制
+- API调用优化：通过handlePromptExecution统一管理诊断分析请求
+- 并发请求优化：使用Promise.all并行执行多个API请求
+- 用户状态检查：在执行分析前检查用户登录状态
 
-**更新** TreatmentPlanTable组件的性能优化：
-- 操作列精简：减少DOM节点数量，提升表格渲染性能
-- 智能展开：仅在需要时展开下拉菜单，减少DOM操作
-- 批量处理：支持多选后的批量操作，提升用户效率
-- 未保存提醒：避免不必要的数据提交，减少网络请求
+**更新** DiagnosisCard组件的性能优化：
+- 简化的确认对话框：减少HTML结构复杂度
+- 直接调用handlePromptExecution：避免额外的中间步骤
+- 用户交互优化：及时的用户反馈减少不必要的重新渲染
+- 错误处理优化：避免错误状态下的额外渲染
 
-**更新** QC API模块的性能优化：
-- 批量API调用：减少网络请求次数，提升响应速度
-- 智能筛选：支持多维度筛选，减少数据传输量
-- 缓存机制：质控配置和评估结果的缓存
-- 异步处理：重新分析触发采用异步处理，避免阻塞UI
+**更新** AIView组件的性能优化：
+- 入院记录检查：通过条件渲染优化检查逻辑
+- 模板面板优化：使用Overlay面板减少DOM节点数量
+- 用户状态检查：在组件挂载时自动检查入院记录
+- 错误处理优化：完善的异常捕获和用户提示机制
 
 ## 故障排除指南
 
@@ -2859,6 +2718,82 @@ Formatting --> CleanText[清理文本内容]
 - 验证node.level判断逻辑
 - 确认ElTree配置
 
+#### AIDiagnosisTab组件问题
+
+**更新** **问题**：空状态按钮不显示
+- 检查resultContent状态
+- 验证v-if条件逻辑
+- 确认组件渲染状态
+
+**问题**：诊断分析按钮点击无效
+- 检查triggerDiagnosisAnalysis方法
+- 验证ElMessageBox配置
+- 确认handlePromptExecution调用
+
+**问题**：确认对话框显示异常
+- 检查dangerouslyUseHTMLString配置
+- 验证HTML格式是否正确
+- 确认对话框样式加载
+
+**问题**：诊断分析请求提交失败
+- 检查handlePromptExecution返回值
+- 验证API接口响应
+- 确认用户状态检查
+
+**问题**：用户反馈消息异常
+- 检查$messge调用
+- 验证消息类型和内容
+- 确认异常捕获逻辑
+
+#### DiagnosisCard组件问题
+
+**更新** **问题**：诊断分析按钮点击无效
+- 检查triggerDiagnosisAnalysis方法
+- 验证ElMessageBox配置
+- 确认handlePromptExecution调用
+
+**问题**：确认对话框显示异常
+- 检查确认对话框配置
+- 验证消息内容格式
+- 确认按钮样式设置
+
+**问题**：诊断分析请求提交失败
+- 检查handlePromptExecution返回值
+- 验证API接口响应
+- 确认用户状态检查
+
+**问题**：用户反馈消息异常
+- 检查$messge调用
+- 验证消息类型和内容
+- 确认异常捕获逻辑
+
+#### AIView组件问题
+
+**更新** **问题**：AI视图渲染异常
+- 检查AIView组件状态
+- 验证子组件渲染
+- 确认样式加载
+
+**问题**：入院记录检查失败
+- 检查API接口调用
+- 验证数据格式
+- 确认错误处理
+
+**问题**：模板面板显示异常
+- 检查isTemplatesCollapsed状态
+- 验证Overlay面板样式
+- 确认事件处理
+
+**问题**：入院记录总结生成失败
+- 检查handlePromptExecution调用
+- 验证API接口响应
+- 确认用户状态检查
+
+**问题**：用户反馈消息异常
+- 检查$messge调用
+- 验证消息类型和内容
+- 确认异常捕获逻辑
+
 #### DrgAnalysis组件问题
 
 **更新** **问题**：DRG分析结果显示异常
@@ -2935,6 +2870,22 @@ Formatting --> CleanText[清理文本内容]
 - 验证文本清理逻辑
 - 确认格式化结果
 
+**问题**：诊断分析流程异常
+- 检查空状态按钮逻辑
+- 验证确认对话框配置
+- 确认handlePromptExecution调用
+- 验证用户反馈机制
+
+**问题**：数据就绪检查失败
+- 检查HTML格式化清单
+- 验证数据完整性检查
+- 确认用户交互逻辑
+
+**问题**：组件间协作异常
+- 检查组件间的事件传递
+- 验证状态同步机制
+- 确认数据流向
+
 **章节来源**
 - [ServerLogViewer.vue:248-253](file://med_ai_assistant_1.0_bs_vue/src/components/ServerLogViewer.vue#L248-L253)
 - [TopMenu.vue:592-631](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L592-L631)
@@ -2953,6 +2904,9 @@ Formatting --> CleanText[清理文本内容]
 - [DrgAnalysis.vue:1-2293](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DrgAnalysis.vue#L1-L2293)
 - [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
 - [treatmentPlanParser.js:1-200](file://med_ai_assistant_1.0_bs_vue/src/utils/treatmentPlanParser.js#L1-L200)
+- [AIDiagnosisTab.vue:1-378](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L1-L378)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
+- [promptUtils.js:1-260](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L1-L260)
 
 ## 结论
 
@@ -2965,72 +2919,43 @@ Formatting --> CleanText[清理文本内容]
 5. **性能优化**：多项性能优化措施确保流畅体验
 6. **功能增强**：最新版本显著提升了AI结果处理、轮询服务稳定性和患者信息管理能力
 
-**更新** 通过新增的DiagnosisEditPanel和DiagnosisCard组件、治疗计划表格组件的重大UI优化、选中文字处理机制、QC质量控制API集成，以及重大UI重构的PromptTemplates组件，整个应用形成了更加完善的医疗信息管理生态系统。这些组件不仅提供了直观的诊断编辑界面、优化的治疗计划管理、智能的文本处理功能，还集成了完整的质量控制评估系统，显著提升了用户的操作效率和系统稳定性。
+**更新** 通过新增的AIDiagnosisTab组件的空状态诊断分析按钮实现、DiagnosisCard组件的诊断分析按钮集成、promptUtils.js的handlePromptExecution工具函数优化，以及完整的诊断分析确认对话框和临床数据就绪提醒机制，整个应用形成了更加完善的AI诊断分析生态系统。这些组件不仅提供了直观的诊断分析触发界面，还集成了完整的用户引导和数据完整性检查系统，显著提升了用户的操作效率和诊断分析的准确性。
 
-**更新** 新增的diagnosisParser.js和treatmentPlanParser.js工具函数为诊断信息和治疗计划的结构化提取提供了强大支持，确保了医疗数据的准确性和完整性。这些工具函数的思维过程移除、字段提取、降级机制、表格解析等功能，为整个医疗信息管理系统的可靠性奠定了坚实基础。
+**更新** 新增的诊断分析流程包括：
+- **空状态按钮**：在AIDiagnosisTab组件中提供一键触发诊断分析的按钮
+- **确认对话框**：在DiagnosisCard组件中提供简化的确认对话框
+- **数据就绪检查**：通过HTML格式化清单提醒用户检查关键数据
+- **统一执行机制**：通过handlePromptExecution工具函数统一管理所有诊断分析请求
+- **用户反馈系统**：提供完整的用户反馈和错误处理机制
 
-**更新** 项目版本已升级至0.9.007，反映了版本0.9.007的增强功能，包括：
-- **治疗计划表格操作列的精简优化**：从3个按钮精简为「待办」+「更多」下拉菜单
-- **AI结果的智能文本选择和复制功能**：支持用户选中文本后的智能处理
-- **完整的QC质量控制API集成**：包括病种匹配、确认、评估结果查询等核心功能
-- **治疗计划Markdown解析工具**：支持标准4列表格解析和去标记处理
-- **诊断编辑面板的左右两栏布局优化**
-- **诊断卡片组件的滚动区域重构**
-- **思维过程折叠显示的增强功能**
-- **PromptTemplates组件的重大UI重构**：从传统下拉菜单改为Overlay下拉面板系统
-- **Overlay面板的绝对定位、CSS过渡动画和自动折叠行为**
-- **小屏模式下的Prompt模板列表显示控制机制**
-- **DrgAnalysis组件的DRG分析结果显示逻辑优化**：通过v-if="false"临时隐藏非关键功能模块
-- **DRG分析功能的模块化显示和性能优化**
+**更新** 诊断分析确认对话框的临床数据就绪提醒功能包括：
+- **入院记录检查**：确认入院记录已完成书写并同步
+- **医嘱同步验证**：确保医嘱数据已同步到系统
+- **辅助检查完整性**：验证辅助检查结果已同步
+- **详细提醒信息**：提供"以上信息不完整可能导致分析结果不准确"的警告
+- **HTML格式化显示**：使用富文本格式提供清晰的清单显示
 
-**更新** 治疗计划表格组件的UI优化包括：
-- **操作列精简**：将原来的3个独立按钮整合为「待办」和「更多」下拉菜单
-- **布局简化**：减少表格列宽，提升整体可读性
-- **交互优化**：通过下拉菜单提供更多的操作选项，同时保持界面简洁
-- **响应式设计**：在小屏设备上更好地适配精简后的布局
+**更新** 诊断分析按钮的组件集成包括：
+- **AIDiagnosisTab实现**：完整的确认对话框和数据就绪检查
+- **DiagnosisCard实现**：简化的确认对话框，仅包含基本提示
+- **DiagnosisEditPanel实现**：复用AI辅助中的"诊断分析"模板进行手动分析
+- **统一调用机制**：所有组件都调用相同的handlePromptExecution函数
 
-**更新** 选中文字处理机制包括：
-- **智能文本选择检测**：自动检测用户是否选择了文本
-- **条件处理**：仅在有选中文本时显示处理选项
-- **去换行符处理**：自动去除选中文本中的换行符和空白字符
-- **剪贴板集成**：一键复制处理后的文本到系统剪贴板
-- **用户反馈**：操作成功和失败的即时提示
+**更新** 诊断分析流程的性能优化包括：
+- **空状态处理优化**：通过空状态按钮减少不必要的DOM节点
+- **确认对话框优化**：使用HTML格式化提升渲染效率
+- **用户反馈优化**：及时的消息提示减少用户等待焦虑
+- **异常处理优化**：完善的错误捕获和用户提示机制
+- **API调用优化**：通过handlePromptExecution统一管理诊断分析请求
+- **并发请求优化**：使用Promise.all并行执行多个API请求
+- **用户状态检查**：在执行分析前检查用户登录状态
 
-**更新** QC质量控制API模块包括：
-- **病种匹配**：getDiseaseMatch、triggerDiseaseMatch、confirmDiseaseMatch
-- **忽略管理**：ignoreDiseaseMatch、restoreDiseaseMatch、getIgnoredDiseases
-- **评估查询**：getAssessmentResults、getIndicatorDetails、reanalyzeAssessment
-- **指标配置**：getDiseaseConfigs、getIndicatorConfigs
+**更新** 诊断分析流程的用户体验提升包括：
+- **渐进式确认**：从简单的确认对话框到详细的就绪检查
+- **用户控制**：提供取消选项，让用户完全控制分析流程
+- **反馈及时**：每个步骤都有相应的用户反馈
+- **错误处理**：完善的错误处理和用户提示机制
+- **数据完整性**：通过就绪检查确保分析结果的准确性
+- **操作便利性**：通过一键按钮和确认对话框提升操作便利性
 
-**更新** 诊断组件的滚动优化和布局重构包括：
-- **独立滚动区域**：左右两栏均支持独立滚动，提升用户体验
-- **最大高度限制**：使用max-height: 60vh限制滚动区域，避免内存溢出
-- **响应式设计**：支持不同屏幕尺寸的自适应显示
-- **工具栏集成**：底部工具栏提供统一的操作入口
-- **标签页优化**：右侧标签页支持诊断说明和目前诊断的切换
-
-**更新** DRG分析系统的完整功能包括：
-- **批量DRG匹配**：支持多个诊断和手术的组合匹配
-- **MCC预筛选**：自动识别可能的并发症和合并症
-- **AI分析集成**：支持AI生成的DRG分析结果
-- **费用计算**：集成HIS系统费用查询和DRG盈亏计算
-- **结果保存**：支持用户选择的DRG结果保存
-- **严格标准推荐列表**：提供DRG方案的详细信息和比较
-- **合并症分析历史**：展示MCC/CC分析的历史记录
-
-**更新** PromptTemplates组件的Overlay面板系统包括：
-- **绝对定位面板**：使用position: absolute实现从工具栏按钮正下方展开
-- **CSS过渡动画**：使用panel-slide transition实现平滑的展开/收起效果
-- **自动折叠行为**：模板执行后自动折叠面板，提升用户体验
-- **小屏模式适配**：支持小屏设备上的条件渲染和自动隐藏
-- **树形结构展示**：使用Element Plus Tree组件展示模板层级结构
-- **节点交互优化**：区分一级节点展开和二级节点执行的不同交互逻辑
-
-**更新** 治疗计划解析系统的完整功能包括：
-- **标准4列表格解析**：支持项目描述、注意事项、重要程度、状态的解析
-- **去标记处理**：自动去除Markdown标记（加粗、链接等）
-- **多行表格处理**：保持表格顺序的多行解析
-- **异常格式降级**：异常格式的降级处理
-- **空内容处理**：空内容返回空数组
-
-建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI结果处理、轮询服务监控、患者信息管理、诊断组件优化、治疗计划管理、QC质量控制等方面持续改进。新增的治疗计划表格组件、选中文字处理机制、QC质量控制API集成，以及PromptTemplates组件的Overlay面板系统和DrgAnalysis组件的DRG分析结果显示逻辑优化，为医疗AI助手的应用场景提供了更加专业和实用的解决方案，值得进一步推广和应用。
+建议在后续开发中继续关注性能优化、安全加固和用户体验提升，特别是在AI诊断分析、用户交互体验、数据完整性检查、组件间协作等方面持续改进。新增的诊断分析按钮、确认对话框、数据就绪提醒机制和统一执行机制，为医疗AI助手的诊断分析场景提供了更加专业和实用的解决方案，值得进一步推广和应用。
