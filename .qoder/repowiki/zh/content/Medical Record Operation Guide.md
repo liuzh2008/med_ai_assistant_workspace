@@ -4,6 +4,7 @@
 **本文档引用的文件**
 - [更新小结.md](file://更新小结.md)
 - [2026-04-24.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-24.md)
+- [2026-04-26.md](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-26.md)
 - [EMR病历内容查询接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md)
 - [EmrRecordListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java)
 - [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
@@ -46,6 +47,7 @@
 **所做更改**
 - 新增v0.9.003版本变更：在病历记录页面新增「加入待办」按钮，支持选中文字加入待办事项
 - 新增v0.9.002版本变更：移除病情小结页面的颜色标注功能
+- 新增v0.9.010版本变更：修复病历记录组件状态管理bug，确保isEMRState变量在关键节点正确重置
 - 更新病历记录操作流程，包含新增的待办事项加入功能
 - 更新待办事项生成流程，包含从病历内容和诊疗计划表格中加入待办事项
 - 更新AI结果页面和病情小结页面的Thinking折叠功能说明
@@ -55,6 +57,7 @@
 - **新增JSON字段名大小写对齐机制**：解决生产环境显示问题
 - **新增重复ID记录处理机制**：修复IncorrectResultSizeDataAccessException，实现按修改时间降序取最新记录的机制
 - **新增错误调试信息增强**：当在EMR记录列表中选择某条记录时，详细输出完整的错误信息
+- **新增状态管理bug修复**：修复isEMRState变量在Patient watcher和addEMRReferenceRecord中未正确重置的问题
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -95,6 +98,7 @@
 - **EMR病历内容查询**：新增完整的EMR病历内容查询接口，支持列表查询和详细内容获取
 - **EMR病历内容同步**：新增高并发数据同步模块，具备数据库约束处理能力和自动重试机制
 - **错误调试增强**：新增详细的错误调试信息，便于问题定位和解决
+- **状态管理稳定性**：v0.9.010修复病历记录组件状态管理bug，确保isEMRState变量在关键节点正确重置
 
 ## 系统架构
 
@@ -118,6 +122,7 @@ AddToTodo[加入待办功能]
 RemoveColorHighlight[移除颜色标注]
 EMRContentQuery[EMR内容查询接口]
 EMRContentSync[EMR内容同步模块]
+StateManagement[状态管理修复]
 end
 subgraph "API网关层"
 Gateway[API Gateway]
@@ -201,6 +206,7 @@ AddToTodo --> TodoEngine
 RemoveColorHighlight --> DOMPurify
 EMRContentQuery --> EmrRepo
 EMRContentSync --> EmrRepo
+StateManagement --> isEMRStateReset
 ```
 
 **图表来源**
@@ -422,7 +428,7 @@ ShowFailure --> End
 ```
 
 **图表来源**
-- [MedicalRecords.vue:1525-1582](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L1525-L1582)
+- [MedicalRecords.vue:1545-1598](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L1545-L1598)
 
 #### v0.9.002 更新：简化病情小结显示
 
@@ -437,6 +443,49 @@ ShowFailure --> End
 - 仅影响病情小结页面的视觉显示
 - 不影响功能逻辑和数据处理
 - 提供更简洁的用户界面体验
+
+#### v0.9.010 更新：病历记录组件状态管理bug修复
+
+**新增功能**：修复病历记录组件状态管理bug，确保isEMRState变量在关键节点正确重置。
+
+**修复的bug**：
+1. **Bug 1**：新建保存变成"参考记录"且未调用待办分析 —— 因isEMRState未在关键节点重置，导致新建记录误走EMR参考记录分支
+2. **Bug 2**：未选择/未新建病历时直接输入导致无法保存 —— 已有安全检查（handleContentChange自动进入新建模式）
+3. **Bug 3**：切换患者后新建保存偶发无反应 —— Patient watcher未重置isEMRState
+
+**修复措施**：
+- **Patient watcher两个分支均添加** `this.isEMRState = false` 重置
+- **addEMRReferenceRecord()成功后重置状态变量并调用** `askGenerateTodo()`
+
+**状态管理流程**：
+
+```mermaid
+flowchart TD
+StateInit[状态初始化] --> WatchPatient[监听患者变化]
+WatchPatient --> ResetState[重置isEMRState=false]
+ResetState --> LoadData[加载病历数据]
+LoadData --> CheckDraft[检查新增草稿]
+CheckDraft --> StateReady[状态就绪]
+StateInit --> CreateRecord[创建新记录]
+CreateRecord --> SetNewState[设置isNewRecord=true]
+SetNewState --> SetEMRFalse[设置isEMRState=false]
+SetEMRFalse --> StateReady
+StateInit --> ViewEMR[查看EMR记录]
+ViewEMR --> SetEMRState[设置isEMRState=true]
+SetEMRState --> StateReady
+StateReady --> SaveRecord[保存记录]
+SaveRecord --> CheckEMR{检查isEMRState}
+CheckEMR --> |true| AddEMRRef[添加EMR参考记录]
+CheckEMR --> |false| SaveNormal[保存普通记录]
+AddEMRRef --> ResetAfterSave[保存后重置状态]
+ResetAfterSave --> AskTodo[调用待办分析]
+AskTodo --> StateReady
+SaveNormal --> StateReady
+```
+
+**图表来源**
+- [MedicalRecords.vue:368-419](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L368-L419)
+- [MedicalRecords.vue:1487-1493](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L1487-L1493)
 
 #### 病历记录操作流程
 
@@ -1540,6 +1589,7 @@ TodoEngine-->>Doctor : 显示生成的待办事项
 | 重复ID记录处理 | 处理成功率 | <100% | 警告 |
 | 选中文字加入待办 | 加入成功率 | <95% | 警告 |
 | 病情小结颜色标注 | 标注功能可用性 | <100% | 警告 |
+| 病历记录状态管理 | 状态重置成功率 | <100% | 警告 |
 
 #### 监控配置
 
@@ -1584,6 +1634,7 @@ ServiceCheck --> |IncorrectResultSizeDataAccessException| IRSDAE[异常处理机
 ServiceCheck --> |重复ID记录处理| DuplicateIDHandler[重复ID处理机制]
 ServiceCheck --> |选中文字加入待办| AddToTodo[加入待办功能]
 ServiceCheck --> |病情小结颜色标注| ColorHighlight[颜色标注功能]
+ServiceCheck --> |状态管理修复| StateManagement[状态管理修复]
 MainServer --> AIService[AI模型服务]
 ExecServer --> Encryption[加密服务]
 Database --> DataSources[数据源检查]
@@ -1600,6 +1651,7 @@ IRSDAE --> ListReturnMechanism[List返回机制]
 DuplicateIDHandler --> ModifiedOnSort[按修改时间排序]
 AddToTodo --> TodoEngine[待办引擎]
 ColorHighlight --> DOMPurifyValidation[DOMPurify验证]
+StateManagement --> isEMRStateReset[isEMRState重置]
 AIService --> ModelStatus{模型状态}
 Encryption --> EncStatus{加密状态}
 DataSources --> DSStatus{数据源状态}
@@ -1621,6 +1673,7 @@ OverallStatus --> IRSDAEStatus{异常处理状态}
 OverallStatus --> DuplicateIDStatus{重复ID状态}
 OverallStatus --> AddToTodoStatus{加入待办状态}
 OverallStatus --> ColorHighlightStatus{颜色标注状态}
+OverallStatus --> StateManagementStatus{状态管理状态}
 ```
 
 **图表来源**
@@ -1779,6 +1832,18 @@ OverallStatus --> ColorHighlightStatus{颜色标注状态}
 | 状态显示异常 | 状态分类功能受影响 | 检查状态逻辑，确认简化后的显示正常 |
 | 用户反馈问题 | 用户对简化显示不满意 | 检查用户反馈，确认功能符合预期 |
 | 兼容性问题 | 不同浏览器显示效果不一致 | 检查CSS兼容性，验证跨浏览器一致性 |
+
+#### 病历记录状态管理问题
+
+**新增功能故障排查**：
+
+| 问题类型 | 症状描述 | 解决方案 |
+|---------|---------|---------|
+| 新建保存误走EMR分支 | isEMRState未重置导致新建保存变成"参考记录" | 检查Patient watcher中isEMRState重置逻辑 |
+| 输入保存异常 | 未选择/未新建病历时直接输入导致无法保存 | 检查handleContentChange中的安全检查逻辑 |
+| 患者切换无反应 | 切换患者后新建保存偶发无反应 | 检查Patient watcher两个分支的isEMRState重置 |
+| EMR参考记录状态异常 | addEMRReferenceRecord成功后状态未重置 | 检查addEMRReferenceRecord中的状态重置和待办分析调用 |
+| 状态同步问题 | 不同操作间状态不一致 | 检查所有状态设置点，确保isEMRState在关键节点正确重置 |
 
 #### 前端构建系统问题
 
@@ -1963,7 +2028,19 @@ OverallStatus --> ColorHighlightStatus{颜色标注状态}
     tail -f logs/main/todo-api-call.log | grep "api_call_success"
     ```
 
-15. **前端构建日志**:
+15. **状态管理日志**:
+    ```bash
+    # 查看状态管理日志
+    tail -f logs/main/state-management.log
+    
+    # 检查isEMRState重置
+    tail -f logs/main/state-management.log | grep "isEMRState_reset"
+    
+    # 检查状态同步
+    tail -f logs/main/state-management.log | grep "state_consistency"
+    ```
+
+16. **前端构建日志**:
     ```bash
     # 查看前端构建日志
     cd med_ai_assistant_1.0_bs_vue
@@ -1999,6 +2076,7 @@ AddToTodo[加入待办功能]
 RemoveColorHighlight[移除颜色标注]
 EMRContentQuery[EMR内容查询接口]
 EMRContentSync[EMR内容同步模块]
+StateManagement[状态管理修复]
 end
 subgraph "构建配置"
 VueCLI[Vue CLI配置]
@@ -2034,6 +2112,7 @@ AddToTodo --> TodoEngine
 RemoveColorHighlight --> DOMPurifyValidation
 EMRContentQuery --> EmrRepo
 EMRContentSync --> EmrRepo
+StateManagement --> isEMRStateReset
 ```
 
 **图表来源**
@@ -2150,33 +2229,30 @@ FixLint --> RunLint
 
 系统采用持续集成和持续部署的开发模式，版本更新记录详细记录了每次迭代的功能改进和问题修复。
 
-### 最新版本 (v0.9.003)
+### 最新版本 (v0.9.010)
 
 #### 主要更新内容
 
-1. **新增：选中文字加入待办功能**
-   - **病历记录页面**：在工具栏新增「加入待办」按钮，支持选中病历文字后快速创建待办事项
-   - **诊疗计划表格**：支持从选中文字创建待办事项，优先使用选中内容
-   - **统一API调用**：使用createTodoFromTreatmentPlan API统一处理待办创建
-   - **去重机制**：支持内容匹配去重，避免重复创建相同待办
-   - **状态管理**：使用addingToTodo标识防止重复提交
-   - **错误处理**：完善的异常捕获和用户提示机制
+1. **新增：病历记录组件状态管理bug修复**
+   - **修复文件**: `src/components/patient/MedicalRecords.vue`
+   - **修复的bug**：
+     - Bug 1：新建保存变成"参考记录"且未调用待办分析 —— 因isEMRState未在关键节点重置，导致新建记录误走EMR参考记录分支
+     - Bug 2：未选择/未新建病历时直接输入导致无法保存 —— 已有安全检查（handleContentChange自动进入新建模式）
+     - Bug 3：切换患者后新建保存偶发无反应 —— Patient watcher未重置isEMRState
+   - **修复措施**：
+     - Patient watcher两个分支均添加 `this.isEMRState = false` 重置
+     - addEMRReferenceRecord()成功后重置状态变量并调用 `askGenerateTodo()`
+   - **状态管理改进**：确保isEMRState变量在所有关键节点正确重置，避免状态污染
 
-2. **增强：待办事项操作界面**
-   - **紧凑显示**：待办事项列表支持更紧凑的显示方式
-   - **内容预览**：每个待办项包含内容预览和状态标识
-   - **自动清理**：待办内容自动清理患者基本信息行
-   - **统一查看**：支持从多个来源查看待办事项
+2. **增强：状态管理稳定性**
+   - **状态一致性**：修复状态管理中的竞态条件问题
+   - **状态重置机制**：在所有状态切换点添加isEMRState重置逻辑
+   - **异常处理**：增强状态管理的异常处理和恢复机制
 
-3. **优化：用户界面体验**
-   - **简化交互**：移除不必要的复杂操作步骤
-   - **一致设计**：保持不同页面间操作的一致性
-   - **响应速度**：优化界面响应速度和交互流畅度
-
-4. **系统监控指标完善**
-   - **新增加入待办监控**：监控选中文字加入待办的成功率
-   - **新增颜色标注监控**：监控颜色标注功能的移除效果
-   - **性能指标更新**：更新相关性能监控指标
+3. **系统监控指标完善**
+   - **新增状态管理监控**：监控isEMRState重置成功率
+   - **状态一致性指标**：监控不同操作间状态同步的准确性
+   - **异常状态检测**：新增状态异常的自动检测和告警机制
 
 #### 版本升级指南
 
@@ -2211,6 +2287,18 @@ cd ../deploy/main-linux-oracle
 ```
 
 ### 历史版本特性
+
+#### v0.9.008 - 版本号同步更新
+- **功能变更**：同步后端版本号至 0.9.008
+- **变更范围**：本次前端无功能变更
+
+#### v0.9.003 - 选中文字加入待办功能
+- **新增功能**：在病历记录页面新增「加入待办」按钮
+- **功能实现**：支持用户选中病历文字后快速创建待办事项
+- **统一API调用**：使用createTodoFromTreatmentPlan API统一处理待办创建
+- **去重机制**：支持内容匹配去重，避免重复创建相同待办
+- **状态管理**：使用addingToTodo标识防止重复提交
+- **错误处理**：完善的异常捕获和用户提示机制
 
 #### v0.9.002 - 病情小结颜色标注移除
 - **功能变更**：移除病情小结页面的颜色标注功能，提供更简洁的显示效果
@@ -2304,7 +2392,7 @@ NotifyUsers --> End([发布完成])
 
 ## 总结
 
-医疗AI助手系统是一个功能完备、架构清晰、安全可靠的综合性医疗信息系统。通过智能化的AI辅助诊断、高效的病历管理、安全的数据加密、完善的监控告警机制、新增的病历编辑防丢失功能、新增的EMR病历内容同步模块数据库约束处理能力、新增的JSON字段名大小写对齐机制、新增的首次病程记录模板入院记录替代逻辑、新增的Thinking折叠功能、以及经过修复的稳定前端构建系统，系统为医护人员提供了强大的技术支持。
+医疗AI助手系统是一个功能完备、架构清晰、安全可靠的综合性医疗信息系统。通过智能化的AI辅助诊断、高效的病历管理、安全的数据加密、完善的监控告警机制、新增的病历编辑防丢失功能、新增的EMR病历内容同步模块数据库约束处理能力、新增的JSON字段名大小写对齐机制、新增的首次病程记录模板入院记录替代逻辑、新增的Thinking折叠功能、经过修复的稳定前端构建系统、以及最新的病历记录组件状态管理bug修复，系统为医护人员提供了强大的技术支持。
 
 ### 系统优势
 
@@ -2333,6 +2421,7 @@ NotifyUsers --> End([发布完成])
 23. **EMR病历内容查询**: 新增完整的EMR病历内容查询接口，支持列表查询和详细内容获取
 24. **EMR病历内容同步**: 新增高并发数据同步模块，具备数据库约束处理能力和自动重试机制
 25. **错误调试增强**: 新增详细的错误调试信息，便于问题定位和解决
+26. **状态管理稳定性**: v0.9.010修复病历记录组件状态管理bug，确保isEMRState变量在关键节点正确重置
 
 ### 未来发展
 
@@ -2356,5 +2445,6 @@ NotifyUsers --> End([发布完成])
 18. **EMR内容查询优化**: 基于新增的JSON字段名对齐和重复ID处理机制，进一步提升EMR内容查询的稳定性和准确性
 19. **EMR同步性能提升**: 基于新增的数据库约束处理和自动重试机制，持续优化EMR同步的性能和可靠性
 20. **错误调试系统完善**: 基于新增的详细错误调试信息，持续改进问题定位和解决的效率
+21. **状态管理机制完善**: 基于v0.9.010的状态管理bug修复，持续改进状态管理的稳定性和一致性
 
-通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的选中文字加入待办功能和病情小结颜色标注移除，体现了团队对用户体验和界面简洁性的重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在提升用户操作便捷性和界面美观性方面取得了显著进展。版本0.9.003中新增的选中文字加入待办功能，通过统一的API调用和去重机制，为用户提供了更加高效和便捷的待办事项创建方式，而版本0.9.002中移除的颜色标注功能，则为系统提供了更加简洁和专业的视觉效果，这些改进都充分体现了系统在用户体验方面的持续优化和提升。新增的EMR病历内容查询接口和同步模块，通过JSON字段名对齐、重复ID处理、错误调试增强等机制，为系统的稳定性和可靠性提供了重要保障，为后续的EMR系统集成和数据管理奠定了坚实基础。
+通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的状态管理bug修复，通过确保isEMRState变量在Patient watcher和addEMRReferenceRecord中的正确重置，为系统的稳定性和可靠性提供了重要保障，为后续的功能扩展和维护奠定了坚实的基础。这些改进不仅解决了当前的状态管理问题，更为系统的长期稳定运行提供了重要支撑，特别是在提升用户操作的准确性和系统行为的一致性方面取得了显著进展。版本0.9.010中新增的状态管理修复，通过在关键节点添加状态重置逻辑，确保了用户在不同操作间的状态一致性，为后续的开发和维护提供了更加可靠的基础设施。
