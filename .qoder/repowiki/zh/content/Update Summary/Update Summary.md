@@ -9,16 +9,22 @@
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [tooltips.js](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js)
 - [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [vue.config.js](file://med_ai_assistant_1.0_bs_vue/vue.config.js)
+- [nginx.conf](file://med_ai_assistant_1.0_bs_vue/nginx.conf)
+- [nginx.main.conf](file://med_ai_assistant_1.0_bs_vue/nginx.main.conf)
+- [request.js](file://med_ai_assistant_1.0_bs_vue/src/api/request.js)
+- [executionServer.js](file://med_ai_assistant_1.0_bs_vue/src/api/executionServer.js)
+- [decryption.js](file://med_ai_assistant_1.0_bs_vue/src/api/decryption.js)
+- [server.js](file://med_ai_assistant_1.0_bs_vue/src/api/server.js)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增诊断解析器Markdown标题级别鲁棒性增强章节，详细说明正则表达式从硬编码####改为#{3,4}的改进
-- 更新前端诊断解析章节，说明extractSingleLineField函数的引入和跨行误捕获修复
-- 新增AI诊断辅助标签页功能章节，介绍独立诊断结果展示和编辑功能
-- 新增tooltip功能配置章节，说明所有标签页的悬停提示信息实现
-- 更新PatientTabs组件章节，说明标签页重新排序和懒加载机制
-- 新增DiagnosisEditPanel组件章节，介绍诊断编辑面板的完整功能
+- 新增前端API配置优化章节，详细说明移除硬编码生产服务器IP的改进
+- 更新nginx反向代理配置章节，介绍相对路径代理机制的实现
+- 新增部署灵活性和环境可移植性章节，说明配置优化对部署的影响
+- 更新API配置管理章节，说明环境变量配置和相对路径代理的结合使用
+- 新增nginx代理配置优化章节，介绍后端服务器地址的容器化部署支持
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -26,17 +32,22 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [诊断解析器Markdown标题级别鲁棒性增强](#诊断解析器markdown标题级别鲁棒性增强)
-7. [前端诊断解析优化](#前端诊断解析优化)
-8. [AI诊断辅助标签页功能](#ai诊断辅助标签页功能)
-9. [tooltip功能配置](#tooltip功能配置)
-10. [PatientTabs组件增强](#patienttabs组件增强)
-11. [DiagnosisEditPanel组件](#diagnosiseditpanel组件)
-12. [依赖关系分析](#依赖关系分析)
-13. [性能考虑](#性能考虑)
-14. [故障排除指南](#故障排除指南)
-15. [结论](#结论)
-16. [附录](#附录)
+6. [前端API配置优化](#前端api配置优化)
+7. [nginx反向代理配置](#nginx反向代理配置)
+8. [部署灵活性和环境可移植性](#部署灵活性和环境可移植性)
+9. [API配置管理优化](#api配置管理优化)
+10. [nginx代理配置优化](#nginx代理配置优化)
+11. [诊断解析器Markdown标题级别鲁棒性增强](#诊断解析器markdown标题级别鲁棒性增强)
+12. [前端诊断解析优化](#前端诊断解析优化)
+13. [AI诊断辅助标签页功能](#ai诊断辅助标签页功能)
+14. [tooltip功能配置](#tooltip功能配置)
+15. [PatientTabs组件增强](#patienttabs组件增强)
+16. [DiagnosisEditPanel组件](#diagnosiseditpanel组件)
+17. [依赖关系分析](#依赖关系分析)
+18. [性能考虑](#性能考虑)
+19. [故障排除指南](#故障排除指南)
+20. [结论](#结论)
+21. [附录](#附录)
 
 ## 项目概述
 
@@ -49,6 +60,9 @@ MedAiAssistant V1.0 是一款集患者管理、AI辅助诊断、DRG分析、MCC/
 - 患者全景管理：整合多维度医疗数据，提供完整的患者视图
 - Prompt模板管理：支持多种诊疗场景的AI分析模板
 - 分布式执行架构：采用主服务器+执行服务器的双节点分离架构
+- **前端API配置优化**：移除硬编码生产服务器IP，改用环境变量配置
+- **nginx反向代理相对路径**：通过相对路径代理提升部署灵活性
+- **环境可移植性增强**：支持不同环境的灵活部署和配置
 - **诊断解析器鲁棒性增强**：通过extractSingleLineField函数防止跨行误捕获
 - **新增完整tooltip功能**：为所有标签页提供详细的悬停提示信息
 - **新增AI诊断辅助标签页**：提供独立的AI诊断结果展示和编辑功能
@@ -68,24 +82,30 @@ D[Vue 3 应用]
 E[组件目录]
 F[工具函数]
 G[数据配置]
+H[API配置]
+I[nginx配置]
 end
 subgraph "后端服务"
-H[Spring Boot 应用]
-I[服务层]
-J[数据访问层]
-K[配置管理]
+J[Spring Boot 应用]
+K[服务层]
+L[数据访问层]
+M[配置管理]
 end
 D --> E
 D --> F
 D --> G
-H --> I
-H --> J
-H --> K
+D --> H
+D --> I
+J --> K
+J --> L
+J --> M
 ```
 
 **图表来源**
 - [PatientTabs.vue:1-187](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L1-L187)
 - [AIDiagnosisTab.vue:1-316](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L1-L316)
+- [request.js:1-161](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L1-L161)
+- [nginx.conf:1-73](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L1-L73)
 
 ## 核心组件
 
@@ -185,39 +205,46 @@ B[用户界面]
 C[交互逻辑]
 D[诊断解析器]
 E[tooltip配置]
+F[API配置管理]
+G[nginx反向代理]
 end
 subgraph "后端层"
-F[Spring Boot 应用]
-G[主服务器]
-H[执行服务器]
-I[质量控制服务]
+H[Spring Boot 应用]
+I[主服务器]
+J[执行服务器]
+K[质量控制服务]
+L[解密服务器]
 end
 subgraph "数据层"
-K[Oracle 数据库]
-L[HikariCP 连接池]
-M[缓存服务]
-N[序列管理]
-O[触发器]
+N[Oracle 数据库]
+O[HikariCP 连接池]
+P[缓存服务]
+Q[序列管理]
+R[触发器]
 end
 subgraph "AI服务层"
-P[大语言模型API]
-Q[DeepSeek]
-R[阿里百炼]
+S[大语言模型API]
+T[DeepSeek]
+U[阿里百炼]
 end
 A --> F
-B --> F
-C --> F
-D --> F
-E --> F
 F --> G
-F --> H
-G --> K
-H --> K
-K --> L
-F --> P
-P --> Q
-P --> R
+G --> H
+B --> H
+C --> H
+D --> H
+E --> H
+H --> I
+H --> J
+H --> L
 I --> N
+J --> N
+L --> N
+N --> O
+H --> S
+S --> T
+S --> U
+I --> Q
 ```
 
 **图表来源**
@@ -303,6 +330,397 @@ HikariDataSource --> OracleDataSource
 
 **图表来源**
 - [源代码文档.md:270-328](file://项目相关/软件著作权/源代码文档.md#L270-L328)
+
+## 前端API配置优化
+
+### 移除硬编码生产服务器IP
+
+2026年4月23日更新修复了前端API配置中的硬编码生产服务器IP问题，通过环境变量配置实现了部署灵活性和环境可移植性。
+
+#### 1. 硬编码问题分析
+- **根本原因**：原有的执行服务器配置中硬编码了生产服务器IP地址
+- **影响范围**：所有使用executionService的组件和功能
+- **部署限制**：固定IP地址导致不同环境部署困难
+
+#### 2. 环境变量配置实现
+
+##### VUE_APP_API_BASE_URL环境变量
+```mermaid
+flowchart TD
+Start([API请求开始]) --> CheckEnv{检查VUE_APP_API_BASE_URL}
+CheckEnv --> |存在| UseEnv[使用环境变量配置]
+CheckEnv --> |不存在| UseDefault[使用默认'/api']
+UseEnv --> SetBaseURL[设置baseURL为环境变量值]
+UseDefault --> SetDefaultURL[设置baseURL为'/api']
+SetBaseURL --> MakeRequest[发起API请求]
+SetDefaultURL --> MakeRequest
+MakeRequest --> Proxy[通过nginx代理转发]
+```
+
+**图表来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+
+##### VUE_APP_EXECUTION_SERVER_URL环境变量
+```mermaid
+classDiagram
+class ExecutionService {
++baseURL : string
++timeout : number
++responseType : string
++headers : object
+}
+class EnvironmentConfig {
++VUE_APP_EXECUTION_SERVER_URL : string
++默认值 : 'http : //100.66.1.3 : 8082'
++作用 : 执行服务器地址配置
+}
+class ProcessEnv {
++process.env.VUE_APP_EXECUTION_SERVER_URL : string
++优先级 : 高于默认值
++来源 : Docker环境变量
+}
+ExecutionService --> EnvironmentConfig
+EnvironmentConfig --> ProcessEnv
+```
+
+**图表来源**
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+#### 3. API配置优化策略
+
+```mermaid
+sequenceDiagram
+participant Dev as 开发环境
+participant Test as 测试环境
+participant Prod as 生产环境
+participant API as API配置
+Dev->>API : 设置VUE_APP_API_BASE_URL
+Test->>API : 设置VUE_APP_API_BASE_URL
+Prod->>API : 设置VUE_APP_API_BASE_URL
+API->>API : 使用环境变量或默认值
+API-->>Dev : 返回配置
+API-->>Test : 返回配置
+API-->>Prod : 返回配置
+```
+
+**图表来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+#### 4. 兼容性处理机制
+
+系统实现了环境变量优先的配置策略，确保向后兼容：
+
+```mermaid
+flowchart TD
+Start([API配置初始化]) --> LoadEnv[加载环境变量]
+LoadEnv --> CheckMainAPI{检查VUE_APP_API_BASE_URL}
+CheckMainAPI --> |存在| UseMainEnv[使用主API环境变量]
+CheckMainAPI --> |不存在| UseMainDefault[使用主API默认值]
+LoadEnv --> CheckExecAPI{检查VUE_APP_EXECUTION_SERVER_URL}
+CheckExecAPI --> |存在| UseExecEnv[使用执行服务器环境变量]
+CheckExecAPI --> |不存在| UseExecDefault[使用执行服务器默认值]
+UseMainEnv --> CreateServices[创建API服务实例]
+UseMainDefault --> CreateServices
+UseExecEnv --> CreateServices
+UseExecDefault --> CreateServices
+CreateServices --> End([配置完成])
+```
+
+**图表来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+**章节来源**
+- [2026-04-23.md:43-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L43-L47)
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+## nginx反向代理配置
+
+### 相对路径代理机制
+
+2026年4月23日更新引入了nginx反向代理的相对路径配置，通过移除pathRewrite实现更灵活的代理机制。
+
+### nginx代理配置架构
+
+```mermaid
+graph TB
+subgraph "nginx反向代理架构"
+A[客户端请求] --> B[nginx服务器]
+B --> C[API代理配置]
+C --> D[/api/路径匹配]
+D --> E[med-ai-main-server:8081]
+E --> F[后端主服务器]
+B --> G[静态资源代理]
+G --> H[Vue应用]
+B --> I[健康检查]
+I --> J[/health端点]
+end
+```
+
+**图表来源**
+- [nginx.conf:1-73](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L1-L73)
+
+### 相对路径代理实现
+
+#### 移除pathRewrite的配置策略
+- **原有配置**：使用pathRewrite重写URL路径
+- **新配置**：保留原始路径，直接转发到后端服务
+- **优势**：简化代理逻辑，提升兼容性
+
+#### nginx代理配置详解
+
+```mermaid
+classDiagram
+class NginxProxy {
++location /api/ {
++client_max_body_size 50M
++proxy_pass http : //med-ai-main-server : 8081/api/
++proxy_set_header Host $host
++proxy_set_header X-Real-IP $remote_addr
++proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for
++proxy_set_header X-Forwarded-Proto $scheme
++proxy_connect_timeout 60s
++proxy_send_timeout 300s
++proxy_read_timeout 300s
++}
+}
+class BackendServer {
++server_name med-ai-main-server
++port 8081
++application_path /api
+}
+NginxProxy --> BackendServer
+```
+
+**图表来源**
+- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
+
+#### 开发环境代理配置
+
+```mermaid
+graph TB
+subgraph "开发环境代理配置"
+A[Vue CLI开发服务器] --> B[port 8080]
+B --> C[/api代理]
+C --> D[target: 'http://localhost:8081']
+D --> E[changeOrigin: true]
+E --> F[timeout: 310000ms]
+F --> G[proxyTimeout: 310000ms]
+end
+```
+
+**图表来源**
+- [vue.config.js:5-16](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L5-L16)
+
+### 代理超时配置优化
+
+系统配置了适当的代理超时时间，支持AI模型的流式响应：
+
+```mermaid
+sequenceDiagram
+participant Client as 客户端
+participant Nginx as nginx代理
+participant Backend as 后端服务
+Client->>Nginx : 发起API请求
+Nginx->>Backend : 转发请求
+Backend-->>Nginx : 流式响应数据
+Nginx-->>Client : 传递响应数据
+Note over Nginx,Backend : 310秒超时支持长连接
+```
+
+**图表来源**
+- [vue.config.js:11-12](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L11-L12)
+- [nginx.conf:47-49](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L47-L49)
+
+**章节来源**
+- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
+- [vue.config.js:5-16](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L5-L16)
+- [nginx.main.conf:31-50](file://med_ai_assistant_1.0_bs_vue/nginx.main.conf#L31-L50)
+
+## 部署灵活性和环境可移植性
+
+### 环境变量配置策略
+
+2026年4月23日更新通过环境变量配置实现了部署灵活性和环境可移植性，支持不同环境的无缝切换。
+
+### 多环境配置架构
+
+```mermaid
+graph TB
+subgraph "多环境配置架构"
+A[开发环境] --> B[VUE_APP_API_BASE_URL=localhost:8081]
+A --> C[VUE_APP_EXECUTION_SERVER_URL=localhost:8082]
+D[测试环境] --> E[VUE_APP_API_BASE_URL=test-server:8081]
+D --> F[VUE_APP_EXECUTION_SERVER_URL=test-exec-server:8082]
+G[生产环境] --> H[VUE_APP_API_BASE_URL=med-ai-main-server:8081]
+G --> I[VUE_APP_EXECUTION_SERVER_URL=med-ai-exec-server:8082]
+J[默认配置] --> K[baseURL='/api']
+J --> L[执行服务器默认IP]
+end
+```
+
+**图表来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+### Docker容器化部署支持
+
+系统支持Docker容器化部署，通过环境变量实现服务发现：
+
+#### Docker Compose配置示例
+- **服务发现**：通过服务名称med-ai-main-server进行容器间通信
+- **端口映射**：nginx容器映射80端口到宿主机
+- **环境变量**：通过docker-compose.yml传递环境变量
+
+#### 容器网络配置
+- **内部网络**：所有容器运行在同一Docker网络中
+- **服务命名**：使用有意义的服务名称便于管理
+- **健康检查**：集成健康检查端点支持容器编排
+
+### 环境切换机制
+
+```mermaid
+flowchart TD
+Start([应用启动]) --> LoadEnv[加载环境变量]
+LoadEnv --> CheckEnv{检查环境类型}
+CheckEnv --> |development| DevConfig[开发环境配置]
+CheckEnv --> |testing| TestConfig[测试环境配置]
+CheckEnv --> |production| ProdConfig[生产环境配置]
+DevConfig --> InitAPI[初始化API配置]
+TestConfig --> InitAPI
+ProdConfig --> InitAPI
+InitAPI --> ConnectDB[连接数据库]
+ConnectDB --> StartApp[启动应用]
+```
+
+**图表来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+**章节来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+- [nginx.conf:42](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L42)
+
+## API配置管理优化
+
+### 环境变量配置管理
+
+2026年4月23日更新通过环境变量实现了API配置的集中管理，提升了配置的灵活性和可维护性。
+
+### API服务配置架构
+
+```mermaid
+classDiagram
+class ApiService {
++axios实例
++baseURL配置
++超时设置
++请求拦截器
++响应拦截器
+}
+class MainService {
++baseURL : process.env.VUE_APP_API_BASE_URL || '/api'
++timeout : 30000ms
++headers : application/json; charset=utf-8
+}
+class ExecutionService {
++baseURL : process.env.VUE_APP_EXECUTION_SERVER_URL || 'http : //100.66.1.3 : 8082'
++timeout : 30000ms
++responseType : json
+}
+class DecryptionService {
++baseURL : process.env.VUE_APP_DECRYPTION_SERVER_URL || 'http : //localhost : 8082'
++timeout : 30000ms
++responseType : json
+}
+ApiService --> MainService
+ApiService --> ExecutionService
+ApiService --> DecryptionService
+```
+
+**图表来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+- [request.js:44-51](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L44-L51)
+
+### 配置优先级策略
+
+系统实现了多层配置优先级，确保配置的灵活性：
+
+#### 配置优先级顺序
+1. **环境变量**：最高优先级，用于容器化部署
+2. **默认值**：开发环境的默认配置
+3. **相对路径**：简化代理配置的相对路径
+
+#### 配置验证机制
+- **必填项检查**：确保关键配置项存在
+- **格式验证**：验证URL格式的正确性
+- **可用性测试**：启动时测试配置的有效性
+
+**章节来源**
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:44-51](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L44-L51)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+
+## nginx代理配置优化
+
+### 相对路径代理实现
+
+2026年4月23日更新通过移除pathRewrite配置，实现了相对路径代理，提升了代理的灵活性和兼容性。
+
+### nginx代理配置详解
+
+#### API代理配置优化
+- **路径保留**：保留原始请求路径，不进行URL重写
+- **服务发现**：通过服务名称med-ai-main-server进行容器间通信
+- **超时配置**：支持300秒的长连接超时，适应AI模型流式响应
+
+#### 静态资源优化
+- **缓存策略**：对JS、CSS、图片等静态资源设置1年缓存
+- **Gzip压缩**：启用Gzip压缩提升传输效率
+- **安全头设置**：添加X-Frame-Options、X-Content-Type-Options等安全头
+
+### nginx配置架构
+
+```mermaid
+graph TB
+subgraph "nginx配置架构"
+A[server块] --> B[listen 80]
+A --> C[server_name localhost]
+A --> D[location /]
+D --> E[try_files $uri $uri/ /index.html]
+A --> F[location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$]
+F --> G[expires 1y]
+F --> H[Cache-Control public, immutable]
+A --> I[location /api/]
+I --> J[proxy_pass http://med-ai-main-server:8081/api/]
+I --> K[proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for]
+end
+```
+
+**图表来源**
+- [nginx.conf:1-73](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L1-L73)
+- [nginx.main.conf:12-54](file://med_ai_assistant_1.0_bs_vue/nginx.main.conf#L12-L54)
+
+### 性能优化配置
+
+#### HTTP/2支持
+- **协议升级**：支持HTTP/2协议提升性能
+- **多路复用**：减少连接建立开销
+- **头部压缩**：提升小请求的传输效率
+
+#### 缓存策略优化
+- **静态资源缓存**：1年长期缓存
+- **HTML文件缓存**：禁用缓存确保内容更新
+- **动态内容缓存**：根据内容类型设置合适的缓存策略
+
+**章节来源**
+- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
+- [nginx.conf:33-37](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L33-L37)
+- [nginx.main.conf:37-50](file://med_ai_assistant_1.0_bs_vue/nginx.main.conf#L37-L50)
 
 ## 诊断解析器Markdown标题级别鲁棒性增强
 
@@ -797,6 +1215,8 @@ K[Webpack]
 L[ESLint]
 M[marked]
 N[dompurify]
+O[axios]
+P[Element Plus]
 end
 A --> E
 B --> I
@@ -810,6 +1230,8 @@ I --> K
 I --> L
 I --> M
 I --> N
+I --> O
+I --> P
 ```
 
 **图表来源**
@@ -861,6 +1283,13 @@ Note over Backend,Frontend : 双服务并行运行
 - **状态管理**：通过Vuex集中管理AI诊断数据，避免重复请求
 - **组件复用**：诊断编辑面板在多个页面中复用，提升开发效率
 - **tooltip优化**：统一配置管理，减少重复定义
+- **nginx代理优化**：相对路径代理减少URL重写开销
+
+### API配置性能优化
+
+- **环境变量缓存**：环境变量在应用启动时加载，避免重复读取
+- **代理超时优化**：310秒超时支持长连接，适应AI模型流式响应
+- **静态资源缓存**：1年缓存策略提升静态资源加载速度
 
 ### 数据库约束防护
 
@@ -888,6 +1317,18 @@ Note over Backend,Frontend : 双服务并行运行
 - 检查Node.js版本要求
 - 验证NPM依赖安装
 - 确认端口占用情况
+
+### API配置问题
+
+**环境变量未生效**
+- 检查环境变量是否正确设置
+- 验证Docker环境变量配置
+- 确认Vue CLI开发服务器配置
+
+**代理配置错误**
+- 检查nginx.conf中的代理配置
+- 验证服务名称和端口配置
+- 确认相对路径代理设置
 
 ### AI服务问题
 
@@ -945,6 +1386,16 @@ Note over Backend,Frontend : 双服务并行运行
 - 验证测试数据准备
 - 确认测试覆盖率统计
 
+**环境变量配置问题**
+- 检查VUE_APP_API_BASE_URL配置
+- 验证VUE_APP_EXECUTION_SERVER_URL配置
+- 确认Docker环境变量传递
+
+**nginx代理问题**
+- 检查nginx.conf配置语法
+- 验证代理路径配置
+- 确认服务发现配置
+
 ## 结论
 
 MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗系统。2026年4月23日的更新进一步增强了系统的实用性和用户体验。
@@ -956,6 +1407,10 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - **部署灵活**：支持分布式部署，满足不同规模医疗机构需求
 - **用户体验优化**：新增完整tooltip功能，提供详细的界面提示
 - **诊断解析鲁棒性增强**：通过extractSingleLineField函数防止跨行误捕获
+- **前端API配置优化**：移除硬编码生产服务器IP，改用环境变量配置
+- **nginx反向代理相对路径**：通过相对路径代理提升部署灵活性
+- **环境可移植性增强**：支持不同环境的无缝切换和容器化部署
+- **诊断解析器鲁棒性增强**：通过extractSingleLineField函数防止跨行误捕获
 - **新增完整tooltip功能**：为所有标签页提供详细的悬停提示信息
 - **新增AI诊断辅助标签页**：提供独立的AI诊断结果展示和编辑功能
 - **懒加载机制优化**：通过条件渲染提升应用性能和用户体验
@@ -963,6 +1418,8 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - **统一配置管理**：通过tooltip.js实现tooltip功能的集中管理
 - **组件复用设计**：通过诊断编辑面板实现功能模块化和代码复用
 - **前端解析优化**：通过正则表达式修复解决triggerDiagnosis字段的跨行误捕获问题
+- **API配置环境变量化**：通过环境变量实现多环境配置管理
+- **nginx代理相对路径化**：通过相对路径代理提升部署灵活性
 
 ### 新功能价值
 - **完整tooltip功能**：为所有标签页提供详细的悬停提示信息
@@ -972,6 +1429,9 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - **统一配置管理**：通过tooltip.js实现tooltip功能的集中管理
 - **组件复用设计**：通过诊断编辑面板实现功能模块化和代码复用
 - **前端解析优化**：通过extractSingleLineField函数解决正则表达式跨行问题
+- **API配置环境变量化**：通过环境变量实现多环境配置管理
+- **nginx代理相对路径化**：通过相对路径代理提升部署灵活性
+- **容器化部署支持**：通过环境变量实现Docker容器化部署
 
 ### 发展建议
 - 持续优化AI模型集成，提升诊断准确性
@@ -985,6 +1445,8 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - 建立更完善的数据库约束监控机制
 - 定期审查和更新序列同步脚本
 - 持续优化前端诊断解析算法，提升解析准确性和性能
+- 加强nginx代理配置的监控和维护
+- 完善环境变量配置的文档和最佳实践
 
 ## 附录
 
@@ -1008,9 +1470,18 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 - 更新DRG分析页面的界面和展示逻辑
 - **修复正则表达式跨行误捕获**：通过extractSingleLineField函数解决triggerDiagnosis字段解析问题
 - **优化诊断解析算法**：通过双重解析策略提升解析准确性和兼容性
+- **移除硬编码生产服务器IP**：通过环境变量配置实现部署灵活性
+- **nginx反向代理相对路径**：通过相对路径代理提升部署灵活性
+- **环境可移植性增强**：支持不同环境的无缝切换
+- **API配置环境变量化**：通过环境变量实现多环境配置管理
+- **nginx代理配置优化**：通过相对路径代理提升部署灵活性
 
 **章节来源**
 - [2026-04-23.md:1-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L1-L47)
 - [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
 - [qcDiseaseMatchParser.js:65-72](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js#L65-L72)
 - [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
+- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
+- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
+- [vue.config.js:5-16](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L5-L16)
