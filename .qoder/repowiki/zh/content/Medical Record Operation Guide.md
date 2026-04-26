@@ -4,11 +4,20 @@
 **本文档引用的文件**
 - [更新小结.md](file://更新小结.md)
 - [2026-04-24.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-24.md)
+- [EMR病历内容查询接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md)
+- [EmrRecordListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java)
+- [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
+- [EmrContentRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java)
+- [EmrRecordService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java)
+- [MedicalRecordController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java)
+- [EmrContent.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/EmrContent.java)
+- [emr-content-query.json](file://med_ai_assistant_1.0_bs_backend/sql/hospital-Local/emr-content-query.json)
+- [EMR病历内容同步实现方案.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/医院数据同步/EMR病历内容同步实现方案.md)
+- [修复EMR记录详情查询返回多条结果错误.md](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/修复EMR记录详情查询返回多条结果错误.md)
+- [emr-record-api-test.http](file://med_ai_assistant_1.0_bs_backend/test-scripts/emr-record-api-test.http)
+- [更新日志2025年10月12日_EMR病历记录查询接口实现.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/更新日志2025年10月12日_EMR病历记录查询接口实现.md)
 - [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
-- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
-- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
-- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
-- [TodoView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
 - [API文档.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/API_DOCUMENTATION.md)
 - [架构图.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
 - [主服务器部署指南.md](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/README.md)
@@ -27,17 +36,10 @@
 - [病历记录管理接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/病历记录管理接口.md)
 - [病历记录时间格式调整接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/病历记录时间格式调整接口.md)
 - [待办事项接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/待办事项接口.md)
-- [EMR病历内容查询接口.md](file://med_ai_assistant_1.0_bs_backend/doc/接口/病历记录/EMR病历内容查询接口.md)
-- [EmrRecordListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java)
-- [EmrRecordContentDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java)
-- [emr-content-query.json](file://med_ai_assistant_1.0_bs_backend/sql/hospital-Local/emr-content-query.json)
-- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
-- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/api/patient.js)
-- [EmrSyncService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/hospital/service/EmrSyncService.java)
-- [EmrContentRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java)
-- [EmrRecordService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java)
-- [MedicalRecordController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java)
-- [DatabaseCleanupUtil.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/util/DatabaseCleanupUtil.java)
+- [TreatmentPlanTable.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/TreatmentPlanTable.vue)
+- [PatientSummary.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue)
+- [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+- [TodoView.vue](file://med_ai_assistant_1.0_bs_vue/src/views/TodoView.vue)
 </cite>
 
 ## 更新摘要
@@ -48,6 +50,11 @@
 - 更新待办事项生成流程，包含从病历内容和诊疗计划表格中加入待办事项
 - 更新AI结果页面和病情小结页面的Thinking折叠功能说明
 - 新增待办事项操作界面的交互说明
+- **新增EMR病历内容查询接口功能**：实现病历记录列表查询、详细内容查询、JSON字段名对齐修复和重复ID记录处理机制
+- **新增EMR病历内容同步模块**：支持高并发数据同步、数据库约束处理能力和自动重试机制
+- **新增JSON字段名大小写对齐机制**：解决生产环境显示问题
+- **新增重复ID记录处理机制**：修复IncorrectResultSizeDataAccessException，实现按修改时间降序取最新记录的机制
+- **新增错误调试信息增强**：当在EMR记录列表中选择某条记录时，详细输出完整的错误信息
 
 ## 目录
 1. [项目概述](#项目概述)
@@ -85,6 +92,9 @@
 - **重复ID记录处理**：修复IncorrectResultSizeDataAccessException，实现按修改时间降序取最新记录的机制
 - **选中文字加入待办**：v0.9.003新增功能，支持从病历内容和诊疗计划中快速创建待办事项
 - **简化病情小结显示**：v0.9.002移除颜色标注，提供更简洁的病情摘要展示
+- **EMR病历内容查询**：新增完整的EMR病历内容查询接口，支持列表查询和详细内容获取
+- **EMR病历内容同步**：新增高并发数据同步模块，具备数据库约束处理能力和自动重试机制
+- **错误调试增强**：新增详细的错误调试信息，便于问题定位和解决
 
 ## 系统架构
 
@@ -106,6 +116,8 @@ ThinkingFold[Thinking折叠功能]
 FirstCourseSubstitute[首次病程记录替代逻辑]
 AddToTodo[加入待办功能]
 RemoveColorHighlight[移除颜色标注]
+EMRContentQuery[EMR内容查询接口]
+EMRContentSync[EMR内容同步模块]
 end
 subgraph "API网关层"
 Gateway[API Gateway]
@@ -172,13 +184,8 @@ Medical --> DataSvc
 Voice --> VoiceEngine
 Todo --> TodoEngine
 EmrSync --> DatabaseCleanup
-PromptSvc --> Repo
-DataSvc --> Repo
-MemoryBank --> CacheRepo
-CacheRepo --> Redis
-Repo --> MySQL
-Repo --> Oracle
 EmrRepo --> Oracle
+EmrRepo --> MySQL
 CacheRepo --> Redis
 Encrypt --> ExecServer
 PromptSvc --> AIService
@@ -192,6 +199,8 @@ FirstCourseSubstitute --> PromptUtils
 DatabaseCleanup --> CleanupUtil
 AddToTodo --> TodoEngine
 RemoveColorHighlight --> DOMPurify
+EMRContentQuery --> EmrRepo
+EMRContentSync --> EmrRepo
 ```
 
 **图表来源**
@@ -695,6 +704,228 @@ SuggestionBox --> AutoApply
 - [AIResults.vue:342-382](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L342-L382)
 - [PatientSummary.vue:179-224](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientSummary.vue#L179-L224)
 
+### EMR病历内容查询接口
+
+**新增功能**：系统现在提供完整的EMR病历内容查询接口，支持病历记录列表查询和详细内容获取。
+
+#### 接口1：获取患者EMR病历记录列表
+
+**接口路径**：`GET /api/medicalrecords/emr-list`
+
+**功能说明**：根据患者ID查询EMR病历记录列表，返回病历的基本信息（记录ID、文档类型名称、文档标题时间），用于前端列表展示。数据来源为EMR_CONTENT表，仅返回未删除的记录（DELETEMARK=0）。
+
+**请求参数**：
+- Query参数:
+  - patientId (String, 必填): 患者ID
+
+**响应格式**：`ResponseEntity<List<EmrRecordListDTO>>`
+返回EmrRecordListDTO对象列表，每个对象包含id（小写）、doc_TYPE_NAME、doc_TITLE_TIME字段
+
+**逻辑**：
+1. 接收patientId参数
+2. 调用EmrRecordService.getEmrRecordListByPatientId()查询EMR_CONTENT表
+3. 查询条件：PATIENT_ID = :patientId AND DELETEMARK = 0
+4. 按DOC_TITLE_TIME降序排列
+5. 将查询结果映射为EmrRecordListDTO对象
+6. 使用@JsonProperty注解确保JSON字段名为小写（id）或保持原有大小写（doc_TYPE_NAME、doc_TITLE_TIME），与前端对齐
+7. 返回病历记录列表
+
+**响应示例**：
+```json
+[
+  {
+    "id": "12345",
+    "doc_TYPE_NAME": "入院记录",
+    "doc_TITLE_TIME": "2026-04-08T10:30:00"
+  },
+  {
+    "id": "12346",
+    "doc_TYPE_NAME": "病程记录",
+    "doc_TITLE_TIME": "2026-04-07T14:20:00"
+  }
+]
+```
+
+**相关文件**：
+- Controller: `com.example.medaiassistant.controller.MedicalRecordController.getEmrRecordList()`
+- Service: `com.example.medaiassistant.service.EmrRecordService.getEmrRecordListByPatientId()`
+- Repository: `com.example.medaiassistant.repository.EmrContentRepository.findByPatientIdAndDeleteMarkZero()`
+- DTO: `com.example.medaiassistant.dto.EmrRecordListDTO`
+- 前端组件: `med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue`
+- 前端API: `med_ai_assistant_1.0_bs_vue/src/api/patient.js - getEMRRecords()`
+
+#### 接口2：获取EMR病历记录详细内容
+
+**接口路径**：`GET /api/medicalrecords/emr-content/{id}`
+
+**功能说明**：根据记录ID获取EMR病历记录的详细内容（CONTENT字段），用于前端点击列表项后展示病历完整内容。数据来源为EMR_CONTENT表。
+
+**请求参数**：
+- Path参数:
+  - id (String, 必填): EMR病历记录ID
+
+**响应格式**：`ResponseEntity<EmrRecordContentDTO>`
+返回EmrRecordContentDTO对象，包含content字段（小写）
+
+**业务逻辑**：
+1. 将字符串ID转换为Long类型
+2. 调用Repository查询CONTENT字段
+3. 处理查询结果：返回空内容DTO或填充实际内容
+
+**Repository层查询逻辑**（EmrContentRepository.findContentById）：
+- 返回类型为`List<String>`，兼容数据库中存在重复ID记录的情况
+- 查询条件：`WHERE id = :id AND (deleteMark IS NULL OR deleteMark = 0)`
+- 排序策略：`ORDER BY modifiedOn DESC NULLS LAST`，确保第一条是最新修改的记录
+- 当存在重复ID记录时，Service层取第一条（最新记录）返回，并记录WARN日志
+
+**调试日志**：
+- 请求开始时记录：recordId、请求时间
+- 成功时记录：recordId、内容长度、耗时（毫秒）
+- 记录不存在时记录：recordId、耗时（毫秒）
+- 异常时记录：recordId、错误类型、错误消息、耗时（毫秒）、完整堆栈跟踪
+
+**响应示例**（有内容）：
+```json
+{
+  "content": "患者主诉：胸痛3天。查体：心率80次/分，律齐。诊断：冠心病。处理：予以硝酸甘油含服，观察病情变化。"
+}
+```
+
+**响应示例**（无内容）：
+```json
+{
+  "content": ""
+}
+```
+
+**相关文件**：
+- Controller: `com.example.medaiassistant.controller.MedicalRecordController.getEmrRecordContent()`
+- Service: `com.example.medaiassistant.service.EmrRecordService.getEmrRecordContentById()`
+- Repository: `com.example.medaiassistant.repository.EmrContentRepository.findContentById()`
+- DTO: `com.example.medaiassistant.dto.EmrRecordContentDTO`
+- 前端组件: `med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue`
+- 前端API: `med_ai_assistant_1.0_bs_vue/src/api/patient.js - getEMRRecordContent()`
+
+#### JSON字段名大小写对齐
+
+**新增功能**：为解决生产环境下JSON字段名大小写不匹配导致前端无法正确读取数据的问题，系统实现了完整的JSON字段名大小写对齐机制。
+
+- EmrRecordListDTO使用@JsonProperty("id")将后端ID字段序列化为小写id，与前端row.id对齐
+- EmrRecordListDTO使用@JsonProperty("doc_TYPE_NAME")和@JsonProperty("doc_TITLE_TIME")保持原有大小写，与前端prop属性对齐
+- EmrRecordContentDTO使用@JsonProperty("content")将后端CONTENT字段序列化为小写content，与前端response.data.content对齐
+- 此修复解决了生产环境下因JSON字段名大小写不匹配导致前端无法正确读取数据的问题
+
+#### 重复ID记录处理机制
+
+**新增功能**：为解决生产环境中EMR_CONTENT表存在重复ID记录导致IncorrectResultSizeDataAccessException的问题，系统实现了重复ID记录处理机制。
+
+**背景**：生产环境发现EMR_CONTENT表存在重复ID记录，导致原`String`返回类型抛出`IncorrectResultSizeDataAccessException`
+
+**解决方案**：
+1. Repository层：`findContentById`返回类型从`String`改为`List<String>`
+2. 排序策略：按`modifiedOn`降序排列（NULLS LAST），确保第一条是最新修改的记录
+3. Service层：检测到多条记录时记录WARN日志，取第一条返回
+
+**对外行为不变**：接口仍然返回单条记录内容，对前端透明
+
+**图表来源**
+- [EmrRecordListDTO.java:12-44](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordListDTO.java#L12-L44)
+- [EmrRecordContentDTO.java:11-45](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/EmrRecordContentDTO.java#L11-L45)
+- [EmrContentRepository.java:114-125](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java#L114-L125)
+- [EmrRecordService.java:213-258](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java#L213-L258)
+
+### EMR病历内容同步模块
+
+**新增功能**：系统现在提供完整的EMR病历内容同步模块，支持高并发数据同步、数据库约束处理能力和自动重试机制。
+
+#### 数据同步机制
+
+系统支持EMR病历内容的实时同步：
+
+- **数据源**：EMR_CONTENT表，通过EmrSyncService从医院HIS系统（Oracle）同步
+- **同步策略**：增量同步，已存在的记录会更新，新记录会插入
+- **去重策略**：采用SOURCE_TABLE + SOURCE_ID组合作为去重标识
+- **软删除处理**：自动过滤DELETEMARK≠0的记录
+
+#### 数据库约束处理机制
+
+**新增功能**：系统现在提供完整的数据库约束处理机制，确保高并发场景下的数据一致性。
+
+**TOCTOU竞态条件修复**：
+- 使用`findAllBySourceTableAndSourceId()`方法替代`findBySourceTableAndSourceId()`
+- 在并发场景下，通过List查询支持重试机制
+- 避免查询到空结果后，其他线程先插入导致的唯一约束冲突
+
+**JPA批处理优化**：
+- 将`save()`替换为`saveAndFlush()`，避免JPA批处理延迟执行
+- 每条记录立即提交SQL，异常精准对应当前记录
+- 便于调试和重试操作
+
+**自动重试机制**：
+- UPDATE路径：约束冲突时清除Session后重新查询并更新
+- INSERT路径：约束冲突时降级为UPDATE操作
+- 使用`entityManager.clear()`确保持久化上下文一致性
+
+**数据库清理工具**：
+- 提供`handleIntegrityConstraintViolation()`方法处理约束冲突
+- 支持记录存在性检查、清理冲突记录、直接重试操作
+- 记录详细的错误日志和处理建议
+
+#### EMR记录选择错误调试信息增强
+
+**新增功能**：当在EMR记录列表中选择某条记录时，如果发生任何错误，系统会在调试信息中详细输出完整的错误信息。
+
+**后端增强**：
+- **EmrRecordService.java**：添加详细的日志记录，包括请求开始时间、记录ID、耗时
+- **MedicalRecordController.java**：记录请求开始时间和操作时间戳
+- **getStackTrace()方法**：将异常堆栈转换为字符串
+
+**前端增强**：
+- **MedicalRecords.vue**：增强handleEMRRecordClick方法的错误调试信息
+- **详细错误对象**：包含错误类型、错误消息、完整堆栈跟踪、时间戳、操作耗时
+- **网络错误区分**：区分服务器响应错误vs网络请求错误
+
+**调试日志格式**：
+- 后端日志前缀：`[EMR记录详情]`
+- 前端日志前缀：`[EMR记录详情]`
+- 包含上下文：recordId、patientId、docType、耗时、时间戳
+
+**图表来源**
+- [EmrRecordService.java:239-264](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java#L239-L264)
+- [MedicalRecordController.java:244-271](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/MedicalRecordController.java#L244-L271)
+
+#### IncorrectResultSizeDataAccessException修复机制
+
+**新增功能**：版本0.8.020中修复了IncorrectResultSizeDataAccessException问题，实现了更加稳定的List返回机制。
+
+**问题分析**：
+- **异常原因**：在存在重复ID记录的情况下，使用Optional返回可能导致IncorrectResultSizeDataAccessException
+- **异常场景**：JPA无法确定应该返回多少条记录，导致异常抛出
+- **影响范围**：EMR病历内容查询接口，特别是存在重复ID记录的场景
+
+**修复方案**：
+1. **List返回机制**：Repository层返回`List<String>`而非`Optional<String>`
+2. **重复ID处理**：当检测到多条记录时，按modifiedOn降序排列，取第一条（最新记录）
+3. **日志记录**：检测到重复记录时记录WARN日志，便于后续数据清理
+4. **排序策略**：使用`ORDER BY e.modifiedOn DESC NULLS LAST`确保按修改时间降序
+
+**实现细节**：
+- **Repository层**：`findContentById()`方法返回List<String>
+- **Service层**：`getEmrRecordContentById()`方法处理List结果
+- **排序策略**：`ORDER BY e.modifiedOn DESC NULLS LAST`
+- **异常处理**：捕获并处理NumberFormatException和Exception
+
+**业务逻辑**：
+1. 查询指定ID的所有EMR记录
+2. 按modifiedOn降序排列（NULL值排在最后）
+3. 取第一条记录作为最新内容返回
+4. 如有多条记录，记录WARN日志用于数据清理
+5. 返回EmrRecordContentDTO对象
+
+**图表来源**
+- [EmrContentRepository.java:114-125](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/EmrContentRepository.java#L114-L125)
+- [EmrRecordService.java:208-258](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/EmrRecordService.java#L208-L258)
+
 ## API接口规范
 
 系统提供完整的RESTful API接口，支持病历记录管理、AI诊断、用户管理、语音识别、待办事项等功能。
@@ -771,6 +1002,24 @@ SuggestionBox --> AutoApply
 - **方法**: GET
 - **参数**: `medicalRecordId` (路径参数)
 - **响应**: 指定病历记录的所有待办事项
+
+### EMR病历内容查询API
+
+#### 获取EMR病历记录列表
+
+- **路径**: `/api/medicalrecords/emr-list`
+- **方法**: GET
+- **参数**: `patientId` (必需)
+- **响应**: EmrRecordListDTO对象数组
+- **特点**: 自动过滤已删除记录，按DOC_TITLE_TIME降序排列，JSON字段名大小写对齐
+
+#### 获取EMR病历记录详细内容
+
+- **路径**: `/api/medicalrecords/emr-content/{id}`
+- **方法**: GET
+- **参数**: `id` (路径参数)
+- **响应**: EmrRecordContentDTO对象
+- **特点**: 支持重复ID记录处理，按modifiedOn降序取最新记录
 
 ### AI服务API
 
@@ -1748,6 +1997,8 @@ ThinkingFold[Thinking折叠功能]
 FirstCourseSubstitute[首次病程记录替代逻辑]
 AddToTodo[加入待办功能]
 RemoveColorHighlight[移除颜色标注]
+EMRContentQuery[EMR内容查询接口]
+EMRContentSync[EMR内容同步模块]
 end
 subgraph "构建配置"
 VueCLI[Vue CLI配置]
@@ -1781,6 +2032,8 @@ ThinkingFold --> DOMPurifyValidation
 FirstCourseSubstitute --> PromptUtilsValidation
 AddToTodo --> TodoEngine
 RemoveColorHighlight --> DOMPurifyValidation
+EMRContentQuery --> EmrRepo
+EMRContentSync --> EmrRepo
 ```
 
 **图表来源**
@@ -1986,7 +2239,7 @@ cd ../deploy/main-linux-oracle
 - **前端增强**：MedicalRecords.vue增强handleEMRRecordClick方法的错误调试信息
 - **用户友好提示**：包含记录ID的错误提示，便于定位问题
 
-#### v.8.008 - EMR病历内容同步修复
+#### v0.8.008 - EMR病历内容同步修复
 - **修复问题**：EMR_CONTENT表UPDATE操作触发唯一约束冲突（ORA-00001）
 - **修复方案**：将save()替换为saveAndFlush()，新增重试逻辑
 - **竞态条件修复**：使用findAllBySourceTableAndSourceId()替代findBySourceTableAndSourceId()
@@ -2006,6 +2259,13 @@ cd ../deploy/main-linux-oracle
 - **修复问题**：package.json语法错误导致启动失败
 - **优化配置**：提升前端构建系统稳定性
 - **增强依赖管理**：确保依赖版本兼容性
+
+#### v0.6.081 - EMR病历内容查询接口实现
+- **新增功能**：实现完整的EMR病历内容查询接口
+- **接口1**：获取患者EMR病历记录列表
+- **接口2**：获取EMR病历记录详细内容
+- **JSON字段名对齐**：解决生产环境显示问题
+- **重复ID记录处理**：修复IncorrectResultSizeDataAccessException
 
 ### 版本管理策略
 
@@ -2070,6 +2330,9 @@ NotifyUsers --> End([发布完成])
 20. **界面简化**: v0.9.002移除颜色标注，提供更简洁的用户界面体验
 21. **操作一致性**: 新增的待办事项操作界面，提供统一的交互体验
 22. **去重机制**: 新增的内容匹配去重功能，避免重复创建待办事项
+23. **EMR病历内容查询**: 新增完整的EMR病历内容查询接口，支持列表查询和详细内容获取
+24. **EMR病历内容同步**: 新增高并发数据同步模块，具备数据库约束处理能力和自动重试机制
+25. **错误调试增强**: 新增详细的错误调试信息，便于问题定位和解决
 
 ### 未来发展
 
@@ -2090,5 +2353,8 @@ NotifyUsers --> End([发布完成])
 15. **异常处理机制完善**: 持续改进IncorrectResultSizeDataAccessException等异常处理机制，提升系统稳定性
 16. **待办事项功能增强**: 基于v0.9.003的选中文字加入待办功能，进一步优化待办事项管理体验
 17. **界面设计优化**: 基于v0.9.002的简化设计理念，持续优化用户界面的简洁性和实用性
+18. **EMR内容查询优化**: 基于新增的JSON字段名对齐和重复ID处理机制，进一步提升EMR内容查询的稳定性和准确性
+19. **EMR同步性能提升**: 基于新增的数据库约束处理和自动重试机制，持续优化EMR同步的性能和可靠性
+20. **错误调试系统完善**: 基于新增的详细错误调试信息，持续改进问题定位和解决的效率
 
-通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的选中文字加入待办功能和病情小结颜色标注移除，体现了团队对用户体验和界面简洁性的重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在提升用户操作便捷性和界面美观性方面取得了显著进展。版本0.9.003中新增的选中文字加入待办功能，通过统一的API调用和去重机制，为用户提供了更加高效和便捷的待办事项创建方式，而版本0.9.002中移除的颜色标注功能，则为系统提供了更加简洁和专业的视觉效果，这些改进都充分体现了系统在用户体验方面的持续优化和提升。
+通过持续的技术创新和功能完善，医疗AI助手系统将继续为医疗行业的数字化转型贡献力量，为患者提供更好的医疗服务体验。最新的选中文字加入待办功能和病情小结颜色标注移除，体现了团队对用户体验和界面简洁性的重视，为后续的开发和维护奠定了坚实的基础。这些改进不仅解决了当前的问题，更为系统的长期稳定运行提供了重要保障，特别是在提升用户操作便捷性和界面美观性方面取得了显著进展。版本0.9.003中新增的选中文字加入待办功能，通过统一的API调用和去重机制，为用户提供了更加高效和便捷的待办事项创建方式，而版本0.9.002中移除的颜色标注功能，则为系统提供了更加简洁和专业的视觉效果，这些改进都充分体现了系统在用户体验方面的持续优化和提升。新增的EMR病历内容查询接口和同步模块，通过JSON字段名对齐、重复ID处理、错误调试增强等机制，为系统的稳定性和可靠性提供了重要保障，为后续的EMR系统集成和数据管理奠定了坚实基础。
