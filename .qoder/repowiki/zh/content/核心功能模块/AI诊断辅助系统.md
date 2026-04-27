@@ -10,9 +10,13 @@
 - [AI模型配置类](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
 - [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 - [定时Prompt生成控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java)
-- [Prompt列表组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
+- [资料收集建议API](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
+- [轮询管理器](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
 - [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 - [AI视图组件](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
 - [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
@@ -21,15 +25,17 @@
 - [资料收集建议TDD实施指南](file://med_ai_assistant_1.0_bs_backend/doc/迭代/进一步问诊建议/TDD实施指南.md)
 - [PromptListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/PromptListDTO.java)
 - [PromptResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java)
+- [PatientTabs组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [PatientView组件](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [路由配置](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增资料收集建议功能，包括定时批量生成和手动触发API
-- 数据组装增强：为资料收集建议模板追加诊断分析结果、诊疗计划和入院记录
-- 定时任务系统：每日08:00自动为符合条件的患者生成建议
-- 手动触发API：医生可随时刷新生成资料收集建议
-- 前端组件：新增资料收集建议标签页和相关交互功能
+- 新增资料收集建议功能的完整前端集成，包括DataCollectionAdvice组件的状态管理、自动轮询机制和用户交互
+- 实现了手动触发生成和自动轮询查询的完整工作流程
+- 集成了轮询管理器，支持智能轮询控制和超时处理
+- 优化了组件状态管理和错误处理机制
 
 ## 目录
 1. [简介](#简介)
@@ -39,10 +45,10 @@
 5. [详细组件分析](#详细组件分析)
 6. [AI诊断页面增强功能](#ai诊断页面增强功能)
 7. [资料收集建议功能](#资料收集建议功能)
-8. [定时任务系统](#定时任务系统)
-9. [数据组装增强](#数据组装增强)
-10. [手动触发API](#手动触发api)
-11. [前端组件集成](#前端组件集成)
+8. [前端组件集成](#前端组件集成)
+9. [轮询管理机制](#轮询管理机制)
+10. [状态管理与数据流](#状态管理与数据流)
+11. [用户交互设计](#用户交互设计)
 12. [依赖关系分析](#依赖关系分析)
 13. [性能考虑](#性能考虑)
 14. [故障排除指南](#故障排除指南)
@@ -62,11 +68,12 @@
 - **新增**：AI诊断页面空状态处理与临床数据就绪提醒机制
 - **新增**：病情小结模板过滤功能，优化AI助手页面的模板展示
 - **新增**：资料收集建议功能，包括定时批量生成和手动触发API
-- **新增**：数据组装增强，为资料收集建议模板追加诊断分析结果、诊疗计划和入院记录
-- **新增**：完整的定时任务系统，支持每日自动化的资料收集建议生成
+- **新增**：完整的前端组件集成，包括DataCollectionAdvice组件的状态管理、自动轮询机制和用户交互
+- **新增**：轮询管理器的智能轮询控制和超时处理机制
+- **新增**：资料收集建议标签页与现有系统的无缝集成
 
 ## 项目结构
-系统采用分层架构，核心围绕AI控制器、AI响应控制器、模型配置与网络恢复服务展开，配合Prompt执行引擎与数据服务模块，形成完整的AI诊断辅助闭环。新增的资料收集建议功能通过独立的控制器和定时任务服务实现。
+系统采用分层架构，核心围绕AI控制器、AI响应控制器、模型配置与网络恢复服务展开，配合Prompt执行引擎与数据服务模块，形成完整的AI诊断辅助闭环。新增的资料收集建议功能通过独立的控制器、服务和前端组件实现，具备完整的状态管理和轮询机制。
 
 ```mermaid
 graph TB
@@ -74,73 +81,56 @@ subgraph "前端层"
 FE[前端应用]
 AIView[AI视图组件]
 AIDiagnosisTab[AI诊断标签页]
-PromptList[Prompt列表组件]
-DiagnosisCard[诊断卡片组件]
-DiagnosisEditPanel[诊断编辑面板]
 DataCollectionAdvice[资料收集建议组件]
+PatientTabs[患者标签页]
+PatientView[患者视图]
+PollingManager[轮询管理器]
 end
-subgraph "API网关层"
-Gateway[API网关<br/>端口: 8081]
+subgraph "API层"
+DataCollectionAdviceAPI[资料收集建议API]
+AIAPIModule[AI API模块]
 end
-subgraph "业务服务层"
-AI[AI服务模块<br/>AIController]
-AIResp[AI响应模块<br/>AIResponseController]
-Patient[患者管理模块<br/>PatientController]
-User[用户管理模块<br/>UserController]
-Encrypt[加密服务模块<br/>EncryptionController]
-DataCollectionAdviceCtrl[资料收集建议控制器<br/>DataCollectionAdviceController]
-TimerCtrl[定时任务控制器<br/>TimerPromptGeneratorController]
+subgraph "后端服务层"
+DataCollectionAdviceController[资料收集建议控制器]
+DataCollectionAdviceService[资料收集建议服务]
+TimerPromptGenerator[定时Prompt生成器]
+AIController[AI控制器]
+AIResponseController[AI响应控制器]
 end
 subgraph "核心服务层"
-PromptSvc[Prompt执行引擎<br/>PromptService]
-DataSvc[数据处理服务<br/>各种Service]
-EncryptSvc[加密解密服务<br/>AESEncryptionUtil]
-TimerSvc[定时任务服务<br/>TimerPromptGenerator]
-DataCollectionAdviceSvc[资料收集建议服务<br/>DataCollectionAdviceService]
+PromptService[Prompt执行引擎]
+DataSvc[数据处理服务]
+TreatmentPlanService[诊疗计划服务]
 end
 subgraph "数据访问层"
-Repo[Repository层<br/>JPA接口]
-PromptResultRepo[PromptResultRepository]
-DataCollectionAdviceRepo[资料收集建议仓库]
+PromptResultRepository[PromptResultRepository]
+PatientRepository[PatientRepository]
 end
 subgraph "数据存储层"
-MySQL[(MySQL数据库<br/>患者数据)]
-Oracle[(Oracle数据库<br/>生产环境)]
+MySQL[(MySQL数据库)]
+Oracle[(Oracle数据库)]
 end
 subgraph "外部服务"
-ExecutionServer[执行服务器<br/>100.66.1.2:8082]
-AIModel[AI模型服务<br/>DeepSeek等]
+ExecutionServer[执行服务器]
+AIModel[AI模型服务]
 end
 FE --> AIView
 AIView --> AIDiagnosisTab
-AIView --> PromptList
 AIView --> DataCollectionAdvice
-AIDiagnosisTab --> DiagnosisCard
-AIDiagnosisTab --> DiagnosisEditPanel
-Gateway --> AI
-Gateway --> AIResp
-Gateway --> Patient
-Gateway --> User
-Gateway --> Encrypt
-Gateway --> DataCollectionAdviceCtrl
-Gateway --> TimerCtrl
-AI --> PromptSvc
-AI --> TimerSvc
-AIResp --> AIModel
-AI --> DataCollectionAdviceSvc
-Patient --> DataSvc
-Encrypt --> EncryptSvc
-PromptSvc --> Repo
-TimerSvc --> Repo
-DataCollectionAdviceSvc --> Repo
-PromptResultRepo --> Repo
-DataCollectionAdviceRepo --> Repo
-DataSvc --> Repo
-Repo --> MySQL
-Repo --> Oracle
-EncryptSvc --> ExecutionServer
-PromptSvc --> AIModel
-DataCollectionAdviceSvc --> AIModel
+PatientTabs --> DataCollectionAdvice
+PatientView --> PatientTabs
+DataCollectionAdvice --> PollingManager
+DataCollectionAdviceAPI --> DataCollectionAdviceController
+DataCollectionAdviceController --> TimerPromptGenerator
+DataCollectionAdviceController --> PatientRepository
+DataCollectionAdviceService --> PromptResultRepository
+DataCollectionAdviceService --> TreatmentPlanService
+AIController --> PromptService
+AIResponseController --> AIModel
+PromptService --> PromptResultRepository
+DataSvc --> MySQL
+DataSvc --> Oracle
+ExecutionServer --> AIModel
 ```
 
 **图表来源**
@@ -155,12 +145,12 @@ DataCollectionAdviceSvc --> AIModel
 - AI模型配置类：集中管理多模型配置（URL、密钥、超时、重试），提供配置校验与默认模型选择。
 - 网络恢复服务：维护连续失败计数与恢复窗口，达到阈值自动重建WebClient，保障网络波动后的可用性。
 - 加密服务与执行服务器：在加密传输模式下，主服务器将敏感数据加密后发送至执行服务器，执行服务器解密后调用AI模型，再加密返回。
-- **新增**：资料收集建议控制器：提供手动触发资料收集建议生成的API端点，支持医生随时刷新生成。
-- **新增**：定时任务服务：负责定期生成诊断分析、诊疗计划、病情小结和资料收集建议等Prompt任务。
+- **新增**：资料收集建议控制器：提供手动触发资料收集建议生成的API端点，支持医生随时刷新生成，具备参数校验和Profile隔离。
+- **新增**：资料收集建议服务：负责查询患者最新的资料收集建议结果，组装为响应对象，支持三种状态管理。
+- **新增**：资料收集建议组件：完整的Vue组件，包含四种状态管理、自动轮询机制、用户交互和错误处理。
+- **新增**：轮询管理器：封装轮询逻辑，支持配置轮询间隔、最大轮询次数、超时回调和错误处理。
 - **新增**：AI诊断标签页组件：负责AI诊断结果的展示、空状态处理、诊断分析触发等功能。
-- **新增**：诊断卡片组件：提供诊断列表展示、工具栏操作、诊断分析触发等交互功能。
-- **新增**：Prompt列表组件：负责展示Prompt执行历史，包含病情小结模板过滤功能。
-- **新增**：资料收集建议组件：展示AI生成的进一步问诊、查体、辅助检查建议，支持手动刷新。
+- **新增**：患者标签页组件：整合多个标签页，包括AI诊断、病历记录、检查报告等，支持懒加载优化。
 
 **章节来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
@@ -168,28 +158,26 @@ DataCollectionAdviceSvc --> AIModel
 - [AI模型配置类](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
 - [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
-- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
+- [轮询管理器](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
 - [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
-- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
-- [Prompt列表组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
-- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DataCollectionAdvice.vue)
+- [PatientTabs组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 
 ## 架构总览
-系统整体分为前端层、API网关层、业务服务层、核心服务层、数据访问层与数据存储层，以及外部AI模型与执行服务器。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，Prompt执行引擎与数据服务模块提供数据支撑，加密服务与执行服务器实现安全的远程推理。新增的资料收集建议功能通过独立的服务层和控制器实现，与现有系统无缝集成。
+系统整体分为前端层、API层、业务服务层、核心服务层、数据访问层与数据存储层，以及外部AI模型与执行服务器。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，Prompt执行引擎与数据服务模块提供数据支撑，加密服务与执行服务器实现安全的远程推理。新增的资料收集建议功能通过独立的服务层、控制器和前端组件实现，具备完整的状态管理和轮询机制，与现有系统无缝集成。
 
 ```mermaid
 graph TB
-subgraph "业务编排"
+subgraph "业务编排层"
 AI[AI控制器]
 PromptSvc[Prompt执行引擎]
 TimerSvc[定时任务服务]
 AIDiagnosisTab[AI诊断标签页]
-PromptList[Prompt列表组件]
-DiagnosisCard[诊断卡片组件]
 DataCollectionAdviceCtrl[资料收集建议控制器]
 TimerCtrl[定时任务控制器]
 end
-subgraph "模型调用"
+subgraph "模型调用层"
 AIResp[AI响应控制器]
 AIModel[AI模型服务]
 handlePromptExecution[Prompt执行工具]
@@ -199,40 +187,47 @@ getPromptTemplate[获取模板]
 addPrompt[保存Prompt]
 generateAdvice[生成建议]
 end
-subgraph "数据支撑"
+subgraph "前端展示层"
+DataCollectionAdvice[资料收集建议组件]
+PollingManager[轮询管理器]
+PatientTabs[患者标签页]
+PatientView[患者视图]
+end
+subgraph "数据支撑层"
 DataSvc[数据处理服务]
 Repo[Repository层]
 MySQL[(MySQL)]
 Oracle[(Oracle)]
 apiAI[AI API模块]
 PromptResultRepo[PromptResultRepository]
-DataCollectionAdviceRepo[资料收集建议仓库]
+PatientRepo[PatientRepository]
+TreatmentPlanService[TreatmentPlanItemService]
 end
-subgraph "安全与执行"
+subgraph "安全与执行层"
 Encrypt[加密服务]
 ExecServer[执行服务器]
 end
 AI --> PromptSvc
 AI --> TimerSvc
 AI --> DataCollectionAdviceCtrl
-AIDiagnosisTab --> DiagnosisCard
 AIDiagnosisTab --> handlePromptExecution
 AIDiagnosisTab --> getLatestPromptResult
 AIDiagnosisTab --> apiAI
-PromptList --> PromptResultRepo
-handlePromptExecution --> getPatientData
-handlePromptExecution --> getPromptTemplate
-handlePromptExecution --> addPrompt
 DataCollectionAdviceCtrl --> generateAdvice
-generateAdvice --> TimerSvc
+DataCollectionAdviceCtrl --> TimerSvc
+DataCollectionAdviceCtrl --> PatientRepo
+DataCollectionAdvice --> PollingManager
+DataCollectionAdvice --> DataCollectionAdviceCtrl
+PatientTabs --> DataCollectionAdvice
+PatientView --> PatientTabs
 AIResp --> AIModel
 PromptSvc --> Repo
 TimerSvc --> Repo
-DataCollectionAdviceRepo --> Repo
+DataCollectionAdviceService --> Repo
 DataSvc --> Repo
 Encrypt --> ExecServer
 PromptSvc --> AIModel
-DataCollectionAdviceSvc --> AIModel
+DataCollectionAdviceService --> AIModel
 ```
 
 **图表来源**
@@ -437,7 +432,7 @@ ShowSuccess --> End(["结束"])
   - 支持诊断项的选中状态显示
 
 **章节来源**
-- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 
 ### Prompt执行工具：诊断分析流程支持
 handlePromptExecution工具函数为诊断分析提供了完整的执行流程支持。
@@ -522,217 +517,317 @@ Controller-->>Doctor : {"status" : "processing"}
 **章节来源**
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 
-### 资料收集建议组件：前端展示与交互
-资料收集建议组件为医生提供了直观的建议展示界面。
+### 资料收集建议服务：查询与状态管理
+资料收集建议服务负责查询患者最新的资料收集建议结果，支持三种状态管理。
 
-- **状态管理**
+- **状态管理逻辑**
+  - 无记录：返回none状态，表示该患者无建议记录
+  - 生成中：返回processing状态，表示AI尚未返回结果
+  - 已完成：返回completed状态，包含建议内容、生成时间和数据来源标识
+
+- **数据来源标识**
+  - 基于诊断分析：检查是否存在诊断分析结果
+  - 基于诊疗计划：通过TreatmentPlanItemService真实查询
+  - 用于指示当前建议的生成依据来源
+
+- **核心实现**
+  - `getLatestAdvice()`：查询最新建议结果
+  - `buildBasedOn()`：构建数据来源标识
+  - `hasTreatmentPlanData()`：判断是否存在诊疗计划数据
+
+**章节来源**
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
+
+## 前端组件集成
+
+### 资料收集建议组件：完整状态管理
+资料收集建议组件是本次更新的核心前端组件，实现了完整的状态管理和用户交互。
+
+- **四种状态管理**
   - loading状态：显示骨架屏加载效果
   - completed状态：渲染Markdown格式的建议内容
   - processing状态：显示生成中提示
   - empty状态：显示无建议提示和生成按钮
 
-- **核心功能**
+- **核心功能实现**
+  - `resetState()`：重置组件状态
+  - `loadAdvice()`：加载最新的资料收集建议
   - `handleRefresh()`：处理刷新建议按钮点击事件
   - `formattedTime()`：格式化生成时间显示
   - `renderedContent()`：渲染Markdown内容
-  - 自动轮询：状态变为completed后停止轮询
 
-- **用户体验**
+- **用户交互设计**
   - 生成时间显示：显示建议的生成时间
-  - 刷新按钮：支持手动重新生成
+  - 刷新按钮：支持手动重新生成建议
   - Markdown渲染：支持三级标题结构的建议内容
   - 基于信息标注：显示建议所依据的数据来源
 
+- **组件生命周期**
+  - mounted钩子：初始化时自动加载建议
+  - watch监听：监听patient变化，自动重新加载
+  - beforeUnmount钩子：组件销毁时清除轮询定时器
+
 **章节来源**
-- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DataCollectionAdvice.vue)
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
 
-## 定时任务系统
+### 资料收集建议API：前后端接口集成
+资料收集建议API模块提供了完整的前端接口调用封装。
 
-### 定时任务控制器：系统管理
-定时任务控制器提供了对定时任务系统的完整管理接口。
+- **手动触发生成**
+  - `generateDataCollectionAdvice(patientId)`：触发资料收集建议生成
+  - 立即返回processing状态，AI生成任务在后台异步执行
+  - 支持错误处理和用户提示
+
+- **查询建议结果**
+  - `getDataCollectionAdvice(patientId)`：查询最新建议结果
+  - 返回三种状态：completed、processing、none
+  - 包含状态、内容、生成时间和数据来源标识
+
+- **接口规范**
+  - POST /ai/data-collection-advice/generate/{patientId}
+  - GET /ai/data-collection-advice/{patientId}
+  - 支持RESTful风格的API设计
+
+**章节来源**
+- [资料收集建议API](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
+
+### 患者标签页集成：标签页组织
+患者标签页组件整合了多个功能标签页，包括新增的资料收集建议标签页。
+
+- **标签页组织**
+  - 基本信息、病情小结、AI诊断、病历记录、检查报告等
+  - 支持懒加载优化，仅在激活时才挂载组件
+  - 提供tooltip提示，改善用户体验
+
+- **AI诊断标签页集成**
+  - 位于"病历记录"标签页右侧，作为独立的功能标签页
+  - 支持手动刷新和自动轮询
+  - 与现有诊断分析功能无缝集成
+
+- **路由配置**
+  - 支持路由导航和参数传递
+  - 提供滚动行为和锚点定位
+  - 支持权限控制和认证
+
+**章节来源**
+- [PatientTabs组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [PatientView组件](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [路由配置](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
+
+## 轮询管理机制
+
+### 轮询管理器：智能轮询控制
+轮询管理器封装了轮询逻辑，支持配置轮询间隔、最大轮询次数、超时回调和错误处理。
 
 - **核心功能**
-  - `startTimer()`：启动定时器
-  - `stopTimer()`：停止定时器
-  - `timerStatus()`：查询定时器状态
-  - `triggerDailyPromptGeneration()`：手动触发每日Prompt生成
-
-- **手动触发机制**
-  - 支持临时修改执行时间和最大并发数
-  - 执行完成后自动恢复原始配置
-  - 提供详细的执行结果信息
-
-- **系统集成**
-  - 与TimerPromptGenerator服务集成
-  - 支持定时器状态的实时查询
-  - 提供系统健康检查接口
-
-**章节来源**
-- [定时Prompt生成控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java)
-
-### 定时任务配置：参数设置
-定时任务系统支持灵活的配置参数设置。
+  - `start()`：启动轮询，支持异步任务执行
+  - `stop()`：停止轮询并清除定时器
+  - 支持最大轮询次数限制
+  - 提供超时回调和错误处理机制
 
 - **配置参数**
-  - `timergenerator.daily.time`：每日任务cron表达式，默认"0 0 8 * * *"（每天08:00）
-  - `maxConcurrency`：最大并发数，默认5
-  - `schedulingProperties`：调度属性配置
+  - `task`：每次轮询执行的异步任务，返回Promise
+  - `onResult`：每次轮询成功后的回调
+  - `onCompleted`：判断是否完成的条件回调
+  - `interval`：轮询间隔（默认5000ms）
+  - `maxCount`：最大轮询次数（默认60次）
+  - `onTimeout`：超时回调
+  - `onError`：单次轮询失败回调
 
-- **Cron表达式格式**
-  ```
-  秒 分 时 日 月 周 年
-  ```
+- **使用场景**
+  - 资料收集建议状态轮询
+  - 其他异步任务状态查询
+  - 实时数据更新监控
 
-- **常用示例**
-  - `0 0 7 * * *` - 每天07:00
-  - `0 0/30 * * * *` - 每30分钟
-  - `0 0 9-17 * * MON-FRI` - 工作日9点到17点整点
-
-**章节来源**
-- [定时任务配置](file://med_ai_assistant_1.0_bs_backend/doc/其他/TIMER_TASK_CONFIGURATION.md)
-
-## 数据组装增强
-
-### AI控制器数据组装增强
-AI控制器为资料收集建议模板增强了数据组装逻辑。
-
-- **增强逻辑**
-  - 当模板为"资料收集建议"时，追加最新诊断分析结果
-  - 追加最新诊疗计划纯文本
-  - 追加入院记录原始内容（非入院记录总结）
-  - 保持原有行为，非"资料收集建议"模板不追加额外数据
-
-- **数据来源**
-  - 最新诊断分析结果：通过PromptResultRepository查询
-  - 诊疗计划文本：通过TreatmentPlanItemService获取
-  - 入院记录内容：通过AdmissionRecordService获取原始内容
-
-- **异常处理**
-  - 无诊断分析结果时不抛出异常，对应字段为空
-  - 无诊疗计划时不抛出异常，对应字段为空
-  - 多条诊断分析结果时取最新一条
-
-```mermaid
-flowchart TD
-Start(["组装资料收集建议数据"]) --> CheckTemplate{"模板是否为'资料收集建议'？"}
-CheckTemplate --> |否| ReturnOriginal["返回原有数据"]
-CheckTemplate --> |是| GetLatestDiagnosis["获取最新诊断分析结果"]
-GetLatestDiagnosis --> GetTreatmentPlan["获取最新诊疗计划文本"]
-GetTreatmentPlan --> GetAdmissionRecord["获取入院记录原始内容"]
-GetAdmissionRecord --> CombineData["组合所有数据"]
-CombineData --> ReturnEnhanced["返回增强数据"]
-ReturnOriginal --> End(["结束"])
-ReturnEnhanced --> End
-```
-
-**图表来源**
-- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- **生命周期管理**
+  - 自动清理定时器，防止内存泄漏
+  - 支持组件销毁时的清理
+  - 提供停止和重启机制
 
 **章节来源**
-- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [轮询管理器](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
 
-### 资料收集建议模板配置
-系统通过数据库模板配置支持资料收集建议功能。
+### 自动轮询机制：状态同步
+资料收集建议组件实现了智能的自动轮询机制，确保状态的实时同步。
 
-- **模板配置**
-  - `promptType = "资料总结"`
-  - `promptName = "资料收集建议"`
-  - `requiredDataTypes`：包含"一般信息,诊断信息,病历记录"
-  - 模板内容包含三级标题结构（## 问诊 / ## 查体 / ## 辅助检查）
+- **轮询触发时机**
+  - 手动触发生成后自动开始轮询
+  - 组件挂载时自动加载并可能开始轮询
+  - 状态变为processing时自动恢复轮询
 
-- **模板作用**
-  - 为AI模型提供标准化的提示词
-  - 确保生成内容的结构化和完整性
-  - 支持进一步问诊、查体、辅助检查的建议生成
+- **轮询配置**
+  - 轮询间隔：5000ms（5秒）
+  - 最大轮询次数：60次（总计5分钟）
+  - 超时处理：显示超时错误提示
+  - 错误处理：记录警告日志
 
-**章节来源**
-- [资料收集建议TDD实施指南](file://med_ai_assistant_1.0_bs_backend/doc/迭代/进一步问诊建议/TDD实施指南.md)
-
-## 手动触发API
-
-### API接口规范
-资料收集建议的手动触发API提供了完整的接口规范。
-
-- **接口定义**
-  - 方法：POST
-  - 路径：/api/ai/data-collection-advice/generate/{patientId}
-  - 功能：手动触发为指定患者生成资料收集建议
-
-- **请求参数**
-  - 路径参数：patientId（必须，非空字符串）
-  - 参数校验：验证patientId的有效性
-
-- **响应格式**
-  - 成功：{"status": "processing"}
-  - 参数错误：{"error": "patientId不能为空"}
-  - 患者不存在：404状态码
-
-- **业务逻辑**
-  - 立即返回processing状态
-  - 异步启动AI生成任务
-  - 生成完成后可通过查询接口获取结果
-
-**章节来源**
-- [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
-
-### 前端API集成
-前端通过API层与后端手动触发接口进行集成。
-
-- **API封装**
-  - `generateDataCollectionAdvice(patientId)`：触发生成建议
-  - `getDataCollectionAdvice(patientId)`：查询建议结果
-  - 错误处理：统一的错误捕获和用户提示
-
-- **交互流程**
-  - 医生点击"刷新建议"按钮
-  - 调用generateDataCollectionAdvice接口
-  - 显示processing状态并开始轮询
-  - 获取completed状态后渲染建议内容
-
-**章节来源**
-- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DataCollectionAdvice.vue)
-
-## 前端组件集成
-
-### 资料收集建议标签页
-资料收集建议标签页为医生提供了独立的功能界面。
-
-- **界面设计**
-  - 位于患者详情页"病历记录"标签页右侧
-  - 独立的标签页组件，与诊断分析标签页并列
-  - 支持手动刷新和自动轮询
-
-- **核心功能**
-  - 建议内容展示：Markdown格式渲染
-  - 生成状态管理：loading、processing、completed、empty状态
-  - 生成时间显示：显示建议的生成时间
-  - 刷新机制：支持手动重新生成建议
+- **状态判断**
+  - `onCompleted`回调：检查status是否为completed
+  - 自动停止轮询：状态变为completed时停止
+  - 组件销毁：beforeUnmount钩子中停止轮询
 
 - **用户体验**
   - 骨架屏加载：提升加载体验
-  - 状态提示：清晰的状态指示
-  - 错误处理：友好的错误提示
-  - 基于信息标注：显示建议的数据来源
+  - 进度指示：显示生成中状态
+  - 错误提示：友好的错误处理
+  - 自动恢复：切回页面时自动恢复轮询
 
 **章节来源**
-- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DataCollectionAdvice.vue)
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
 
-### 定时任务管理界面
-定时任务管理界面为系统管理员提供了定时任务的可视化管理。
+## 状态管理与数据流
 
-- **功能特性**
-  - 定时器状态显示：实时显示定时器运行状态
-  - 启动/停止控制：支持定时器的启动和停止
-  - 手动执行：支持手动触发每日Prompt生成
-  - 状态同步：定期查询后端定时器状态
+### 组件状态管理：四态模型
+资料收集建议组件采用了完整的四态模型，确保用户界面的一致性和用户体验。
 
-- **用户交互**
-  - 按钮组：自动生成、停止、手动执行
-  - 成功/失败提示：操作结果的用户反馈
-  - 状态轮询：自动同步后端状态
+- **loading状态**
+  - 显示骨架屏加载效果
+  - 防止用户重复操作
+  - 提供视觉反馈
+
+- **completed状态**
+  - 渲染Markdown格式的建议内容
+  - 显示生成时间和数据来源
+  - 支持用户交互操作
+
+- **processing状态**
+  - 显示生成中提示和进度图标
+  - 阻止用户重复触发生成
+  - 提供等待反馈
+
+- **empty状态**
+  - 显示无建议提示和生成按钮
+  - 引导用户进行首次生成
+  - 支持一键触发生成
+
+- **状态转换机制**
+  - `loadAdvice()`：加载建议，可能触发processing状态
+  - `handleRefresh()`：手动触发生成，设置processing状态
+  - 轮询结果：根据API响应自动转换状态
 
 **章节来源**
-- [定时任务管理组件](file://med_ai_assistant_1.0_bs_vue/src/components/server/PromptGenerator.vue)
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
+
+### 数据流管理：前后端协作
+资料收集建议功能实现了完整的数据流管理，从前端状态管理到后端状态同步。
+
+- **前端数据流**
+  - 用户操作触发状态更新
+  - API调用获取最新数据
+  - 轮询机制保持状态同步
+  - 错误处理提供用户反馈
+
+- **后端数据流**
+  - 手动触发生成异步任务
+  - AI模型生成建议内容
+  - 状态持久化存储
+  - API响应状态查询
+
+- **状态同步机制**
+  - 前端轮询查询后端状态
+  - 后端根据数据库状态返回
+  - 实时状态转换和更新
+  - 超时和错误处理
+
+- **数据格式标准**
+  - 响应DTO：统一的数据传输格式
+  - 状态枚举：completed、processing、none
+  - 时间格式：ISO 8601标准格式
+  - Markdown内容：结构化建议格式
+
+**章节来源**
+- [资料收集建议API](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
+
+## 用户交互设计
+
+### 用户界面设计：状态反馈
+资料收集建议组件提供了完整的用户界面设计，确保良好的用户体验。
+
+- **加载状态界面**
+  - 骨架屏动画：提供流畅的加载体验
+  - 文本提示：显示加载中状态
+  - 图标反馈：使用旋转图标表示加载
+
+- **完成状态界面**
+  - 生成时间显示：显示建议生成的具体时间
+  - 数据来源标识：显示基于哪些数据生成的建议
+  - 刷新按钮：支持手动重新生成
+  - Markdown渲染：支持结构化的内容展示
+
+- **生成中状态界面**
+  - 进度图标：使用Loading图标表示处理中
+  - 文本提示：显示生成中请稍候
+  - 状态指示：提供清晰的进度反馈
+
+- **无数据状态界面**
+  - 空状态提示：显示暂无建议的友好提示
+  - 生成按钮：提供一键生成建议
+  - 图标反馈：使用DataAnalysis图标
+
+- **错误状态界面**
+  - 错误图标：使用WarningFilled图标
+  - 错误信息：显示具体的错误描述
+  - 重试按钮：支持一键重试操作
+
+**章节来源**
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
+
+### 交互流程设计：用户操作
+资料收集建议组件设计了完整的用户交互流程，确保操作的直观性和易用性。
+
+- **首次访问流程**
+  - 显示empty状态界面
+  - 用户点击"生成建议"按钮
+  - 触发generateAdvice API
+  - 显示processing状态并开始轮询
+  - 轮询完成后显示completed状态
+
+- **已有建议流程**
+  - 显示completed状态界面
+  - 用户点击"刷新建议"按钮
+  - 触发重新生成流程
+  - 显示processing状态并开始轮询
+  - 轮询完成后更新显示
+
+- **错误处理流程**
+  - 显示错误状态界面
+  - 用户点击"重试"按钮
+  - 重新尝试加载或生成
+  - 成功后恢复正常状态
+  - 失败继续显示错误状态
+
+- **超时处理流程**
+  - 轮询达到最大次数
+  - 显示超时错误提示
+  - 用户可以选择重试
+  - 支持手动刷新操作
+
+**章节来源**
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
+
+### 响应式设计：多设备适配
+资料收集建议组件支持响应式设计，适配不同的屏幕尺寸和设备类型。
+
+- **布局适配**
+  - 弹性布局：使用CSS Flexbox实现自适应布局
+  - 响应式间距：根据屏幕尺寸调整间距和边距
+  - 内容折叠：在小屏幕上自动折叠不必要内容
+
+- **交互适配**
+  - 触摸友好：按钮大小适合触摸操作
+  - 触摸反馈：提供视觉和触觉反馈
+  - 导航简化：移动设备上简化导航结构
+
+- **性能优化**
+  - 懒加载：组件按需加载，减少初始渲染时间
+  - 内存管理：及时清理定时器和事件监听器
+  - 资源优化：压缩和优化静态资源
+
+**章节来源**
+- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
 
 ## 依赖关系分析
 - 组件耦合
@@ -740,16 +835,20 @@ ReturnEnhanced --> End
   - AI响应控制器依赖AI模型配置与网络恢复服务，通过WebClient与响应式链路实现高可用。
   - 加密服务与执行服务器形成独立的安全通道，避免敏感数据在主服务器驻留。
   - **新增**：资料收集建议控制器依赖定时任务服务，实现手动触发和异步生成。
-  - **新增**：定时任务服务依赖AI控制器的定时任务生成逻辑，支持多类型Prompt的批量生成。
+  - **新增**：资料收集建议服务依赖PromptResultRepository和TreatmentPlanItemService，提供状态查询和数据组装。
+  - **新增**：资料收集建议组件依赖轮询管理器，实现智能轮询控制和状态同步。
+  - **新增**：轮询管理器封装通用轮询逻辑，支持多种异步任务状态查询场景。
   - **新增**：AI诊断页面通过handlePromptExecution工具函数与后端API进行交互。
-  - **新增**：PromptList组件依赖PromptResultRepository进行数据查询，实现模板过滤功能。
-  - **新增**：定时任务管理组件依赖定时任务控制器，提供系统管理界面。
+  - **新增**：PatientTabs组件整合多个标签页，支持懒加载优化和标签页切换。
+  - **新增**：路由系统支持页面导航和参数传递，提供完整的SPA应用体验。
 
 - 外部依赖
   - 外部AI模型服务（如DeepSeek）与执行服务器，健康状态通过健康检查接口反馈。
   - 数据库：MySQL与Oracle双活，支持动态切换与健康检查。
   - **新增**：Element Plus组件库，提供现代化的UI组件支持。
   - **新增**：Vue.js生态系统，支持组件化开发和状态管理。
+  - **新增**：marked和DOMPurify库，提供Markdown渲染和XSS防护。
+  - **新增**：轮询管理器作为通用工具，支持多种轮询场景。
 
 ```mermaid
 graph TB
@@ -763,22 +862,24 @@ PromptSvc --> Repo["Repository层"]
 TimerSvc --> PromptResultRepo["PromptResultRepository"]
 DataCollectionAdviceCtrl --> TimerSvc
 DataCollectionAdviceCtrl --> PatientRepo["PatientRepository"]
-TimerSvc --> PromptResultRepo
-DataSvc --> Repo
-Repo --> MySQL["MySQL"]
-Repo --> Oracle["Oracle"]
-PromptSvc --> AIModel["AI模型服务"]
-DataCollectionAdviceSvc --> AIModel
-AIDiagnosisTab["AI诊断标签页"] --> DiagnosisCard["诊断卡片组件"]
-AIDiagnosisTab --> DiagnosisEditPanel["诊断编辑面板"]
-AIDiagnosisTab --> handlePromptExecution["Prompt执行工具"]
-PromptList["Prompt列表组件"] --> PromptResultRepo
+DataCollectionAdviceService --> PromptResultRepo
+DataCollectionAdviceService --> TreatmentPlanService["TreatmentPlanItemService"]
+DataCollectionAdvice["资料收集建议组件"] --> PollingManager["轮询管理器"]
+DataCollectionAdvice --> DataCollectionAdviceAPI["资料收集建议API"]
+DataCollectionAdviceAPI --> DataCollectionAdviceCtrl
+PollingManager --> DataCollectionAdviceAPI
+PatientTabs["患者标签页组件"] --> DataCollectionAdvice
+PatientView["患者视图组件"] --> PatientTabs
+AIDiagnosisTab["AI诊断标签页"] --> handlePromptExecution["Prompt执行工具"]
 handlePromptExecution --> getLatestPromptResult["获取最新结果"]
 handlePromptExecution --> getPatientData["获取患者数据"]
 handlePromptExecution --> getPromptTemplate["获取模板"]
 handlePromptExecution --> addPrompt["保存Prompt"]
-TimerCtrl["定时任务控制器"] --> TimerSvc
-DataCollectionAdvice["资料收集建议组件"] --> DataCollectionAdviceCtrl
+DataSvc --> Repo
+Repo --> MySQL["MySQL"]
+Repo --> Oracle["Oracle"]
+PromptSvc --> AIModel["AI模型服务"]
+DataCollectionAdviceService --> AIModel
 ```
 
 **图表来源**
@@ -805,8 +906,11 @@ DataCollectionAdvice["资料收集建议组件"] --> DataCollectionAdviceCtrl
   - 空状态处理：避免不必要的API调用，提升页面响应速度
   - 并行数据获取：通过handlePromptExecution工具函数实现多接口并发请求
   - **新增**：模板过滤：前端直接过滤不需要显示的模板，减少数据传输
-  - **新增**：状态轮询：智能轮询策略，completed状态后停止轮询
+  - **新增**：智能轮询机制：前端组件根据状态智能轮询，completed状态后停止轮询
   - **新增**：组件懒加载：按需加载资料收集建议组件，提升首屏性能
+  - **新增**：轮询管理器复用：多个组件共享轮询逻辑，减少代码重复
+  - **新增**：内存管理：及时清理定时器和事件监听器，防止内存泄漏
+  - **新增**：错误边界：提供错误处理和降级机制，提升系统稳定性
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -825,13 +929,19 @@ DataCollectionAdvice["资料收集建议组件"] --> DataCollectionAdviceCtrl
 - **新增**：资料收集建议功能排查
   - 手动触发API无响应：检查资料收集建议控制器的日志和定时任务服务状态
   - 建议内容不显示：验证AI模型服务的可用性和生成结果的存储状态
-  - 定时任务不执行：检查定时任务配置和Cron表达式的正确性
-  - 前端组件加载失败：确认Vue组件的正确引入和依赖版本兼容性
+  - 轮询不工作：检查轮询管理器的配置和定时器状态
+  - 状态不同步：验证前后端状态转换逻辑和API响应格式
+  - 组件加载失败：确认Vue组件的正确引入和依赖版本兼容性
   - 数据组装异常：验证AI控制器的数据组装逻辑和相关服务的可用性
-- **新增**：定时任务系统问题排查
-  - 定时器状态异常：检查定时任务控制器的接口调用和后端状态同步
-  - 手动触发失败：验证临时配置修改和原始配置恢复的逻辑
-  - 并发控制问题：检查最大并发数设置和线程池配置
+- **新增**：轮询管理器问题排查
+  - 轮询不触发：检查task函数的正确性和Promise处理
+  - 超时处理异常：验证maxCount配置和onTimeout回调
+  - 内存泄漏：确认beforeUnmount钩子中调用了stop()方法
+  - 状态判断错误：检查onCompleted回调的逻辑和返回值
+- **新增**：前端组件问题排查
+  - 状态显示异常：检查组件data属性的初始化和computed属性的计算
+  - 事件处理错误：验证methods中函数的正确性和this绑定
+  - 生命周期问题：确认mounted和beforeUnmount钩子的正确实现
 
 **章节来源**
 - [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
@@ -844,12 +954,13 @@ DataCollectionAdvice["资料收集建议组件"] --> DataCollectionAdviceCtrl
 - 诊断分析确认机制：通过临床数据就绪提醒，确保分析质量，减少因数据不完整导致的误诊风险
 - 工作流程优化：为医生提供了更清晰的诊断分析流程，提高了工作效率
 - **新增**：资料收集建议功能：包括定时批量生成和手动触发API，为医生提供进一步问诊、查体、辅助检查的智能化建议
-- **新增**：数据组装增强：为资料收集建议模板追加诊断分析结果、诊疗计划和入院记录，确保AI获取完整上下文
-- **新增**：完整的定时任务系统：支持每日自动化的资料收集建议生成，提升系统自动化水平
-- **新增**：前端组件优化：新增资料收集建议标签页和相关交互功能，提升用户体验
-- **新增**：病情小结模板过滤功能：优化AI助手页面的模板展示，避免重复显示，提升用户体验
-- **新增**：定时任务批量生成：减少重复查询开销，提升系统性能
+- **新增**：完整的前端组件集成：DataCollectionAdvice组件具备完整的状态管理、自动轮询机制和用户交互
+- **新增**：轮询管理器：封装通用轮询逻辑，支持智能轮询控制和超时处理
 - **新增**：智能轮询机制：前端组件根据状态智能轮询，completed状态后自动停止，节省系统资源
+- **新增**：状态管理优化：四态模型确保用户界面的一致性和用户体验
+- **新增**：组件懒加载：按需加载资料收集建议组件，提升首屏性能
+- **新增**：错误处理机制：提供完整的错误处理和降级机制，提升系统稳定性
+- **新增**：响应式设计：适配不同屏幕尺寸，提供良好的移动端体验
 
 ## 附录
 - 实际使用示例
@@ -873,7 +984,8 @@ DataCollectionAdvice["资料收集建议组件"] --> DataCollectionAdviceCtrl
   - **新增**：在进行诊断分析前，确保所有必要的临床数据已就绪，以获得准确的分析结果。
   - **新增**：利用AI诊断页面的空状态提示，及时触发诊断分析，避免遗漏重要的诊断信息。
   - **新增**：合理使用病情小结模板过滤功能，确保AI助手页面的整洁性和用户体验。
-  - **新增**：定期检查定时任务的执行情况，确保病情小结等自动化功能正常运行。
   - **新增**：充分利用资料收集建议功能，提升问诊质量和效率，减少漏诊风险。
-  - **新增**：合理配置定时任务的执行时间和并发数，平衡系统负载和响应速度。
-  - **新增**：利用前端组件的智能轮询机制，避免不必要的API调用，提升系统性能。
+  - **新增**：合理配置轮询间隔和最大轮询次数，平衡用户体验和系统资源消耗。
+  - **新增**：利用轮询管理器的错误处理机制，提升系统的健壮性和用户体验。
+  - **新增**：通过组件懒加载优化首屏性能，提升用户感知速度。
+  - **新增**：在组件销毁时及时清理轮询定时器，防止内存泄漏和资源浪费。
