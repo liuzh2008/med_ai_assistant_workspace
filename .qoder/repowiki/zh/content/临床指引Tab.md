@@ -8,18 +8,28 @@
 - [DiseaseConfirmationPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue)
 - [ToolbarPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue)
 - [QcDetailDrawer.vue](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue)
+- [MedicalRecords.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue)
+- [DataCollectionAdvice.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
+- [dataCollectionAdvice.js](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
+- [pollingManager.js](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
 - [qc.js](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js)
 - [qcDiseaseMatchParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/qcDiseaseMatchParser.js)
+- [DataCollectionAdviceController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
+- [DataCollectionAdviceService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [DataCollectionAdviceResponse.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
+- [index.js](file://med_ai_assistant_1.0_bs_vue/src/store/index.js)
+- [patient.js](file://med_ai_assistant_1.0_bs_vue/src/store/modules/patient.js)
+- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/store/modules/ai.js)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增完整的病种确认区功能，提供专业的病种确认界面
-- 新增质控详情抽屉，支持详细的质控评估结果展示
-- 新增底部工具栏，集成病种管理、重新分析等功能
-- 完善病种确认流程，支持确认、忽略、恢复等操作
-- 增强质控评估系统，提供可视化的结果展示
-- 优化用户交互体验，提供直观的操作界面
+- 新增资料收集建议标签页嵌入病历记录左侧面板
+- 新增自动轮询和状态管理功能
+- 新增DataCollectionAdvice组件和相关API接口
+- 新增轮询管理器PollingManager工具类
+- 新增后端DataCollectionAdviceController和Service服务
+- 新增DataCollectionAdviceResponse响应DTO
 
 ## 目录
 1. [简介](#简介)
@@ -38,6 +48,8 @@
 
 **更新** 0.8.045版本新增了完整的临床指引Tab功能，包括专业的病种确认区、质控详情抽屉、底部工具栏等全新功能模块，形成了更加完整的临床决策支持体系。
 
+**新增功能** 病历记录左侧面板新增"资料收集建议"标签页，集成AI生成的进一步问诊、查体和辅助检查建议功能，支持自动轮询和状态管理。
+
 该功能模块采用现代化的Vue.js架构，结合Element Plus组件库，提供了流畅的用户体验和强大的数据处理能力。系统支持实时数据分析、智能提醒、以及与后端服务的无缝集成。
 
 ## 项目结构
@@ -54,6 +66,8 @@ DCP[DiseaseConfirmationPanel.vue<br/>病种确认面板]
 TP[TreatmentPlanTable.vue<br/>诊疗计划表]
 TB[ToolbarPanel.vue<br/>底部工具栏]
 QCD[QcDetailDrawer.vue<br/>质控详情抽屉]
+MR[MedicalRecords.vue<br/>病历记录组件]
+DCA[DataCollectionAdvice.vue<br/>资料收集建议组件]
 subgraph "组件层次"
 PV --> PT
 PT --> CGT
@@ -61,20 +75,30 @@ CGT --> DCP
 CGT --> TP
 CGT --> TB
 CGT --> QCD
+MR --> DCA
 end
 subgraph "API层"
 QC[qc.js<br/>质控API接口]
+DCAPI[dataCollectionAdvice.js<br/>资料收集建议API]
 AI[AI服务接口]
 end
 subgraph "工具层"
 PARSER[qcDiseaseMatchParser.js<br/>病种匹配解析器]
+PM[PollingManager.js<br/>轮询管理器]
 end
 CGT --> QC
 CGT --> PARSER
 DCP --> QC
 TB --> QC
 QCD --> QC
+MR --> DCAPI
+DCAPI --> PM
+DCA --> PM
+DCP --> QC
+TB --> QC
+QCD --> QC
 QC --> AI
+DCAPI --> AI
 end
 ```
 
@@ -83,6 +107,8 @@ end
 - [PatientTabs.vue:1-136](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L1-L136)
 - [ClinicalGuidanceTab.vue:1-1025](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L1-L1025)
 - [DiseaseConfirmationPanel.vue:1-313](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L1-L313)
+- [MedicalRecords.vue:86-91](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L86-L91)
+- [DataCollectionAdvice.vue:1-604](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L1-L604)
 
 **章节来源**
 - [PatientView.vue:1-64](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L1-L64)
@@ -162,6 +188,28 @@ ClinicalGuidanceTab是整个功能的核心组件，集成了病种确认、质�
 - 筛选功能
 - 折叠展开
 
+### MedicalRecords - 病历记录组件
+
+**更新** MedicalRecords组件现在集成了资料收集建议标签页，嵌入在左侧面板中。
+
+主要功能特性：
+- 左右分栏布局设计
+- 病历记录选项卡
+- EMR病历选项卡
+- **新增** 资料收集建议选项卡
+- 病历编辑和操作功能
+
+### DataCollectionAdvice - 资料收集建议组件
+
+**新增组件** DataCollectionAdvice是资料收集建议功能的核心组件，提供AI生成的建议展示和管理。
+
+主要功能特性：
+- 四种状态展示：加载中、已完成、生成中、无数据
+- 自动轮询机制（每5秒查询一次，最多60次）
+- Markdown内容渲染和XSS过滤
+- 两级可折叠分节（h2和h3）
+- 手动触发生成和刷新功能
+
 **章节来源**
 - [PatientView.vue:14-54](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue#L14-L54)
 - [PatientTabs.vue:35-117](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L35-L117)
@@ -169,6 +217,8 @@ ClinicalGuidanceTab是整个功能的核心组件，集成了病种确认、质�
 - [DiseaseConfirmationPanel.vue:76-160](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L76-L160)
 - [ToolbarPanel.vue:103-112](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L103-L112)
 - [QcDetailDrawer.vue:119-131](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L119-L131)
+- [MedicalRecords.vue:86-91](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L86-L91)
+- [DataCollectionAdvice.vue:19-56](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L19-L56)
 
 ## 架构概览
 
@@ -183,6 +233,8 @@ DCP[DiseaseConfirmationPanel]
 TP[TreatmentPlanTable]
 TB[ToolbarPanel]
 QCD[QcDetailDrawer]
+MR[MedicalRecords]
+DCA[DataCollectionAdvice]
 end
 subgraph "业务逻辑层"
 BC[业务控制器]
@@ -192,16 +244,19 @@ TPB[诊疗计划服务]
 CONF[病种确认服务]
 IG[忽略病种服务]
 RES[恢复病种服务]
+DCAPI[资料收集建议服务]
 end
 subgraph "数据访问层"
 API[API接口层]
 QC[qc.js]
+DCAPI[dataCollectionAdvice.js]
 AI[AI服务接口]
 DB[(数据库)]
 end
 subgraph "工具层"
 PARSER[qcDiseaseMatchParser]
-UTIL[工具函数]
+UTIL[PollingManager]
+STORE[Vuex Store]
 end
 UI --> CT
 CT --> BC
@@ -211,6 +266,10 @@ BC --> TPB
 BC --> CONF
 BC --> IG
 BC --> RES
+MR --> DCAPI
+DCAPI --> UTIL
+DCAPI --> DCAPI
+DCAPI --> DCAPI
 DM --> API
 QA --> API
 TPB --> API
@@ -218,10 +277,13 @@ CONF --> API
 IG --> API
 RES --> API
 API --> QC
+API --> DCAPI
 API --> AI
 API --> DB
 CT --> PARSER
-CT --> UTIL
+CT --> STORE
+DCA --> UTIL
+DCA --> STORE
 DCP --> CONF
 TB --> IG
 TB --> RES
@@ -232,7 +294,9 @@ QCD --> QA
 - [ClinicalGuidanceTab.vue:89-138](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L89-L138)
 - [DiseaseConfirmationPanel.vue:74-91](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L74-L91)
 - [ToolbarPanel.vue:99-115](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L99-L115)
-- [QcDetailDrawer.vue:115-133](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L115-133)
+- [QcDetailDrawer.vue:115-133](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L115-L133)
+- [MedicalRecords.vue:86-91](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L86-L91)
+- [DataCollectionAdvice.vue:267-284](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L267-284)
 - [qc.js:1-424](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L1-L424)
 
 ## 详细组件分析
@@ -561,6 +625,158 @@ Drawer->>Drawer : 隐藏抽屉
 **章节来源**
 - [QcDetailDrawer.vue:1-461](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L1-L461)
 
+### MedicalRecords 组件详解
+
+**更新** MedicalRecords组件现在集成了资料收集建议标签页，嵌入在左侧面板中。
+
+#### 组件架构
+
+```mermaid
+classDiagram
+class MedicalRecords {
++String leftActiveTab
++Array records
++Array emrRecords
++Boolean showSmartList
++Object currentRecord
++handleSyncEMRRecords()
++handleEMRRecordClick()
++createRecord()
+}
+class DataCollectionAdvice {
++Boolean loading
++Boolean refreshing
++Object advice
++String patientId
++resetState()
++loadAdvice()
++handleRefresh()
++startPolling()
++stopPolling()
+}
+MedicalRecords --> DataCollectionAdvice : "嵌入"
+```
+
+**图表来源**
+- [MedicalRecords.vue:54-91](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L54-L91)
+
+#### 左侧面板集成
+
+```mermaid
+sequenceDiagram
+participant User as 医生用户
+participant MR as MedicalRecords
+participant Tabs as 左侧选项卡
+participant DCA as DataCollectionAdvice
+User->>MR : 切换到"收集建议"标签页
+MR->>Tabs : leftActiveTab = 'data-collection-advice'
+Tabs->>DCA : 渲染DataCollectionAdvice组件
+User->>DCA : 点击"生成建议"
+DCA->>DCA : handleRefresh()
+DCA->>DCA : startPolling()
+DCA->>DCA : 轮询查询状态
+DCA-->>User : 显示已完成的建议
+```
+
+**图表来源**
+- [MedicalRecords.vue:86-91](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L86-L91)
+- [DataCollectionAdvice.vue:237-259](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L237-L259)
+
+#### 标签页管理
+
+组件支持三个主要标签页：
+- **病历记录**：标准的病历记录列表
+- **EMR病历**：电子病历系统集成
+- **收集建议**：新增的资料收集建议标签页
+
+**章节来源**
+- [MedicalRecords.vue:1-200](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L1-L200)
+
+### DataCollectionAdvice 组件详解
+
+**新增组件** DataCollectionAdvice是资料收集建议功能的核心组件，提供AI生成的建议展示和管理。
+
+#### 组件架构
+
+```mermaid
+classDiagram
+class DataCollectionAdvice {
++Boolean loading
++Boolean refreshing
++Object advice
++String patientId
++String formattedTime
++String renderedContent
++resetState()
++loadAdvice()
++handleRefresh()
++startPolling()
++stopPolling()
++wrapHeadingsInDetails()
++buildCollapsibleHtml()
++wrapPreamble()
+}
+DataCollectionAdvice --> PollingManager : "使用"
+```
+
+**图表来源**
+- [DataCollectionAdvice.vue:113-168](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L113-L168)
+
+#### 状态管理流程
+
+```mermaid
+stateDiagram-v2
+[*] --> none : 无建议记录
+none --> processing : 手动触发生成
+processing --> completed : 轮询查询到结果
+completed --> processing : 刷新建议
+processing --> none : 重试或错误
+completed --> [*] : 组件卸载
+```
+
+**图表来源**
+- [DataCollectionAdvice.vue:18-56](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L18-L56)
+
+#### 用户交互流程
+
+```mermaid
+sequenceDiagram
+participant User as 医生用户
+participant DCA as DataCollectionAdvice
+User->>DCA : 打开组件
+DCA->>DCA : loadAdvice()
+DCA->>DCA : 查询当前状态
+alt 状态为processing
+DCA->>DCA : startPolling()
+DCA->>DCA : 每5秒查询一次
+end
+User->>DCA : 点击"生成建议"
+DCA->>DCA : handleRefresh()
+DCA->>DCA : 调用生成API
+DCA->>DCA : 设置processing状态
+DCA->>DCA : startPolling()
+DCA->>DCA : 轮询查询直到completed
+DCA-->>User : 显示Markdown建议内容
+```
+
+**图表来源**
+- [DataCollectionAdvice.vue:209-229](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L209-L229)
+- [DataCollectionAdvice.vue:237-259](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L237-L259)
+- [DataCollectionAdvice.vue:267-284](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L267-L284)
+
+#### Markdown渲染和折叠功能
+
+组件提供了高级的Markdown渲染功能：
+
+- **XSS防护**：使用DOMPurify过滤HTML内容
+- **两级折叠**：h2和h3标题自动包装为details/summary
+- **分析过程**：第一个h2之前的内容自动折叠为"分析过程"
+- **原生实现**：无需JavaScript，使用浏览器原生details元素
+
+**章节来源**
+- [DataCollectionAdvice.vue:159-168](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L159-L168)
+- [DataCollectionAdvice.vue:293-391](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L293-L391)
+
 ### API 接口分析
 
 #### 病种匹配接口
@@ -612,6 +828,36 @@ Note over Client,DB : 支持批量确认和备注
 - [qc.js:115-117](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L115-L117)
 - [ClinicalGuidanceTab.vue:647-692](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ClinicalGuidanceTab.vue#L647-L692)
 
+#### 资料收集建议API
+
+**新增功能** 资料收集建议API提供了AI生成建议的完整生命周期管理。
+
+```mermaid
+sequenceDiagram
+participant Client as 前端客户端
+participant API as 资料收集建议API
+participant Service as 服务层
+participant DB as 数据库
+Client->>API : generateDataCollectionAdvice(patientId)
+API->>Service : 触发异步生成
+Service->>DB : 保存生成任务
+API-->>Client : 返回processing状态
+loop 每5秒轮询
+Client->>API : getDataCollectionAdvice(patientId)
+API->>Service : 查询最新建议
+Service->>DB : 查询PromptResult
+DB-->>Service : 返回结果
+Service-->>API : 返回建议状态
+API-->>Client : 返回状态和内容
+end
+```
+
+**图表来源**
+- [dataCollectionAdvice.js:27-29](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js#L27-L29)
+- [dataCollectionAdvice.js:52-54](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js#L52-L54)
+- [DataCollectionAdviceController.java:80-102](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java#L80-L102)
+- [DataCollectionAdviceService.java:57-80](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java#L57-L80)
+
 #### 质控评估接口
 
 质控评估接口提供了全面的医疗质量监控功能，支持指标级别的评估和统计。
@@ -621,11 +867,48 @@ Note over Client,DB : 支持批量确认和备注
 - [qc.js:274-276](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L274-L276)
 - [qc.js:300-302](file://med_ai_assistant_1.0_bs_vue/src/api/qc.js#L300-L302)
 
+### 后端服务分析
+
+#### DataCollectionAdviceController
+
+**新增组件** DataCollectionAdviceController处理资料收集建议的HTTP请求。
+
+主要功能：
+- **POST /api/ai/data-collection-advice/generate/{patientId}**：手动触发生成
+- **GET /api/ai/data-collection-advice/{patientId}**：查询最新建议
+- **异步处理**：使用TimerPromptGenerator异步生成AI建议
+- **状态校验**：验证患者存在性和参数有效性
+
+#### DataCollectionAdviceService
+
+**新增组件** DataCollectionAdviceService提供资料收集建议的业务逻辑。
+
+主要功能：
+- **状态判断**：根据PromptResult内容判断状态（none/processing/completed）
+- **数据来源标识**：检查诊断分析和诊疗计划的存在性
+- **响应组装**：构建DataCollectionAdviceResponse对象
+- **异常处理**：处理查询异常和数据不一致情况
+
+#### DataCollectionAdviceResponse
+
+**新增组件** DataCollectionAdviceResponse是资料收集建议的响应DTO。
+
+包含字段：
+- **status**：建议状态（none/processing/completed）
+- **resultContent**：Markdown格式的建议内容
+- **generatedTime**：建议生成时间
+- **basedOn**：数据来源标识对象
+
+**章节来源**
+- [DataCollectionAdviceController.java:1-121](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java#L1-L121)
+- [DataCollectionAdviceService.java:1-129](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java#L1-L129)
+- [DataCollectionAdviceResponse.java:1-99](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java#L1-L99)
+
 ## 依赖关系分析
 
 ### 组件依赖图
 
-**更新** 新增了DiseaseConfirmationPanel、ToolbarPanel、QcDetailDrawer组件的依赖关系。
+**更新** 新增了DiseaseConfirmationPanel、ToolbarPanel、QcDetailDrawer、DataCollectionAdvice组件的依赖关系。
 
 ```mermaid
 graph LR
@@ -642,10 +925,15 @@ DiseaseConfirmationPanel[DiseaseConfirmationPanel]
 TreatmentPlanTable[TreatmentPlanTable]
 ToolbarPanel[ToolbarPanel]
 QcDetailDrawer[QcDetailDrawer]
+MedicalRecords[MedicalRecords]
+DataCollectionAdvice[DataCollectionAdvice]
 end
 subgraph "工具模块"
 qcAPI[qc.js API]
+dcaAPI[dataCollectionAdvice.js API]
 parser[qcDiseaseMatchParser]
+pm[PollingManager]
+store[Vuex Store]
 end
 PatientView --> PatientTabs
 PatientTabs --> ClinicalGuidanceTab
@@ -653,6 +941,8 @@ PatientTabs --> DiseaseConfirmationPanel
 PatientTabs --> TreatmentPlanTable
 PatientTabs --> ToolbarPanel
 PatientTabs --> QcDetailDrawer
+PatientTabs --> MedicalRecords
+MedicalRecords --> DataCollectionAdvice
 ClinicalGuidanceTab --> DiseaseConfirmationPanel
 ClinicalGuidanceTab --> TreatmentPlanTable
 ClinicalGuidanceTab --> ToolbarPanel
@@ -662,17 +952,27 @@ ClinicalGuidanceTab --> parser
 DiseaseConfirmationPanel --> qcAPI
 ToolbarPanel --> qcAPI
 QcDetailDrawer --> qcAPI
+MedicalRecords --> dcaAPI
+DataCollectionAdvice --> pm
+DataCollectionAdvice --> store
 PatientView -.-> ElementPlus
 PatientTabs -.-> ElementPlus
 ClinicalGuidanceTab -.-> ElementPlus
 DiseaseConfirmationPanel -.-> ElementPlus
 ToolbarPanel -.-> ElementPlus
 QcDetailDrawer -.-> ElementPlus
+MedicalRecords -.-> ElementPlus
+DataCollectionAdvice -.-> ElementPlus
 ClinicalGuidanceTab -.-> Vue
 DiseaseConfirmationPanel -.-> Vue
 ToolbarPanel -.-> Vue
 QcDetailDrawer -.-> Vue
+MedicalRecords -.-> Vue
+DataCollectionAdvice -.-> Vue
 qcAPI -.-> Axios
+dcaAPI -.-> Axios
+pm -.-> Vue
+store -.-> Vue
 ```
 
 **图表来源**
@@ -681,10 +981,12 @@ qcAPI -.-> Axios
 - [DiseaseConfirmationPanel.vue:74-91](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L74-L91)
 - [ToolbarPanel.vue:99-115](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L99-L115)
 - [QcDetailDrawer.vue:115-139](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L115-L139)
+- [MedicalRecords.vue:86-91](file://med_ai_assistant_1.0_bs_vue/src/components/patient/MedicalRecords.vue#L86-L91)
+- [DataCollectionAdvice.vue:73](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L73)
 
 ### 数据流依赖
 
-**更新** 新增了病种确认流程、工具栏操作、抽屉展示等数据流依赖。
+**更新** 新增了病种确认流程、工具栏操作、抽屉展示、资料收集建议等数据流依赖。
 
 临床指引Tab的数据流现在包含了完整的功能模块，确保系统的完整性和可靠性。
 
@@ -703,6 +1005,7 @@ qcAPI -.-> Axios
 - **诊疗计划**：最新AI生成结果
 - **病种确认**：确认状态查询和管理
 - **忽略列表**：忽略病种状态管理
+- **资料收集建议**：异步生成和轮询查询
 
 ### 懒加载机制
 
@@ -713,6 +1016,7 @@ qcAPI -.-> Axios
 - 病种确认面板仅在有新病种时显示
 - 质控详情抽屉仅在用户主动打开时加载
 - 骨架屏提升加载体验
+- **新增** 资料收集建议组件仅在切换到相应标签页时加载
 
 ### 缓存策略
 
@@ -723,6 +1027,17 @@ qcAPI -.-> Axios
 - API响应缓存
 - 病种确认状态缓存
 - 抽屉内容缓存
+- **新增** 资料收集建议状态缓存
+
+### 轮询优化
+
+**新增功能** 资料收集建议功能实现了高效的轮询机制：
+
+- **轮询间隔**：每5秒查询一次
+- **最大次数**：最多轮询60次（5分钟超时）
+- **智能停止**：状态变为completed时自动停止
+- **错误处理**：超时和错误状态的优雅降级
+- **组件卸载**：组件销毁时自动停止轮询
 
 ### 跨去重机制优化
 
@@ -780,6 +1095,27 @@ qcAPI -.-> Axios
 3. 查看筛选功能是否工作
 4. 检查折叠展开功能
 
+#### 资料收集建议加载失败
+
+**新增问题** 当资料收集建议加载出现问题时，可以尝试以下解决方案：
+
+**解决步骤**：
+1. 检查患者ID是否正确传递
+2. 验证API接口是否可用
+3. 查看轮询是否正常启动
+4. 检查组件的错误状态处理
+5. 确认后端服务是否正常运行
+
+#### 轮询功能异常
+
+**新增问题** 当轮询功能出现问题时，可以尝试以下解决方案：
+
+**解决步骤**：
+1. 检查轮询管理器是否正确初始化
+2. 验证轮询间隔和最大次数配置
+3. 查看超时和错误回调是否正常执行
+4. 检查组件卸载时的轮询停止逻辑
+
 #### 数据加载超时
 
 如果数据加载超过预期时间，系统会显示加载状态并提供重试机制。
@@ -805,10 +1141,13 @@ qcAPI -.-> Axios
 - [DiseaseConfirmationPanel.vue:203-230](file://med_ai_assistant_1.0_bs_vue/src/components/qc/DiseaseConfirmationPanel.vue#L203-L230)
 - [ToolbarPanel.vue:36-95](file://med_ai_assistant_1.0_bs_vue/src/components/qc/ToolbarPanel.vue#L36-L95)
 - [QcDetailDrawer.vue:279-282](file://med_ai_assistant_1.0_bs_vue/src/components/qc/QcDetailDrawer.vue#L279-L282)
+- [DataCollectionAdvice.vue:276-282](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue#L276-L282)
 
 ## 结论
 
 **更新** 临床指引Tab经过重大升级，现在包含了完整的功能模块，形成了更加完整的临床决策支持体系。
+
+**新增功能** 通过集成资料收集建议标签页、自动轮询机制和状态管理系统，临床指引Tab现在提供了从病种确认到AI建议生成的完整闭环。
 
 临床指引Tab作为MedAiAssistant项目的核心功能模块，展现了现代医疗信息系统的设计理念和技术水平。该模块通过智能化的数据处理、专业的病种确认功能、优雅的用户界面设计、以及可靠的系统架构，为医生提供了全面的临床决策支持。
 
@@ -821,6 +1160,9 @@ qcAPI -.-> Axios
 5. **系统稳定性强**：完善的错误处理和性能优化
 6. **扩展性强**：模块化设计便于功能扩展
 7. **去重机制完善**：智能的跨去重算法提升准确性
+8. **AI建议集成**：新增的资料收集建议功能提升诊断质量
+9. **自动轮询**：智能的轮询机制提升用户体验
+10. **状态管理**：完善的组件状态管理确保数据一致性
 
 ### 技术特色
 
@@ -831,7 +1173,10 @@ qcAPI -.-> Axios
 - 集成了专业的病种确认面板功能
 - 实现了高效的跨去重算法
 - 提供了完整的质控评估可视化展示
+- **新增** 实现了资料收集建议的完整生命周期管理
+- **新增** 提供了智能的自动轮询和状态管理
+- **新增** 集成了后端异步生成和状态查询机制
 
-**新增功能** 完整的临床指引Tab功能模块为医生提供了从病种确认到质控评估的一体化解决方案，大大提升了诊断的准确性和效率。
+**新增功能** 完整的临床指引Tab功能模块为医生提供了从病种确认到质控评估再到AI建议生成的一体化解决方案，大大提升了诊断的准确性和效率。
 
 该功能模块不仅满足了当前的医疗需求，也为未来的功能扩展和技术升级奠定了坚实的基础。
