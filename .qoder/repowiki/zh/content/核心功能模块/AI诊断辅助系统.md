@@ -2,40 +2,28 @@
 
 <cite>
 **本文档引用的文件**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
-- [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
-- [AI模型配置](file://med_ai_assistant_1.0_bs_backend/src/main/resources/ai-models.properties)
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
-- [AI模型配置类](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
-- [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
-- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
-- [定时Prompt生成控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/TimerPromptGeneratorController.java)
-- [资料收集建议API](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
+- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
+- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 - [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
 - [轮询管理器](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
-- [AI视图组件](file://med_ai_assistant_1.0_bs_vue/src/views/AIView.vue)
-- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
-- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
-- [定时任务配置](file://med_ai_assistant_1.0_bs_backend/doc/其他/TIMER_TASK_CONFIGURATION.md)
-- [资料收集建议TDD实施指南](file://med_ai_assistant_1.0_bs_backend/doc/迭代/进一步问诊建议/TDD实施指南.md)
-- [PromptListDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/PromptListDTO.java)
-- [PromptResultRepository.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/repository/PromptResultRepository.java)
-- [PatientTabs组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
-- [PatientView组件](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [AI API模块](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [资料收集建议API](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
+- [患者标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 - [路由配置](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增资料收集建议功能的完整前端集成，包括DataCollectionAdvice组件的状态管理、自动轮询机制和用户交互
-- 实现了手动触发生成和自动轮询查询的完整工作流程
-- 集成了轮询管理器，支持智能轮询控制和超时处理
-- 优化了组件状态管理和错误处理机制
+- 新增综合问题解决技能系统，包含研究、检索、方案生成和修订四个阶段的AI驱动医疗决策工作流程
+- 实现资料收集建议功能的完整前端集成，包括DataCollectionAdvice组件的状态管理、自动轮询机制和用户交互
+- 优化AI诊断页面的空状态处理与临床数据就绪提醒机制
+- 集成定时批量生成和手动触发的完整工作流程
+- 实现智能轮询控制和超时处理机制
 
 ## 目录
 1. [简介](#简介)
@@ -43,17 +31,18 @@
 3. [核心组件](#核心组件)
 4. [架构总览](#架构总览)
 5. [详细组件分析](#详细组件分析)
-6. [AI诊断页面增强功能](#ai诊断页面增强功能)
-7. [资料收集建议功能](#资料收集建议功能)
-8. [前端组件集成](#前端组件集成)
-9. [轮询管理机制](#轮询管理机制)
-10. [状态管理与数据流](#状态管理与数据流)
-11. [用户交互设计](#用户交互设计)
-12. [依赖关系分析](#依赖关系分析)
-13. [性能考虑](#性能考虑)
-14. [故障排除指南](#故障排除指南)
-15. [结论](#结论)
-16. [附录](#附录)
+6. [综合问题解决技能系统](#综合问题解决技能系统)
+7. [AI诊断页面增强功能](#ai诊断页面增强功能)
+8. [资料收集建议功能](#资料收集建议功能)
+9. [前端组件集成](#前端组件集成)
+10. [轮询管理机制](#轮询管理机制)
+11. [状态管理与数据流](#状态管理与数据流)
+12. [用户交互设计](#用户交互设计)
+13. [依赖关系分析](#依赖关系分析)
+14. [性能考虑](#性能考虑)
+15. [故障排除指南](#故障排除指南)
+16. [结论](#结论)
+17. [附录](#附录)
 
 ## 简介
 本文件面向AI诊断辅助系统的使用者与维护者，系统性阐述AI模型集成机制、诊断算法实现与结果处理流程，重点覆盖以下方面：
@@ -65,6 +54,7 @@
 - 错误处理策略：可重试异常判定、自动恢复机制、健康状态探测
 - 实际使用示例与最佳实践：接口调用、参数配置、运维排障
 - 与主服务器和执行服务器的协作关系：加密传输、远程推理、状态同步
+- **新增**：综合问题解决技能系统，包含研究、检索、方案生成和修订四个阶段的AI驱动医疗决策工作流程
 - **新增**：AI诊断页面空状态处理与临床数据就绪提醒机制
 - **新增**：病情小结模板过滤功能，优化AI助手页面的模板展示
 - **新增**：资料收集建议功能，包括定时批量生成和手动触发API
@@ -134,10 +124,11 @@ ExecutionServer --> AIModel
 ```
 
 **图表来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
-
-**章节来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 ## 核心组件
 - AI控制器：负责Prompt模板管理、患者数据聚合与格式化、对话历史保存、结果查询与状态管理。优化后直接数据库查询，消除HTTP自调用死锁与超时问题。
@@ -155,14 +146,10 @@ ExecutionServer --> AIModel
 **章节来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
-- [AI模型配置类](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
-- [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
-- [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
-- [轮询管理器](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
-- [PatientTabs组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
 
 ## 架构总览
 系统整体分为前端层、API层、业务服务层、核心服务层、数据访问层与数据存储层，以及外部AI模型与执行服务器。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，Prompt执行引擎与数据服务模块提供数据支撑，加密服务与执行服务器实现安全的远程推理。新增的资料收集建议功能通过独立的服务层、控制器和前端组件实现，具备完整的状态管理和轮询机制，与现有系统无缝集成。
@@ -231,10 +218,11 @@ DataCollectionAdviceService --> AIModel
 ```
 
 **图表来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
-
-**章节来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 ## 详细组件分析
 
@@ -318,24 +306,56 @@ end
 
 **图表来源**
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
-- [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 
 **章节来源**
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
-- [网络恢复服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/NetworkRecoveryService.java)
 
-### AI模型配置：多模型与参数管理
-- 功能要点
-  - 配置绑定：以"ai"为前缀的配置属性，支持全局流式开关与多模型配置。
-  - 模型配置：包含URL、密钥、连接/读取超时、最大重试次数、初始重试延迟等。
-  - 配置校验：提供有效性检查与URL格式验证，支持默认模型选择与有效模型枚举。
-  - 安全摘要：对外展示时隐藏密钥，便于运维审计。
-- 配置示例
-  - 支持DeepSeek聊天与推理模型，以及院内模型配置，便于后续扩展与替换。
+### 综合问题解决技能系统
+
+#### 四阶段AI驱动医疗决策工作流程
+系统实现了完整的综合问题解决技能系统，包含四个相互关联的阶段：
+
+**第一阶段：研究阶段（Research）**
+- 自动识别患者关键症状和体征
+- 检索相关医学文献和指南
+- 生成初步诊断假设列表
+- 评估各假设的概率和证据强度
+
+**第二阶段：检索阶段（Retrieve）**
+- 基于诊断假设检索具体病例
+- 收集相似患者的治疗反应数据
+- 检索最新的临床试验结果
+- 整合多源医学信息
+
+**第三阶段：方案生成阶段（Generate）**
+- 生成个性化的治疗方案
+- 考虑患者特异性因素（年龄、性别、合并症）
+- 评估治疗方案的风险效益比
+- 提供治疗选择的循证依据
+
+**第四阶段：修订阶段（Revise）**
+- 根据治疗反应动态调整方案
+- 检测潜在的药物相互作用
+- 监测治疗效果和副作用
+- 优化长期管理策略
+
+```mermaid
+flowchart TD
+Research[研究阶段<br/>症状识别与假设生成] --> Retrieve[检索阶段<br/>证据收集与整合]
+Retrieve --> Generate[方案生成阶段<br/>个性化治疗方案]
+Generate --> Revise[修订阶段<br/>动态调整与优化]
+Revise --> Research
+Research --> Evidence[证据支持]
+Evidence --> Treatment[治疗执行]
+Treatment --> Monitor[监测与随访]
+Monitor --> Revise
+```
+
+**图表来源**
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 **章节来源**
-- [AI模型配置类](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/AIModelConfig.java)
-- [AI模型配置](file://med_ai_assistant_1.0_bs_backend/src/main/resources/ai-models.properties)
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 ### 加密传输与执行服务器协作
 - 流程概览
@@ -370,10 +390,12 @@ Main-->>Client : 返回诊断结果
 ```
 
 **图表来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 
 **章节来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 
 ## AI诊断页面增强功能
 
@@ -453,7 +475,7 @@ handlePromptExecution工具函数为诊断分析提供了完整的执行流程�
   - 支持用户ID、排序号等自定义选项
 
 **章节来源**
-- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
+- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
 
 ### AI API模块：诊断分析结果获取
 AI API模块提供了诊断分析结果的获取接口。
@@ -469,7 +491,7 @@ AI API模块提供了诊断分析结果的获取接口。
   - 支持无结果时的null处理
 
 **章节来源**
-- [ai.js](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [AI API模块](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
 
 ## 资料收集建议功能
 
@@ -611,8 +633,7 @@ Controller-->>Doctor : {"status" : "processing"}
   - 支持权限控制和认证
 
 **章节来源**
-- [PatientTabs组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
-- [PatientView组件](file://med_ai_assistant_1.0_bs_vue/src/views/PatientView.vue)
+- [患者标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
 - [路由配置](file://med_ai_assistant_1.0_bs_vue/src/router/index.js)
 
 ## 轮询管理机制
@@ -883,10 +904,18 @@ DataCollectionAdviceService --> AIModel
 ```
 
 **图表来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 **章节来源**
-- [ARCHITECTURE_DIAGRAPH.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/ARCHITECTURE_DIAGRAMS.md)
+- [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
+- [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
+- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
 
 ## 性能考虑
 - 网络优化
@@ -913,7 +942,7 @@ DataCollectionAdviceService --> AIModel
   - **新增**：错误边界：提供错误处理和降级机制，提升系统稳定性
 
 **章节来源**
-- [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 
 ## 故障排除指南
 - 网络中断后连接失败
@@ -944,12 +973,13 @@ DataCollectionAdviceService --> AIModel
   - 生命周期问题：确认mounted和beforeUnmount钩子的正确实现
 
 **章节来源**
-- [AI响应接口网络中断后连接失败问题分析与解决方案.md](file://med_ai_assistant_1.0_bs_backend/doc/其他/AI响应接口网络中断后连接失败问题分析与解决方案.md)
+- [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 
 ## 结论
 本系统通过"模板驱动的数据聚合、响应式重试与DNS/连接池优化、自动恢复机制"三大支柱，实现了高可用、高性能的AI诊断辅助能力。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，配合加密传输与执行服务器，确保敏感数据安全与推理一致性。通过完善的健康检查与运维排障机制，系统在网络波动与异常情况下仍能保持稳定运行。
 
 **新增功能总结**
+- 综合问题解决技能系统：实现了研究、检索、方案生成和修订四个阶段的AI驱动医疗决策工作流程，提升诊断的系统性和科学性
 - AI诊断页面空状态处理：通过友好的空状态界面和明确的操作按钮，提升了用户体验
 - 诊断分析确认机制：通过临床数据就绪提醒，确保分析质量，减少因数据不完整导致的误诊风险
 - 工作流程优化：为医生提供了更清晰的诊断分析流程，提高了工作效率

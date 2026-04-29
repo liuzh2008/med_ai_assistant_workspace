@@ -16,6 +16,8 @@
 - [UpdateDeptSpecialDTO.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/UpdateDeptSpecialDTO.java)
 - [DeptSpecialContentService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DeptSpecialContentService.java)
 - [AIController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
+- [DeptSpecialContentException.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/exception/DeptSpecialContentException.java)
+- [PromptTemplate.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/PromptTemplate.java)
 </cite>
 
 ## 目录
@@ -49,6 +51,8 @@ MedAiAssistant项目中的Prompt模板科室特殊内容解耦方案旨在解决
   - **新增**：**完整的REST CRUD API接口，支持前端管理操作**
   - **新增**：**13个完整的测试用例验证CRUD操作**
   - **新增**：**标准化的DTO设计，提供清晰的API契约**
+  - **新增**：**统一的异常处理机制，确保业务异常的一致性**
+  - **新增**：**RESTful API设计规范，提供清晰的HTTP状态码和响应格式**
 
 ## 背景与目标
 
@@ -71,6 +75,8 @@ MedAiAssistant项目中的Prompt模板科室特殊内容解耦方案旨在解决
 5. **新增**：**废弃字段向后兼容性，确保前端升级过程中的平滑过渡**
 6. **新增**：**标准化的DTO设计，提供清晰的API契约**
 7. **新增**：**13个完整的测试用例，确保CRUD操作的可靠性**
+8. **新增**：**统一的异常处理机制，确保业务异常的一致性**
+9. **新增**：**RESTful API设计规范，提供清晰的HTTP状态码和响应格式**
 
 ## 核心方案设计
 
@@ -84,6 +90,7 @@ MedAiAssistant项目中的Prompt模板科室特殊内容解耦方案旨在解决
 | **新增**：**Controller设计** | **RESTful CRUD接口** | **提供完整的CRUD操作，支持前端管理界面，包含13个测试用例验证** |
 | **新增**：**DTO设计** | **标准化数据传输对象** | **CreateDeptSpecialDTO和UpdateDeptSpecialDTO提供清晰的API契约** |
 | **新增**：**异常处理** | **DeptSpecialContentException** | **统一处理唯一约束冲突、记录不存在等业务异常** |
+| **新增**：**API设计规范** | **RESTful设计规范** | **提供统一的HTTP状态码和响应格式，确保API一致性** |
 
 ### 关键服务组件
 
@@ -99,10 +106,10 @@ class PromptTemplateResolver {
 class DeptSpecialContentService {
 +create(dto) PromptTemplateDeptSpecial
 +update(dto) PromptTemplateDeptSpecial
-+delete(specialId) void
-+toggleActive(specialId, isActive) void
-+getByPromptName(promptName) List
-+getByDepartment(department) List
+-delete(specialId) void
+-toggleActive(specialId, isActive) void
+-getByPromptName(promptName) List
+-getByDepartment(department) List
 }
 class PromptTemplateDeptSpecialRepository {
 +findByPromptTypeAndPromptNameAndDepartmentAndIsActive() PromptTemplateDeptSpecial
@@ -391,6 +398,7 @@ class UpdateDeptSpecialDTO {
   - 改造后的业务Service：验证Resolver调用替代了直接Repository调用
   - **新增**：`DeptSpecialContentController`：5个端点的正常与异常路径测试
   - **新增**：AIController废弃字段兼容性测试
+  - **新增**：DeptSpecialContentException异常处理测试
 
 #### 集成测试（20%）
 - **框架**：Spring Boot Test (`@DataJpaTest` / `@SpringBootTest`)
@@ -400,6 +408,7 @@ class UpdateDeptSpecialDTO {
   - Resolver + Repository联合：端到端验证模板查询 + 合并逻辑
   - Controller层：`@WebMvcTest`验证REST接口状态码和响应体
   - **新增**：DeptSpecialContentController集成测试
+  - **新增**：DeptSpecialContentException异常传播测试
 
 #### E2E测试（10%）
 - **覆盖范围**：
@@ -443,6 +452,8 @@ class UpdateDeptSpecialDTO {
 | **T31** | **DeptSpecialContentControllerTest** | **testDeleteWithInternalError** | **集成** | **删除系统错误** |
 | **T32** | **AIControllerDeprecatedFieldsTest** | **testCreateIgnoresDeprecatedFields** | **集成** | **废弃字段兼容性** |
 | **T33** | **AIControllerDeprecatedFieldsTest** | **testGetNotReturnDeprecatedFields** | **集成** | **响应不含废弃字段** |
+| **T34** | **DeptSpecialContentExceptionTest** | **testExceptionMessage** | **单元** | **异常消息验证** |
+| **T35** | **DeptSpecialContentExceptionTest** | **testExceptionCause** | **单元** | **异常原因传递** |
 
 **章节来源**
 - [TDD实施指南.md:528-553](file://med_ai_assistant_1.0_bs_backend/doc/迭代/科室特殊内容解耦/TDD实施指南.md#L528-L553)
@@ -469,6 +480,7 @@ class UpdateDeptSpecialDTO {
 | **新增**：**SQL脚本执行验证** | **100%通过** | **数据库连接测试** | **部署前** |
 | **新增**：**DTO设计完整性** | **100%通过** | **字段验证** | **每次提交前** |
 | **新增**：**异常处理一致性** | **100%通过** | **异常类型统一** | **每次提交前** |
+| **新增**：**API设计规范符合性** | **100%通过** | **REST规范验证** | **每次提交前** |
 
 ### 验收测试驱动开发（ATDD）
 
@@ -523,6 +535,13 @@ Feature: Prompt模板科室特殊内容解耦
     Then 返回400错误，提示字段验证失败
     When UpdateDeptSpecialDTO包含无效数据
     Then 返回400错误，提示字段验证失败
+
+  Scenario: 异常处理测试
+    Given 创建重复的科室特殊内容
+    When 服务端处理请求
+    Then 抛出DeptSpecialContentException
+    When 前端接收异常
+    Then 返回409 Conflict状态码
 ```
 
 **章节来源**
@@ -549,6 +568,7 @@ Feature: Prompt模板科室特殊内容解耦
 | **新增**：**SQL脚本执行风险** | **脚本修改后执行失败** | **高** | **低** | **在测试环境中先行验证，确保脚本幂等性和数据完整性** |
 | **新增**：**DTO验证风险** | **CreateDeptSpecialDTO/UpdateDeptSpecialDTO字段验证失败** | **中** | **中** | **在Controller层添加参数验证注解，确保数据完整性** |
 | **新增**：**异常处理风险** | **DeptSpecialContentException异常处理不一致** | **中** | **中** | **统一异常处理策略，确保所有异常都有明确的错误信息** |
+| **新增**：**API设计规范风险** | **REST端点设计不符合规范** | **中** | **中** | **通过API设计评审，确保符合RESTful规范** |
 
 ## 实施进度安排
 
@@ -564,6 +584,8 @@ Feature: Prompt模板科室特殊内容解耦
 | Day 4 | **新增**：**Module 5-C2：废弃字段兼容性测试** | **测试全通过（T32-T33）** | **Module 5** |
 | Day 5 | Module 6：SQL脚本更新 | **脚本执行成功** | **Module 1（M1-C2）** |
 | Day 5 | 全量回归 + Code Review | 全部测试通过、Review无Critical问题 | 全部Module |
+| **新增**：**Day 6** | **Module 7：异常处理完善** | **异常测试全通过（T34-T35）** | **Module 5** |
+| **新增**：**Day 6** | **全量回归 + API规范评审** | **API设计符合规范** | **Module 7** |
 
 ### 关键里程碑
 
@@ -572,6 +594,7 @@ Feature: Prompt模板科室特殊内容解耦
 3. **Day 3-4**：完成所有业务服务的改造
 4. **Day 4**：完成API接口开发和测试验证
 5. **Day 5**：完成废弃字段兼容性测试和SQL脚本更新
+6. **Day 6**：完成异常处理完善和API规范评审
 
 ## 总结
 
@@ -589,6 +612,8 @@ Feature: Prompt模板科室特殊内容解耦
 8. **质量保证**：**实现100%的测试覆盖率，包括新增Controller和废弃字段兼容性测试**
 9. **标准化设计**：**新增标准化的DTO设计，提供清晰的API契约**
 10. **异常处理**：**新增统一的异常处理机制，确保业务异常的一致性**
+11. **API规范**：**新增RESTful API设计规范，提供统一的HTTP状态码和响应格式**
+12. **风险管控**：**建立完善的质量保障体系，确保项目交付质量**
 
 ### 技术创新
 
@@ -600,6 +625,8 @@ Feature: Prompt模板科室特殊内容解耦
 6. **DTO标准化**：**通过CreateDeptSpecialDTO和UpdateDeptSpecialDTO提供标准化的数据传输格式**
 7. **异常统一处理**：**通过DeptSpecialContentException统一处理业务异常**
 8. **参数验证**：**在Controller层添加参数验证注解，确保数据完整性**
+9. **API设计规范**：**通过统一的API设计规范确保接口一致性**
+10. **全面测试覆盖**：**通过多层次测试确保系统稳定性和可靠性**
 
 该方案为MedAiAssistant项目提供了强大的扩展能力，为未来的功能演进奠定了坚实的技术基础。
 
