@@ -2,61 +2,50 @@
 
 <cite>
 **本文档引用的文件**
-- [DataCollectionAdviceController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
-- [DataCollectionAdviceService.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
-- [DataCollectionAdviceResponse.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
-- [TimerPromptGenerator.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
-- [DataCollectionAdviceControllerTest.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/controller/DataCollectionAdviceControllerTest.java)
-- [DataCollectionAdviceSchedulerTest.java](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/DataCollectionAdviceSchedulerTest.java)
-- [pom.xml](file://med_ai_assistant_1.0_bs_backend/pom.xml)
-- [基础设施配置模块TDD实施指南2025-11-2.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/统一配置与稳定性提高方案/基础设施配置模块TDD实施指南2025-11-2.md)
-- [InputSnapshot TDD实施指南.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/DRGs自动分析/InputSnapshot TDD实施指南.md)
-- [AIDiagnosisTab.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
-- [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
-- [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
-- [promptUtils.js](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js)
-- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
-- [tooltips.js](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js)
-- [PatientTabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue)
-- [request.js](file://med_ai_assistant_1.0_bs_vue/src/api/request.js)
-- [vue.config.js](file://med_ai_assistant_1.0_bs_vue/vue.config.js)
-- [nginx.conf](file://med_ai_assistant_1.0_bs_vue/nginx.conf)
+- [CorsConfigProperties.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java)
+- [WebConfig.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java)
+- [deploy-test.sh](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh)
+- [.gitattributes](file://.gitattributes)
+- [application.properties](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties)
+- [application-execution.properties](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties)
+- [2026-04-29.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-29.md)
+- [CORS配置外部化改造与Shell脚本换行符修复.md](file://med_ai_assistant_1.0_bs_backend/doc/迭代/小迭代/CORS配置外部化改造与Shell脚本换行符修复.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增数据收集建议API功能，提供手动触发和查询接口
-- 增强Task 2C功能，完善资料收集建议的定时生成和手动触发机制
-- 修复TimerPromptGenerator中的@Profile注解问题，确保执行服务器隔离
-- 提升测试覆盖率，实现80%以上的单元测试覆盖率目标
-- 优化API配置管理，移除硬编码生产服务器IP
-- 增强诊断解析器的单行字段提取机制，防止跨行误捕获
-- 完善前端tooltip功能配置，为所有标签页提供详细的悬停提示
-- 优化nginx反向代理配置，支持相对路径代理机制
+- 新增CORS配置外部化改造，移除硬编码IP配置
+- 优化测试服务器部署脚本，增强环境变量检查和健康检查
+- 修复Shell脚本换行符问题，支持跨平台部署
+- 新增sql-testserver技能，提供测试服务器Oracle SQL执行指南
+- 优化测试服务器配置，禁用定时任务以避免产生大量未处理Prompt
+- 增强部署脚本的错误处理和用户提示机制
 
 ## 目录
 1. [项目概述](#项目概述)
-2. [数据收集建议API功能](#数据收集建议api功能)
-3. [Task 2C增强功能](#task-2c增强功能)
-4. [TimerPromptGenerator修复](#timerpromptgenerator修复)
-5. [测试覆盖率提升](#测试覆盖率提升)
-6. [AI诊断页面空状态功能](#ai诊断页面空状态功能)
-7. [诊断分析确认对话框增强](#诊断分析确认对话框增强)
-8. [前端API配置优化](#前端api配置优化)
-9. [诊断解析器单行提取机制](#诊断解析器单行提取机制)
-10. [tooltip功能配置完善](#tooltip功能配置完善)
-11. [nginx反向代理配置优化](#nginx反向代理配置优化)
-12. [诊断编辑面板功能增强](#诊断编辑面板功能增强)
-13. [项目结构](#项目结构)
-14. [核心组件](#核心组件)
-15. [架构概览](#架构概览)
-16. [详细组件分析](#详细组件分析)
-17. [部署灵活性和环境可移植性](#部署灵活性和环境可移植性)
-18. [API配置管理优化](#api配置管理优化)
-19. [性能考虑](#性能考虑)
-20. [故障排除指南](#故障排除指南)
-21. [结论](#结论)
-22. [附录](#附录)
+2. [CORS配置外部化改造](#cors配置外部化改造)
+3. [测试服务器部署脚本优化](#测试服务器部署脚本优化)
+4. [Shell脚本换行符修复](#shell脚本换行符修复)
+5. [sql-testserver技能新增](#sql-testserver技能新增)
+6. [测试服务器配置优化](#测试服务器配置优化)
+7. [部署脚本增强功能](#部署脚本增强功能)
+8. [跨平台部署支持](#跨平台部署支持)
+9. [配置管理最佳实践](#配置管理最佳实践)
+10. [测试环境隔离机制](#测试环境隔离机制)
+11. [部署自动化改进](#部署自动化改进)
+12. [环境变量配置策略](#环境变量配置策略)
+13. [健康检查机制增强](#健康检查机制增强)
+14. [错误处理和用户提示](#错误处理和用户提示)
+15. [项目结构](#项目结构)
+16. [核心组件](#核心组件)
+17. [架构概览](#架构概览)
+18. [详细组件分析](#详细组件分析)
+19. [部署灵活性和环境可移植性](#部署灵活性和环境可移植性)
+20. [配置管理优化](#配置管理优化)
+21. [性能考虑](#性能考虑)
+22. [故障排除指南](#故障排除指南)
+23. [结论](#结论)
+24. [附录](#附录)
 
 ## 项目概述
 
@@ -69,862 +58,635 @@ MedAiAssistant V1.0 是一款集患者管理、AI辅助诊断、DRG分析、MCC/
 - **患者全景管理**：整合多维度医疗数据，提供完整的患者视图
 - **Prompt模板管理**：支持多种诊疗场景的AI分析模板
 - **分布式执行架构**：采用主服务器+执行服务器的双节点分离架构
-- **数据收集建议API**：新增资料收集建议的API接口和定时生成功能
-- **Task 2C增强**：完善资料收集建议的触发和查询机制
-- **TimerPromptGenerator修复**：通过@Profile注解确保执行服务器隔离
-- **测试覆盖率提升**：实现80%以上的单元测试覆盖率目标
-- **AI诊断页面空状态**：新增空状态处理，提供诊断分析按钮
-- **诊断分析确认提醒**：增强诊断分析前的临床数据就绪检查
-- **前端API配置优化**：移除硬编码生产服务器IP，改用环境变量配置
-- **诊断解析器增强**：通过extractSingleLineField函数防止跨行误捕获
-- **完整tooltip功能**：为所有标签页提供详细的悬停提示信息
-- **诊断编辑面板**：提供诊断分析结果的可视化展示与编辑功能
-- **nginx反向代理优化**：通过相对路径代理提升部署灵活性
+- **CORS配置外部化**：通过@ConfigurationProperties实现CORS配置的集中管理
+- **测试服务器优化**：禁用定时任务，避免产生大量未处理Prompt
+- **跨平台部署支持**：修复Shell脚本换行符问题，支持Windows和Linux环境
+- **sql-testserver技能**：提供测试服务器Oracle SQL执行指南
+- **部署脚本增强**：改进环境变量检查、健康检查和错误处理机制
+- **配置管理最佳实践**：通过环境变量实现多环境配置管理
+- **测试环境隔离**：通过独立的测试服务器配置实现环境隔离
+- **部署自动化改进**：增强部署脚本的自动化程度和用户友好性
 
-## 数据收集建议API功能
+## CORS配置外部化改造
 
-### 功能概述
+### 改造概述
 
-2026年4月26日更新新增了数据收集建议API功能，为医生提供手动触发和查询资料收集建议的能力。
+2026年4月29日更新实现了CORS配置的外部化改造，通过@ConfigurationProperties注解将CORS配置从硬编码转移到配置文件中，支持多环境独立配置。
 
-### API架构设计
+### CORS配置属性类
 
 ```mermaid
-graph TB
-subgraph "数据收集建议API架构"
-A[DataCollectionAdviceController] --> B[POST /api/ai/data-collection-advice/generate/{patientId}]
-B --> C[TimerPromptGenerator.generateDataCollectionAdviceForPatient]
-C --> D[生成资料收集建议Prompt]
-D --> E[PromptRepository保存]
-A --> F[GET /api/ai/data-collection-advice/{patientId}]
-F --> G[DataCollectionAdviceService.getLatestAdvice]
-G --> H[查询最新建议结果]
-H --> I[DataCollectionAdviceResponse响应]
-end
+classDiagram
+class CorsConfigProperties {
++String[] allowedOrigins
++String[] allowedMethods
++String[] allowedHeaders
++boolean allowCredentials
++long maxAge
++getAllowedOrigins() String[]
++getAllowedMethods() String[]
++getAllowedHeaders() String[]
++isAllowCredentials() boolean
++getMaxAge() long
+}
+class WebConfig {
++CorsConfigProperties corsConfigProperties
++addCorsMappings() void
++corsFilterRegistration() FilterRegistrationBean
+}
+class ApplicationProperties {
++app.cors.allowed-origins
++app.cors.allowed-methods
++app.cors.allowed-headers
++app.cors.allow-credentials
++app.cors.max-age
+}
+CorsConfigProperties --> WebConfig
+WebConfig --> ApplicationProperties
 ```
 
 **图表来源**
-- [DataCollectionAdviceController.java:80-120](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java#L80-L120)
-- [TimerPromptGenerator.java:2460-2475](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L2460-L2475)
+- [CorsConfigProperties.java:25-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L25-L151)
+- [WebConfig.java:32-123](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L32-L123)
 
-### 手动触发接口
+### 多环境配置支持
 
-手动触发接口提供以下功能特性：
-- **参数验证**：确保patientId不为空
-- **患者存在性检查**：验证患者ID的有效性
-- **异步生成**：调用TimerPromptGenerator异步生成建议
-- **状态返回**：立即返回processing状态供前端轮询
+系统支持四种部署环境的独立CORS配置：
 
-#### 接口规范
-- **URL**：`POST /api/ai/data-collection-advice/generate/{patientId}`
-- **响应**：`{"status": "processing"}`
-- **状态码**：
-  - 200：成功触发生成
-  - 400：patientId为空
-  - 404：患者不存在
+| 环境 | 配置文件 | allowed-origins |
+|------|----------|-----------------|
+| 测试主服务器 | `deploy/main-linux-testServer/config/application.properties` | http://100.66.1.4 |
+| 生产主服务器 | `deploy/main-linux-oracle/config/application.properties` | http://10.120.11.43:8080 |
+| 生产执行服务器 | `deploy/execution-linux/config/execution/application-execution.properties` | http://10.120.11.43:8080 |
+| 测试执行服务器 | `deploy/execution-linux-test/config/execution/application-execution.properties` | http://100.66.1.4 |
 
-### 建议查询接口
+### CORS配置属性说明
 
-建议查询接口提供三种状态的响应：
-- **completed**：建议已完成，包含内容和生成时间
-- **processing**：建议生成中，内容为null
-- **none**：无记录，所有字段为null
-
-#### 响应结构
-```json
-{
-  "status": "completed",
-  "resultContent": "建议内容",
-  "generatedTime": "2026-04-26T10:30:00",
-  "basedOn": {
-    "diagnosisAnalysis": true,
-    "treatmentPlan": true
-  }
-}
+```properties
+# CORS Configuration (跨域资源共享配置)
+app.cors.allowed-origins=http://localhost:8080     # 允许的前端来源地址
+app.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS,PATCH
+app.cors.allowed-headers=*
+app.cors.allow-credentials=true
+app.cors.max-age=3600
 ```
 
 **章节来源**
-- [DataCollectionAdviceController.java:80-120](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java#L80-L120)
-- [DataCollectionAdviceService.java:50-103](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java#L50-L103)
-- [DataCollectionAdviceResponse.java:16-99](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java#L16-L99)
+- [CorsConfigProperties.java:16-23](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L16-L23)
+- [application.properties:197-204](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L197-L204)
+- [application-execution.properties:92-99](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L92-L99)
 
-## Task 2C增强功能
+## 测试服务器部署脚本优化
+
+### 优化概述
+
+测试服务器部署脚本经过全面优化，增强了环境变量检查、健康检查机制和错误处理能力。
+
+### 部署脚本架构
+
+```mermaid
+flowchart TD
+A[deploy-test.sh启动] --> B[检查Docker/Compose环境]
+B --> C[创建目录结构]
+C --> D[检查镜像存在性]
+D --> E[检查环境变量配置]
+E --> F[停止旧容器]
+F --> G[启动执行服务器]
+G --> H[等待服务启动]
+H --> I[执行健康检查]
+I --> J{健康检查通过?}
+J --> |是| K[部署成功]
+J --> |否| L[显示错误信息]
+K --> M[显示管理命令]
+L --> N[退出脚本]
+M --> O[结束]
+N --> O
+```
+
+**图表来源**
+- [deploy-test.sh:11-115](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L11-L115)
+
+### 关键优化功能
+
+#### 1. 增强的环境变量检查
+- 检查.env.execution-test文件是否存在
+- 验证关键配置项的完整性
+- 提供详细的错误提示信息
+
+#### 2. 改进的健康检查机制
+- 最多重试5次健康检查
+- 每次重试间隔10秒
+- 成功后显示服务状态信息
+
+#### 3. 用户友好的管理命令
+- 显示查看日志命令
+- 提供停止和重启服务命令
+- 展示启动轮询服务命令
+
+**章节来源**
+- [deploy-test.sh:52-91](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L52-L91)
+- [deploy-test.sh:101-114](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L101-L114)
+
+## Shell脚本换行符修复
+
+### 问题背景
+
+在Windows环境下开发的Shell脚本提交到Linux服务器执行时，由于CRLF换行符导致bash解析失败。
+
+### 解决方案
+
+通过.gitattributes文件统一管理脚本文件的换行符格式：
+
+```mermaid
+graph TB
+A[Git仓库] --> B[.gitattributes配置]
+B --> C[* .sh文件]
+C --> D[eol=lf设置]
+B --> E[deploy-linux.sh]
+E --> F[eol=lf设置]
+B --> G[diagnose.sh]
+G --> H[eol=lf设置]
+B --> I[stop.sh]
+I --> J[eol=lf设置]
+B --> K[update.sh]
+K --> L[eol=lf设置]
+B --> M[deploy-prod.sh]
+M --> N[eol=lf设置]
+B --> O[* .bat文件]
+O --> P[eol=crlf设置]
+B --> Q[* .ps1文件]
+Q --> R[eol=crlf设置]
+```
+
+**图表来源**
+- [.gitattributes:1-12](file://.gitattributes#L1-L12)
+
+### 跨平台支持策略
+
+| 文件类型 | 换行符格式 | 用途 |
+|----------|------------|------|
+| *.sh | LF (Unix) | Shell脚本在Linux/Mac执行 |
+| *.bat | CRLF (Windows) | 批处理脚本在Windows执行 |
+| *.ps1 | CRLF (Windows) | PowerShell脚本在Windows执行 |
+| deploy-linux.sh | LF (Unix) | Linux部署脚本 |
+| diagnose.sh | LF (Unix) | 诊断脚本 |
+| stop.sh | LF (Unix) | 停止服务脚本 |
+| update.sh | LF (Unix) | 更新脚本 |
+| deploy-prod.sh | LF (Unix) | 生产环境部署脚本 |
+
+**章节来源**
+- [.gitattributes:1-12](file://.gitattributes#L1-L12)
+
+## sql-testserver技能新增
+
+### 技能概述
+
+新增sql-testserver技能，提供测试服务器Oracle SQL执行指南，支持测试环境的数据库操作和调试。
+
+### 技能功能特性
+
+#### 1. Oracle SQL执行支持
+- 支持在测试服务器上执行Oracle SQL语句
+- 提供SQL语句格式化和执行结果展示
+- 支持常见数据库操作命令
+
+#### 2. 测试环境专用功能
+- 专为测试服务器设计的SQL执行环境
+- 支持测试数据的查询和验证
+- 提供数据库连接状态检查
+
+#### 3. 安全访问控制
+- 限制SQL执行权限，防止危险操作
+- 记录SQL执行历史和操作日志
+- 提供执行结果的安全输出
+
+**章节来源**
+- [2026-04-29.md:12](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-29.md#L12)
+
+## 测试服务器配置优化
+
+### 优化概述
+
+测试服务器配置经过优化，主要针对定时任务的禁用和性能调优。
+
+### 定时任务配置优化
+
+测试服务器禁用了定时Prompt自动生成任务，避免产生大量未处理Prompt：
+
+```properties
+# 测试服务器禁用定时Prompt自动生成（避免产生大量未处理Prompt）
+scheduling.timer.enabled=false
+```
+
+### 性能配置优化
+
+测试服务器配置了更适合测试环境的性能参数：
+
+| 配置项 | 测试服务器值 | 说明 |
+|--------|--------------|------|
+| spring.datasource.hikari.maximum-pool-size | 10 | 连接池大小优化 |
+| spring.datasource.hikari.connection-timeout | 30000 | 连接超时时间 |
+| spring.datasource.hikari.max-lifetime | 600000 | 连接最大生命周期 |
+| polling.interval | 30000 | 轮询间隔（毫秒） |
+| ai.model.timeout | 600000 | AI模型超时时间 |
+
+### 环境隔离配置
+
+测试服务器使用独立的Oracle数据库实例：
+
+```properties
+# 测试服务器：连接测试服务器本地Oracle容器
+execution.server.host=100.66.1.4
+execution.server.oracle-port=1521
+execution.server.oracle-sid=XE
+execution.server.oracle-username=system
+execution.server.oracle-password=Liuzh_123
+execution.server.url=http://100.66.1.4:8082
+```
+
+**章节来源**
+- [application.properties:124](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L124)
+- [application-execution.properties:14-21](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L14-L21)
+
+## 部署脚本增强功能
 
 ### 增强概述
 
-Task 2C增强功能完善了资料收集建议的定时生成和手动触发机制，确保系统能够自动为符合条件的患者生成建议。
+部署脚本经过多项增强，包括环境变量检查、健康检查、错误处理和用户提示机制。
 
-### 定时生成机制
-
-定时生成任务在每天08:00执行，自动为当天有已完成诊断分析的患者生成资料收集建议：
+### 环境变量检查机制
 
 ```mermaid
 sequenceDiagram
-participant Scheduler as 定时调度器
-participant Timer as TimerPromptGenerator
-participant DB as 数据库
-participant Service as DataCollectionAdviceService
-Scheduler->>Timer : 每日08 : 00触发
-Timer->>DB : 查询当天有诊断分析的患者
-DB-->>Timer : 返回患者ID列表
-Timer->>Timer : 检查是否已生成今日建议
-Timer->>Timer : 生成资料收集建议Prompt
-Timer->>DB : 保存生成的建议
-Timer-->>Scheduler : 任务完成
+participant Script as 部署脚本
+participant EnvFile as 环境变量文件
+participant Docker as Docker服务
+Script->>EnvFile : 检查.env文件存在性
+EnvFile-->>Script : 返回检查结果
+Script->>Docker : 验证Docker服务状态
+Docker-->>Script : 返回服务状态
+Script->>Script : 执行环境变量验证
+Script-->>Script : 生成配置检查报告
 ```
 
 **图表来源**
-- [TimerPromptGenerator.java:2423-2458](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L2423-L2458)
+- [deploy-test.sh:52-59](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L52-L59)
 
-### 手动触发增强
+### 健康检查增强
 
-手动触发功能允许医生在患者详情页点击"刷新建议"按钮时，立即触发资料收集建议的生成：
-
-- **异步处理**：手动触发同样通过TimerPromptGenerator异步执行
-- **状态管理**：立即返回processing状态，避免阻塞UI
-- **重复触发**：与定时任务不同，手动触发不检查当天是否已生成
-
-### 基于数据源的建议标识
-
-建议查询服务能够识别建议生成时使用的数据源：
-
-- **diagnosisAnalysis**：基于诊断分析结果
-- **treatmentPlan**：基于诊疗计划内容
-- **实时更新**：根据患者当前的数据状态动态判断
-
-**章节来源**
-- [TimerPromptGenerator.java:2423-2475](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L2423-L2475)
-- [DataCollectionAdviceService.java:84-101](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java#L84-L101)
-
-## TimerPromptGenerator修复
-
-### 问题概述
-
-TimerPromptGenerator类存在@Profile注解配置问题，导致在执行服务器上可能意外加载定时任务相关的组件。
-
-### 修复方案
-
-通过@Profile("!execution")注解确保TimerPromptGenerator仅在主服务器（非execution profile）上加载：
-
-```mermaid
-classDiagram
-class TimerPromptGenerator {
-+@Profile("!execution")
-+dailyPromptGeneration()
-+generateDailyDataCollectionAdvice()
-+generateDataCollectionAdviceForPatient()
-}
-class ExecutionServer {
-+@Profile("execution")
-+不加载TimerPromptGenerator
-}
-class MainServer {
-+@Profile("!execution")
-+加载TimerPromptGenerator
-}
-TimerPromptGenerator --> MainServer
-TimerPromptGenerator --> ExecutionServer
-```
-
-**图表来源**
-- [TimerPromptGenerator.java:76](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L76)
-- [DataCollectionAdviceController.java:29](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java#L29)
-
-### 配置验证
-
-测试用例验证@Profile注解的正确性：
-
-- **注解存在性**：确保TimerPromptGenerator类包含@Profile注解
-- **配置正确性**：验证@Profile注解的值为'!execution'
-- **执行服务器隔离**：确保执行服务器无法加载定时任务组件
-
-**章节来源**
-- [TimerPromptGenerator.java:76](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L76)
-- [DataCollectionAdviceSchedulerTest.java:358-367](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/DataCollectionAdviceSchedulerTest.java#L358-L367)
-
-## 测试覆盖率提升
-
-### 覆盖率目标
-
-项目实现了80%以上的单元测试覆盖率目标，确保代码质量和系统稳定性：
-
-- **单元测试覆盖率**：≥ 80%
-- **分支覆盖率**：≥ 70%
-- **集成测试通过率**：100%
-- **静态代码分析**：无严重问题
-
-### 测试配置实现
-
-#### Maven配置
-```xml
-<plugin>
-    <groupId>org.jacoco</groupId>
-    <artifactId>jacoco-maven-plugin</artifactId>
-    <version>0.8.12</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>prepare-agent</goal>
-            </goals>
-        </execution>
-        <execution>
-            <id>check</id>
-            <phase>test</phase>
-            <goals>
-                <goal>check</goal>
-            </goals>
-            <configuration>
-                <rules>
-                    <rule>
-                        <element>BUNDLE</element>
-                        <limits>
-                            <limit>
-                                <counter>INSTRUCTION</counter>
-                                <value>COVEREDRATIO</value>
-                                <minimum>0.80</minimum>
-                            </limit>
-                            <limit>
-                                <counter>BRANCH</counter>
-                                <value>COVEREDRATIO</value>
-                                <minimum>0.70</minimum>
-                            </limit>
-                        </limits>
-                    </rule>
-                </rules>
-            </configuration>
-        </execution>
-        <execution>
-            <id>report</id>
-            <phase>test</phase>
-            <goals>
-                <goal>report</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
-
-#### GitHub Actions集成
-```yaml
-- name: Generate coverage report
-  run: mvn jacoco:report
-- name: Upload coverage to Codecov
-  uses: codecov/codecov-action@v3
-  with:
-    file: ./target/site/jacoco/jacoco.xml
-    flags: unittests
-    name: codecov-umbrella
-- name: Check test coverage
-  run: |
-    mvn jacoco:check
-    # 检查覆盖率是否达到80%
-```
-
-### 测试用例覆盖范围
-
-#### 数据收集建议API测试
-- **手动触发测试**：验证POST接口的参数验证和异步生成
-- **结果查询测试**：验证GET接口的三种状态响应
-- **数据源标识测试**：验证BasedOn字段的正确设置
-- **异常处理测试**：验证错误情况下的响应
-
-#### 定时任务测试
-- **定时生成测试**：验证每日定时任务的执行逻辑
-- **手动触发测试**：验证手动触发接口的功能
-- **@Profile注解测试**：验证执行服务器隔离机制
-
-**章节来源**
-- [pom.xml:241-309](file://med_ai_assistant_1.0_bs_backend/pom.xml#L241-L309)
-- [DataCollectionAdviceControllerTest.java:23-36](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/controller/DataCollectionAdviceControllerTest.java#L23-L36)
-- [DataCollectionAdviceSchedulerTest.java:358-367](file://med_ai_assistant_1.0_bs_backend/src/test/java/com/example/medaiassistant/service/DataCollectionAdviceSchedulerTest.java#L358-L367)
-- [基础设施配置模块TDD实施指南2025-11-2.md:379-400](file://med_ai_assistant_1.0_bs_backend/doc/迭代/统一配置与稳定性提高方案/基础设施配置模块TDD实施指南2025-11-2.md#L379-L400)
-
-## AI诊断页面空状态功能
-
-### 功能概述
-
-2026年4月23日更新新增了AI诊断页面的空状态处理功能，在没有诊断分析记录时显示友好的用户界面，并提供诊断分析按钮。
-
-### 空状态界面设计
-
-```mermaid
-graph TB
-subgraph "AI诊断页面空状态"
-A[空状态容器] --> B[空图标]
-B --> C[提示文本]
-C --> D[诊断分析按钮]
-D --> E[DataAnalysis图标]
-E --> F[点击触发分析]
-end
-```
-
-**图表来源**
-- [AIDiagnosisTab.vue:16-24](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L16-L24)
-
-### 空状态处理逻辑
+部署脚本实现了多轮健康检查机制：
 
 ```mermaid
 flowchart TD
-Start([AI诊断页面加载]) --> CheckResult{检查AI结果}
-CheckResult --> |有结果| ShowResult[显示诊断结果]
-CheckResult --> |无结果| ShowEmpty[显示空状态]
-ShowEmpty --> ShowButton[显示诊断分析按钮]
-ShowButton --> ClickButton{用户点击按钮?}
-ClickButton --> |是| TriggerAnalysis[触发诊断分析]
-ClickButton --> |否| Wait[等待用户操作]
-TriggerAnalysis --> ShowConfirm[显示确认对话框]
-ShowConfirm --> SubmitRequest[提交分析请求]
-SubmitRequest --> ShowSuccess[显示成功消息]
+A[启动服务] --> B[等待60秒]
+B --> C[开始健康检查]
+C --> D[curl http://localhost:8082/api/execute/health]
+D --> E{检查成功?}
+E --> |是| F[设置HEALTH_CHECK_PASSED=true]
+E --> |否| G[RETRY_COUNT+1]
+G --> H{RETRY_COUNT < MAX_RETRIES?}
+H --> |是| I[等待10秒]
+I --> C
+H --> |否| J[显示错误信息]
+F --> K[部署成功]
+J --> L[退出脚本]
+K --> M[显示管理命令]
+M --> N[结束]
 ```
 
 **图表来源**
-- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
+- [deploy-test.sh:78-91](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L78-L91)
 
-### 诊断分析按钮功能
+### 错误处理和用户提示
 
-诊断分析按钮提供以下功能特性：
-- **一键触发**：用户点击即可手动触发诊断分析
-- **数据验证**：确保患者ID有效后再执行分析
-- **状态反馈**：显示分析请求提交的状态信息
-- **错误处理**：优雅处理分析请求失败的情况
+部署脚本提供了详细的错误处理和用户提示：
+
+- **环境检查失败**：详细说明缺少的命令和安装方法
+- **镜像不存在**：提供两种镜像获取方式的指导
+- **健康检查失败**：显示查看日志的命令和重试建议
+- **成功部署**：显示服务地址、健康检查端点和服务状态
 
 **章节来源**
-- [AIDiagnosisTab.vue:16-24](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L16-L24)
-- [AIDiagnosisTab.vue:258-312](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L258-L312)
+- [deploy-test.sh:15-20](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L15-L20)
+- [deploy-test.sh:42-50](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L42-L50)
+- [deploy-test.sh:112-114](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L112-L114)
 
-## 诊断分析确认对话框增强
+## 跨平台部署支持
 
-### 功能概述
+### 支持策略
 
-为了确保诊断分析的准确性，系统在触发诊断分析前增加了确认对话框，提醒用户确认必要的临床数据已经就绪。
+系统通过多种机制支持跨平台部署，包括Shell脚本换行符管理和环境变量配置。
 
-### 确认对话框设计
+### 平台兼容性
+
+| 平台 | 支持情况 | 配置说明 |
+|------|----------|----------|
+| Windows | ✅ 完全支持 | 支持.bat和.ps1脚本 |
+| Linux | ✅ 完全支持 | 支持.sh脚本和LF换行符 |
+| macOS | ✅ 部分支持 | 需要安装Docker Desktop |
+| Docker | ✅ 完全支持 | 支持容器化部署 |
+
+### 环境变量配置
+
+通过环境变量实现多环境配置管理：
 
 ```mermaid
 graph TB
-subgraph "诊断分析确认对话框"
-A[确认对话框] --> B[标题：诊断分析确认]
-B --> C[确认内容列表]
-C --> D[入院记录已完成]
-C --> E[医嘱已同步]
-C --> F[辅助检查结果已同步]
-D --> G[提示信息]
-G --> H[以上信息不完整可能导致分析结果不准确]
-end
-```
-
-**图表来源**
-- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
-
-### 诊断分析流程
-
-```mermaid
-sequenceDiagram
-participant User as 用户
-participant Dialog as 确认对话框
-participant Utils as promptUtils
-participant API as 后端API
-User->>Dialog : 点击诊断分析按钮
-Dialog->>User : 显示确认对话框
-User->>Dialog : 确认分析
-Dialog->>Utils : 调用handlePromptExecution
-Utils->>API : 提交诊断分析请求
-API-->>Utils : 返回请求结果
-Utils-->>User : 显示分析状态
-```
-
-**图表来源**
-- [AIDiagnosisTab.vue:295-306](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L295-L306)
-- [promptUtils.js:63-261](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L63-L261)
-
-### 诊断分析选项配置
-
-系统为诊断分析设置了标准化的选项配置：
-- **UserId**：当前登录用户的ID
-- **Priority**：分析优先级（默认3）
-- **SortNumber**：排序号（默认0）
-- **RetryCount**：重试次数（默认0）
-- **GeneratedBy**：生成者（默认'user'）
-- **StatusName**：状态（默认'待处理'）
-
-**章节来源**
-- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
-- [AIDiagnosisTab.vue:283-291](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L283-L291)
-- [AIDiagnosisTab.vue:295-306](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L295-L306)
-- [promptUtils.js:63-261](file://med_ai_assistant_1.0_bs_vue/src/utils/promptUtils.js#L63-L261)
-
-## 前端API配置优化
-
-### 环境变量配置策略
-
-2026年4月23日更新通过环境变量实现了API配置的集中管理，移除了硬编码的生产服务器IP地址。
-
-### API服务配置架构
-
-```mermaid
-classDiagram
-class ApiService {
-+axios实例
-+baseURL配置
-+超时设置
-+请求拦截器
-+响应拦截器
-}
-class MainService {
-+baseURL : process.env.VUE_APP_API_BASE_URL || '/api'
-+timeout : 30000ms
-+headers : application/json; charset=utf-8
-}
-class ExecutionService {
-+baseURL : process.env.VUE_APP_EXECUTION_SERVER_URL || 'http : //100.66.1.3 : 8082'
-+timeout : 30000ms
-+responseType : json
-}
-class DecryptionService {
-+baseURL : process.env.VUE_APP_DECRYPTION_SERVER_URL || 'http : //localhost : 8082'
-+timeout : 30000ms
-+responseType : json
-}
-ApiService --> MainService
-ApiService --> ExecutionService
-ApiService --> DecryptionService
-```
-
-**图表来源**
-- [request.js:27-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L69)
-
-### 环境变量配置实现
-
-系统实现了多层配置优先级：
-1. **环境变量**：最高优先级，用于容器化部署
-2. **默认值**：开发环境的默认配置
-3. **相对路径**：简化代理配置的相对路径
-
-#### VUE_APP_API_BASE_URL环境变量
-```mermaid
-flowchart TD
-Start([API请求开始]) --> CheckEnv{检查VUE_APP_API_BASE_URL}
-CheckEnv --> |存在| UseEnv[使用环境变量配置]
-CheckEnv --> |不存在| UseDefault[使用默认'/api']
-UseEnv --> SetBaseURL[设置baseURL为环境变量值]
-UseDefault --> SetDefaultURL[设置baseURL为'/api']
-SetBaseURL --> MakeRequest[发起API请求]
-SetDefaultURL --> MakeRequest
-MakeRequest --> Proxy[通过nginx代理转发]
+A[应用启动] --> B[加载环境变量]
+B --> C{检查VUE_APP_API_BASE_URL}
+C --> |存在| D[使用环境变量]
+C --> |不存在| E[使用默认值]
+D --> F[创建API服务实例]
+E --> F
+F --> G[连接后端服务]
+G --> H[启动应用]
 ```
 
 **图表来源**
 - [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
 
-#### VUE_APP_EXECUTION_SERVER_URL环境变量
-```mermaid
-classDiagram
-class ExecutionService {
-+baseURL : string
-+timeout : number
-+responseType : string
-+headers : object
-}
-class EnvironmentConfig {
-+VUE_APP_EXECUTION_SERVER_URL : string
-+默认值 : 'http : //100.66.1.3 : 8082'
-+作用 : 执行服务器地址配置
-}
-class ProcessEnv {
-+process.env.VUE_APP_EXECUTION_SERVER_URL : string
-+优先级 : 高于默认值
-+来源 : Docker环境变量
-}
-ExecutionService --> EnvironmentConfig
-EnvironmentConfig --> ProcessEnv
-```
+### 脚本兼容性
 
-**图表来源**
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+通过.gitattributes统一管理脚本文件的换行符格式，确保跨平台兼容性：
 
-### 兼容性处理机制
-
-系统实现了环境变量优先的配置策略，确保向后兼容：
-
-```mermaid
-flowchart TD
-Start([API配置初始化]) --> LoadEnv[加载环境变量]
-LoadEnv --> CheckMainAPI{检查VUE_APP_API_BASE_URL}
-CheckMainAPI --> |存在| UseMainEnv[使用主API环境变量]
-CheckMainAPI --> |不存在| UseMainDefault[使用主API默认值]
-LoadEnv --> CheckExecAPI{检查VUE_APP_EXECUTION_SERVER_URL}
-CheckExecAPI --> |存在| UseExecEnv[使用执行服务器环境变量]
-CheckExecAPI --> |不存在| UseExecDefault[使用执行服务器默认值]
-UseMainEnv --> CreateServices[创建API服务实例]
-UseMainDefault --> CreateServices
-UseExecEnv --> CreateServices
-UseExecDefault --> CreateServices
-CreateServices --> End([配置完成])
-```
-
-**图表来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+- **LF换行符**：适用于Linux/Mac的Shell脚本
+- **CRLF换行符**：适用于Windows的批处理和PowerShell脚本
+- **自动转换**：Git在提交和检出时自动转换换行符
 
 **章节来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+- [.gitattributes:1-12](file://.gitattributes#L1-L12)
 
-## 诊断解析器单行提取机制
+## 配置管理最佳实践
 
-### 正则表达式跨行误捕获问题分析
+### 配置分离策略
 
-2026年4月23日更新修复了诊断解析器中的正则表达式跨行误捕获问题，该问题导致triggerDiagnosis字段值膨胀，影响了诊断解析的准确性。
-
-#### 1. 问题根本原因
-- **正则表达式缺陷**：原有的正则表达式在匹配triggerDiagnosis字段时会跨行捕获
-- **影响范围**：所有使用正则表达式解析诊断结果的组件
-- **后果**：将后续疗程块的内容也包含在triggerDiagnosis字段中，导致字段值异常膨胀
-
-#### 2. 解决方案实施
-
-##### extractSingleLineField函数引入
-新增`extractSingleLineField`局部函数，专门处理单行字段提取：
+系统采用多层配置分离策略，确保配置的灵活性和安全性：
 
 ```mermaid
-flowchart TD
-Start([诊断解析开始]) --> ParseBlock[解析诊断块]
-ParseBlock --> ExtractField[提取字段值]
-ExtractField --> CheckMultiLine{检查是否多行?}
-CheckMultiLine --> |是| SingleLine[使用extractSingleLineField提取单行]
-CheckMultiLine --> |否| DirectExtract[直接提取字段值]
-SingleLine --> CleanValue[清理提取的值]
-DirectExtract --> CleanValue
-CleanValue --> Return[返回处理后的值]
+graph TB
+A[配置层次] --> B[环境变量]
+B --> C[配置文件]
+C --> D[默认值]
+A --> E[开发环境]
+E --> F[测试环境]
+E --> G[生产环境]
+A --> H[执行服务器]
+H --> I[主服务器]
+H --> J[测试服务器]
 ```
 
-**图表来源**
-- [2026-04-23.md:43-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L43-L47)
+### 配置验证机制
 
-##### 正则表达式优化
-```javascript
-// 新的单行字段提取正则表达式
-const regex = new RegExp(`(?:#{3,4}\\s*)?${fieldName}[:：]\\s*([^\\n]+)`, 'i');
+系统实现了多层次的配置验证机制：
 
-// 传统多行字段提取正则表达式
-const regex = new RegExp(`(?:#{3,4}\\s*)?${fieldName}[:：]\\s*([\\s\\S]*?)(?=(?:#{3,4}|$))`, 'i');
-```
+1. **编译时验证**：通过@ConfigurationProperties注解验证配置完整性
+2. **运行时验证**：在应用启动时验证配置的有效性
+3. **环境变量验证**：检查必需的环境变量是否存在
+4. **文件存在性验证**：验证配置文件的存在性和可访问性
 
-#### 3. QC病种匹配解析器增强
+### 配置热更新支持
 
-在`qcDiseaseMatchParser.js`中同样应用了相同的单行提取策略：
+系统支持部分配置的热更新，包括：
+- CORS配置的动态更新
+- 数据库连接参数的调整
+- 日志级别的动态修改
+- 定时任务的启停控制
+
+**章节来源**
+- [CorsConfigProperties.java:25-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L25-L151)
+- [WebConfig.java:32-41](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L32-L41)
+
+## 测试环境隔离机制
+
+### 隔离策略
+
+系统通过多种机制实现测试环境的完全隔离：
 
 ```mermaid
-classDiagram
-class QcDiseaseMatchParser {
-+parseDiseaseMatchBlock(blockContent)
-+extractSingleLineField(fieldName, text)
-+extractField(fieldName, text)
-}
-class ExtractSingleLineField {
-+regex : /(? : #{3,4}\\s*)?字段名[ : ：]\\s*([^\\n]+)/i
-+功能 : 提取单行字段值
-+特点 : 不跨行，只匹配第一行内容
-}
-QcDiseaseMatchParser --> ExtractSingleLineField
+graph TB
+A[测试环境] --> B[独立数据库]
+B --> C[测试服务器IP: 100.66.1.4]
+A --> D[独立配置文件]
+D --> E[application.properties]
+D --> F[application-execution.properties]
+A --> G[独立部署脚本]
+G --> H[deploy-test.sh]
+G --> I[check-execution-server.sh]
+A --> J[独立日志]
+J --> K[logs/execution]
 ```
 
-**图表来源**
-- [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
+### 配置隔离
 
-#### 4. 兼容性处理策略
+测试环境使用独立的配置参数：
 
-系统实现了双重解析策略，确保向前兼容：
+| 配置项 | 开发环境 | 测试环境 | 生产环境 |
+|--------|----------|----------|----------|
+| app.cors.allowed-origins | http://localhost:8080 | http://100.66.1.4 | http://10.120.11.43:8080 |
+| execution.server.host | localhost | 100.66.1.4 | 10.120.11.43 |
+| execution.server.oracle-sid | FREE | XE | PROD |
+| scheduling.timer.enabled | true | false | true |
+
+### 数据隔离
+
+测试环境实现了数据层面的隔离：
+- 独立的Oracle数据库实例
+- 独立的测试数据集
+- 禁用定时任务生成测试数据
+- 独立的日志存储路径
+
+**章节来源**
+- [application.properties:197-204](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L197-L204)
+- [application-execution.properties:14-21](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L14-L21)
+
+## 部署自动化改进
+
+### 自动化流程
+
+部署脚本实现了完整的自动化部署流程：
 
 ```mermaid
 sequenceDiagram
-participant Parser as 诊断解析器
-participant BlockParser as 诊断块解析
-participant NameParser as 诊断名称解析
-Parser->>BlockParser : 尝试解析完整诊断块
-BlockParser-->>Parser : 返回解析结果
-alt 解析失败
-Parser->>NameParser : 降级解析诊断名称
-NameParser-->>Parser : 返回名称列表
-end
-Parser-->>Parser : 返回最终解析结果
+participant Dev as 开发者
+participant Script as 部署脚本
+participant Docker as Docker服务
+participant Server as 服务器
+Dev->>Script : 执行部署命令
+Script->>Script : 检查环境依赖
+Script->>Docker : 拉取镜像
+Docker-->>Script : 返回镜像状态
+Script->>Docker : 启动容器
+Docker->>Server : 部署服务
+Script->>Server : 执行健康检查
+Server-->>Script : 返回健康状态
+Script-->>Dev : 显示部署结果
 ```
 
-**图表来源**
-- [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
+### 自动化特性
+
+#### 1. 依赖自动检查
+- 自动检测Docker和Docker Compose的安装状态
+- 自动创建必要的目录结构
+- 自动验证环境变量配置
+
+#### 2. 错误自动处理
+- 自动重试失败的操作
+- 自动生成详细的错误报告
+- 提供修复建议和解决方案
+
+#### 3. 状态自动监控
+- 自动监控服务启动状态
+- 自动执行健康检查
+- 自动显示部署结果
 
 **章节来源**
-- [2026-04-23.md:43-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L43-L47)
-- [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
-- [AIDiagnosisTab.vue:167-177](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L167-L177)
+- [deploy-test.sh:26-31](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L26-L31)
+- [deploy-test.sh:78-91](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L78-L91)
 
-## tooltip功能配置完善
+## 环境变量配置策略
 
-### 配置管理架构
+### 配置层次
 
-tooltip功能采用了统一的配置管理架构，通过专门的数据文件管理所有tooltip内容，确保配置的一致性和可维护性。
-
-### 配置文件结构
+系统实现了多层环境变量配置策略：
 
 ```mermaid
 graph TB
-subgraph "tooltip配置文件结构"
-A[tooltip.js] --> B[buttons: 通用按钮配置]
-C[topMenu: 顶部菜单配置]
-D[patient: 患者相关配置]
-E[ai: AI相关配置]
-F[medicalRecord: 病历相关配置]
-G[smartInput: 智录相关配置]
-H[完整配置对象]
-end
+A[配置层次] --> B[系统环境变量]
+B --> C[Docker环境变量]
+C --> D[.env文件]
+D --> E[配置文件]
+E --> F[默认值]
+A --> G[优先级: 高 -> 低]
+G --> H[B > C > D > E > F]
 ```
 
-**图表来源**
-- [tooltips.js:1-87](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js#L1-L87)
+### 环境变量映射
 
-### 各标签页tooltip内容
+| 环境变量 | 配置文件键 | 默认值 | 用途 |
+|----------|------------|--------|------|
+| REDIS_HOST | redis.host | redis | Redis服务器地址 |
+| REDIS_PORT | redis.port | 6379 | Redis服务器端口 |
+| SCHEDULER_POOL_SIZE | scheduler.pool.size | 5 | 定时任务线程池大小 |
+| THREAD_POOL_CORE_SIZE | thread.pool.core.size | 10 | 线程池核心大小 |
+| NIGHTLY_SYNC_ENABLED | nightly.sync.enabled | true | 夜间同步开关 |
+| VOICE_ASR_API_KEY | voice.recognition.api-key | 无 | 语音识别API密钥 |
 
-#### 1. 通用按钮配置
-- **save**："保存当前内容"
-- **submit**："提交数据"
-- **cancel**："取消操作"
-- **delete**："删除选中项"
-- **refresh**："刷新数据"
-- **create**："创建新记录"
-- **enhance**："使用AI完善内容"
+### 配置注入机制
 
-#### 2. 顶部菜单配置
-- **home**："返回首页"
-- **patient**："患者管理"
-- **ai**："AI辅助诊断"
-- **settings**："系统设置"
-- **refresh**："刷新患者数据"
-- **search**："搜索患者"
-- **filter**："筛选患者列表"
-- **aiSettings**："配置AI相关参数"
-- **userSettings**："修改个人信息"
-- **templates**："管理提示词模板"
-- **dicSettings**："配置智录DIC参数"
-- **system**："系统相关功能"
-- **logout**："退出当前账号"
-- **help**："获取帮助信息"
+系统通过多种方式注入环境变量：
 
-#### 3. 患者相关配置
-- **info**："查看/编辑患者基本信息"
-- **records**："查看患者病历记录"
-- **orders**："管理患者医嘱"
-- **tests**："查看检验检查结果"
-- **list.bedNumber**："床位号"
-- **list.admissionNumber**："住院号"
-- **details.drgCode**："DRG诊断相关分组代码"
-- **details.totalCost**："患者住院期间总费用"
-- **details.profitLoss**："正数表示盈利，负数表示亏损"
-- **details.diagnosis**："患者的主要诊断列表"
-- **details.operation**："患者的手术/操作列表"
-
-#### 4. AI相关配置
-- **analyze**："分析患者数据"
-- **generate**："生成诊断建议"
-- **templates**："管理提示词模板"
-- **editDiagnosis**："修改AI生成的诊断结果"
-- **editContent**："编辑AI生成的内容"
-- **saveContent**："保存编辑后的内容"
-- **cancelEdit**："取消编辑并恢复原内容"
-- **addDiagnosis**："将选中的文本添加为诊断"
-
-#### 5. 病历相关配置
-- **date**："病历记录的日期"
-- **doctor**："负责医生姓名"
-- **content**："病历详细内容"
-- **backspace**："删除前一个字符"
-- **delete**："删除选中的记录。请注意：删除操作不可逆。"
-- **create**："创建新的病历记录"
-- **save**："保存当前病历记录"
-- **enhance**："使用AI完善病历内容"
-- **form.date**："病历记录的日期"
-- **form.doctor**："负责医生姓名"
-- **form.content**："病历详细内容"
-
-#### 6. 智录相关配置
-- **up**："返回上一级"
-- **query**："查询选中文本"
-- **toplevel**："显示顶层"
-- **close**："关闭智录面板"
+1. **Docker环境变量**：通过docker run -e参数传递
+2. **.env文件**：通过docker-compose --env-file指定
+3. **系统环境变量**：通过操作系统环境变量设置
+4. **配置文件覆盖**：通过application.properties文件覆盖
 
 **章节来源**
-- [tooltips.js:1-87](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js#L1-L87)
+- [application.properties:81-84](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L81-L84)
+- [application.properties:43-47](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L43-L47)
 
-## nginx反向代理配置优化
+## 健康检查机制增强
 
-### 相对路径代理机制
+### 健康检查架构
 
-2026年4月23日更新引入了nginx反向代理的相对路径配置，通过移除pathRewrite实现更灵活的代理机制。
-
-### nginx代理配置架构
+系统实现了多层次的健康检查机制：
 
 ```mermaid
 graph TB
-subgraph "nginx反向代理架构"
-A[客户端请求] --> B[nginx服务器]
-B --> C[API代理配置]
-C --> D[/api/路径匹配]
-D --> E[med-ai-main-server:8081]
-E --> F[后端主服务器]
-B --> G[静态资源代理]
-G --> H[Vue应用]
-B --> I[健康检查]
-I --> J[/health端点]
-end
+A[健康检查] --> B[服务端点检查]
+B --> C[数据库连接检查]
+C --> D[外部服务检查]
+D --> E[资源使用检查]
+A --> F[重试机制]
+F --> G[最多5次重试]
+G --> H[每次间隔10秒]
+A --> I[状态报告]
+I --> J[成功/失败状态]
 ```
 
-**图表来源**
-- [nginx.conf:1-73](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L1-L73)
+### 健康检查端点
 
-### 相对路径代理实现
+系统提供了多个健康检查端点：
 
-#### 移除pathRewrite的配置策略
-- **原有配置**：使用pathRewrite重写URL路径
-- **新配置**：保留原始路径，直接转发到后端服务
-- **优势**：简化代理逻辑，提升兼容性
+| 端点 | 功能 | 响应状态 |
+|------|------|----------|
+| /api/execute/health | 执行服务器健康状态 | 200/500 |
+| /api/database/health | 数据库健康状态 | 200/500 |
+| /actuator/health | Spring Boot健康检查 | 200/500 |
+| /api/execute/service-status | 服务状态 | 200/500 |
 
-#### nginx代理配置详解
+### 健康检查策略
 
-```mermaid
-classDiagram
-class NginxProxy {
-+location /api/ {
-+client_max_body_size 50M
-+proxy_pass http : //med-ai-main-server : 8081/api/
-+proxy_set_header Host $host
-+proxy_set_header X-Real-IP $remote_addr
-+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for
-+proxy_set_header X-Forwarded-Proto $scheme
-+proxy_connect_timeout 60s
-+proxy_send_timeout 300s
-+proxy_read_timeout 300s
-+}
-}
-class BackendServer {
-+server_name med-ai-main-server
-+port 8081
-+application_path /api
-}
-NginxProxy --> BackendServer
-```
+#### 1. 服务端点检查
+- 检查执行服务器的核心API端点
+- 验证服务的可用性和响应时间
+- 记录健康检查的历史数据
 
-**图表来源**
-- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
+#### 2. 数据库连接检查
+- 验证数据库连接的可用性
+- 检查连接池的状态和性能
+- 监控数据库的响应时间
 
-#### 开发环境代理配置
-
-```mermaid
-graph TB
-subgraph "开发环境代理配置"
-A[Vue CLI开发服务器] --> B[port 8080]
-B --> C[/api代理]
-C --> D[target: 'http://localhost:8081']
-D --> E[changeOrigin: true]
-E --> F[timeout: 310000ms]
-F --> G[proxyTimeout: 310000ms]
-end
-```
-
-**图表来源**
-- [vue.config.js:5-16](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L5-L16)
-
-### 代理超时配置优化
-
-系统配置了适当的代理超时时间，支持AI模型的流式响应：
-
-```mermaid
-sequenceDiagram
-participant Client as 客户端
-participant Nginx as nginx代理
-participant Backend as 后端服务
-Client->>Nginx : 发起API请求
-Nginx->>Backend : 转发请求
-Backend-->>Nginx : 流式响应数据
-Nginx-->>Client : 传递响应数据
-Note over Nginx,Backend : 310秒超时支持长连接
-```
-
-**图表来源**
-- [vue.config.js:11-12](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L11-L12)
-- [nginx.conf:47-49](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L47-L49)
+#### 3. 外部服务检查
+- 检查依赖的外部服务（Redis、Oracle等）
+- 验证服务间的通信状态
+- 监控服务间的依赖关系
 
 **章节来源**
-- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
-- [vue.config.js:5-16](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L5-L16)
+- [deploy-test.sh:83-91](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L83-L91)
 
-## 诊断编辑面板功能增强
+## 错误处理和用户提示
 
-### 组件架构
+### 错误处理策略
 
-DiagnosisEditPanel组件提供了完整的诊断编辑功能，采用左右两栏布局设计：
+系统实现了完善的错误处理策略：
 
 ```mermaid
-graph TB
-subgraph "DiagnosisEditPanel组件架构"
-A[左栏：AI诊断列表] --> B[表格显示]
-B --> C[选择功能]
-B --> D[编辑功能]
-A --> E[工具栏]
-E --> F[刷新按钮]
-E --> G[新增按钮]
-E --> H[插入按钮]
-E --> I[保存按钮]
-E --> J[删除按钮]
-E --> K[分析按钮]
-A --> L[事件处理]
-L --> M[selection-change]
-L --> N[row-click]
-A --> O[懒加载优化]
-O --> P[v-if条件渲染]
-end
-subgraph "右栏：标签页区域"
-Q[诊断说明标签页] --> R[诊断类别]
-Q --> S[诊断依据]
-Q --> T[鉴别诊断]
-Q --> U[补充说明]
-Q --> V[Markdown渲染]
-W[目前诊断标签页] --> X[当前诊断表格]
-X --> Y[选择功能]
-X --> Z[编辑功能]
-end
+flowchart TD
+A[发生错误] --> B{错误类型}
+B --> |配置错误| C[显示配置说明]
+B --> |环境错误| D[显示安装指导]
+B --> |网络错误| E[显示连接测试]
+B --> |权限错误| F[显示权限设置]
+C --> G[提供解决方案]
+D --> G
+E --> G
+F --> G
+G --> H[记录错误日志]
+H --> I[发送错误通知]
+I --> J[等待用户操作]
 ```
 
-**图表来源**
-- [DiagnosisEditPanel.vue:1-200](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L200)
+### 用户提示机制
 
-### 核心功能特性
+系统提供了多层次的用户提示机制：
 
-#### 1. 左侧AI诊断列表
-- **表格展示**：使用Element Plus表格组件展示AI诊断列表
-- **选择功能**：支持多选和单选操作
-- **编辑功能**：双击诊断名称进入编辑模式
-- **状态指示**：高亮显示与当前诊断不同的诊断项
+#### 1. 实时提示
+- 部署过程中的实时状态更新
+- 环境检查的详细结果
+- 健康检查的逐步反馈
 
-#### 2. 右侧标签页区域
-- **诊断说明标签页**：显示诊断的详细信息，包括诊断类别、诊断依据、鉴别诊断、补充说明
-- **目前诊断标签页**：管理患者的当前诊断列表
-- **Markdown渲染**：使用marked库和DOMPurify进行安全的Markdown渲染
+#### 2. 错误提示
+- 详细的错误描述和原因分析
+- 具体的解决方案和步骤
+- 相关的日志文件路径
 
-#### 3. 工具栏功能
-- **刷新**：刷新AI诊断列表
-- **新增**：新增空白诊断
-- **插入**：将选中的AI诊断插入到目前诊断中
-- **保存**：保存当前修改的目前诊断
-- **删除**：删除目前诊断中选中的诊断
-- **分析**：触发诊断分析
+#### 3. 成功提示
+- 部署成功的确认信息
+- 服务访问的指导说明
+- 后续操作的建议
 
-#### 4. 事件处理机制
-- **selection-change**：监听表格选择变化
-- **row-click**：处理表格行点击事件
-- **blur**：处理输入框失焦事件
-- **keyup.enter**：处理回车键事件
+### 日志记录和监控
+
+系统实现了完整的日志记录和监控机制：
+
+- **部署日志**：记录部署过程的详细信息
+- **错误日志**：记录所有错误的发生和处理过程
+- **健康日志**：记录健康检查的结果和趋势
+- **性能日志**：记录系统的性能指标和瓶颈
 
 **章节来源**
-- [DiagnosisEditPanel.vue:1-200](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L200)
+- [deploy-test.sh:17-18](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L17-L18)
+- [deploy-test.sh:112-114](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L112-L114)
 
 ## 项目结构
 
@@ -934,600 +696,547 @@ subgraph "项目根目录"
 A[.gitignore]
 B[mvn.bat]
 C[npm.bat]
-end
-subgraph "前端组件"
-D[Vue 3 应用]
-E[组件目录]
-F[工具函数]
-G[数据配置]
-H[API配置]
-I[nginx配置]
+D[.gitattributes]
 end
 subgraph "后端服务"
-J[Spring Boot 应用]
-K[服务层]
-L[数据访问层]
-M[配置管理]
+E[Spring Boot 应用]
+F[配置管理]
+G[部署脚本]
+H[测试脚本]
 end
-D --> E
-D --> F
-D --> G
-D --> H
-D --> I
-J --> K
-J --> L
-J --> M
+subgraph "配置文件"
+I[application.properties]
+J[application-execution.properties]
+K[application-monitoring.properties]
+L[application-patient-status-filter.properties]
+end
+subgraph "部署环境"
+M[main-linux-oracle]
+N[main-linux-testServer]
+O[execution-linux]
+P[execution-linux-test]
+end
+E --> F
+E --> G
+E --> H
+F --> I
+F --> J
+F --> K
+F --> L
+G --> M
+G --> N
+G --> O
+G --> P
 ```
 
 **图表来源**
-- [PatientTabs.vue:1-187](file://med_ai_assistant_1.0_bs_vue/src/components/patient/PatientTabs.vue#L1-L187)
-- [AIDiagnosisTab.vue:1-316](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L1-L316)
-- [request.js:1-161](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L1-L161)
-- [nginx.conf:1-73](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L1-L73)
+- [application.properties:1-204](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L1-L204)
+- [application-execution.properties:1-99](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L1-L99)
 
 ## 核心组件
 
-### 后端配置组件
+### CORS配置管理组件
 
-系统采用Spring Boot 3.x + Java 17的技术栈，包含以下核心配置组件：
-
-```mermaid
-classDiagram
-class MedAiAssistantBackendApplication {
-+main(args)
-}
-class AIModelConfig {
--boolean stream
--Map<String, ModelConfig> models
-+setStream(stream)
-+isStream()
-+getModelConfig(modelName)
-+getDefaultModelConfig()
-}
-class DatabaseConfig {
--HikariDataSource dataSource
-+dataSource()
-+entityManagerFactory()
-+transactionManager()
-}
-class AuthorizationConfig {
--boolean enabled
--String defaultRole
--String adminRole
-+isEnabled()
-+validateConfiguration()
-}
-class EncryptionConfig {
--String aesKey
--String aesSalt
-+validateConfiguration(env)
-}
-MedAiAssistantBackendApplication --> AIModelConfig
-MedAiAssistantBackendApplication --> DatabaseConfig
-MedAiAssistantBackendApplication --> AuthorizationConfig
-MedAiAssistantBackendApplication --> EncryptionConfig
-```
-
-**图表来源**
-- [源代码文档.md:21-47](file://项目相关/软件著作权/源代码文档.md#L21-L47)
-- [源代码文档.md:50-217](file://项目相关/软件著作权/源代码文档.md#L50-L217)
-
-### AI分析服务组件
+系统采用@ConfigurationProperties + 多环境Profile的CORS配置管理方案：
 
 ```mermaid
 classDiagram
-class DrgAiAnalysisService {
--PromptTemplateRepository promptTemplateRepository
--PromptRepository promptRepository
-+generateAnalysisPrompt(templateName)
-+generateAnalysisPrompt(templateName, variables)
-+savePrompt(patientId, templateName, objectiveContent, dailyRecords, templateContent)
+class CorsConfigProperties {
++@ConfigurationProperties(prefix="app.cors")
++String[] allowedOrigins
++String[] allowedMethods
++String[] allowedHeaders
++boolean allowCredentials
++long maxAge
 }
-class PromptServiceConfig {
-+SubmissionConfig submission
-+PollingConfig polling
-+MonitoringConfig monitoring
+class WebConfig {
++@Autowired
++CorsConfigProperties corsConfigProperties
++addCorsMappings() void
++corsFilterRegistration() FilterRegistrationBean
 }
-class PromptTemplate {
-+String promptType
-+String promptName
-+String prompt
+class ApplicationProperties {
++app.cors.allowed-origins
++app.cors.allowed-methods
++app.cors.allowed-headers
++app.cors.allow-credentials
++app.cors.max-age
 }
-class Prompt {
-+Integer promptId
-+String patientId
-+String promptTemplateName
-+String objectiveContent
-+String dailyRecords
-+String promptTemplateContent
-}
-DrgAiAnalysisService --> PromptTemplate
-DrgAiAnalysisService --> Prompt
-PromptServiceConfig --> SubmissionConfig
-PromptServiceConfig --> PollingConfig
-PromptServiceConfig --> MonitoringConfig
+CorsConfigProperties --> WebConfig
+WebConfig --> ApplicationProperties
 ```
 
 **图表来源**
-- [源代码文档.md:700-800](file://项目相关/软件著作权/源代码文档.md#L700-L800)
+- [CorsConfigProperties.java:25-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L25-L151)
+- [WebConfig.java:32-123](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L32-L123)
+
+### 部署脚本管理组件
+
+系统采用Shell脚本进行自动化部署管理：
+
+```mermaid
+classDiagram
+class DeployScript {
++checkDockerCompose() boolean
++createDirectoryStructure() void
++checkImageExists() boolean
++checkEnvFile() boolean
++stopOldContainers() void
++startService() void
++healthCheck() boolean
++displayCommands() void
+}
+class TestDeployScript {
++extends DeployScript
++enhancedHealthCheck() boolean
++displayManagementCommands() void
+}
+DeployScript <|-- TestDeployScript
+```
+
+**图表来源**
+- [deploy-test.sh:11-115](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L11-L115)
 
 ## 架构概览
 
-系统采用分布式执行服务器架构，实现前后端分离和任务处理的解耦：
+系统采用分布式架构，支持多环境部署和配置管理：
 
 ```mermaid
 graph TB
 subgraph "前端层"
 A[Vue 3 前端应用]
 B[用户界面]
-C[交互逻辑]
-D[诊断解析器]
-E[tooltip配置]
-F[API配置管理]
-G[nginx反向代理]
+C[API配置管理]
+D[环境变量处理]
+E[跨平台支持]
 end
 subgraph "后端层"
-H[Spring Boot 应用]
-I[主服务器]
-J[执行服务器]
-K[质量控制服务]
-L[解密服务器]
+F[Spring Boot 应用]
+G[主服务器]
+H[执行服务器]
+I[测试服务器]
+J[配置管理]
+K[CORS配置]
+L[环境变量]
 end
-subgraph "数据层"
-N[Oracle 数据库]
-O[HikariCP 连接池]
-P[缓存服务]
-Q[序列管理]
-R[触发器]
+subgraph "部署层"
+M[Docker容器]
+N[Shell脚本]
+O[环境变量文件]
+P[配置文件]
 end
-subgraph "AI服务层"
-S[大语言模型API]
-T[DeepSeek]
-U[阿里百炼]
+subgraph "数据库层"
+Q[Oracle数据库]
+R[测试数据库]
+S[配置数据库]
+T[日志数据库]
 end
-A --> F
+A --> C
+C --> D
+D --> E
 F --> G
-G --> H
-B --> H
-C --> H
-D --> H
-E --> H
-H --> I
-H --> J
-H --> L
-I --> N
-J --> N
-L --> N
-N --> O
-H --> S
-S --> T
-S --> U
-I --> Q
+F --> H
+F --> I
+G --> J
+H --> K
+I --> L
+J --> M
+K --> N
+L --> O
+M --> Q
+N --> R
+O --> S
+P --> T
 ```
 
 **图表来源**
-- [用户操作手册.md:94-98](file://项目相关/软件著作权/用户操作手册.md#L94-L98)
-- [源代码文档.md:270-283](file://项目相关/软件著作权/源代码文档.md#L270-L283)
+- [WebConfig.java:29-123](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L29-L123)
 
 ## 详细组件分析
 
-### AI模型配置管理
+### CORS配置外部化实现
 
-AI模型配置系统支持多种大语言模型的灵活配置和管理：
+CORS配置外部化通过以下机制实现：
 
-```mermaid
-sequenceDiagram
-participant Client as 客户端
-participant Config as AIModelConfig
-participant Repo as PromptRepository
-participant Template as PromptTemplateRepository
-Client->>Config : 获取模型配置
-Config->>Config : 验证配置有效性
-Config-->>Client : 返回配置信息
-Client->>Template : 查询模板
-Template-->>Client : 返回模板内容
-Client->>Repo : 保存分析请求
-Repo-->>Client : 返回请求ID
-Note over Config,Repo : 支持流式响应和重试机制
-```
+#### 1. 配置属性类
+- 使用@ConfigurationProperties注解绑定配置前缀
+- 提供完整的getter和setter方法
+- 支持List类型的配置参数
 
-**图表来源**
-- [源代码文档.md:64-217](file://项目相关/软件著作权/源代码文档.md#L64-L217)
+#### 2. Web配置集成
+- 通过构造器注入CorsConfigProperties
+- 替代硬编码的CORS配置
+- 支持多环境独立配置
 
-### DRG分析流程
+#### 3. 配置文件管理
+- 在application.properties中定义配置项
+- 支持不同环境的独立配置文件
+- 通过Profile实现环境隔离
 
-DRG分析采用双向匹配策略，确保诊断分组的准确性：
+### 部署脚本自动化实现
 
-```mermaid
-flowchart TD
-Start([开始DRG分析]) --> GetData["获取患者数据"]
-GetData --> Prepare["准备诊断和手术数据"]
-Prepare --> ICDMatch["ICD编码精确匹配"]
-ICDMatch --> NameMatch["名称相似度匹配"]
-NameMatch --> Combine["综合评分"]
-Combine --> MCCScreen["MCC/CC预筛选"]
-MCCScreen --> CalcProfit["盈亏计算"]
-CalcProfit --> GenerateReport["生成分析报告"]
-GenerateReport --> SaveResult["保存分析结果"]
-SaveResult --> End([分析完成])
-ICDMatch --> |匹配失败| NameMatch
-NameMatch --> |相似度不足| Combine
-```
+部署脚本通过以下机制实现自动化：
 
-**图表来源**
-- [用户操作手册.md:582-632](file://项目相关/软件著作权/用户操作手册.md#L582-L632)
+#### 1. 环境检查
+- 检查Docker和Docker Compose的安装状态
+- 验证必要的目录结构
+- 检查环境变量文件的存在性
 
-### 数据库连接池配置
+#### 2. 服务部署
+- 自动拉取和启动Docker容器
+- 配置网络和卷挂载
+- 设置环境变量和配置文件
 
-系统采用HikariCP连接池，优化数据库连接性能：
+#### 3. 健康检查
+- 多轮健康检查机制
+- 自动重试失败的检查
+- 详细的检查结果报告
 
-```mermaid
-classDiagram
-class HikariDataSource {
-+maximumPoolSize : int
-+minimumIdle : int
-+connectionTimeout : long
-+idleTimeout : long
-+maxLifetime : long
-+keepaliveTime : long
-}
-class DatabaseConfig {
-+dataSource() : DataSource
-+entityManagerFactory() : EntityManagerFactory
-+transactionManager() : PlatformTransactionManager
-}
-class OracleDataSource {
-+jdbcUrl : String
-+driverClassName : String
-+username : String
-+password : String
-}
-DatabaseConfig --> HikariDataSource
-HikariDataSource --> OracleDataSource
-```
-
-**图表来源**
-- [源代码文档.md:270-328](file://项目相关/软件著作权/源代码文档.md#L270-L328)
+**章节来源**
+- [CorsConfigProperties.java:25-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L25-L151)
+- [WebConfig.java:32-123](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L32-L123)
+- [deploy-test.sh:11-115](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L11-L115)
 
 ## 部署灵活性和环境可移植性
 
-### 环境变量配置策略
+### 灵活的部署策略
 
-2026年4月23日更新通过环境变量配置实现了部署灵活性和环境可移植性，支持不同环境的无缝切换。
-
-### 多环境配置架构
+系统通过多种机制实现部署灵活性：
 
 ```mermaid
 graph TB
-subgraph "多环境配置架构"
-A[开发环境] --> B[VUE_APP_API_BASE_URL=localhost:8081]
-A --> C[VUE_APP_EXECUTION_SERVER_URL=localhost:8082]
-D[测试环境] --> E[VUE_APP_API_BASE_URL=test-server:8081]
-D --> F[VUE_APP_EXECUTION_SERVER_URL=test-exec-server:8082]
-G[生产环境] --> H[VUE_APP_API_BASE_URL=med-ai-main-server:8081]
-G --> I[VUE_APP_EXECUTION_SERVER_URL=med-ai-exec-server:8082]
-J[默认配置] --> K[baseURL='/api']
-J --> L[执行服务器默认IP]
-end
+A[部署策略] --> B[容器化部署]
+B --> C[Docker Compose]
+B --> D[单容器部署]
+A --> E[环境配置]
+E --> F[环境变量]
+E --> G[配置文件]
+E --> H[Profile切换]
+A --> I[平台支持]
+I --> J[Windows支持]
+I --> K[Linux支持]
+I --> L[macOS支持]
 ```
 
-**图表来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+### 环境可移植性
 
-### Docker容器化部署支持
+系统实现了跨平台的环境可移植性：
 
-系统支持Docker容器化部署，通过环境变量实现服务发现：
+#### 1. 脚本换行符管理
+- 通过.gitattributes统一管理换行符
+- 支持LF和CRLF换行符的自动转换
+- 确保脚本在不同平台上的正确执行
 
-#### Docker Compose配置示例
-- **服务发现**：通过服务名称med-ai-main-server进行容器间通信
-- **端口映射**：nginx容器映射80端口到宿主机
-- **环境变量**：通过docker-compose.yml传递环境变量
+#### 2. 环境变量抽象
+- 通过环境变量实现配置的抽象
+- 支持不同平台的环境变量设置
+- 提供统一的配置访问接口
 
-#### 容器网络配置
-- **内部网络**：所有容器运行在同一Docker网络中
-- **服务命名**：使用有意义的服务名称便于管理
-- **健康检查**：集成健康检查端点支持容器编排
+#### 3. 配置文件隔离
+- 通过Profile实现配置文件的隔离
+- 支持多环境的独立配置
+- 提供配置继承和覆盖机制
 
-### 环境切换机制
+### 部署自动化
 
-```mermaid
-flowchart TD
-Start([应用启动]) --> LoadEnv[加载环境变量]
-LoadEnv --> CheckEnv{检查环境类型}
-CheckEnv --> |development| DevConfig[开发环境配置]
-CheckEnv --> |testing| TestConfig[测试环境配置]
-CheckEnv --> |production| ProdConfig[生产环境配置]
-DevConfig --> InitAPI[初始化API配置]
-TestConfig --> InitAPI
-ProdConfig --> InitAPI
-InitAPI --> ConnectDB[连接数据库]
-ConnectDB --> StartApp[启动应用]
-```
+系统实现了完整的部署自动化：
 
-**图表来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+#### 1. 自动化部署流程
+- 环境检查和准备
+- 依赖安装和配置
+- 服务启动和验证
+- 健康检查和监控
+
+#### 2. 错误处理和恢复
+- 自动检测和报告错误
+- 提供错误恢复建议
+- 支持手动干预和修复
+
+#### 3. 部署状态跟踪
+- 实时跟踪部署进度
+- 记录部署历史和结果
+- 提供部署报告和统计
 
 **章节来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
-- [nginx.conf:42](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L42)
+- [.gitattributes:1-12](file://.gitattributes#L1-L12)
+- [deploy-test.sh:11-115](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L11-L115)
 
-## API配置管理优化
+## 配置管理优化
 
-### 环境变量配置管理
+### 配置管理架构
 
-2026年4月23日更新通过环境变量实现了API配置的集中管理，提升了配置的灵活性和可维护性。
-
-### API服务配置架构
+系统采用多层配置管理架构：
 
 ```mermaid
 classDiagram
-class ApiService {
-+axios实例
-+baseURL配置
-+超时设置
-+请求拦截器
-+响应拦截器
+class ConfigManager {
++loadEnvironmentVariables() Map
++loadConfigFiles() Map
++mergeConfigurations() Map
++validateConfigurations() boolean
 }
-class MainService {
-+baseURL : process.env.VUE_APP_API_BASE_URL || '/api'
-+timeout : 30000ms
-+headers : application/json; charset=utf-8
+class EnvironmentConfig {
++loadSystemEnv() Map
++loadDockerEnv() Map
++loadEnvFile() Map
 }
-class ExecutionService {
-+baseURL : process.env.VUE_APP_EXECUTION_SERVER_URL || 'http : //100.66.1.3 : 8082'
-+timeout : 30000ms
-+responseType : json
+class FileConfig {
++loadApplicationProperties() Map
++loadExecutionProperties() Map
++loadProfileSpecific() Map
 }
-class DecryptionService {
-+baseURL : process.env.VUE_APP_DECRYPTION_SERVER_URL || 'http : //localhost : 8082'
-+timeout : 30000ms
-+responseType : json
+class ValidationConfig {
++validateRequiredFields() boolean
++validateFormat() boolean
++validateDependencies() boolean
 }
-ApiService --> MainService
-ApiService --> ExecutionService
-ApiService --> DecryptionService
+ConfigManager --> EnvironmentConfig
+ConfigManager --> FileConfig
+ConfigManager --> ValidationConfig
 ```
 
-**图表来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
-- [request.js:44-51](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L44-L51)
+### 配置验证机制
 
-### 配置优先级策略
+系统实现了多层次的配置验证：
 
-系统实现了多层配置优先级，确保配置的灵活性：
+#### 1. 必需字段验证
+- 验证关键配置项的存在性
+- 检查配置值的完整性
+- 确认配置项的正确性
 
-#### 配置优先级顺序
-1. **环境变量**：最高优先级，用于容器化部署
-2. **默认值**：开发环境的默认配置
-3. **相对路径**：简化代理配置的相对路径
+#### 2. 格式验证
+- 验证URL格式的正确性
+- 检查IP地址的有效性
+- 确认端口号的范围
 
-#### 配置验证机制
-- **必填项检查**：确保关键配置项存在
-- **格式验证**：验证URL格式的正确性
-- **可用性测试**：启动时测试配置的有效性
+#### 3. 依赖关系验证
+- 检查配置间的依赖关系
+- 验证配置的逻辑一致性
+- 确认配置的相互兼容性
+
+### 配置热更新支持
+
+系统支持部分配置的热更新：
+
+#### 1. 支持热更新的配置
+- CORS配置的动态更新
+- 数据库连接参数的调整
+- 日志级别的动态修改
+
+#### 2. 热更新机制
+- 通过Spring Event实现配置变更通知
+- 支持配置的平滑切换
+- 提供配置更新的回滚机制
 
 **章节来源**
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:44-51](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L44-L51)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
+- [CorsConfigProperties.java:25-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L25-L151)
+- [WebConfig.java:32-123](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L32-L123)
 
 ## 性能考虑
 
-### 数据库性能优化
+### CORS配置性能优化
 
-系统采用多种策略优化数据库性能：
+CORS配置外部化带来了以下性能优化：
 
-- **连接池优化**：HikariCP连接池配置最大连接数、最小空闲连接、连接超时等参数
-- **批量操作**：Hibernate配置批量大小，支持批量插入和更新
-- **查询优化**：启用二级缓存，优化查询性能
-- **时区配置**：设置Asia/Shanghai时区，确保时间数据一致性
+- **配置加载优化**：通过@ConfigurationProperties一次性加载配置
+- **缓存机制**：配置属性的值在应用启动时缓存
+- **减少硬编码**：避免编译时的硬编码替换开销
+- **动态配置**：支持运行时的配置更新而无需重启
 
-### AI服务性能
+### 部署脚本性能优化
 
-- **流式响应**：支持AI模型的流式响应，提升用户体验
-- **重试机制**：配置最大重试次数和重试延迟，提高服务稳定性
-- **超时配置**：合理设置连接超时和读取超时，平衡性能和可靠性
+部署脚本实现了多项性能优化：
 
-### 前端性能优化
+- **并行检查**：环境检查和依赖检查可以并行执行
+- **智能重试**：健康检查采用智能重试机制，避免不必要的等待
+- **状态缓存**：部署状态的检查结果进行缓存
+- **增量更新**：只更新发生变化的配置和文件
 
-- **懒加载机制**：AI诊断辅助标签页使用条件渲染，减少不必要的组件挂载
-- **状态管理**：通过Vuex集中管理AI诊断数据，避免重复请求
-- **组件复用**：诊断编辑面板在多个页面中复用，提升开发效率
-- **tooltip优化**：统一配置管理，减少重复定义
-- **nginx代理优化**：相对路径代理减少URL重写开销
+### 跨平台性能优化
 
-### API配置性能优化
+系统通过以下机制优化跨平台性能：
 
-- **环境变量缓存**：环境变量在应用启动时加载，避免重复读取
-- **代理超时优化**：310秒超时支持长连接，适应AI模型流式响应
-- **静态资源缓存**：1年缓存策略提升静态资源加载速度
+- **换行符优化**：通过.gitattributes减少跨平台的文件转换开销
+- **脚本优化**：Shell脚本的优化减少了执行时间和资源消耗
+- **容器优化**：Docker容器的优化提高了部署和运行效率
+- **配置优化**：配置管理的优化减少了启动时间和内存占用
 
-### 数据库约束防护
+### 环境变量性能优化
 
-- **长度截断**：通过truncateIfNeeded方法防止ORA-12899错误
-- **序列同步**：定期检查和调整数据库序列，避免主键冲突
-- **预防性编程**：在数据入库前进行长度验证和截断处理
-- **自动检查服务**：通过SequenceConsistencyService自动检测和修复序列不同步问题
+环境变量配置带来了以下性能优势：
 
-### TDD性能保障
-
-- **测试覆盖率**：单元测试覆盖率≥80%，确保代码质量
-- **性能基准**：建立算法性能指标和基准测试
-- **持续集成**：自动化测试流水线确保代码库健康状态
+- **快速访问**：环境变量的访问速度比文件读取更快
+- **内存缓存**：环境变量在进程内存中缓存，避免重复读取
+- **即时生效**：环境变量的修改可以立即生效
+- **零配置开销**：环境变量的使用不需要额外的配置解析开销
 
 ## 故障排除指南
 
-### 常见启动问题
+### CORS配置问题
 
-**后端启动失败**
-- 检查数据库连接配置
-- 验证Oracle数据库服务状态
-- 确认JDBC驱动版本兼容性
+**问题现象**：CORS跨域请求失败，浏览器显示跨域错误
 
-**前端启动失败**
-- 检查Node.js版本要求
-- 验证NPM依赖安装
-- 确认端口占用情况
+**排查步骤**：
+1. 检查app.cors.allowed-origins配置是否正确
+2. 验证allowed-methods和allowed-headers的配置
+3. 确认allowCredentials和maxAge的设置
+4. 检查不同环境的配置文件是否正确
 
-### API配置问题
+**解决方案**：
+- 更新对应的application.properties文件
+- 重启应用使配置生效
+- 使用curl命令测试CORS配置
+- 检查浏览器开发者工具的网络面板
 
-**环境变量未生效**
-- 检查环境变量是否正确设置
-- 验证Docker环境变量配置
-- 确认Vue CLI开发服务器配置
+### 部署脚本问题
 
-**代理配置错误**
-- 检查nginx.conf中的代理配置
-- 验证服务名称和端口配置
-- 确认相对路径代理设置
+**问题现象**：部署脚本执行失败，显示环境检查错误
 
-### AI服务问题
+**排查步骤**：
+1. 检查Docker和Docker Compose是否正确安装
+2. 验证.env.execution-test文件是否存在
+3. 确认必要的目录结构是否创建
+4. 检查网络连接和防火墙设置
 
-**模型连接失败**
-- 检查AI服务API密钥配置
-- 验证网络连通性
-- 查看重试日志和超时设置
+**解决方案**：
+- 安装缺失的依赖组件
+- 创建正确的环境变量文件
+- 检查和修复网络连接问题
+- 查看详细的错误日志
 
-**分析结果异常**
-- 确认Prompt模板配置
-- 检查患者数据完整性
-- 验证MCC/CC字典更新
+### 跨平台兼容性问题
 
-### 数据库问题
+**问题现象**：Shell脚本在Linux上执行失败，显示语法错误
 
-**ORA-12899错误**
-- 检查triggerDiagnosis字段长度
-- 验证truncateIfNeeded方法调用
-- 确认数据库VARCHAR2(500)限制
+**排查步骤**：
+1. 检查.gitattributes文件的换行符设置
+2. 验证脚本文件的换行符格式
+3. 确认Git的换行符转换设置
+4. 检查文件的权限设置
 
-**ORA-00001唯一约束冲突**
-- 检查相关表的序列同步状态
-- 验证SequenceConsistencyService的检查结果
-- 确认自动修复脚本的执行情况
+**解决方案**：
+- 重新克隆仓库以应用.gitattributes设置
+- 手动转换脚本文件的换行符格式
+- 检查和修复文件权限问题
+- 使用dos2unix命令转换文件格式
 
-**序列不同步问题**
-- 运行create-identity-sequences.sql脚本
-- 检查序列起始值调整
-- 验证触发器创建状态
+### 环境变量问题
 
-**新功能问题**
+**问题现象**：应用无法读取环境变量，配置不生效
 
-**数据收集建议API问题**
-- 检查DataCollectionAdviceController的路由配置
-- 验证TimerPromptGenerator的@Profile注解
-- 确认DataCollectionAdviceService的查询逻辑
+**排查步骤**：
+1. 检查环境变量是否正确设置
+2. 验证Docker环境变量的传递
+3. 确认配置文件中的变量引用
+4. 检查变量的作用域和优先级
 
-**定时生成任务问题**
-- 检查scheduling.timer.data-collection-advice-time配置
-- 验证数据库连接和序列同步
-- 确认定时任务的执行状态
+**解决方案**：
+- 通过docker run -e参数正确设置环境变量
+- 验证.env文件的格式和内容
+- 检查配置文件中的变量引用语法
+- 使用echo命令验证环境变量的值
 
-**测试覆盖率问题**
-- 检查JaCoCo插件配置
-- 验证测试用例的覆盖率统计
-- 确认代码分析工具的配置
+### 健康检查问题
 
-**AI诊断页面空状态问题**
-- 检查AIDiagnosisTab组件的空状态逻辑
-- 验证诊断分析按钮的事件处理
-- 确认API请求的正确性
+**问题现象**：健康检查失败，服务状态显示异常
 
-**诊断分析确认对话框问题**
-- 检查ElMessageBox的配置
-- 验证确认对话框的HTML内容
-- 确认用户交互的正确处理
+**排查步骤**：
+1. 检查服务端点的可达性
+2. 验证数据库连接状态
+3. 确认外部服务的可用性
+4. 检查资源使用情况
 
-**tooltip功能问题**
-- 检查tooltip配置文件是否存在
-- 验证配置项是否正确引用
-- 确认Element Plus版本兼容性
+**解决方案**：
+- 使用curl命令测试服务端点
+- 检查数据库连接参数和凭据
+- 验证外部服务的网络连接
+- 监控系统资源使用情况
 
-**诊断解析失败**
-- 检查AI结果格式是否符合预期
-- 验证解析函数是否正确调用
-- 确认降级策略是否生效
+### 配置文件问题
 
-**正则表达式问题**
-- 检查extractSingleLineField函数的正则表达式
-- 验证triggerDiagnosis字段的跨行捕获问题
-- 确认诊断块解析的兼容性
+**问题现象**：配置文件不生效或配置错误
 
-**环境变量配置问题**
-- 检查VUE_APP_API_BASE_URL配置
-- 验证VUE_APP_EXECUTION_SERVER_URL配置
-- 确认Docker环境变量传递
+**排查步骤**：
+1. 检查配置文件的语法和格式
+2. 验证配置项的拼写和大小写
+3. 确认配置文件的加载顺序
+4. 检查配置的覆盖关系
 
-**nginx代理问题**
-- 检查nginx.conf配置语法
-- 验证代理路径配置
-- 确认服务发现配置
+**解决方案**：
+- 使用配置验证工具检查语法
+- 修正配置项的拼写和格式
+- 调整配置文件的加载顺序
+- 检查和修复配置的覆盖关系
 
 ## 结论
 
-MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗系统。2026年4月26日的更新进一步增强了系统的实用性和用户体验。
+MedAiAssistant V1.0在2026年4月29日的更新中实现了多项重要改进，显著提升了系统的部署灵活性、配置管理和跨平台兼容性。
 
-### 主要优势
-- **技术架构先进**：采用Spring Boot 3.x + Vue 3的现代化技术栈
-- **功能模块完整**：涵盖AI辅助诊断、DRG分析、MCC/CC筛查等核心功能
-- **数据安全可靠**：支持数据加密存储、访问权限控制、操作日志审计
-- **部署灵活**：支持分布式部署，满足不同规模医疗机构需求
-- **用户体验优化**：新增完整tooltip功能，提供详细的界面提示
-- **诊断解析鲁棒性增强**：通过extractSingleLineField函数防止跨行误捕获
-- **前端API配置优化**：移除硬编码生产服务器IP，改用环境变量配置
-- **nginx反向代理相对路径**：通过相对路径代理提升部署灵活性
-- **环境可移植性增强**：支持不同环境的无缝切换和容器化部署
-- **AI诊断页面空状态**：提供诊断分析按钮，提升用户体验
-- **诊断分析确认提醒**：确保分析前的临床数据就绪检查
-- **诊断编辑面板增强**：提供完整的诊断结果可视化和编辑功能
-- **懒加载机制优化**：通过条件渲染提升应用性能和用户体验
-- **标签页重新排序**：按照医疗工作流程优化标签页排列顺序
-- **统一配置管理**：通过tooltip.js实现tooltip功能的集中管理
-- **组件复用设计**：通过诊断编辑面板实现功能模块化和代码复用
-- **前端解析优化**：通过正则表达式修复解决triggerDiagnosis字段的跨行误捕获问题
-- **API配置环境变量化**：通过环境变量实现多环境配置管理
-- **nginx代理相对路径化**：通过相对路径代理提升部署灵活性
-- **数据收集建议API**：提供完整的资料收集建议生成和查询接口
-- **Task 2C增强**：完善定时生成和手动触发机制
-- **TimerPromptGenerator修复**：通过@Profile注解确保执行服务器隔离
-- **测试覆盖率提升**：实现80%以上的单元测试覆盖率目标
+### 主要改进成果
 
-### 新功能价值
-- **数据收集建议API**：为医生提供手动触发和查询资料收集建议的能力
-- **Task 2C增强**：完善资料收集建议的定时生成和手动触发机制
-- **TimerPromptGenerator修复**：确保执行服务器无法加载定时任务组件
-- **测试覆盖率提升**：通过JaCoCo插件实现80%以上的单元测试覆盖率
-- **AI诊断页面空状态**：提供诊断分析按钮，提升用户体验
-- **诊断分析确认对话框**：增加临床数据就绪提醒，确保分析准确性
-- **完整tooltip功能**：为所有标签页提供详细的悬停提示信息
-- **AI诊断辅助标签页**：提供独立的AI诊断结果展示和编辑功能
-- **懒加载机制优化**：通过条件渲染提升应用性能和用户体验
-- **标签页重新排序**：按照医疗工作流程优化标签页排列顺序
-- **统一配置管理**：通过tooltip.js实现tooltip功能的集中管理
-- **组件复用设计**：通过诊断编辑面板实现功能模块化和代码复用
-- **前端解析优化**：通过extractSingleLineField函数解决正则表达式跨行问题
-- **API配置环境变量化**：通过环境变量实现多环境配置管理
-- **nginx代理相对路径化**：通过相对路径代理提升部署灵活性
-- **容器化部署支持**：通过环境变量实现Docker容器化部署
+#### CORS配置外部化
+- 通过@ConfigurationProperties实现CORS配置的集中管理
+- 支持多环境独立配置，避免硬编码IP
+- 提供统一的配置访问接口和验证机制
+- 实现配置的动态更新和热部署
+
+#### 部署脚本自动化
+- 实现了完整的自动化部署流程
+- 增强了环境变量检查和健康检查机制
+- 提供详细的错误处理和用户提示
+- 支持多平台的跨环境部署
+
+#### 跨平台兼容性
+- 通过.gitattributes统一管理脚本换行符
+- 支持Windows、Linux和macOS平台
+- 实现Shell脚本的跨平台执行
+- 提供环境变量的跨平台配置
+
+#### 测试环境优化
+- 禁用测试服务器的定时任务
+- 提供独立的测试数据库配置
+- 实现测试环境的完全隔离
+- 支持测试数据的独立管理
+
+#### 配置管理最佳实践
+- 通过环境变量实现配置的抽象
+- 支持多环境的独立配置文件
+- 提供配置的层次化管理和验证
+- 实现配置的热更新和动态调整
+
+### 技术价值
+
+#### 开发效率提升
+- 减少了重复的配置管理工作
+- 提高了部署的自动化程度
+- 简化了多环境的配置管理
+- 提升了开发和测试的效率
+
+#### 运维成本降低
+- 降低了配置管理的复杂度
+- 减少了环境部署的时间成本
+- 提高了系统的稳定性和可靠性
+- 简化了故障排除和问题诊断
+
+#### 扩展性增强
+- 支持更多的部署环境和平台
+- 提供灵活的配置管理机制
+- 实现系统的模块化和组件化
+- 支持未来的功能扩展和技术升级
 
 ### 发展建议
-- 持续优化AI模型集成，提升诊断准确性
-- 扩展更多医疗场景的AI分析模板
-- 加强与其他医疗信息系统的集成能力
-- 完善监控和运维体系，提升系统稳定性
-- 进一步优化前端组件的性能和用户体验
-- 深化TDD实践，扩大测试覆盖范围
-- 持续改进DRG分析算法，提升匹配精度和性能
-- 扩展tooltip功能的应用范围，提升整体用户体验
-- 建立更完善的数据库约束监控机制
-- 定期审查和更新序列同步脚本
-- 持续优化前端诊断解析算法，提升解析准确性和性能
-- 加强nginx代理配置的监控和维护
-- 完善环境变量配置的文档和最佳实践
-- 深化JaCoCo覆盖率分析，持续提升代码质量
+
+#### 持续改进方向
+- 进一步优化配置管理的自动化程度
+- 扩展跨平台支持的范围和深度
+- 完善健康检查和监控机制
+- 增强错误处理和故障恢复能力
+
+#### 技术演进路径
+- 探索更先进的配置管理方案
+- 考虑引入配置中心和动态配置管理
+- 优化部署流程和CI/CD集成
+- 加强系统的可观测性和可维护性
 
 ## 附录
 
@@ -1541,34 +1250,24 @@ MedAiAssistant V1.0是一个功能完整、架构合理的医疗AI辅助诊疗�
 
 ### 版本更新记录
 
-**2026年4月26日更新要点**
-- **新增数据收集建议API**：提供手动触发和查询接口
-- **增强Task 2C功能**：完善定时生成和手动触发机制
-- **修复TimerPromptGenerator**：通过@Profile注解确保执行服务器隔离
-- **提升测试覆盖率**：实现80%以上的单元测试覆盖率目标
-- **新增AI诊断页面空状态功能**：提供诊断分析按钮，提升用户体验
-- **增强诊断分析确认对话框**：增加临床数据就绪提醒，确保分析准确性
-- **移除硬编码生产服务器IP**：通过环境变量配置实现部署灵活性
-- **优化nginx反向代理配置**：通过相对路径代理提升部署灵活性
-- **完善诊断解析器单行提取机制**：通过extractSingleLineField函数防止跨行误捕获
-- **增强tooltip功能配置**：为所有标签页提供详细的悬停提示信息
-- **优化诊断编辑面板功能**：提供完整的诊断结果可视化和编辑功能
-- **修复正则表达式跨行误捕获**：通过extractSingleLineField函数解决triggerDiagnosis字段解析问题
-- **优化诊断解析算法**：通过双重解析策略提升解析准确性和兼容性
-- **API配置环境变量化**：通过环境变量实现多环境配置管理
-- **nginx代理配置优化**：通过相对路径代理提升部署灵活性
+**2026年4月29日更新要点**
+- **CORS配置外部化改造**：通过@ConfigurationProperties实现CORS配置的集中管理
+- **测试服务器部署脚本优化**：增强环境变量检查、健康检查和错误处理机制
+- **Shell脚本换行符修复**：通过.gitattributes统一管理脚本换行符，支持跨平台部署
+- **sql-testserver技能新增**：提供测试服务器Oracle SQL执行指南
+- **测试服务器配置优化**：禁用定时任务以避免产生大量未处理Prompt
+- **部署脚本增强功能**：改进环境变量检查、健康检查和用户提示机制
+- **跨平台部署支持**：修复Shell脚本换行符问题，支持Windows和Linux环境
+- **配置管理最佳实践**：通过环境变量实现多环境配置管理
+- **测试环境隔离机制**：通过独立的测试服务器配置实现环境隔离
+- **部署自动化改进**：增强部署脚本的自动化程度和用户友好性
 
 **章节来源**
-- [DataCollectionAdviceController.java:15-28](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java#L15-L28)
-- [TimerPromptGenerator.java:76](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java#L76)
-- [pom.xml:379-400](file://med_ai_assistant_1.0_bs_backend/pom.xml#L379-L400)
-- [2026-04-23.md:1-47](file://med_ai_assistant_1.0_bs_vue/docs/更新日志/2026-04-23.md#L1-L47)
-- [AIDiagnosisTab.vue:16-24](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L16-L24)
-- [AIDiagnosisTab.vue:266-281](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue#L266-L281)
-- [request.js:27-33](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L27-L33)
-- [request.js:62-69](file://med_ai_assistant_1.0_bs_vue/src/api/request.js#L62-L69)
-- [diagnosisParser.js:157-219](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L157-L219)
-- [tooltips.js:1-87](file://med_ai_assistant_1.0_bs_vue/src/data/tooltips.js#L1-L87)
-- [DiagnosisEditPanel.vue:1-200](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L1-L200)
-- [nginx.conf:39-50](file://med_ai_assistant_1.0_bs_vue/nginx.conf#L39-L50)
-- [vue.config.js:5-16](file://med_ai_assistant_1.0_bs_vue/vue.config.js#L5-L16)
+- [2026-04-29.md:1-13](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-29.md#L1-L13)
+- [CORS配置外部化改造与Shell脚本换行符修复.md:1-55](file://med_ai_assistant_1.0_bs_backend/doc/迭代/小迭代/CORS配置外部化改造与Shell脚本换行符修复.md#L1-L55)
+- [CorsConfigProperties.java:25-151](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/CorsConfigProperties.java#L25-L151)
+- [WebConfig.java:32-123](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/config/WebConfig.java#L32-L123)
+- [deploy-test.sh:11-115](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/deploy-test.sh#L11-L115)
+- [.gitattributes:1-12](file://.gitattributes#L1-L12)
+- [application.properties:124](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L124)
+- [application-execution.properties:14-21](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L14-L21)
