@@ -4,11 +4,14 @@
 **本文档引用的文件**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
-- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
+- [诊断解析工具](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [诊断编辑面板组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+- [AI结果展示组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
 - [资料收集建议组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/DataCollectionAdvice.vue)
 - [轮询管理器](file://med_ai_assistant_1.0_bs_vue/src/utils/pollingManager.js)
 - [AI API模块](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
@@ -19,11 +22,11 @@
 
 ## 更新摘要
 **变更内容**
-- 新增综合问题解决技能系统，包含研究、检索、方案生成和修订四个阶段的AI驱动医疗决策工作流程
-- 实现资料收集建议功能的完整前端集成，包括DataCollectionAdvice组件的状态管理、自动轮询机制和用户交互
-- 优化AI诊断页面的空状态处理与临床数据就绪提醒机制
-- 集成定时批量生成和手动触发的完整工作流程
-- 实现智能轮询控制和超时处理机制
+- 新增诊断编辑面板与卡片组件，提供结构化诊断管理功能
+- 实现诊断解析引擎的结构化支持，支持完整的诊断块解析
+- 新增手动诊断分析功能，支持用户触发诊断分析
+- 诊断排序规则优化为四级优先级系统
+- 资料收集建议功能的完整前端集成与轮询管理
 
 ## 目录
 1. [简介](#简介)
@@ -31,18 +34,20 @@
 3. [核心组件](#核心组件)
 4. [架构总览](#架构总览)
 5. [详细组件分析](#详细组件分析)
-6. [综合问题解决技能系统](#综合问题解决技能系统)
-7. [AI诊断页面增强功能](#ai诊断页面增强功能)
-8. [资料收集建议功能](#资料收集建议功能)
-9. [前端组件集成](#前端组件集成)
-10. [轮询管理机制](#轮询管理机制)
-11. [状态管理与数据流](#状态管理与数据流)
-12. [用户交互设计](#用户交互设计)
-13. [依赖关系分析](#依赖关系分析)
-14. [性能考虑](#性能考虑)
-15. [故障排除指南](#故障排除指南)
-16. [结论](#结论)
-17. [附录](#附录)
+6. [诊断编辑面板系统](#诊断编辑面板系统)
+7. [诊断解析引擎](#诊断解析引擎)
+8. [手动诊断分析功能](#手动诊断分析功能)
+9. [诊断排序与优先级系统](#诊断排序与优先级系统)
+10. [资料收集建议功能](#资料收集建议功能)
+11. [前端组件集成](#前端组件集成)
+12. [轮询管理机制](#轮询管理机制)
+13. [状态管理与数据流](#状态管理与数据流)
+14. [用户交互设计](#用户交互设计)
+15. [依赖关系分析](#依赖关系分析)
+16. [性能考虑](#性能考虑)
+17. [故障排除指南](#故障排除指南)
+18. [结论](#结论)
+19. [附录](#附录)
 
 ## 简介
 本文件面向AI诊断辅助系统的使用者与维护者，系统性阐述AI模型集成机制、诊断算法实现与结果处理流程，重点覆盖以下方面：
@@ -54,27 +59,28 @@
 - 错误处理策略：可重试异常判定、自动恢复机制、健康状态探测
 - 实际使用示例与最佳实践：接口调用、参数配置、运维排障
 - 与主服务器和执行服务器的协作关系：加密传输、远程推理、状态同步
-- **新增**：综合问题解决技能系统，包含研究、检索、方案生成和修订四个阶段的AI驱动医疗决策工作流程
-- **新增**：AI诊断页面空状态处理与临床数据就绪提醒机制
-- **新增**：病情小结模板过滤功能，优化AI助手页面的模板展示
-- **新增**：资料收集建议功能，包括定时批量生成和手动触发API
-- **新增**：完整的前端组件集成，包括DataCollectionAdvice组件的状态管理、自动轮询机制和用户交互
-- **新增**：轮询管理器的智能轮询控制和超时处理机制
-- **新增**：资料收集建议标签页与现有系统的无缝集成
+- **新增**：诊断编辑面板系统，提供结构化的诊断管理界面
+- **新增**：诊断解析引擎，支持完整的诊断块结构化解析
+- **新增**：手动诊断分析功能，支持用户触发诊断分析流程
+- **新增**：四级优先级诊断排序系统，提升诊断管理效率
+- **新增**：资料收集建议功能的完整前端集成与轮询管理
 
 ## 项目结构
-系统采用分层架构，核心围绕AI控制器、AI响应控制器、模型配置与网络恢复服务展开，配合Prompt执行引擎与数据服务模块，形成完整的AI诊断辅助闭环。新增的资料收集建议功能通过独立的控制器、服务和前端组件实现，具备完整的状态管理和轮询机制。
+系统采用分层架构，核心围绕AI控制器、AI响应控制器、模型配置与网络恢复服务展开，配合Prompt执行引擎与数据服务模块，形成完整的AI诊断辅助闭环。新增的诊断编辑面板系统通过独立的解析工具、编辑组件和卡片组件实现结构化诊断管理，具备完整的诊断提取、编辑和排序功能。
 
 ```mermaid
 graph TB
 subgraph "前端层"
 FE[前端应用]
 AIView[AI视图组件]
-AIDiagnosisTab[AI诊断标签页]
+AIResults[AI结果展示组件]
+DiagnosisEditPanel[诊断编辑面板]
+DiagnosisCard[诊断卡片组件]
 DataCollectionAdvice[资料收集建议组件]
 PatientTabs[患者标签页]
 PatientView[患者视图]
 PollingManager[轮询管理器]
+diagnosisParser[诊断解析工具]
 end
 subgraph "API层"
 DataCollectionAdviceAPI[资料收集建议API]
@@ -86,6 +92,7 @@ DataCollectionAdviceService[资料收集建议服务]
 TimerPromptGenerator[定时Prompt生成器]
 AIController[AI控制器]
 AIResponseController[AI响应控制器]
+DiagnosisController[诊断控制器]
 end
 subgraph "核心服务层"
 PromptService[Prompt执行引擎]
@@ -95,6 +102,7 @@ end
 subgraph "数据访问层"
 PromptResultRepository[PromptResultRepository]
 PatientRepository[PatientRepository]
+DiagnosisRepository[DiagnosisRepository]
 end
 subgraph "数据存储层"
 MySQL[(MySQL数据库)]
@@ -105,7 +113,9 @@ ExecutionServer[执行服务器]
 AIModel[AI模型服务]
 end
 FE --> AIView
-AIView --> AIDiagnosisTab
+AIView --> AIResults
+AIResults --> DiagnosisEditPanel
+AIResults --> DiagnosisCard
 AIView --> DataCollectionAdvice
 PatientTabs --> DataCollectionAdvice
 PatientView --> PatientTabs
@@ -117,15 +127,19 @@ DataCollectionAdviceService --> PromptResultRepository
 DataCollectionAdviceService --> TreatmentPlanService
 AIController --> PromptService
 AIResponseController --> AIModel
+DiagnosisController --> DiagnosisRepository
 PromptService --> PromptResultRepository
 DataSvc --> MySQL
 DataSvc --> Oracle
 ExecutionServer --> AIModel
+diagnosisParser --> DiagnosisEditPanel
+diagnosisParser --> DiagnosisCard
 ```
 
 **图表来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
@@ -136,23 +150,27 @@ ExecutionServer --> AIModel
 - AI模型配置类：集中管理多模型配置（URL、密钥、超时、重试），提供配置校验与默认模型选择。
 - 网络恢复服务：维护连续失败计数与恢复窗口，达到阈值自动重建WebClient，保障网络波动后的可用性。
 - 加密服务与执行服务器：在加密传输模式下，主服务器将敏感数据加密后发送至执行服务器，执行服务器解密后调用AI模型，再加密返回。
+- **新增**：诊断解析工具：提供诊断名称和完整诊断块的解析功能，支持结构化诊断信息提取。
+- **新增**：诊断编辑面板组件：提供左右分栏布局的诊断管理界面，支持诊断列表展示、详细信息查看、诊断编辑和操作工具栏。
+- **新增**：诊断卡片组件：提供简洁的诊断概览界面，支持诊断列表展示和详细信息查看。
+- **新增**：诊断控制器：提供诊断管理的REST API接口，支持诊断替换、主要诊断设置等功能。
 - **新增**：资料收集建议控制器：提供手动触发资料收集建议生成的API端点，支持医生随时刷新生成，具备参数校验和Profile隔离。
 - **新增**：资料收集建议服务：负责查询患者最新的资料收集建议结果，组装为响应对象，支持三种状态管理。
-- **新增**：资料收集建议组件：完整的Vue组件，包含四种状态管理、自动轮询机制、用户交互和错误处理。
 - **新增**：轮询管理器：封装轮询逻辑，支持配置轮询间隔、最大轮询次数、超时回调和错误处理。
-- **新增**：AI诊断标签页组件：负责AI诊断结果的展示、空状态处理、诊断分析触发等功能。
-- **新增**：患者标签页组件：整合多个标签页，包括AI诊断、病历记录、检查报告等，支持懒加载优化。
 
 **章节来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
-- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
+- [诊断解析工具](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [诊断编辑面板组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 
 ## 架构总览
-系统整体分为前端层、API层、业务服务层、核心服务层、数据访问层与数据存储层，以及外部AI模型与执行服务器。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，Prompt执行引擎与数据服务模块提供数据支撑，加密服务与执行服务器实现安全的远程推理。新增的资料收集建议功能通过独立的服务层、控制器和前端组件实现，具备完整的状态管理和轮询机制，与现有系统无缝集成。
+系统整体分为前端层、API层、业务服务层、核心服务层、数据访问层与数据存储层，以及外部AI模型与执行服务器。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，Prompt执行引擎与数据服务模块提供数据支撑，加密服务与执行服务器实现安全的远程推理。新增的诊断编辑面板系统通过独立的解析工具、编辑组件和卡片组件实现结构化诊断管理，具备完整的诊断提取、编辑和排序功能，与现有系统无缝集成。
 
 ```mermaid
 graph TB
@@ -160,9 +178,11 @@ subgraph "业务编排层"
 AI[AI控制器]
 PromptSvc[Prompt执行引擎]
 TimerSvc[定时任务服务]
-AIDiagnosisTab[AI诊断标签页]
+DiagnosisEditPanel[诊断编辑面板]
+DiagnosisCard[诊断卡片]
 DataCollectionAdviceCtrl[资料收集建议控制器]
 TimerCtrl[定时任务控制器]
+DiagnosisCtrl[诊断控制器]
 end
 subgraph "模型调用层"
 AIResp[AI响应控制器]
@@ -173,12 +193,15 @@ getPatientData[获取患者数据]
 getPromptTemplate[获取模板]
 addPrompt[保存Prompt]
 generateAdvice[生成建议]
+parseDiagnosis[诊断解析]
 end
 subgraph "前端展示层"
+AIResults[AI结果展示]
 DataCollectionAdvice[资料收集建议组件]
 PollingManager[轮询管理器]
 PatientTabs[患者标签页]
 PatientView[患者视图]
+diagnosisParser[诊断解析工具]
 end
 subgraph "数据支撑层"
 DataSvc[数据处理服务]
@@ -188,6 +211,7 @@ Oracle[(Oracle)]
 apiAI[AI API模块]
 PromptResultRepo[PromptResultRepository]
 PatientRepo[PatientRepository]
+DiagnosisRepo[DiagnosisRepository]
 TreatmentPlanService[TreatmentPlanItemService]
 end
 subgraph "安全与执行层"
@@ -197,9 +221,13 @@ end
 AI --> PromptSvc
 AI --> TimerSvc
 AI --> DataCollectionAdviceCtrl
-AIDiagnosisTab --> handlePromptExecution
-AIDiagnosisTab --> getLatestPromptResult
-AIDiagnosisTab --> apiAI
+AI --> DiagnosisCtrl
+DiagnosisEditPanel --> parseDiagnosis
+DiagnosisCard --> parseDiagnosis
+DiagnosisEditPanel --> handlePromptExecution
+DiagnosisCard --> handlePromptExecution
+AIResults --> handlePromptExecution
+AIResults --> parseDiagnosis
 DataCollectionAdviceCtrl --> generateAdvice
 DataCollectionAdviceCtrl --> TimerSvc
 DataCollectionAdviceCtrl --> PatientRepo
@@ -211,6 +239,7 @@ AIResp --> AIModel
 PromptSvc --> Repo
 TimerSvc --> Repo
 DataCollectionAdviceService --> Repo
+DiagnosisCtrl --> DiagnosisRepo
 DataSvc --> Repo
 Encrypt --> ExecServer
 PromptSvc --> AIModel
@@ -220,6 +249,7 @@ DataCollectionAdviceService --> AIModel
 **图表来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
@@ -310,52 +340,47 @@ end
 **章节来源**
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 
-### 综合问题解决技能系统
+### 诊断解析引擎
 
-#### 四阶段AI驱动医疗决策工作流程
-系统实现了完整的综合问题解决技能系统，包含四个相互关联的阶段：
+#### 结构化诊断信息提取
+诊断解析引擎提供了完整的诊断信息结构化提取能力，支持从AI结果中提取完整的诊断块信息。
 
-**第一阶段：研究阶段（Research）**
-- 自动识别患者关键症状和体征
-- 检索相关医学文献和指南
-- 生成初步诊断假设列表
-- 评估各假设的概率和证据强度
+- **诊断名称提取**
+  - 支持多种格式的诊断名称提取，包括"诊断名称："、"诊断名称:"、"诊断："等格式
+  - 自动去除多余空格和换行符
+  - 去重处理，确保诊断列表的唯一性
 
-**第二阶段：检索阶段（Retrieve）**
-- 基于诊断假设检索具体病例
-- 收集相似患者的治疗反应数据
-- 检索最新的临床试验结果
-- 整合多源医学信息
+- **完整诊断块解析**
+  - 支持诊断编号、诊断名称、诊断类别、诊断依据、鉴别诊断、补充说明等完整字段
+  - 通过正则表达式精确匹配各个字段内容
+  - 支持多行内容提取，确保诊断依据等长文本的完整性
 
-**第三阶段：方案生成阶段（Generate）**
-- 生成个性化的治疗方案
-- 考虑患者特异性因素（年龄、性别、合并症）
-- 评估治疗方案的风险效益比
-- 提供治疗选择的循证依据
-
-**第四阶段：修订阶段（Revise）**
-- 根据治疗反应动态调整方案
-- 检测潜在的药物相互作用
-- 监测治疗效果和副作用
-- 优化长期管理策略
+- **错误处理与降级**
+  - 当完整解析失败时，自动降级到诊断名称提取
+  - 移除<thinking>标签内容，避免误解析
+  - 兼容中英文冒号格式，提升解析鲁棒性
 
 ```mermaid
 flowchart TD
-Research[研究阶段<br/>症状识别与假设生成] --> Retrieve[检索阶段<br/>证据收集与整合]
-Retrieve --> Generate[方案生成阶段<br/>个性化治疗方案]
-Generate --> Revise[修订阶段<br/>动态调整与优化]
-Revise --> Research
-Research --> Evidence[证据支持]
-Evidence --> Treatment[治疗执行]
-Treatment --> Monitor[监测与随访]
-Monitor --> Revise
+Start(["开始解析"]) --> StripThinking["移除<thinking>标签"]
+StripThinking --> ExtractNames["提取诊断名称"]
+ExtractNames --> CheckNames{"是否提取到名称？"}
+CheckNames --> |是| ExtractBlocks["提取完整诊断块"]
+CheckNames --> |否| Fallback["降级到名称提取"]
+ExtractBlocks --> ParseFields["解析各字段<br/>诊断编号/名称/类别/依据/鉴别诊断/补充说明"]
+ParseFields --> Validate["验证诊断块有效性"]
+Validate --> |有效| ReturnBlocks["返回诊断块数组"]
+Validate --> |无效| Fallback
+Fallback --> ReturnNames["返回诊断名称数组"]
+ReturnBlocks --> End(["结束"])
+ReturnNames --> End
 ```
 
 **图表来源**
-- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+- [诊断解析工具](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 
 **章节来源**
-- [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
+- [诊断解析工具](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 
 ### 加密传输与执行服务器协作
 - 流程概览
@@ -397,101 +422,195 @@ Main-->>Client : 返回诊断结果
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
 
-## AI诊断页面增强功能
+## 诊断编辑面板系统
 
-### AI诊断标签页组件：空状态处理与诊断分析触发
-AI诊断标签页组件是本次更新的核心，负责处理AI诊断结果的展示与用户交互。
+### 诊断编辑面板组件：结构化诊断管理
+诊断编辑面板组件提供了完整的诊断管理界面，采用左右分栏布局，支持诊断列表展示、详细信息查看和诊断编辑操作。
 
-- **空状态处理机制**
-  - 当患者没有诊断分析结果时，显示友好的空状态界面
-  - 提供明显的"诊断分析"按钮，引导用户进行诊断分析
-  - 使用InfoFilled图标和提示文本，营造专业的医疗界面体验
+- **左右分栏布局**
+  - 左侧：AI诊断列表，支持选择、编辑诊断名称
+  - 右侧：标签页区域，包含诊断说明和目前诊断两个标签
+  - 支持诊断项的高亮显示，突出显示与当前诊断不同的项
 
-- **诊断分析触发流程**
-  - 点击"诊断分析"按钮触发诊断分析确认对话框
-  - 对话框明确列出需要就绪的临床数据清单
-  - 提醒用户确认数据完整性以确保分析准确性
+- **诊断说明标签页**
+  - 显示诊断类别、诊断依据、鉴别诊断、补充说明等详细信息
+  - 支持Markdown内容渲染，提供富文本展示效果
+  - 自动过滤XSS攻击，确保内容安全
 
-- **核心功能实现**
-  - `triggerDiagnosisAnalysis()`方法：处理诊断分析触发逻辑
-  - ElMessageBox.confirm：弹出确认对话框，包含HTML格式的提醒内容
-  - handlePromptExecution：调用工具函数提交诊断分析任务
-  - 状态管理：处理成功/失败状态，提供用户反馈
-
-```mermaid
-flowchart TD
-Start(["用户点击诊断分析按钮"]) --> CheckPatient{"检查是否选择患者"}
-CheckPatient --> |未选择| ShowWarning["显示警告提示"]
-ShowWarning --> End(["结束"])
-CheckPatient --> |已选择| ShowConfirm["显示诊断分析确认对话框"]
-ShowConfirm --> CheckDataReady{"检查临床数据是否就绪"}
-CheckDataReady --> |未就绪| ShowDataRemind["显示数据就绪提醒"]
-CheckDataReady --> |已就绪| PrepareOptions["准备执行选项"]
-PrepareOptions --> CallHandlePrompt["调用handlePromptExecution"]
-CallHandlePrompt --> SubmitRequest["提交诊断分析请求"]
-SubmitRequest --> ShowSuccess["显示成功消息"]
-ShowSuccess --> End(["结束"])
-```
-
-**图表来源**
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
-
-**章节来源**
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
-
-### 诊断卡片组件：工具栏增强
-诊断卡片组件提供了丰富的工具栏操作，包括刷新、新增诊断等常用功能。
+- **目前诊断标签页**
+  - 展示患者现有的诊断列表，支持编辑、保存、删除操作
+  - 支持诊断ID的保留，确保后端操作的准确性
+  - 提供编辑状态跟踪，支持批量保存修改
 
 - **工具栏功能**
   - 刷新AI诊断列表：重新获取最新的诊断分析结果
   - 新增空白诊断：允许医生手动添加新的诊断条目
-  - 诊断列表展示：清晰展示AI提取的诊断列表
-  - 诊断项点击：支持点击诊断项进行查看详情
+  - 插入诊断：将选中的AI诊断插入到当前诊断中
+  - 保存诊断：保存当前修改的诊断内容
+  - 删除诊断：删除目前诊断中选中的诊断
+  - 诊断分析：手动触发诊断分析流程
 
-- **交互设计**
-  - 使用Element Plus的Button Group组件
-  - 提供Tooltip提示，提升用户体验
-  - 支持诊断项的选中状态显示
+```mermaid
+flowchart TD
+LeftPanel[左侧诊断列表] --> RightPanel[右侧标签页]
+RightPanel --> DetailTab[诊断说明标签页]
+RightPanel --> CurrentTab[目前诊断标签页]
+DetailTab --> DetailContent[诊断详细信息<br/>类别/依据/鉴别诊断/补充说明]
+CurrentTab --> CurrentTable[目前诊断表格<br/>编辑/保存/删除]
+LeftPanel --> Toolbar[工具栏<br/>刷新/新增/插入/保存/删除/分析]
+Toolbar --> RefreshBtn["刷新按钮"]
+Toolbar --> AddBtn["新增按钮"]
+Toolbar --> InsertBtn["插入按钮"]
+Toolbar --> SaveBtn["保存按钮"]
+Toolbar --> DeleteBtn["删除按钮"]
+Toolbar --> AnalyzeBtn["分析按钮"]
+```
+
+**图表来源**
+- [诊断编辑面板组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 
 **章节来源**
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
+- [诊断编辑面板组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 
-### Prompt执行工具：诊断分析流程支持
-handlePromptExecution工具函数为诊断分析提供了完整的执行流程支持。
+### 诊断卡片组件：简洁诊断概览
+诊断卡片组件提供了简洁的诊断概览界面，采用卡片式设计，支持诊断列表展示和详细信息查看。
 
-- **参数处理**
-  - 自动检测模板类型，支持"诊断分析"默认类型
-  - 处理特殊模板（如"首次病程记录"）的入院记录替补逻辑
-  - 并行获取患者数据和模板内容，提升执行效率
+- **卡片式布局**
+  - 左侧：诊断列表，支持点击选择和高亮显示
+  - 右侧：诊断说明卡片，展示选中诊断的详细信息
+  - 支持诊断编号的有序显示
 
-- **数据处理**
-  - 支持字符串和对象格式的患者数据
-  - 自动合并数据为单个字符串
-  - 支持附加信息的追加
+- **诊断列表功能**
+  - 支持诊断项的点击选择
+  - 高亮显示当前选中的诊断项
+  - 支持诊断名称的自动换行显示
 
-- **执行选项**
+- **诊断说明卡片**
+  - 展示诊断类别、诊断依据、鉴别诊断、补充说明
+  - 支持Markdown内容的HTML渲染
+  - 提供详细的诊断信息展示
+
+- **操作工具栏**
+  - 刷新AI诊断列表
+  - 新增空白诊断
+  - 插入选中的AI诊断
+  - 保存当前修改的诊断
+  - 删除目前诊断中选中的诊断
+  - 手动触发诊断分析
+
+**章节来源**
+- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
+
+### AI结果展示组件：诊断信息集成
+AI结果展示组件集成了诊断编辑面板和诊断卡片组件，提供了完整的AI诊断结果展示功能。
+
+- **诊断分析检测**
+  - 自动检测Prompt标题中是否包含"诊断分析"
+  - 当检测到诊断分析时，自动展示诊断编辑面板
+  - 支持诊断列表的自动解析和展示
+
+- **诊断信息提取**
+  - 优先使用诊断解析工具提取完整诊断块
+  - 当完整解析失败时，自动降级到诊断名称提取
+  - 支持患者诊断数据的自动加载和展示
+
+- **结果折叠功能**
+  - 诊断分析类Prompt的AI结果区域支持折叠/展开
+  - 默认折叠状态，减少页面信息量
+  - 提供展开/折叠按钮，用户可自由控制显示内容
+
+**章节来源**
+- [AI结果展示组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
+
+## 手动诊断分析功能
+
+### 手动触发诊断分析流程
+手动诊断分析功能允许医生随时触发诊断分析流程，提供更加灵活的诊断支持。
+
+- **触发机制**
+  - 通过诊断编辑面板的"分析"按钮触发
+  - 弹出确认对话框，提醒用户诊断分析会每天定时自动运行
+  - 用户确认后调用Prompt执行工具进行手动分析
+
+- **执行选项配置**
   - 默认优先级：3
   - 默认状态：待处理
   - 支持用户ID、排序号等自定义选项
+  - 生成方式：user标识手动触发
+
+- **数据准备**
+  - 自动获取当前选中的患者ID
+  - 使用"诊断分析"模板名称
+  - 支持空的模板内容参数
+  - 自动获取用户信息作为执行者
+
+- **状态反馈**
+  - 显示诊断分析请求提交状态
+  - 成功时显示成功提示
+  - 失败时显示错误信息
+  - 支持用户取消操作的优雅处理
+
+```mermaid
+sequenceDiagram
+participant Doctor as "医生"
+participant DiagnosisPanel as "诊断编辑面板"
+participant MessageBox as "确认对话框"
+participant PromptUtils as "Prompt执行工具"
+participant AIController as "AI控制器"
+Doctor->>DiagnosisPanel : 点击"分析"按钮
+DiagnosisPanel->>MessageBox : 弹出确认对话框
+MessageBox-->>Doctor : 确认/取消
+alt 用户确认
+DiagnosisPanel->>PromptUtils : 调用handlePromptExecution
+PromptUtils->>AIController : 提交诊断分析请求
+AIController-->>PromptUtils : 返回执行结果
+PromptUtils-->>DiagnosisPanel : 显示状态反馈
+DiagnosisPanel-->>Doctor : 显示成功/失败提示
+else 用户取消
+MessageBox-->>Doctor : 关闭对话框
+end
+```
+
+**图表来源**
+- [诊断编辑面板组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 
 **章节来源**
-- [AI诊断标签页组件](file://med_ai_assistant_1.0_bs_vue/src/components/patient/AIDiagnosisTab.vue)
+- [诊断编辑面板组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
+- [诊断卡片组件](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 
-### AI API模块：诊断分析结果获取
-AI API模块提供了诊断分析结果的获取接口。
+## 诊断排序与优先级系统
 
-- **最新结果获取**
-  - `getLatestPromptResult()`：根据患者ID和模板名称获取最新分析结果
-  - 支持诊断分析模板的专门查询
-  - 返回原始结果内容和执行时间信息
+### 四级优先级诊断排序规则
+诊断排序系统实现了四级优先级的诊断管理，支持HIGH、MEDIUM、LOW三个级别的诊断优先级设置。
 
-- **数据格式**
-  - 返回包装格式的响应数据
-  - 包含resultId、originalResultContent、executionTime等字段
-  - 支持无结果时的null处理
+- **优先级定义**
+  - HIGH：高优先级诊断，通常为危及生命的紧急诊断
+  - MEDIUM：中等优先级诊断，需要及时关注的重要诊断
+  - LOW：低优先级诊断，常规或轻微的诊断问题
+  - 未设置：默认优先级，适用于一般性诊断
+
+- **排序应用场景**
+  - 质控评估：在质控指标评估中，优先级影响评估结果
+  - 临床决策：高优先级诊断在临床决策中具有更高的权重
+  - 资源分配：优先级帮助合理分配医疗资源和关注重点
+  - 报告生成：优先级影响诊断报告的排序和展示
+
+- **数据存储**
+  - 优先级信息存储在诊断相关的数据库表中
+  - 支持优先级的修改和更新操作
+  - 提供优先级统计和分析功能
+  - 支持按优先级的查询和筛选
+
+- **模板支持**
+  - 质控评估模板支持优先级字段
+  - 诊断分析模板可包含优先级信息
+  - 诊疗计划表支持优先级的可视化展示
+  - 冲突解决模板考虑优先级因素
 
 **章节来源**
-- [AI API模块](file://med_ai_assistant_1.0_bs_vue/src/api/ai.js)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
+- [诊断解析工具](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
 
 ## 资料收集建议功能
 
@@ -559,7 +678,6 @@ Controller-->>Doctor : {"status" : "processing"}
 
 **章节来源**
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
-- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
 
 ## 前端组件集成
 
@@ -760,7 +878,6 @@ Controller-->>Doctor : {"status" : "processing"}
 **章节来源**
 - [资料收集建议API](file://med_ai_assistant_1.0_bs_vue/src/api/dataCollectionAdvice.js)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
-- [资料收集建议响应DTO](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DataCollectionAdviceResponse.java)
 
 ## 用户交互设计
 
@@ -855,6 +972,11 @@ Controller-->>Doctor : {"status" : "processing"}
   - AI控制器依赖Prompt执行引擎与各类数据服务，直接数据库查询降低耦合度与超时风险。
   - AI响应控制器依赖AI模型配置与网络恢复服务，通过WebClient与响应式链路实现高可用。
   - 加密服务与执行服务器形成独立的安全通道，避免敏感数据在主服务器驻留。
+  - **新增**：诊断解析工具作为独立的解析服务，被诊断编辑面板和诊断卡片组件共同使用。
+  - **新增**：诊断编辑面板组件依赖诊断解析工具进行结构化诊断信息提取。
+  - **新增**：诊断卡片组件同样依赖诊断解析工具，提供简洁的诊断概览功能。
+  - **新增**：AI结果展示组件集成诊断解析工具，实现诊断信息的自动提取和展示。
+  - **新增**：诊断控制器提供REST API接口，支持诊断管理的各种操作。
   - **新增**：资料收集建议控制器依赖定时任务服务，实现手动触发和异步生成。
   - **新增**：资料收集建议服务依赖PromptResultRepository和TreatmentPlanItemService，提供状态查询和数据组装。
   - **新增**：资料收集建议组件依赖轮询管理器，实现智能轮询控制和状态同步。
@@ -876,6 +998,7 @@ graph TB
 AI["AI控制器"] --> PromptSvc["Prompt执行引擎"]
 AI --> TimerSvc["定时任务服务"]
 AI --> DataCollectionAdviceCtrl["资料收集建议控制器"]
+AI --> DiagnosisCtrl["诊断控制器"]
 AIResp["AI响应控制器"] --> AIModelCfg["AI模型配置"]
 AIResp --> NetRecovery["网络恢复服务"]
 Encrypt["加密服务"] --> ExecServer["执行服务器"]
@@ -885,27 +1008,31 @@ DataCollectionAdviceCtrl --> TimerSvc
 DataCollectionAdviceCtrl --> PatientRepo["PatientRepository"]
 DataCollectionAdviceService --> PromptResultRepo
 DataCollectionAdviceService --> TreatmentPlanService["TreatmentPlanItemService"]
+DiagnosisCtrl --> DiagnosisRepo["DiagnosisRepository"]
+DiagnosisEditPanel["诊断编辑面板"] --> diagnosisParser["诊断解析工具"]
+DiagnosisCard["诊断卡片"] --> diagnosisParser
+AIResults["AI结果展示"] --> diagnosisParser
+DiagnosisEditPanel --> handlePromptExecution["Prompt执行工具"]
+DiagnosisCard --> handlePromptExecution
 DataCollectionAdvice["资料收集建议组件"] --> PollingManager["轮询管理器"]
 DataCollectionAdvice --> DataCollectionAdviceAPI["资料收集建议API"]
 DataCollectionAdviceAPI --> DataCollectionAdviceCtrl
 PollingManager --> DataCollectionAdviceAPI
 PatientTabs["患者标签页组件"] --> DataCollectionAdvice
 PatientView["患者视图组件"] --> PatientTabs
-AIDiagnosisTab["AI诊断标签页"] --> handlePromptExecution["Prompt执行工具"]
-handlePromptExecution --> getLatestPromptResult["获取最新结果"]
-handlePromptExecution --> getPatientData["获取患者数据"]
-handlePromptExecution --> getPromptTemplate["获取模板"]
-handlePromptExecution --> addPrompt["保存Prompt"]
+AIDiagnosisTab["AI诊断标签页"] --> handlePromptExecution
 DataSvc --> Repo
 Repo --> MySQL["MySQL"]
 Repo --> Oracle["Oracle"]
 PromptSvc --> AIModel["AI模型服务"]
 DataCollectionAdviceService --> AIModel
+DiagnosisCtrl --> DiagnosisRepo
 ```
 
 **图表来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
@@ -913,6 +1040,7 @@ DataCollectionAdviceService --> AIModel
 **章节来源**
 - [AI控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIController.java)
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
+- [诊断控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DiagnosisController.java)
 - [资料收集建议控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DataCollectionAdviceController.java)
 - [资料收集建议服务](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/DataCollectionAdviceService.java)
 - [定时Prompt生成器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/service/TimerPromptGenerator.java)
@@ -929,6 +1057,8 @@ DataCollectionAdviceService --> AIModel
   - **新增**：PromptResultRepository使用LIKE操作符优化模板名称查询，提升查询性能。
   - **新增**：定时任务批量生成Prompt，减少重复查询开销。
   - **新增**：资料收集建议模板的条件查询优化，仅查询符合条件的患者。
+  - **新增**：诊断解析工具的正则表达式优化，提升解析性能和准确性。
+  - **新增**：诊断编辑面板的虚拟滚动优化，支持大量诊断数据的高效展示。
 - 超时与重试参数
   - 连接超时30秒、读取超时300秒、最大重试3次，平衡用户体验与资源消耗。
 - **新增**：前端组件优化
@@ -940,6 +1070,8 @@ DataCollectionAdviceService --> AIModel
   - **新增**：轮询管理器复用：多个组件共享轮询逻辑，减少代码重复
   - **新增**：内存管理：及时清理定时器和事件监听器，防止内存泄漏
   - **新增**：错误边界：提供错误处理和降级机制，提升系统稳定性
+  - **新增**：诊断解析缓存：缓存解析结果，避免重复解析相同内容
+  - **新增**：Markdown渲染优化：使用安全的渲染方式，防止XSS攻击
 
 **章节来源**
 - [AI响应控制器](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/AIResponseController.java)
@@ -955,6 +1087,20 @@ DataCollectionAdviceService --> AIModel
   - DNS：刷新缓存、指定可信DNS、验证端口连通性。
   - 代理/防火墙：检查策略与SSL拦截；确认443出口畅通。
   - 配置：核对ai-models.properties的URL与密钥，确保无空格与未过期。
+- **新增**：诊断解析功能排查
+  - 解析失败：检查AI结果内容格式，确保符合诊断解析工具的预期格式
+  - 字段缺失：验证AI结果中是否包含完整的诊断字段信息
+  - 正则表达式问题：检查诊断解析工具中的正则表达式是否正确匹配
+  - 缓存问题：确认解析结果缓存是否正常工作
+- **新增**：诊断编辑面板功能排查
+  - 面板不显示：检查Prompt标题是否包含"诊断分析"关键词
+  - 诊断列表为空：验证AI结果内容是否包含有效的诊断信息
+  - 编辑功能异常：检查输入框焦点和编辑状态切换逻辑
+  - 工具栏按钮失效：确认按钮事件绑定和状态管理是否正常
+- **新增**：诊断排序优先级排查
+  - 优先级设置无效：检查数据库中诊断记录的优先级字段
+  - 排序结果异常：验证排序算法和比较逻辑
+  - 模板不支持：确认使用的模板是否支持优先级字段
 - **新增**：资料收集建议功能排查
   - 手动触发API无响应：检查资料收集建议控制器的日志和定时任务服务状态
   - 建议内容不显示：验证AI模型服务的可用性和生成结果的存储状态
@@ -979,18 +1125,18 @@ DataCollectionAdviceService --> AIModel
 本系统通过"模板驱动的数据聚合、响应式重试与DNS/连接池优化、自动恢复机制"三大支柱，实现了高可用、高性能的AI诊断辅助能力。AI控制器与AI响应控制器分别承担业务编排与模型调用职责，配合加密传输与执行服务器，确保敏感数据安全与推理一致性。通过完善的健康检查与运维排障机制，系统在网络波动与异常情况下仍能保持稳定运行。
 
 **新增功能总结**
-- 综合问题解决技能系统：实现了研究、检索、方案生成和修订四个阶段的AI驱动医疗决策工作流程，提升诊断的系统性和科学性
-- AI诊断页面空状态处理：通过友好的空状态界面和明确的操作按钮，提升了用户体验
-- 诊断分析确认机制：通过临床数据就绪提醒，确保分析质量，减少因数据不完整导致的误诊风险
-- 工作流程优化：为医生提供了更清晰的诊断分析流程，提高了工作效率
-- **新增**：资料收集建议功能：包括定时批量生成和手动触发API，为医生提供进一步问诊、查体、辅助检查的智能化建议
-- **新增**：完整的前端组件集成：DataCollectionAdvice组件具备完整的状态管理、自动轮询机制和用户交互
-- **新增**：轮询管理器：封装通用轮询逻辑，支持智能轮询控制和超时处理
-- **新增**：智能轮询机制：前端组件根据状态智能轮询，completed状态后自动停止，节省系统资源
-- **新增**：状态管理优化：四态模型确保用户界面的一致性和用户体验
-- **新增**：组件懒加载：按需加载资料收集建议组件，提升首屏性能
-- **新增**：错误处理机制：提供完整的错误处理和降级机制，提升系统稳定性
-- **新增**：响应式设计：适配不同屏幕尺寸，提供良好的移动端体验
+- **诊断编辑面板系统**：实现了完整的诊断管理界面，支持结构化诊断信息的展示和编辑
+- **诊断解析引擎**：提供了完整的诊断信息结构化提取能力，支持诊断块的完整解析
+- **手动诊断分析功能**：允许医生随时触发诊断分析流程，提供更加灵活的诊断支持
+- **四级优先级诊断排序系统**：实现了HIGH、MEDIUM、LOW三个级别的诊断优先级管理
+- **资料收集建议功能**：包括定时批量生成和手动触发API，为医生提供进一步问诊、查体、辅助检查的智能化建议
+- **完整的前端组件集成**：DiagnosisEditPanel和DiagnosisCard组件具备完整的状态管理、自动轮询机制和用户交互
+- **轮询管理器**：封装通用轮询逻辑，支持智能轮询控制和超时处理
+- **智能轮询机制**：前端组件根据状态智能轮询，completed状态后自动停止，节省系统资源
+- **状态管理优化**：四态模型确保用户界面的一致性和用户体验
+- **组件懒加载**：按需加载资料收集建议组件，提升首屏性能
+- **错误处理机制**：提供完整的错误处理和降级机制，提升系统稳定性
+- **响应式设计**：适配不同屏幕尺寸，提供良好的移动端体验
 
 ## 附录
 - 实际使用示例
@@ -1006,6 +1152,10 @@ DataCollectionAdviceService --> AIModel
   - **新增**：停止定时器：GET /timer-prompt-generator/stop
   - **新增**：查询定时器状态：GET /timer-prompt-generator/status
   - **新增**：手动触发每日生成：GET /timer-prompt-generator/trigger-daily
+  - **新增**：替换诊断：POST /api/diagnosis/replace（请求体包含oldDiagnosisId和新诊断信息）
+  - **新增**：获取组合诊断：GET /api/diagnosis/combined/{patientId}
+  - **新增**：获取诊断名称列表：GET /api/diagnosis/names/{patientId}
+  - **新增**：设置主要诊断：PUT /api/diagnosis/{diagnosisId}/set-primary
 - 最佳实践
   - 优先使用模板驱动的数据类型配置，确保数据完整性与一致性。
   - 在网络波动环境中启用响应式重试与自动恢复，避免人工干预。
@@ -1013,7 +1163,12 @@ DataCollectionAdviceService --> AIModel
   - 对敏感数据采用加密传输，确保合规与安全。
   - **新增**：在进行诊断分析前，确保所有必要的临床数据已就绪，以获得准确的分析结果。
   - **新增**：利用AI诊断页面的空状态提示，及时触发诊断分析，避免遗漏重要的诊断信息。
-  - **新增**：合理使用病情小结模板过滤功能，确保AI助手页面的整洁性和用户体验。
+  - **新增**：充分利用诊断编辑面板的结构化管理功能，提升诊断工作的效率和准确性。
+  - **新增**：合理使用诊断解析工具，确保诊断信息的完整性和一致性。
+  - **新增**：利用手动诊断分析功能，为复杂病例提供额外的诊断支持。
+  - **新增**：正确设置诊断优先级，确保重要诊断得到适当的关注和处理。
+  - **新增**：在进行诊断编辑时，注意区分AI建议和医生的主观诊断，确保诊断的准确性。
+  - **新增**：定期检查诊断排序规则，确保诊断列表的逻辑性和实用性。
   - **新增**：充分利用资料收集建议功能，提升问诊质量和效率，减少漏诊风险。
   - **新增**：合理配置轮询间隔和最大轮询次数，平衡用户体验和系统资源消耗。
   - **新增**：利用轮询管理器的错误处理机制，提升系统的健壮性和用户体验。

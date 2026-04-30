@@ -5,22 +5,25 @@
 - [App.vue](file://med_ai_assistant_1.0_bs_vue/src/App.vue)
 - [AIResponse.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue)
 - [AIResults.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue)
-- [AISettings.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AISettings.vue)
 - [AITabs.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue)
 - [DiagnosisCard.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue)
 - [DiagnosisEditPanel.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue)
 - [PromptList.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptList.vue)
 - [PromptTemplates.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue)
 - [PromptTemplateEditDialog.vue](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue)
-- [TopMenu.vue](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue)
+- [diagnosisParser.js](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js)
+- [treatment-plan-todo.cy.js](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增全屏体验改进章节，重点介绍平板设备全屏模式持久化功能
-- 更新 TopMenu 组件分析，详细说明全屏状态持久化机制
-- 新增全屏功能架构图和工作流程图
-- 增强故障排除指南，包含全屏相关问题的解决方案
+- 新增诊断卡片组件章节，详细介绍两栏布局设计和诊断解析工具
+- 更新诊断编辑面板功能，包含完整的CRUD操作支持
+- 新增诊断解析工具函数章节，展示统一的诊断提取逻辑
+- 更新Prompt模板管理界面，增强模板执行和状态管理
+- 更新AI结果组件分析，包含诊断卡片集成
+- 增加端到端测试用例分析，展示真实场景测试流程
+- 更新项目结构图，反映新增的诊断卡片组件
 
 ## 目录
 1. [简介](#简介)
@@ -28,11 +31,16 @@
 3. [核心组件](#核心组件)
 4. [架构概览](#架构概览)
 5. [详细组件分析](#详细组件分析)
-6. [全屏体验改进](#全屏体验改进)
-7. [依赖关系分析](#依赖关系分析)
-8. [性能考虑](#性能考虑)
-9. [故障排除指南](#故障排除指南)
-10. [结论](#结论)
+6. [诊断卡片组件](#诊断卡片组件)
+7. [诊断解析工具](#诊断解析工具)
+8. [诊断编辑面板](#诊断编辑面板)
+9. [Prompt模板管理增强](#prompt模板管理增强)
+10. [治疗计划表格功能增强](#治疗计划表格功能增强)
+11. [端到端测试分析](#端到端测试分析)
+12. [依赖关系分析](#依赖关系分析)
+13. [性能考虑](#性能考虑)
+14. [故障排除指南](#故障排除指南)
+15. [结论](#结论)
 
 ## 简介
 
@@ -40,7 +48,7 @@ MedAiAssistant 是一个基于 Vue.js 的智能医疗助手系统，专注于提
 
 系统采用模块化设计，包含多个专门的 Vue 组件，涵盖了从 AI 对话交互到诊断管理的完整医疗工作流程。项目使用 Element Plus 作为 UI 组件库，结合 Vuex 进行状态管理，实现了高效的前后端分离架构。
 
-**更新** 本版本特别增强了前端全屏体验，特别是在平板设备上的全屏模式持久化功能，确保用户在锁定和解锁平板时能够自动恢复到全屏模式。
+**更新** 新增诊断卡片组件，提供两栏布局设计和完整的诊断解析功能；增强诊断编辑面板的CRUD操作支持；改进诊断解析工具函数；优化Prompt模板管理界面。
 
 ## 项目结构
 
@@ -55,42 +63,42 @@ subgraph "AI 功能模块"
 AITabs[AITabs.vue<br/>AI标签页容器]
 AIResponse[AIResponse.vue<br/>AI对话组件]
 AIResults[AIResults.vue<br/>AI结果展示]
-AISettings[AISettings.vue<br/>AI设置组件]
+DiagnosisCard[DiagnosisCard.vue<br/>诊断卡片组件]
 end
 subgraph "诊断管理模块"
-DiagnosisCard[DiagnosisCard.vue<br/>诊断卡片组件]
 DiagnosisEditPanel[DiagnosisEditPanel.vue<br/>诊断编辑面板]
+DiagnosisEditDialog[DiagnosisEditDialog.vue<br/>诊断编辑对话框]
 end
 subgraph "模板管理模块"
 PromptList[PromptList.vue<br/>Prompt列表]
 PromptTemplates[PromptTemplates.vue<br/>模板树形组件]
 PromptTemplateEditDialog[PromptTemplateEditDialog.vue<br/>模板编辑对话框]
 end
-subgraph "系统控制模块"
-TopMenu[TopMenu.vue<br/>顶部菜单与全屏控制]
+subgraph "工具模块"
+diagnosisParser[diagnosisParser.js<br/>诊断解析工具]
 end
 App --> AITabs
 AITabs --> AIResponse
 AITabs --> AIResults
-AIResults --> DiagnosisEditPanel
 AIResults --> DiagnosisCard
+AIResults --> DiagnosisEditPanel
+AIResults --> DiagnosisEditDialog
 App --> PromptList
 PromptList --> PromptTemplates
 App --> PromptTemplateEditDialog
-App --> TopMenu
+App --> diagnosisParser
 ```
 
 **图表来源**
 - [App.vue:1-83](file://med_ai_assistant_1.0_bs_vue/src/App.vue#L1-L83)
 - [AITabs.vue:1-76](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue#L1-L76)
-- [AIResponse.vue:1-567](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue#L1-L567)
-- [AIResults.vue:1-800](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L1-L800)
-- [TopMenu.vue:1-855](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L1-L855)
+- [AIResults.vue:214-231](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L214-L231)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
+- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
 
 **章节来源**
 - [App.vue:1-83](file://med_ai_assistant_1.0_bs_vue/src/App.vue#L1-L83)
 - [AITabs.vue:1-76](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue#L1-L76)
-- [TopMenu.vue:1-855](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L1-L855)
 
 ## 核心组件
 
@@ -121,21 +129,11 @@ AI 结果组件专注于展示和管理 AI 分析结果：
 - **诊断集成**：与诊断管理系统深度集成
 - **模板详情**：提供 Prompt 详情查看功能
 - **内容管理**：支持复制、删除等操作
-
-### 顶部菜单组件 (TopMenu.vue)
-
-顶部菜单组件提供了完整的系统控制功能，包括全屏模式管理：
-
-- **全屏控制**：提供进入和退出全屏模式的功能
-- **状态持久化**：通过 localStorage 持久化用户的全屏偏好设置
-- **自动恢复**：在平板设备锁屏/解锁后自动恢复全屏状态
-- **多浏览器支持**：兼容标准和厂商前缀的全屏 API
-- **页面可见性监听**：监听页面可见性变化以实现自动恢复
+- **诊断卡片**：集成诊断卡片组件，支持诊断分析类Prompt的两栏布局展示
 
 **章节来源**
 - [AIResponse.vue:100-430](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue#L100-L430)
 - [AIResults.vue:199-763](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L199-L763)
-- [TopMenu.vue:298-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L298-L739)
 
 ## 架构概览
 
@@ -147,50 +145,45 @@ subgraph "表现层"
 UI[用户界面组件]
 Tabs[标签页组件]
 Dialog[对话框组件]
-TopMenu[顶部菜单组件]
-end
+Card[诊断卡片组件]
+TreatmentPlanTable[治疗计划表格组件]
+End
 subgraph "业务逻辑层"
 Services[业务服务]
 Utils[工具函数]
 Validators[验证器]
+diagnosisParser[诊断解析工具]
 end
 subgraph "数据访问层"
 API[API 接口]
 Store[Vuex Store]
 Storage[本地存储]
-end
-subgraph "系统集成层"
-Fullscreen[全屏管理器]
-Visibility[页面可见性监听]
-LocalStorage[localStorage持久化]
-end
+End
 subgraph "外部服务"
 LLM[大语言模型]
 Database[数据库]
 FileStorage[文件存储]
-end
+End
 UI --> Services
 Tabs --> Services
 Dialog --> Services
-TopMenu --> Fullscreen
-TopMenu --> Visibility
-TopMenu --> LocalStorage
+Card --> Services
+TreatmentPlanTable --> Services
 Services --> API
 Services --> Utils
 Services --> Validators
+diagnosisParser --> Utils
 API --> LLM
 API --> Database
 API --> FileStorage
 Services --> Store
 Store --> Storage
-Fullscreen --> LocalStorage
-Visibility --> Fullscreen
 ```
 
 **图表来源**
 - [AIResponse.vue:100-430](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue#L100-L430)
 - [AIResults.vue:199-763](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L199-L763)
-- [TopMenu.vue:291-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L291-L739)
+- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
 
 ## 详细组件分析
 
@@ -249,56 +242,6 @@ ShowWarning --> End
 **图表来源**
 - [AIResponse.vue:291-360](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue#L291-L360)
 
-### 诊断管理组件
-
-诊断管理组件提供了完整的诊断生命周期管理：
-
-```mermaid
-classDiagram
-class DiagnosisCard {
-+Array diagnosisBlocks
-+Number selectedIndex
-+Array selectedAIDiagnosis
-+Array selectedCurrentDiagnosis
-+handleDiagnosisItemClick()
-+refreshAIDiagnosis()
-+insertDiagnosis()
-+saveDiagnosis()
-+deleteDiagnosis()
-+triggerDiagnosisAnalysis()
-}
-class DiagnosisEditPanel {
-+Array aiDiagnosis
-+Array currentDiagnosis
-+String content
-+Object selectedAIDiagnosisRow
-+handleAISelectionChange()
-+handleCurrentSelectionChange()
-+insertDiagnosis()
-+saveDiagnosis()
-+deleteDiagnosis()
-+refreshAIDiagnosis()
-}
-class DiagnosisEditDialog {
-+Boolean showDialog
-+Object aiDiagnosis
-+Object currentDiagnosis
-+refreshCurrentDiagnosis()
-+closeDialog()
-}
-DiagnosisCard --> DiagnosisEditPanel : "使用"
-DiagnosisEditPanel --> DiagnosisEditDialog : "调用"
-DiagnosisCard --> DiagnosisEditDialog : "调用"
-```
-
-**图表来源**
-- [DiagnosisCard.vue:151-532](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L151-L532)
-- [DiagnosisEditPanel.vue:179-645](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L179-L645)
-
-**章节来源**
-- [DiagnosisCard.vue:151-532](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L151-L532)
-- [DiagnosisEditPanel.vue:179-645](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L179-L645)
-
 ### Prompt 模板管理系统
 
 Prompt 模板管理系统提供了灵活的模板管理和执行功能：
@@ -327,101 +270,330 @@ TemplateEdit --> TemplateList : 保存模板
 - [PromptTemplates.vue:97-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L97-L187)
 - [PromptTemplateEditDialog.vue:181-221](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplateEditDialog.vue#L181-L221)
 
-## 全屏体验改进
+## 诊断卡片组件
 
-### 全屏功能架构
+### 组件概述
 
-MedAiAssistant 系统实现了先进的全屏体验，特别针对平板设备进行了优化：
+诊断卡片组件是本次更新的核心功能，提供了完整的诊断分析和管理界面。该组件采用两栏布局设计，左侧显示诊断列表，右侧显示诊断详情，支持完整的诊断生命周期管理。
+
+### 两栏布局设计
 
 ```mermaid
-graph TB
-subgraph "全屏状态管理"
-FullscreenState[全屏状态管理器]
-LocalStorage[localStorage持久化]
-BrowserAPI[浏览器全屏API]
+graph LR
+subgraph "诊断卡片组件"
+LeftCol[左侧列<br/>诊断列表 + 工具栏]
+RightCol[右侧列<br/>标签页区域]
 end
-subgraph "事件监听系统"
-FullscreenListener[全屏状态监听器]
-VisibilityListener[页面可见性监听器]
-ResizeListener[窗口大小监听器]
+subgraph "左侧内容"
+DiagnosisList[诊断列表]
+Toolbar[工具栏]
+Buttons[刷新/新增/插入/保存/删除/分析按钮]
 end
-subgraph "自动恢复机制"
-AutoRestore[自动恢复控制器]
-DelayTimer[延迟定时器]
-RaceCheck[竞态条件检查]
+subgraph "右侧内容"
+DetailTab[诊断说明标签页]
+CurrentTab[目前诊断标签页]
 end
-subgraph "用户交互层"
-TopMenu[顶部菜单全屏按钮]
-ToastMessage[提示消息系统]
-FallbackHandler[回退处理器]
-end
-FullscreenState --> LocalStorage
-FullscreenState --> BrowserAPI
-BrowserAPI --> FullscreenListener
-BrowserAPI --> VisibilityListener
-BrowserAPI --> ResizeListener
-VisibilityListener --> AutoRestore
-AutoRestore --> DelayTimer
-AutoRestore --> RaceCheck
-AutoRestore --> FallbackHandler
-TopMenu --> FullscreenState
-ToastMessage --> FallbackHandler
+LeftCol --> DiagnosisList
+LeftCol --> Toolbar
+Toolbar --> Buttons
+RightCol --> DetailTab
+RightCol --> CurrentTab
 ```
 
 **图表来源**
-- [TopMenu.vue:291-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L291-L739)
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
 
-### 全屏状态持久化机制
+### 核心功能特性
 
-系统实现了智能的全屏状态持久化，确保用户在不同设备状态间切换时的无缝体验：
+#### 诊断列表展示
+- **自动解析**：从AI结果Markdown内容中自动提取诊断列表
+- **编号显示**：支持诊断编号显示，便于识别和引用
+- **交互选择**：点击诊断项高亮显示，支持查看详情
+
+#### 诊断详情展示
+- **结构化信息**：展示诊断类别、诊断依据、鉴别诊断、补充说明
+- **Markdown渲染**：安全渲染Markdown格式的诊断说明内容
+- **标签页切换**：支持诊断说明和目前诊断两个标签页
+
+#### 工具栏功能
+- **刷新诊断**：重新解析AI结果，更新诊断列表
+- **新增诊断**：添加空白诊断记录，支持手动编辑
+- **插入诊断**：将AI诊断插入到患者当前诊断列表
+- **保存诊断**：保存修改的当前诊断内容
+- **删除诊断**：删除不需要的当前诊断
+- **诊断分析**：触发手动诊断分析流程
+
+### 诊断解析机制
+
+组件使用统一的诊断解析工具函数，支持两种解析模式：
+
+```mermaid
+flowchart TD
+Content[AI结果内容] --> CheckPrompt{检查Prompt标题}
+CheckPrompt --> |包含"诊断分析"| ParseBlocks[extractDiagnosisBlocks]
+CheckPrompt --> |不包含"诊断分析"| ParseNames[extractDiagnosisNames]
+ParseBlocks --> Blocks[诊断块数组]
+ParseNames --> Names[诊断名称数组]
+Blocks --> SetState[设置AI诊断状态]
+Names --> SetState
+SetState --> Render[渲染诊断卡片]
+```
+
+**图表来源**
+- [AIResults.vue:382-391](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L382-L391)
+- [DiagnosisCard.vue:216-229](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L216-L229)
+
+**章节来源**
+- [DiagnosisCard.vue:1-709](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisCard.vue#L1-L709)
+
+## 诊断解析工具
+
+### 工具函数概述
+
+诊断解析工具提供了统一的诊断信息提取功能，消除了重复代码，提高了代码复用性。
+
+### 核心解析函数
+
+#### extractDiagnosisNames
+从AI结果中提取诊断名称列表，支持多种格式的诊断名称标记：
+
+```javascript
+// 支持的格式示例
+// ### 诊断名称：2型糖尿病
+// ### 诊断名称: 高血压病
+// 诊断：糖尿病
+// 诊断名称：冠心病
+```
+
+#### extractDiagnosisBlocks
+从AI结果中提取完整的诊断块信息，包括诊断编号、名称、类别、依据、鉴别诊断、补充说明等字段。
+
+### 正则表达式优化
+
+修复了正则表达式lookahead `(?=###|$)` 误匹配四级标题的问题，确保诊断列表区块的正确解析。
+
+### 代码重构效果
+
+- **消除重复代码**：AIResults.vue和DiagnosisEditDialog.vue中的重复诊断提取代码替换为工具函数调用
+- **统一解析逻辑**：提供一致的诊断信息提取标准
+- **减少约52行重复代码**：提高代码维护性
+
+**章节来源**
+- [diagnosisParser.js:1-220](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L1-L220)
+
+## 诊断编辑面板
+
+### 组件架构
+
+诊断编辑面板组件提供了完整的诊断管理界面，采用左右两栏布局设计：
+
+```mermaid
+graph LR
+subgraph "诊断编辑面板"
+LeftPanel[左侧面板<br/>AI诊断列表]
+RightPanel[右侧面板<br/>诊断详情 + 目前诊断]
+end
+subgraph "左侧内容"
+AITableView[AI诊断表格]
+Selection[选择功能]
+EditName[编辑诊断名称]
+end
+subgraph "右侧内容"
+DetailTabs[标签页]
+DetailPane[诊断说明]
+CurrentPane[目前诊断]
+end
+LeftPanel --> AITableView
+LeftPanel --> Selection
+LeftPanel --> EditName
+RightPanel --> DetailTabs
+DetailTabs --> DetailPane
+DetailTabs --> CurrentPane
+```
+
+**图表来源**
+- [DiagnosisEditPanel.vue:156-178](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L156-L178)
+
+### CRUD操作支持
+
+#### 创建操作
+- **新增诊断**：支持在AI诊断列表中添加空白诊断记录
+- **编辑诊断**：双击诊断名称进入编辑模式，支持实时修改
+
+#### 读取操作
+- **诊断解析**：从AI结果中提取完整的诊断信息块
+- **状态同步**：与当前诊断列表保持同步，高亮显示新增诊断
+
+#### 更新操作
+- **批量保存**：支持保存多个修改的诊断记录
+- **状态标记**：自动标记已编辑的诊断项
+
+#### 删除操作
+- **选择删除**：支持多选删除当前诊断
+- **ID兼容**：兼容不同的诊断ID属性名
+
+### 诊断详情展示
+
+组件支持详细的诊断信息展示，包括：
+- **诊断类别**：原诊断、修正诊断、补充诊断等
+- **诊断依据**：支持Markdown格式的详细说明
+- **鉴别诊断**：支持Markdown格式的鉴别分析
+- **补充说明**：支持Markdown格式的补充信息
+
+**章节来源**
+- [DiagnosisEditPanel.vue:156-645](file://med_ai_assistant_1.0_bs_vue/src/components/ai/DiagnosisEditPanel.vue#L156-L645)
+
+## Prompt模板管理增强
+
+### 模板执行流程
+
+Prompt模板管理界面提供了增强的模板执行和状态管理功能：
 
 ```mermaid
 sequenceDiagram
 participant User as 用户
-participant TopMenu as TopMenu组件
-participant LocalStorage as localStorage
-participant Browser as 浏览器全屏API
-participant AutoRestore as 自动恢复系统
-User->>TopMenu : 点击全屏按钮
-TopMenu->>Browser : requestFullscreen()
-Browser-->>TopMenu : 全屏成功
-TopMenu->>LocalStorage : 设置 fullscreenPreference=true
-Note over User,Browser : 用户离开页面/锁定设备
-User->>Browser : 锁定/解锁设备
-Browser->>AutoRestore : visibilitychange事件
-AutoRestore->>LocalStorage : 检查全屏偏好
-AutoRestore->>Browser : 请求全屏
-Browser-->>AutoRestore : 全屏恢复
-AutoRestore-->>User : 显示恢复成功提示
+participant PromptTemplates as PromptTemplates组件
+participant Dialog as 补充信息对话框
+participant Store as Vuex Store
+participant API as 后端API
+User->>PromptTemplates : 选择模板
+PromptTemplates->>PromptTemplates : 检查是否需要补充信息
+PromptTemplates->>Dialog : 弹出补充信息输入框
+Dialog->>Dialog : 用户输入补充信息
+Dialog->>PromptTemplates : 返回补充信息
+PromptTemplates->>Store : 设置执行选项
+PromptTemplates->>API : 调用handlePromptExecution
+API->>API : 创建Prompt记录
+API->>Store : 更新状态
+API->>PromptTemplates : 返回执行结果
+PromptTemplates->>User : 显示执行状态
 ```
 
 **图表来源**
-- [TopMenu.vue:298-324](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L298-L324)
-- [TopMenu.vue:704-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L704-L739)
+- [PromptTemplates.vue:97-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L97-L187)
 
-### 平板设备优化特性
+### 模板状态管理
 
-针对平板设备的全屏体验进行了专门优化：
+系统提供了完整的模板状态管理：
+- **激活状态**：通过isActive字段控制模板的激活状态
+- **分类管理**：通过promptType进行模板分类
+- **权限控制**：通过scope和departmentId控制访问范围
+- **版本控制**：通过版本号管理模板的版本更新
 
-#### 自动恢复机制
-- **页面可见性监听**：监听 `visibilitychange` 事件，在页面从隐藏变为可见时自动恢复全屏
-- **延迟恢复**：使用 300ms 延迟确保浏览器完全恢复后再请求全屏
-- **竞态条件检查**：双重检查确保用户没有在恢复过程中取消全屏偏好
+### 补充信息处理
 
-#### 浏览器兼容性
-- **标准 API 支持**：`document.requestFullscreen()`
-- **Webkit 前缀**：`element.webkitRequestFullscreen()`
-- **Microsoft 前缀**：`element.msRequestFullscreen()`
-
-#### 用户体验增强
-- **智能提示**：当自动恢复失败时显示友好的用户提示
-- **手动恢复**：提供手动全屏切换按钮
-- **状态同步**：全屏状态变化时同步更新界面状态
+对于需要补充信息的模板，系统提供了智能的处理机制：
+- **自动检测**：识别需要补充信息的模板
+- **用户输入**：弹出对话框收集必要的补充信息
+- **信息传递**：将补充信息传递给后端执行流程
 
 **章节来源**
-- [TopMenu.vue:291-324](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L291-L324)
-- [TopMenu.vue:632-673](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L632-L673)
-- [TopMenu.vue:704-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L704-L739)
+- [PromptTemplates.vue:97-187](file://med_ai_assistant_1.0_bs_vue/src/components/ai/PromptTemplates.vue#L97-L187)
+
+## 治疗计划表格功能增强
+
+### 功能概述
+
+治疗计划表格是本次更新的重要功能增强，为用户提供了一个直观的界面来管理诊疗计划项目，并支持一键添加到待办事项系统。
+
+### 核心功能特性
+
+```mermaid
+flowchart TD
+subgraph "治疗计划表格功能"
+PlanTable[治疗计划表格]
+TodoButton[待办按钮]
+ActionColumn[操作列]
+PlanItem[计划项目数据]
+end
+subgraph "待办事项系统"
+TodoAPI[待办API接口]
+TodoView[待办视图]
+TodoStorage[待办存储]
+end
+PlanTable --> ActionColumn
+ActionColumn --> TodoButton
+TodoButton --> PlanItem
+TodoButton --> TodoAPI
+TodoAPI --> TodoStorage
+TodoStorage --> TodoView
+```
+
+**图表来源**
+- [treatment-plan-todo.cy.js:155-174](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L155-L174)
+- [treatment-plan-todo.cy.js:179-200](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L179-L200)
+
+### 待办按钮功能实现
+
+治疗计划表格中的待办按钮具有以下特点：
+
+- **可见性控制**：仅在正常行（非软删除）的操作列中显示 warning 类型按钮
+- **交互行为**：点击后调用真实后端 API，支持成功添加和重复添加两种场景
+- **状态反馈**：根据操作结果显示相应的消息提示
+- **数据关联**：自动关联当前选中患者的治疗计划项目
+
+### 功能测试场景
+
+系统通过端到端测试验证了治疗计划表格的完整功能：
+
+1. **场景1：待办按钮可见性** - 验证正常行应显示 warning 按钮
+2. **场景2：成功添加待办** - 点击按钮后出现成功或重复提示
+3. **场景3：重复添加检测** - 连续点击同一按钮时显示警告提示
+4. **场景4：待办在 TodoView 中可见** - 添加待办后在待办页面验证显示
+
+**章节来源**
+- [treatment-plan-todo.cy.js:155-174](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L155-L174)
+- [treatment-plan-todo.cy.js:179-200](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L179-L200)
+- [treatment-plan-todo.cy.js:205-236](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L205-L236)
+- [treatment-plan-todo.cy.js:241-273](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L241-L273)
+
+## 端到端测试分析
+
+### 测试框架配置
+
+系统使用 Cypress 进行端到端测试，配置了专门的测试环境：
+
+- **真实场景测试**：所有请求均打到真实后端，不使用 mock
+- **环境变量**：通过 `Cypress.env()` 获取测试用户名和密码
+- **超时配置**：默认命令超时时间设置为 25000ms
+
+### 测试流程设计
+
+```mermaid
+sequenceDiagram
+participant Test as 测试用例
+participant Login as 登录流程
+participant Patient as 患者选择
+participant AIView as AI助手页面
+Test->>Login : realLogin()
+Login->>Login : 输入用户名密码
+Login->>Login : 选择科室
+Login->>Patient : selectFirstPatient()
+Patient->>Patient : 选择第一个患者
+Patient->>AIView : gotoAiAssistantWithTreatmentPlan()
+AIView->>AIView : 加载诊疗计划表
+AIView->>Test : 验证待办按钮功能
+```
+
+**图表来源**
+- [treatment-plan-todo.cy.js:24-71](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L24-L71)
+- [treatment-plan-todo.cy.js:77-89](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L77-L89)
+- [treatment-plan-todo.cy.js:97-123](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L97-L123)
+
+### 测试辅助函数
+
+系统提供了多个专用的测试辅助函数：
+
+- **realLogin()**：执行真实 UI 登录，支持心血管一病区科室选择
+- **selectFirstPatient()**：在患者列表中选中第一个患者
+- **gotoAiAssistantWithTreatmentPlan()**：导航到 AI 助手页面并等待治疗计划表加载
+- **getFirstTodoButton()**：获取操作列中第一个可见的待办按钮
+
+**章节来源**
+- [treatment-plan-todo.cy.js:24-71](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L24-L71)
+- [treatment-plan-todo.cy.js:77-89](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L77-L89)
+- [treatment-plan-todo.cy.js:97-123](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L97-L123)
+- [treatment-plan-todo.cy.js:131-137](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L131-L137)
 
 ## 依赖关系分析
 
@@ -432,59 +604,60 @@ graph TD
 subgraph "应用层"
 App[App.vue]
 AITabs[AITabs.vue]
-TopMenu[TopMenu.vue]
-end
+AIResults[AIResults.vue]
+DiagnosisCard[DiagnosisCard.vue]
+End
 subgraph "AI层"
 AIResponse[AIResponse.vue]
-AIResults[AIResults.vue]
 AISettings[AISettings.vue]
-end
+End
 subgraph "诊断层"
-DiagnosisCard[DiagnosisCard.vue]
 DiagnosisEditPanel[DiagnosisEditPanel.vue]
-end
+DiagnosisEditDialog[DiagnosisEditDialog.vue]
+End
 subgraph "模板层"
 PromptList[PromptList.vue]
 PromptTemplates[PromptTemplates.vue]
 PromptTemplateEditDialog[PromptTemplateEditDialog.vue]
-end
+End
 subgraph "工具层"
+diagnosisParser[diagnosisParser.js]
 Utils[工具函数]
 API[API接口]
 Store[Vuex Store]
-LocalStorage[localStorage]
-end
+Test[Cypress测试]
+End
 App --> AITabs
 AITabs --> AIResponse
 AITabs --> AIResults
-AIResults --> DiagnosisEditPanel
 AIResults --> DiagnosisCard
+AIResults --> DiagnosisEditPanel
+AIResults --> DiagnosisEditDialog
 App --> PromptList
 PromptList --> PromptTemplates
 App --> PromptTemplateEditDialog
-App --> TopMenu
-TopMenu --> LocalStorage
+App --> diagnosisParser
 AIResponse --> API
 AIResults --> API
 PromptTemplates --> API
 PromptTemplateEditDialog --> API
-AIResponse --> Store
-AIResults --> Store
-PromptList --> Store
+DiagnosisCard --> diagnosisParser
+DiagnosisEditPanel --> diagnosisParser
 DiagnosisCard --> Store
 DiagnosisEditPanel --> Store
-TopMenu --> Store
+DiagnosisEditDialog --> Store
+Test --> API
 ```
 
 **图表来源**
 - [App.vue:16-47](file://med_ai_assistant_1.0_bs_vue/src/App.vue#L16-L47)
 - [AITabs.vue:14-64](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue#L14-L64)
-- [TopMenu.vue:291-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L291-L739)
+- [AIResults.vue:214-231](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L214-L231)
+- [diagnosisParser.js:133-134](file://med_ai_assistant_1.0_bs_vue/src/utils/diagnosisParser.js#L133-L134)
 
 **章节来源**
 - [App.vue:16-47](file://med_ai_assistant_1.0_bs_vue/src/App.vue#L16-L47)
 - [AITabs.vue:14-64](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AITabs.vue#L14-L64)
-- [TopMenu.vue:291-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L291-L739)
 
 ## 性能考虑
 
@@ -506,10 +679,15 @@ TopMenu --> Store
 - **批量操作**：支持批量保存和更新操作
 - **错误恢复**：部分失败时支持重试和恢复
 
-### 全屏功能性能优化
-- **事件监听优化**：使用 `beforeUnmount` 确保事件监听器正确清理
-- **内存管理**：避免全屏状态监听器的内存泄漏
-- **异步处理**：全屏切换采用异步处理，避免阻塞主线程
+### 诊断解析优化
+- **正则表达式优化**：修复正则表达式问题，提高解析准确性
+- **缓存机制**：诊断解析结果缓存，避免重复解析
+- **异步处理**：诊断解析采用异步方式，不影响界面响应
+
+### 治疗计划表格优化
+- **条件渲染**：仅在正常行显示待办按钮，避免不必要的 DOM 元素
+- **异步加载**：治疗计划数据异步加载，不影响其他组件性能
+- **状态管理**：待办按钮状态通过 Vuex 管理，避免重复计算
 
 ## 故障排除指南
 
@@ -535,34 +713,31 @@ TopMenu --> Store
 - **原因**：模板数据格式错误或权限问题
 - **解决方案**：检查模板数据格式，确认编辑权限，重新加载模板
 
-#### 全屏功能异常
-- **症状**：全屏切换失败或无法自动恢复
-- **原因**：浏览器安全策略限制或设备兼容性问题
-- **解决方案**：
-  1. 检查浏览器全屏 API 支持情况
-  2. 确认用户手势要求已满足
-  3. 查看控制台错误信息
-  4. 使用手动全屏按钮进行恢复
-  5. 检查 localStorage 权限设置
+#### 治疗计划表格功能异常
+- **症状**：待办按钮不显示或点击无效
+- **原因**：患者未正确选择或 API 调用失败
+- **解决方案**：确认患者选择状态，检查网络连接，查看控制台错误
 
-#### 平板设备全屏恢复失败
-- **症状**：平板锁屏后无法自动恢复全屏
-- **原因**：页面可见性监听器未正确触发或 localStorage 权限问题
-- **解决方案**：
-  1. 检查 `visibilitychange` 事件监听器状态
-  2. 确认 `localStorage` 中的 `fullscreenPreference` 设置
-  3. 验证浏览器后台标签页的全屏 API 限制
-  4. 手动触发全屏恢复流程
+#### 诊断卡片组件异常
+- **症状**：诊断卡片无法显示或功能异常
+- **原因**：AI结果内容格式不正确或解析工具函数错误
+- **解决方案**：检查AI结果内容格式，验证诊断解析函数，查看控制台错误
+
+#### 端到端测试失败
+- **症状**：Cypress 测试用例执行失败
+- **原因**：环境变量配置错误或后端服务不可用
+- **解决方案**：检查测试环境配置，确认后端服务状态，查看测试日志
 
 **章节来源**
 - [AIResponse.vue:247-253](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResponse.vue#L247-L253)
 - [AIResults.vue:562-588](file://med_ai_assistant_1.0_bs_vue/src/components/ai/AIResults.vue#L562-L588)
-- [TopMenu.vue:632-673](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L632-L673)
-- [TopMenu.vue:704-739](file://med_ai_assistant_1.0_bs_vue/src/components/TopMenu.vue#L704-L739)
+- [treatment-plan-todo.cy.js:147-150](file://med_ai_assistant_1.0_bs_vue/cypress/e2e/treatment-plan-todo.cy.js#L147-L150)
 
 ## 结论
 
 MedAiAssistant Vue 组件系统展现了现代化前端开发的最佳实践，通过模块化设计、清晰的架构分离和完善的错误处理机制，为医疗 AI 应用提供了稳定可靠的技术基础。
+
+**更新** 本次更新显著增强了系统的实用性和功能性，特别是诊断卡片组件的引入，提供了两栏布局设计和完整的诊断解析功能；诊断编辑面板的CRUD操作支持，使诊断管理更加便捷；诊断解析工具的统一化，提高了代码质量和可维护性；Prompt模板管理界面的增强，优化了模板执行流程。
 
 系统的主要优势包括：
 
@@ -571,13 +746,16 @@ MedAiAssistant Vue 组件系统展现了现代化前端开发的最佳实践，�
 3. **安全性**：完善的输入验证和内容安全过滤
 4. **可扩展性**：灵活的架构设计支持功能扩展
 5. **可靠性**：健壮的错误处理和恢复机制
-6. **全屏优化**：针对平板设备的全屏体验改进，实现了智能的状态持久化和自动恢复
-
-**更新** 本次全屏体验改进特别强化了平板设备的使用体验，通过智能的状态持久化和自动恢复机制，确保用户在不同设备状态间切换时能够获得一致的全屏体验。这一改进显著提升了系统的可用性和用户满意度。
+6. **测试保障**：完整的端到端测试覆盖关键功能
+7. **诊断管理**：完整的诊断生命周期管理支持
+8. **模板系统**：增强的Prompt模板管理功能
 
 未来可以在以下方面进一步优化：
 - 增加更多的 AI 模型支持
 - 优化移动端适配
 - 增强离线功能
 - 扩展多语言支持
-- 进一步优化全屏状态的检测和恢复机制
+- 优化诊断卡片的编辑功能
+- 增强治疗计划表格的分类和筛选能力
+- 改进诊断解析的准确性和性能
+- 扩展Prompt模板的自定义能力

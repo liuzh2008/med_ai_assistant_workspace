@@ -19,19 +19,12 @@
 - [ConfirmDiseaseRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/qc/ConfirmDiseaseRequest.java)
 - [QcConfirmedDisease.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java)
 - [create-qc-confirmed-disease-table.sql](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-qc-confirmed-disease-table.sql)
-- [DrgAnalysisResult.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisResult.java)
-- [DrgAnalysisController.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java)
-- [DrgSelectionRequest.java](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java)
-- [2026-04-08.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-08.md)
 - [2026-03-14.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-03-14.md)
 - [2026-04-10.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2026-04-10.md)
 </cite>
 
 ## 更新摘要
 **变更内容**
-- 新增DRG分析结果表结构扩展，包括DRG编码列和保险支付标准字段
-- 增强DRG分析功能，新增用户选择DRG记录的保存和查询接口
-- 更新DRG分析结果表创建脚本，支持新的字段和索引配置
 - 新增Oracle数据库PGA内存超限错误修复配置章节
 - 增强序列一致性检查服务，新增LONGTERMORDERS表序列检查
 - 添加LONGTERMORDERS表ORA-00001主键冲突修复方案
@@ -53,7 +46,7 @@
 
 本文档全面介绍了MedAiAssistant项目的数据库操作体系，涵盖了Oracle和MySQL双数据库支持、DRG数据分析、数据同步、状态管理等核心数据库功能。项目采用分层架构设计，通过存储过程、序列、触发器等数据库特性实现高性能的数据处理和状态管理。
 
-**更新** 新增DRG分析结果表结构扩展、增强DRG分析功能、Oracle数据库PGA内存超限错误修复配置、序列一致性检查服务增强、LONGTERMORDERS表ORA-00001主键冲突修复、triggerDiagnosis字段长度限制和截断机制等关键变更。
+**更新** 新增Oracle数据库PGA内存超限错误修复配置、序列一致性检查服务增强、LONGTERMORDERS表ORA-00001主键冲突修复、triggerDiagnosis字段长度限制和截断机制等关键变更。
 
 ## 项目结构
 
@@ -76,15 +69,11 @@ C[init.sql] --> C1[数据库初始化脚本]
 D[doc/问题修复/] --> D1[Oracle数据库PGA内存超限错误修复-2026年03月14日.md]
 D --> D2[LONGTERMORDERS表序列不同步导致长期医嘱导入失败-2026年04月10日.md]
 E[src/main/java/com/example/medaiassistant/service/] --> E1[SequenceConsistencyService.java]
-F[doc/更新日志/] --> F1[2026-04-08.md]
-F --> F2[2026-03-14.md]
-F --> F3[2026-04-10.md]
+F[doc/更新日志/] --> F1[2026-03-14.md]
+F --> F2[2026-04-10.md]
 G[src/main/java/com/example/medaiassistant/dto/qc/] --> G1[ConfirmDiseaseRequest.java]
 H[src/main/java/com/example/medaiassistant/model/qc/] --> H1[QcConfirmedDisease.java]
 I[sql-scripts/create-qc-confirmed-disease-table.sql] --> I1[QC确认疾病表.sql]
-J[src/main/java/com/example/medaiassistant/model/DrgAnalysisResult.java] --> J1[DRG分析结果实体]
-K[src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java] --> K1[DRG分析控制器]
-L[src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java] --> L1[DRG选择请求DTO]
 end
 ```
 
@@ -113,7 +102,6 @@ class DRG分析结果表 {
 +MAIN_PROCEDURES : 手术信息(CLOB)
 +USER_SELECTED_MCC_TYPE : 并发症类型
 +FINAL_DRG_CODE : 最终DRG编码
-+INSURANCE_PAYMENT_STANDARD : 保险支付标准
 +CREATED_TIME : 创建时间
 +DELETED : 软删除标志
 +PROMPT_ID : Prompt记录ID
@@ -142,105 +130,14 @@ class DRG分析输入快照存储过程 {
 +快照创建
 +重复分析避免
 }
-class DrgAnalysisResult {
-+drgCode : DRG编码
-+insurancePaymentStandard : 保险支付标准
-}
-class DrgAnalysisController {
-+saveSelection() : 保存用户选择
-+getLatest() : 获取最新分析结果
-}
 DRG分析结果表 --> DRG分析输入快照表 : "关联"
 DRG分析输入快照存储过程 --> DRG分析输入快照表 : "创建"
-DrgAnalysisResult --> DRG分析结果表 : "映射"
-DrgAnalysisController --> DrgAnalysisResult : "操作"
 ```
 
 **图表来源**
 - [DRG分析结果表创建脚本.sql:4-76](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-drg-analysis-results-table.sql#L4-L76)
 - [DRG分析输入快照表.sql:14-27](file://med_ai_assistant_1.0_bs_backend/sql-scripts/drg_analysis_input_snapshot.sql#L14-L27)
 - [DRG分析输入快照存储过程.sql:18-117](file://med_ai_assistant_1.0_bs_backend/sql-scripts/gen_drg_input_snapshot_procedure.sql#L18-L117)
-- [DrgAnalysisResult.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/DrgAnalysisResult.java#L1-L100)
-- [DrgAnalysisController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L100)
-
-### DRG分析结果表结构扩展
-
-**新增** DRG分析结果表已扩展支持DRG编码列和保险支付标准字段，增强了DRG分析功能：
-
-```mermaid
-erDiagram
-DRG_ANALYSIS_RESULTS {
-NUMBER RESULT_ID PK
-VARCHAR2 PATIENT_ID
-NUMBER DRG_ID
-VARCHAR2 DRG_CODE
-CLOB MAIN_DIAGNOSES
-CLOB MAIN_PROCEDURES
-VARCHAR2 USER_SELECTED_MCC_TYPE
-VARCHAR2 FINAL_DRG_CODE
-NUMBER INSURANCE_PAYMENT_STANDARD
-TIMESTAMP CREATED_TIME
-NUMBER DELETED
-NUMBER PROMPT_ID
-NUMBER PROMPT_RESULT_ID
-VARCHAR2 PRIMARY_DIAGNOSIS
-VARCHAR2 PRIMARY_PROCEDURE
-}
-```
-
-**图表来源**
-- [DRG分析结果表创建脚本.sql:8-18](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-drg-analysis-results-table.sql#L8-L18)
-
-#### 新增字段说明
-
-| 字段名称 | 数据类型 | 长度 | 说明 | 索引 |
-|----------|----------|------|------|------|
-| DRG_CODE | VARCHAR2 | 200 | 用户选择的DRG编码 | 无 |
-| INSURANCE_PAYMENT_STANDARD | NUMBER | 12,2 | 保险支付标准金额 | 无 |
-
-**章节来源**
-- [DRG分析结果表创建脚本.sql:1-188](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-drg-analysis-results-table.sql#L1-L188)
-- [添加DRG编码列脚本.sql:1-12](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-drg-code-column.sql#L1-L12)
-- [添加保险支付标准字段脚本.sql:1-9](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-insurance-payment-standard-column.sql#L1-L9)
-
-### DRG分析控制器和请求处理
-
-**新增** DRG分析控制器提供用户选择DRG记录的保存和查询功能：
-
-```mermaid
-sequenceDiagram
-participant Client as 客户端
-participant Controller as DrgAnalysisController
-participant Service as 分析服务
-participant DB as 数据库
-Client->>Controller : POST /api/drg-analysis/save-selection
-Controller->>Service : saveDrgSelection(request)
-Service->>DB : 保存DRG选择记录
-DB-->>Service : 返回保存结果
-Service-->>Controller : 返回保存状态
-Controller-->>Client : 返回保存结果
-Client->>Controller : GET /api/drg-analysis/latest/{patientId}
-Controller->>Service : getLatestDrgAnalysis(patientId)
-Service->>DB : 查询最新DRG分析结果
-DB-->>Service : 返回分析结果
-Service-->>Controller : 返回分析结果
-Controller-->>Client : 返回最新结果
-```
-
-**图表来源**
-- [DrgAnalysisController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L100)
-- [DrgSelectionRequest.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java#L1-L100)
-
-#### DRG分析接口
-
-| 接口名称 | HTTP方法 | 路径 | 功能描述 | 请求体 | 响应体 |
-|----------|----------|------|----------|--------|--------|
-| 保存DRG选择 | POST | /api/drg-analysis/save-selection | 保存用户选择的DRG记录 | DrgSelectionRequest | 操作结果 |
-| 获取最新DRG分析 | GET | /api/drg-analysis/latest/{patientId} | 获取指定患者的最新DRG分析结果 | 无 | DrgAnalysisResult |
-
-**章节来源**
-- [DrgAnalysisController.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/controller/DrgAnalysisController.java#L1-L100)
-- [DrgSelectionRequest.java:1-100](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/dto/DrgSelectionRequest.java#L1-L100)
 
 ### 数据同步管理系统
 
@@ -283,7 +180,6 @@ CLOB MAIN_DIAGNOSES
 CLOB MAIN_PROCEDURES
 VARCHAR2 USER_SELECTED_MCC_TYPE
 VARCHAR2 FINAL_DRG_CODE
-NUMBER INSURANCE_PAYMENT_STANDARD
 TIMESTAMP CREATED_TIME
 NUMBER DELETED
 NUMBER PROMPT_ID
@@ -395,21 +291,16 @@ I[LONGTERMORDERS表]
 J[LONGTERMORDERS序列]
 K[QC确认疾病表]
 L[triggerDiagnosis字段]
-M[DRG_CODE字段]
-N[INSURANCE_PAYMENT_STANDARD字段]
-O[DrgAnalysisController]
-P[DrgSelectionRequest]
-Q[DrgAnalysisResult]
 end
 subgraph "MySQL数据库"
-R[初始化数据库]
-S[系统配置表]
-T[版本管理表]
+M[初始化数据库]
+N[系统配置表]
+O[版本管理表]
 end
 end
 subgraph "存储过程层"
-U[DRG分析输入快照存储过程]
-V[序列和触发器管理]
+P[DRG分析输入快照存储过程]
+Q[序列和触发器管理]
 end
 A --> B
 B --> C
@@ -425,26 +316,16 @@ B --> L
 B --> M
 B --> N
 B --> O
-B --> P
-B --> Q
-B --> R
-B --> S
-B --> T
-U --> D
-V --> C
-V --> D
-V --> E
-V --> F
-V --> G
-V --> I
-V --> J
-V --> K
-V --> L
-V --> M
-V --> N
-V --> O
-V --> P
-V --> Q
+P --> D
+Q --> C
+Q --> D
+Q --> E
+Q --> F
+Q --> G
+Q --> I
+Q --> J
+Q --> K
+Q --> L
 ```
 
 **图表来源**
@@ -677,34 +558,28 @@ A[DRG分析结果表] --> B[DRG分析输入快照表]
 A --> C[状态转换历史表]
 B --> D[DRG目录表]
 C --> E[Prompt表]
-F[DrgAnalysisController] --> A
-F --> G[DrgSelectionRequest]
-H[DrgAnalysisResult] --> A
 end
 subgraph "辅助表"
-I[同步日志表] --> J[医院配置表]
-K[序列管理表] --> A
-K --> B
-K --> C
-K --> I
-L[LONGTERMORDERS表] --> M[LONGTERMORDERS序列]
-N[QC确认疾病表] --> O[triggerDiagnosis字段]
+F[同步日志表] --> G[医院配置表]
+H[序列管理表] --> A
+H --> B
+H --> C
+H --> F
+I[LONGTERMORDERS表] --> J[LONGTERMORDERS序列]
+K[QC确认疾病表] --> L[triggerDiagnosis字段]
 end
 subgraph "存储过程依赖"
-P[DRG分析输入快照存储过程] --> B
-P --> D
-Q[数据验证存储过程] --> A
-Q --> I
+M[DRG分析输入快照存储过程] --> B
+M --> D
+N[数据验证存储过程] --> A
+N --> F
 end
 subgraph "服务依赖"
-R[序列一致性检查服务] --> K
-R --> L
-S[PGA内存监控服务] --> T[Oracle数据库实例]
-U[triggerDiagnosis截断服务] --> N
-U --> O
-V[DRG分析结果扩展服务] --> A
-V --> F
-W[DRG分析控制器服务] --> F
+O[序列一致性检查服务] --> H
+O --> I
+P[PGA内存监控服务] --> Q[Oracle数据库实例]
+R[triggerDiagnosis截断服务] --> K
+S[triggerDiagnosis截断服务] --> L
 end
 ```
 
@@ -734,10 +609,6 @@ P[序列检查] --> Q[自动修复不同步]
 Q --> R[预防ORA-00001错误]
 S[长度检查] --> T[自动截断处理]
 T --> U[预防ORA-12899错误]
-V[DRG字段扩展] --> W[DRG_CODE字段]
-V --> X[INSURANCE_PAYMENT_STANDARD字段]
-Y[DRG分析控制器] --> Z[保存选择接口]
-Y --> AA[查询最新接口]
 ```
 
 **图表来源**
@@ -757,7 +628,6 @@ Y --> AA[查询最新接口]
 | DRG_ANALYSIS_RESULTS | 主键索引 | RESULT_ID | 快速主键查找 |
 | DRG_ANALYSIS_RESULTS | 复合索引 | PATIENT_ID, CREATED_TIME | 历史记录查询 |
 | DRG_ANALYSIS_RESULTS | 复合索引 | DRG_ID, FINAL_DRG_CODE | 分析结果检索 |
-| DRG_ANALYSIS_RESULTS | 复合索引 | DRG_CODE, INSURANCE_PAYMENT_STANDARD | DRG编码查询 |
 | SYNC_LOG | 复合索引 | HOSPITAL_ID, STATUS | 同步状态查询 |
 | STATUS_TRANSITION_HISTORY | 复合索引 | PROMPT_ID, TRANSITION_TIME | 状态历史查询 |
 | QC_CONFIRMED_DISEASE | 复合索引 | PATIENT_ID, IS_ACTIVE | 病种确认查询 |
@@ -830,24 +700,6 @@ F --> G
 **图表来源**
 - [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
 
-### DRG分析性能优化
-
-**新增** DRG分析结果表的性能优化策略：
-
-```mermaid
-flowchart TD
-A[DRG分析查询] --> B[索引使用]
-B --> C[复合索引优化]
-C --> D[查询计划优化]
-D --> E[性能监控]
-E --> F[定期分析]
-F --> G[统计信息更新]
-G --> H[查询性能提升]
-```
-
-**图表来源**
-- [DRG分析结果表创建脚本.sql:100-105](file://med_ai_assistant_1.0_bs_backend/sql-scripts/create-drg-analysis-results-table.sql#L100-L105)
-
 ## 故障排除指南
 
 ### 常见数据库问题及解决方案
@@ -862,8 +714,6 @@ G --> H[查询性能提升]
 | **PGA内存超限** | **ORA-04036** | **数据库实例PGA内存使用超过限制** | **调整PGA_AGGREGATE_LIMIT参数** |
 | **序列不同步** | **ORA-00001** | **主键序列值落后于表中最大ID** | **执行序列自动修复服务** |
 | **字段长度超限** | **ORA-12899** | **triggerDiagnosis字段超过500字符限制** | **实施自动截断机制** |
-| **DRG字段缺失** | **ORA-00904** | **DRG_CODE或INSURANCE_PAYMENT_STANDARD列不存在** | **执行字段添加脚本** |
-| **DRG分析接口错误** | **500 Internal Server Error** | **DRG分析控制器调用失败** | **检查数据库连接和表结构** |
 
 ### 数据库连接问题
 
@@ -958,27 +808,6 @@ I --> J[恢复正常操作]
 **图表来源**
 - [QcConfirmedDisease.java:60-65](file://med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/model/qc/QcConfirmedDisease.java#L60-L65)
 
-### DRG分析字段缺失故障排除
-
-**新增** 针对DRG分析结果表字段缺失问题的诊断和修复流程：
-
-```mermaid
-flowchart TD
-A[DRG分析接口报错] --> B[检查表结构]
-B --> C{字段是否存在}
-C --> |DRG_CODE缺失| D[执行添加字段脚本]
-C --> |INSURANCE_PAYMENT_STANDARD缺失| E[执行添加字段脚本]
-C --> |字段都存在| F[检查数据类型]
-D --> G[验证字段添加]
-E --> G
-G --> H[测试DRG分析功能]
-H --> I[恢复正常运行]
-```
-
-**图表来源**
-- [添加DRG编码列脚本.sql:1-12](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-drg-code-column.sql#L1-L12)
-- [添加保险支付标准字段脚本.sql:1-9](file://med_ai_assistant_1.0_bs_backend/sql-scripts/add-insurance-payment-standard-column.sql#L1-L9)
-
 **章节来源**
 - [Oracle数据库IDENTITY策略主键NULL插入错误修复.md:135-182](file://med_ai_assistant_1.0_bs_backend/doc/问题修复/Oracle数据库IDENTITY策略主键NULL插入错误修复.md#L135-L182)
 
@@ -998,8 +827,6 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 6. **内存管理优化**：针对Oracle PGA内存超限问题提供专门的修复和预防方案
 7. **序列自动修复**：通过SequenceConsistencyService自动检测和修复序列不同步问题
 8. **字段长度保护**：通过triggerDiagnosis字段的截断机制防止ORA-12899错误
-9. **DRG分析功能增强**：新增DRG编码列和保险支付标准字段，支持更丰富的DRG分析功能
-10. **用户交互优化**：通过DrgAnalysisController提供DRG选择保存和查询接口
 
 ### 技术特色
 
@@ -1009,19 +836,8 @@ MedAiAssistant项目的数据库操作体系展现了高度的专业性和完整
 - **故障恢复**：具备完善的错误处理和恢复机制
 - **预防性维护**：通过定期序列检查和内存监控预防数据库问题
 - **数据保护**：通过字段长度限制和截断机制确保数据完整性
-- **API友好**：通过专门的控制器提供RESTful接口支持DRG分析功能
 
 ### 新增功能价值
-
-**DRG分析结果表结构扩展**：
-- DRG_CODE字段支持用户选择的DRG编码存储和查询
-- INSURANCE_PAYMENT_STANDARD字段支持保险支付标准金额的存储和分析
-- 增强了DRG分析结果的实用性和业务价值
-
-**DRG分析控制器增强**：
-- saveSelection接口支持保存用户选择的DRG记录
-- getLatest接口支持查询患者的最新DRG分析结果
-- 提供了完整的DRG分析用户交互功能
 
 **Oracle数据库PGA内存超限错误修复**：
 - 提供了针对Oracle Free版本内存限制的专业解决方案
