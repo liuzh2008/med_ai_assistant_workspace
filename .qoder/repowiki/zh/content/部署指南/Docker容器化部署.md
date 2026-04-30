@@ -25,16 +25,24 @@
 - [.env.production](file://med_ai_assistant_1.0_bs_vue/deploy/med_ai_assistant_1.0_bs_vue_test/.env.production)
 - [README.md](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md)
 - [auto-deploy.sh](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh)
+- [testserver.yaml](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/hospitals/testserver.yaml)
+- [application.properties](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties)
+- [application-execution.properties](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties)
+- [docker-compose-main.yml](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/docker-compose-main.yml)
+- [docker-compose-execution-image-test.yml](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/docker-compose-execution-image-test.yml)
+- [.env.main](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/.env.main)
+- [.env.execution-test](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/.env.execution-test)
+- [2025-12-24.md](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2025-12-24.md)
+- [openEuler主服务器部署指南.md](file://med_ai_assistant_1.0_bs_backend/doc/测试/测试服务器/主服务器/openEuler主服务器部署指南.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增main-linux-testServer部署配置的详细说明，涵盖测试环境专用配置和Git集成部署流程
-- 新增自动化部署脚本章节，详细介绍后端和前端的自动下载与部署流程
-- 新增SSH远程连接能力的配置和使用方法
-- 更新容器编排示例，包含多环境部署配置和健康检查机制
-- 增强容器健康检查配置，提供更精确的服务状态监控
-- 新增Docker构建流程优化详解，包括BuildKit性能优化和阿里云Maven镜像源配置
+- 新增v0.9.020版本变更说明，包括测试服务器IP地址迁移和Oracle SID更新
+- 更新测试服务器配置，从192.168.5.3迁移到100.66.1.4，Oracle SID从FREE更新为XE
+- 新增测试服务器执行服务器连接配置优化，包括统一配置管理API
+- 更新自动化部署脚本，支持新的IP地址和SID配置
+- 新增配置验证和向后兼容性机制，确保平滑升级
 
 ## 目录
 1. [简介](#简介)
@@ -51,7 +59,7 @@
 ## 简介
 本指南面向MedAiAssistant后端系统的Docker容器化部署，涵盖最新的本地JAR+Docker复制构建流程，该流程专门针对阿里云Maven仓库SSL连接不稳定问题进行了优化。文档详细说明了多阶段构建过程，包括基础镜像选择、依赖安装、应用打包和最终镜像优化策略；提供容器运行参数配置，端口映射，卷挂载和环境变量设置；包含容器编排示例，如docker-compose配置文件；解释容器健康检查配置和日志管理；提供容器部署的最佳实践和故障排查方法。
 
-**更新** 新增main-linux-testServer测试环境专用部署配置，提供Git集成的自动化部署流程。新增自动化部署脚本章节，详细介绍后端和前端的自动下载与部署流程，包括版本检测、防重复部署机制、备份恢复等功能。新增SSH远程连接能力的配置和使用方法。重点介绍了本地JAR+Docker复制构建模式，该模式通过避免容器内Maven依赖下载，显著提升了构建稳定性。
+**更新** 新增v0.9.020版本变更，测试服务器IP地址从192.168.5.3迁移到100.66.1.4，Oracle SID从FREE更新为XE。新增测试服务器执行服务器连接配置优化，包括统一配置管理API和向后兼容性支持。新增自动化部署脚本章节，详细介绍后端和前端的自动下载与部署流程，包括版本检测、防重复部署机制、备份恢复等功能。新增SSH远程连接能力的配置和使用方法。重点介绍了本地JAR+Docker复制构建模式，该模式通过避免容器内Maven依赖下载，显著提升了构建稳定性。
 
 ## 项目结构
 - 后端工程位于 `med_ai_assistant_1.0_bs_backend/` 目录，包含多份Dockerfile与部署脚本。
@@ -62,6 +70,7 @@
 - **新增**：前端自动化部署脚本位于 `med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh`。
 - **新增**：SSH远程连接配置和使用方法。
 - **新增**：GitHub Actions工作流配置文件，实现自动化CI/CD管道。
+- **新增**：测试服务器配置文件，支持新的IP地址和Oracle SID配置。
 
 ```mermaid
 graph TB
@@ -80,6 +89,11 @@ A --> M["deploy/main-linux-oracle/auto-deploy-backend.sh<br/>后端自动部署�
 A --> N["deploy/main-linux-testServer/auto-deploy.sh<br/>测试服务器自动部署脚本"]
 A --> O["med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh<br/>前端自动部署脚本"]
 A --> P["deploy/main-linux-testServer/README.md<br/>测试环境部署指南"]
+A --> Q["deploy/main-linux-testServer/config/hospitals/testserver.yaml<br/>测试服务器配置"]
+A --> R["deploy/main-linux-testServer/config/application.properties<br/>测试服务器应用配置"]
+A --> S["deploy/execution-linux-test/config/execution/application-execution.properties<br/>执行服务器测试配置"]
+A --> T["deploy/main-linux-testServer/docker-compose-main.yml<br/>测试服务器主服务编排"]
+A --> U["deploy/execution-linux-test/docker-compose-execution-image-test.yml<br/>测试服务器执行服务编排"]
 ```
 
 **图表来源**
@@ -97,6 +111,11 @@ A --> P["deploy/main-linux-testServer/README.md<br/>测试环境部署指南"]
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 - [auto-deploy-frontend.sh:1-282](file://med_ai_assistant_1.0_bs_vue/deploy/auto-deploy-frontend.sh#L1-L282)
 - [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md#L1-L396)
+- [testserver.yaml:1-42](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/hospitals/testserver.yaml#L1-L42)
+- [application.properties:1-204](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L1-L204)
+- [application-execution.properties:1-99](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L1-L99)
+- [docker-compose-main.yml:1-110](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/docker-compose-main.yml#L1-L110)
+- [docker-compose-execution-image-test.yml:1-81](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/docker-compose-execution-image-test.yml#L1-L81)
 
 **章节来源**
 - [README.md:1-250](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L1-L250)
@@ -106,10 +125,12 @@ A --> P["deploy/main-linux-testServer/README.md<br/>测试环境部署指南"]
 - **自动化部署脚本**：后端提供auto-deploy-backend.sh，前端提供auto-deploy-frontend.sh，支持版本检测、防重复部署、备份恢复和错误恢复机制。**新增**：测试服务器提供auto-deploy.sh，支持Git集成的自动化部署流程。
 - **SSH远程连接能力**：支持通过SSH连接到远程服务器进行部署和维护操作。
 - **多环境部署配置**：main-linux-oracle和main-linux-testServer提供不同的部署配置和环境变量设置，满足生产环境和测试环境的不同需求。
-- 运行时镜像：基于Eclipse Temurin 21 JRE，减少镜像体积与攻击面。
-- 健康检查：内置HTTP健康检查端点，结合容器健康状态保障服务可用性。
-- 入口脚本：通过入口脚本启动应用，支持环境变量注入与JVM参数传递。
-- 配置体系：通过Spring Profile与外部配置文件控制功能开关与监控策略。
+- **统一配置管理API**：新增执行服务器配置管理控制器，提供统一的配置管理API，支持向后兼容性。
+- **配置验证机制**：实现配置有效性验证和错误处理机制，确保配置的正确性和系统的稳定性。
+- **运行时镜像**：基于Eclipse Temurin 21 JRE，减少镜像体积与攻击面。
+- **健康检查**：内置HTTP健康检查端点，结合容器健康状态保障服务可用性。
+- **入口脚本**：通过入口脚本启动应用，支持环境变量注入与JVM参数传递。
+- **配置体系**：通过Spring Profile与外部配置文件控制功能开关与监控策略。
 - **新增**：GitHub Actions工作流：实现自动化构建、测试和部署流程，支持多环境部署和版本管理。
 
 **章节来源**
@@ -125,17 +146,17 @@ A --> P["deploy/main-linux-testServer/README.md<br/>测试环境部署指南"]
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
 
 ## 架构总览
-系统包含主服务器与执行服务器两个角色，通过HTTP API进行交互，并依赖Redis缓存与Oracle数据库。新的构建流程通过本地JAR复制模式提高了构建稳定性。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括Git集成的测试环境部署和生产环境的自动下载部署。
+系统包含主服务器与执行服务器两个角色，通过HTTP API进行交互，并依赖Redis缓存与Oracle数据库。新的构建流程通过本地JAR复制模式提高了构建稳定性。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括Git集成的测试环境部署和生产环境的自动下载部署。**更新** v0.9.020版本中，测试服务器IP地址从192.168.5.3迁移到100.66.1.4，Oracle SID从FREE更新为XE，执行服务器配置通过统一API进行管理。
 
 ```mermaid
 graph TB
 subgraph "主服务器"
-M["端口: 8081<br/>健康检查: /api/health<br/>构建模式: 本地JAR+Docker复制"]
-E["端口: 8082<br/>健康检查: /api/execute/health<br/>构建模式: 多阶段构建"]
+M["端口: 8081<br/>健康检查: /api/health<br/>构建模式: 本地JAR+Docker复制<br/>IP: 100.66.1.4"]
+E["端口: 8082<br/>健康检查: /api/execute/health<br/>构建模式: 多阶段构建<br/>IP: 100.66.1.4<br/>Oracle SID: XE"]
 end
 subgraph "基础设施"
 R["Redis 缓存"]
-O["Oracle 数据库"]
+O["Oracle 数据库<br/>IP: 100.66.1.4<br/>SID: XE"]
 end
 subgraph "CI/CD管道"
 GHA["GitHub Actions<br/>自动化构建与部署"]
@@ -334,6 +355,8 @@ Complete --> End
 - **健康检查**：部署完成后进行健康检查和日志收集。
 - **日志记录**：完整的部署日志记录，便于故障排查和审计。
 
+**更新** v0.9.020版本中，测试服务器IP地址从192.168.5.3迁移到100.66.1.4，Oracle SID从FREE更新为XE，执行服务器配置通过统一API进行管理。
+
 ```mermaid
 flowchart TD
 Start(["开始自动部署"]) --> Fetch["git fetch 远程更新"]
@@ -373,13 +396,19 @@ Exit --> End
 
 ### main-linux-testServer部署配置
 - **测试环境专用**：专门为测试服务器设计的部署配置，支持Git集成的自动化部署。
+- **IP地址迁移**：**更新** v0.9.020版本中，测试服务器IP地址从192.168.5.3迁移到100.66.1.4，确保与执行服务器在同一网络环境中。
+- **Oracle SID更新**：**更新** Oracle SID从FREE更新为XE，使用Oracle XE数据库实例。
 - **Git集成部署**：自动检测代码更新，支持Git拉取和版本管理，提供完整的自动化部署流程。
 - **环境配置**：包含测试环境专用的环境变量配置和应用配置文件。
 - **部署流程**：从代码检测到构建、部署的完整自动化流程，支持日志记录和错误恢复。
 
+**更新** v0.9.020版本中，测试服务器配置文件已更新以反映IP地址和Oracle SID的变更。
+
 **章节来源**
 - [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md#L1-L396)
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
+- [testserver.yaml:1-42](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/hospitals/testserver.yaml#L1-L42)
+- [application.properties:1-204](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L1-L204)
 
 ### GitHub Actions工作流配置
 - **新增**：GitHub Actions工作流配置文件，实现自动化CI/CD管道。
@@ -400,6 +429,21 @@ Exit --> End
 - [application-monitoring.properties:1-196](file://med_ai_assistant_1.0_bs_backend/config/application-monitoring.properties#L1-L196)
 - [application.properties:25-44](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/config/application.properties#L25-L44)
 
+### 执行服务器配置管理（v0.9.020新增）
+
+**更新** v0.9.020版本引入了统一的执行服务器配置管理API，支持向后兼容性，确保平滑升级。
+
+- **统一配置API**：提供 `/api/execution-server/configuration`、`/api/execution-server/jdbc-url`、`/api/execution-server/api-base-url` 三个核心API端点。
+- **配置键名映射**：支持新配置键名 `execution.server.host`、`execution.server.oracle-port`、`execution.server.oracle-sid`、`execution.server.api-url` 与旧配置键名的向后兼容。
+- **环境变量支持**：支持 `EXECUTION_SERVER_HOST`、`EXECUTION_SERVER_API_URL` 等环境变量覆盖配置。
+- **配置验证机制**：实现配置有效性验证，包括主机名、端口、SID、URL的验证规则。
+- **错误处理**：提供配置验证失败和配置加载失败的标准错误响应格式。
+
+**章节来源**
+- [application-execution.properties:1-99](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L1-L99)
+- [docker-compose-execution-image-test.yml:1-81](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/docker-compose-execution-image-test.yml#L1-L81)
+- [.env.execution-test:1-57](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/.env.execution-test#L1-L57)
+
 ## 依赖关系分析
 - **构建阶段依赖**：Eclipse Temurin 21 JRE、本地JAR文件、阿里云镜像源（仅用于运行时网络工具安装）。
 - **运行阶段依赖**：Eclipse Temurin 21 JRE、curl/netcat网络工具、应用JAR、SQL模板、配置文件。
@@ -408,6 +452,7 @@ Exit --> End
 - **新增**：GitHub Actions依赖：GitHub API、Maven镜像源、Docker Registry。
 - **新增**：自动化部署脚本依赖：curl、ssh、docker、docker compose等系统工具。
 - **新增**：Git集成依赖：Git客户端、远程仓库访问权限。
+- **新增**：配置管理依赖：统一配置API、配置验证机制、向后兼容性支持。
 
 ```mermaid
 graph LR
@@ -422,6 +467,9 @@ AutoDeploy["自动化部署脚本"] --> Curl["curl工具"]
 AutoDeploy --> SSH["SSH连接"]
 AutoDeploy --> DockerTools["Docker/Compose"]
 AutoDeploy --> Git["Git客户端"]
+ConfigAPI["统一配置API"] --> ExecutionServer["执行服务器配置"]
+ConfigAPI --> BackwardCompat["向后兼容性"]
+ConfigAPI --> Validation["配置验证"]
 ```
 
 **图表来源**
@@ -451,6 +499,7 @@ AutoDeploy --> Git["Git客户端"]
 - **新增**：版本号管理：自动从pom.xml提取版本号，便于部署时版本追踪和回滚。
 - **新增**：自动化部署优化：通过版本检测和文件大小校验，避免不必要的重复部署。
 - **新增**：Git集成优化：通过远程仓库状态检查，避免无意义的部署尝试。
+- **新增**：配置管理优化**：统一配置API减少配置管理复杂度，提高部署效率。
 
 ## 故障排查指南
 - **容器启动失败**：检查端口占用、查看容器日志、核对环境变量配置。
@@ -464,12 +513,14 @@ AutoDeploy --> Git["Git客户端"]
 - **新增**：自动化部署失败：检查网络连接、验证版本检测API、确认备份恢复机制。
 - **新增**：SSH连接问题：检查SSH密钥配置、验证远程服务器可达性、确认防火墙规则。
 - **新增**：Git集成失败：检查Git仓库访问权限、验证远程分支状态、确认网络连接。
+- **新增**：IP地址迁移问题**：检查测试服务器IP地址配置、确认网络可达性、验证防火墙规则。
+- **新增**：Oracle SID配置问题**：检查Oracle SID配置、确认数据库实例存在、验证连接参数。
 
 **章节来源**
 - [README.md:209-230](file://med_ai_assistant_1.0_bs_backend/deploy/README.md#L209-L230)
 
 ## 结论
-通过采用本地JAR+Docker复制构建模式，MedAiAssistant实现了更加稳定、高效的容器化部署。该模式特别解决了阿里云Maven仓库SSL连接不稳定的问题，显著提升了构建可靠性。配合多阶段构建与精简运行时镜像，系统在生产环境中能够稳定运行。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括版本检测、防重复部署、备份恢复等功能。新增的main-linux-oracle和main-linux-testServer部署配置涵盖了不同的部署场景和环境需求，其中测试环境配置支持Git集成的自动化部署流程。新增的GitHub Actions工作流配置进一步完善了CI/CD管道，实现了自动化构建、测试和部署流程。建议在生产部署前完成环境变量与配置文件的定制，并定期更新系统与依赖包。
+通过采用本地JAR+Docker复制构建模式，MedAiAssistant实现了更加稳定、高效的容器化部署。该模式特别解决了阿里云Maven仓库SSL连接不稳定的问题，显著提升了构建可靠性。配合多阶段构建与精简运行时镜像，系统在生产环境中能够稳定运行。新增的自动化部署脚本提供了完整的版本管理和部署流程，包括版本检测、防重复部署、备份恢复等功能。**更新** v0.9.020版本中，测试服务器IP地址从192.168.5.3迁移到100.66.1.4，Oracle SID从FREE更新为XE，执行服务器配置通过统一API进行管理，确保了系统的向后兼容性和平滑升级。新增的main-linux-oracle和main-linux-testServer部署配置涵盖了不同的部署场景和环境需求，其中测试环境配置支持Git集成的自动化部署流程。新增的GitHub Actions工作流配置进一步完善了CI/CD管道，实现了自动化构建、测试和部署流程。新增的统一配置管理API提供了更好的配置管理体验，支持向后兼容性，确保了系统的稳定性和可维护性。建议在生产部署前完成环境变量与配置文件的定制，并定期更新系统与依赖包。
 
 ## 附录
 
@@ -481,6 +532,7 @@ AutoDeploy --> Git["Git客户端"]
 - 健康检查：基于HTTP端点的健康检查。
 - **新增**：SSH配置：支持通过SSH连接到远程服务器进行部署和维护操作。
 - **新增**：Git配置：支持Git仓库的自动检测和部署。
+- **新增**：统一配置API**：支持执行服务器配置的统一管理，提供向后兼容性。
 
 **章节来源**
 - [Dockerfile:47-65](file://med_ai_assistant_1.0_bs_backend/Dockerfile#L47-L65)
@@ -494,6 +546,7 @@ AutoDeploy --> Git["Git客户端"]
 - **本地JAR复制模式**：推荐使用本地JAR+Docker复制模式，避免网络依赖问题。
 - **新增**：GitHub Actions自动化部署：通过工作流实现代码提交后的自动构建、测试和部署。
 - **新增**：自动化部署脚本：支持版本检测、防重复部署、备份恢复和错误恢复机制。
+- **新增**：配置管理编排**：通过统一配置API管理执行服务器配置，支持向后兼容性。
 
 **章节来源**
 - [build-and-export.sh:1-111](file://med_ai_assistant_1.0_bs_backend/build-and-export.sh#L1-L111)
@@ -563,6 +616,8 @@ AutoDeploy --> Git["Git客户端"]
 
 ### 新增：main-linux-testServer部署配置详解
 - **测试环境专用**：专为测试环境设计的部署配置，支持Git集成的自动化部署
+- **IP地址迁移**：**更新** v0.9.020版本中，测试服务器IP地址从192.168.5.3迁移到100.66.1.4，确保与执行服务器在同一网络环境中。
+- **Oracle SID更新**：**更新** Oracle SID从FREE更新为XE，使用Oracle XE数据库实例。
 - **Git集成功能**：自动检测代码更新，支持Git拉取和版本管理
 - **日志记录**：完整的部署日志记录，便于故障排查和审计
 - **错误恢复**：部署失败时自动收集诊断信息，支持问题定位
@@ -571,6 +626,8 @@ AutoDeploy --> Git["Git客户端"]
 **章节来源**
 - [README.md:1-396](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/README.md#L1-L396)
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
+- [testserver.yaml:1-42](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/hospitals/testserver.yaml#L1-L42)
+- [application.properties:1-204](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L1-L204)
 
 ### 新增：SSH远程连接配置
 - **密钥配置**：支持通过SSH密钥进行无密码登录
@@ -581,3 +638,41 @@ AutoDeploy --> Git["Git客户端"]
 **章节来源**
 - [auto-deploy-backend.sh:32-41](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-oracle/auto-deploy-backend.sh#L32-L41)
 - [auto-deploy.sh:1-88](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/auto-deploy.sh#L1-L88)
+
+### 新增：v0.9.020版本变更详情
+
+**更新** v0.9.020版本主要变更包括测试服务器IP地址迁移和Oracle SID更新，以及相关的部署配置优化。
+
+- **IP地址迁移**：测试服务器IP地址从192.168.5.3迁移到100.66.1.4，确保与执行服务器在同一网络环境中。
+- **Oracle SID更新**：Oracle SID从FREE更新为XE，使用Oracle XE数据库实例。
+- **配置文件更新**：所有配置文件已更新以反映新的IP地址和Oracle SID配置。
+- **部署脚本优化**：自动化部署脚本已更新以支持新的配置。
+- **统一配置管理**：新增执行服务器配置管理API，支持向后兼容性。
+
+**章节来源**
+- [2025-12-24.md:243-288](file://med_ai_assistant_1.0_bs_backend/doc/更新日志/2025-12-24.md#L243-L288)
+- [openEuler主服务器部署指南.md:1-54](file://med_ai_assistant_1.0_bs_backend/doc/测试/测试服务器/主服务器/openEuler主服务器部署指南.md#L1-L54)
+- [testserver.yaml:1-42](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/hospitals/testserver.yaml#L1-L42)
+- [application.properties:88-94](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/config/application.properties#L88-L94)
+- [docker-compose-main.yml:22-24](file://med_ai_assistant_1.0_bs_backend/deploy/main-linux-testServer/docker-compose-main.yml#L22-L24)
+- [docker-compose-execution-image-test.yml:20-22](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/docker-compose-execution-image-test.yml#L20-L22)
+
+### 新增：统一配置管理API详解
+
+**更新** v0.9.020版本引入了统一的执行服务器配置管理API，提供更好的配置管理体验。
+
+- **API端点**：
+  - `GET /api/execution-server/configuration` - 获取完整配置信息
+  - `GET /api/execution-server/jdbc-url` - 获取JDBC URL
+  - `GET /api/execution-server/api-base-url` - 获取API基地址
+- **配置键名映射**：
+  - 新配置键名：`execution.server.host`、`execution.server.oracle-port`、`execution.server.oracle-sid`、`execution.server.api-url`
+  - 旧配置键名：`execution.server.ip`、`execution.server.url`
+- **环境变量支持**：`EXECUTION_SERVER_HOST`、`EXECUTION_SERVER_API_URL`
+- **配置验证**：主机名、端口、SID、URL的有效性验证
+- **错误处理**：标准的错误响应格式，包括配置验证失败和配置加载失败
+
+**章节来源**
+- [application-execution.properties:1-99](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/config/execution/application-execution.properties#L1-L99)
+- [docker-compose-execution-image-test.yml:1-81](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/docker-compose-execution-image-test.yml#L1-L81)
+- [.env.execution-test:1-57](file://med_ai_assistant_1.0_bs_backend/deploy/execution-linux-test/.env.execution-test#L1-L57)
