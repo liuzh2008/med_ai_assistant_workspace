@@ -1,0 +1,117 @@
+name: Security Scan (Snyk)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  snyk-scan-backend:
+    name: Scan Backend (Maven)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >-
+            --severity-threshold=high
+            --fail-on=all
+          working-directory: med_ai_assistant_1.0_bs_backend
+
+      - name: Monitor backend dependencies
+        uses: snyk/actions/maven@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          working-directory: med_ai_assistant_1.0_bs_backend
+
+  snyk-scan-frontend:
+    name: Scan Frontend (npm)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: med_ai_assistant_1.0_bs_vue
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >-
+            --severity-threshold=high
+          working-directory: med_ai_assistant_1.0_bs_vue
+
+      - name: Monitor frontend dependencies
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          working-directory: med_ai_assistant_1.0_bs_vue
+
+  snyk-scan-docker:
+    name: Scan Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build backend Docker image (for scanning)
+        run: docker build -t med-ai-backend:scan -f Dockerfile .
+        working-directory: med_ai_assistant_1.0_bs_backend
+
+      - name: Scan backend Docker image
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: med-ai-backend:scan
+          args: --severity-threshold=high
+
+      - name: Build frontend Docker image (for scanning)
+        run: |
+          npm ci
+          docker build -t med-ai-frontend:scan .
+        working-directory: med_ai_assistant_1.0_bs_vue
+
+      - name: Scan frontend Docker image
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: med-ai-frontend:scan
+          args: --severity-threshold=high
