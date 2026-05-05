@@ -1,12 +1,20 @@
-# Qoder 配置同步设置脚本
+﻿# Qoder 配置同步设置脚本
 # 将 Qoder 记忆和用户配置迁移到 OneDrive，用符号链接同步
 # 注意：仅同步用户级数据（记忆、配置），不含项目目录 .qoder/
 # 运行前请确保 Qoder 已关闭！
 # 必须以管理员身份运行
 
 $ErrorActionPreference = "Stop"
-$userName = $env:UserName
-$oneDriveSync = "C:\Users\$userName\OneDrive\QoderSync"
+# ==========================================================
+# 配置参数
+# ==========================================================
+# Qoder 数据所在用户目录（当前电脑为 47044，另一台按实际情况修改）
+$qoderUser = "47044"
+# OneDrive 同步目录
+$oneDriveRoot = "C:\Users\$env:UserName\OneDrive"
+
+$userName = $qoderUser
+$oneDriveSync = "$oneDriveRoot\QoderSync"
 
 Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║    Qoder 配置同步 - OneDrive 设置脚本      ║" -ForegroundColor Cyan
