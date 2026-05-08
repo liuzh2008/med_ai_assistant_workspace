@@ -100,7 +100,7 @@ git status ← 验证暂存区文件清单，确认不包含 .qoder/agents/ 和 
 git commit -m "v{版本号}: {功能描述}"
 
 ### 推送
-三个仓库提交完成后，依次通过SSH执行 git push：
+三个仓库提交完成后，依次通过SSH执行 git push origin master：
 cd med_ai_assistant_1.0_bs_backend ; git push
 cd med_ai_assistant_1.0_bs_vue ; git push
 cd "D:\MedAiAssistant 1.0\MedAiAssistant 1.0 BS" ; git push
