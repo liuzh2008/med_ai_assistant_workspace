@@ -1,0 +1,98 @@
+/* 医疗AI辅助系统 - 医疗蓝色调自定义主题 */
+
+:root {
+  /* 主色调 - 医疗蓝 */
+  --vp-c-brand-1: #2563eb;
+  --vp-c-brand-2: #1d4ed8;
+  --vp-c-brand-3: #1e40af;
+  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
+
+  /* 背景色 */
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-soft: #f8fafc;
+  --vp-c-bg-mute: #f1f5f9;
+  --vp-c-bg-alt: #f0f5ff;
+
+  /* 文字色 */
+  --vp-c-text-1: #0f172a;
+  --vp-c-text-2: #475569;
+  --vp-c-text-3: #94a3b8;
+
+  /* 边框色 */
+  --vp-c-border: #e2e8f0;
+  --vp-c-divider: #e2e8f0;
+  --vp-c-gutter: #e2e8f0;
+
+  /* 强调色 */
+  --vp-c-accent: #2563eb;
+  --vp-c-success: #16a34a;
+  --vp-c-warning: #d97706;
+  --vp-c-danger: #dc2626;
+
+  /* Hero 区域 */
+  --vp-home-hero-name-color: #2563eb;
+  --vp-home-hero-image-background-image: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.08) 10%,
+    rgba(30, 64, 175, 0.12) 100%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+
+  /* 按钮样式 */
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-bg: #2563eb;
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: #ffffff;
+  --vp-button-brand-hover-bg: #1d4ed8;
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: #ffffff;
+  --vp-button-brand-active-bg: #1e40af;
+
+  /* 自定义块 */
+  --vp-custom-block-tip-border: #2563eb;
+  --vp-custom-block-tip-text: #1e40af;
+  --vp-custom-block-tip-bg: rgba(37, 99, 235, 0.06);
+
+  --vp-custom-block-warning-border: #d97706;
+  --vp-custom-block-warning-text: #92400e;
+  --vp-custom-block-warning-bg: rgba(217, 119, 6, 0.06);
+
+  --vp-custom-block-danger-border: #dc2626;
+  --vp-custom-block-danger-text: #991b1b;
+  --vp-custom-block-danger-bg: rgba(220, 38, 38, 0.06);
+}
+
+/* 暗色主题 */
+.dark {
+  --vp-c-brand-1: #60a5fa;
+  --vp-c-brand-2: #3b82f6;
+  --vp-c-brand-3: #2563eb;
+  --vp-c-brand-soft: rgba(96, 165, 250, 0.14);
+
+  --vp-c-bg: #0f172a;
+  --vp-c-bg-soft: #1e293b;
+  --vp-c-bg-mute: #1e293b;
+  --vp-c-bg-alt: #0c1425;
+
+  --vp-c-text-1: #f1f5f9;
+  --vp-c-text-2: #94a3b8;
+  --vp-c-text-3: #64748b;
+
+  --vp-c-border: #1e293b;
+  --vp-c-divider: #1e293b;
+
+  --vp-home-hero-name-color: #60a5fa;
+  --vp-home-hero-image-background-image: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.2) 10%,
+    rgba(30, 64, 175, 0.3) 100%
+  );
+
+  --vp-button-brand-bg: #2563eb;
+  --vp-button-brand-hover-bg: #3b82f6;
+
+  --vp-custom-block-tip-border: #3b82f6;
+  --vp-custom-block-tip-text: #93c5fd;
+  --vp-custom-block-tip-bg: rgba(59, 130, 246, 0.1);
+}
