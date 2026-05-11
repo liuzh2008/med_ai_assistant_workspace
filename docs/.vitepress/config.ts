@@ -4,7 +4,7 @@ export default defineConfig({
   lang: 'zh-CN',
   title: '医疗AI辅助系统',
   description: '智能病历质控与DRG分析平台',
-  base: '/MedAiAssistant-1.0-BS/',
+  base: '/med_ai_assistant_workspace/',
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }]
