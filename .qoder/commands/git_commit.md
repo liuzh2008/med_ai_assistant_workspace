@@ -40,14 +40,22 @@ description:github提交并推送。需要注意版本号。
 检查点：确认临时文件已删除，调试语句已清除，代码注释已添加。
 
 ## 第3步：更新版本号
-分别在以下文件中更新版本号，在保持前缀 0.9 不变的前提下，将后面的数字整体加1
-- 格式为 "version": "0.9.xxx",
+在项目根目录执行 `bump-version.ps1` 脚本自动递增版本号：
+```powershell
+.\bump-version.ps1
+```
+
+脚本会自动同步更新以下文件：
+- VERSION（唯一版本来源）
+- med_ai_assistant_1.0_bs_backend/.mvn/maven.config
+- med_ai_assistant_1.0_bs_backend/pom.xml 中的 `<revision>` 属性
 - med_ai_assistant_1.0_bs_vue/package.json 中的 version 字段
-- med_ai_assistant_1.0_bs_backend/pom.xml 中的 version 字段
+
+**禁止手动编辑 pom.xml 或 package.json 中的版本号。**
 
 检查点：
-- 确认两个文件的版本号一致且递增正确。
-- 修改后立即执行 node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'));console.log('OK')" 验证
+- 确认脚本输出显示四个文件均已更新且版本号一致。
+- 确认 pom.xml 中 `<version>${revision}</version>` 未被修改。
 
 ## 第3步：生成更新日志
 总结本次任务变更，生成更新日志并添加到当日日志文件的尾部：
@@ -85,19 +93,19 @@ description:github提交并推送。需要注意版本号。
 cd med_ai_assistant_1.0_bs_backend
 git add {后端所有应提交文件，逐个列出}
 git status ← 验证暂存区文件清单
-git commit -m "v{版本号}: {功能描述}"
+git commit -m 'type(scope): 中文描述'
 
 **前端仓库提交：**
 cd med_ai_assistant_1.0_bs_vue
 git add {前端所有应提交文件，逐个列出}
 git status ← 验证暂存区文件清单
-git commit -m "v{版本号}: {功能描述}"
+git commit -m 'type(scope): 中文描述'
 
 **根仓库提交：**
 cd "D:\MedAiAssistant 1.0\MedAiAssistant 1.0 BS"
-git add 更新小结.md .qoder/repowiki/ .qoder/skills/ .qoder/rules/
+git add 更新小结.md VERSION bump-version.ps1 .qoder/repowiki/ .qoder/skills/ .qoder/rules/
 git status ← 验证暂存区文件清单，确认不包含 .qoder/agents/ 和 .qoder/plans/
-git commit -m "v{版本号}: {功能描述}"
+git commit -m 'type(scope): 中文描述'
 
 ### 推送
 三个仓库提交完成后，依次通过SSH执行 git push origin master：
@@ -109,7 +117,7 @@ cd "D:\MedAiAssistant 1.0\MedAiAssistant 1.0 BS" ; git push
 - 前端和后端必须分开提交
 - 需要提交根目录下的更新小结.md 和 .qoder/ 下需提交的文件
 - 先 git add 添加文件，再 git commit 提交
-- 三个仓库使用相同的提交信息
+- 三个仓库使用相同的提交信息，格式为 `type(scope): 中文描述`（如 `feat(质控): 新增病种匹配规则`）
 - 提交前必须通过 git status 验证暂存区内容
 
 ### 提交后验证
