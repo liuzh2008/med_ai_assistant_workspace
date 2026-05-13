@@ -1,0 +1,39 @@
+name: Deploy AI Chat Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/worker/**'
+      - 'docs/ai-knowledge/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Worker to Cloudflare
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Worker dependencies
+        working-directory: docs/worker
+        run: npm ci
+
+      - name: Build knowledge base
+        working-directory: docs/worker
+        run: npx tsx ../ai-knowledge/build-knowledge.ts
+
+      - name: Copy knowledge to Worker
+        run: cp docs/ai-knowledge/knowledge.json docs/worker/src/knowledge-data.json
+
+      - name: Deploy to Cloudflare Workers
+        working-directory: docs/worker
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
