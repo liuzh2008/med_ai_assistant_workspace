@@ -1,5 +1,5 @@
 ---
-description:输出审查报告
+description:任务级轻量代码审查，并将审查报告保存到 doc\代码审查 目录。
 ---
 ---
 name: code-review
