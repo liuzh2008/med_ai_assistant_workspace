@@ -15,7 +15,8 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '功能介绍', link: '/features/ai-diagnosis' },
       { text: '使用指南', link: '/guide/getting-started' },
-      { text: '常见问题', link: '/faq/' }
+      { text: '常见问题', link: '/faq/' },
+      { text: '意见反馈', link: '/feedback/' }
     ],
 
     sidebar: {
