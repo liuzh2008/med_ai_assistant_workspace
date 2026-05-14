@@ -1,5 +1,5 @@
 /**
- * @description 知识库构建脚本 - 从 VitePress 文档提取二级标题章节，生成 knowledge.json
+ * @description 知识库构建脚本 - 从 source/ 目录提取所有 .md 文件的二级标题章节，生成 knowledge.json
  * @module medai-docs-ai-worker/build-knowledge
  *
  * 用法：npx tsx ai-knowledge/build-knowledge.ts
@@ -12,12 +12,17 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const sourceFiles = [
-  '../guide/getting-started.md',
-  '../guide/patient-management.md',
-  '../guide/ai-assistant.md',
-  '../faq/index.md',
-];
+// 从 source/ 目录读取所有 .md 文件
+const sourceDir = path.resolve(__dirname, 'source');
+let sourceFiles: string[] = [];
+if (fs.existsSync(sourceDir)) {
+  sourceFiles = fs.readdirSync(sourceDir)
+    .filter((f: string) => f.endsWith('.md'))
+    .sort()
+    .map((f: string) => path.join(sourceDir, f));
+} else {
+  console.warn(`源文档目录不存在，跳过: ${sourceDir}`);
+}
 
 interface KnowledgeItem {
   title: string;
@@ -26,13 +31,7 @@ interface KnowledgeItem {
 
 const knowledge: KnowledgeItem[] = [];
 
-for (const relPath of sourceFiles) {
-  const filePath = path.resolve(__dirname, relPath);
-  if (!fs.existsSync(filePath)) {
-    console.warn(`文件不存在，跳过: ${filePath}`);
-    continue;
-  }
-
+for (const filePath of sourceFiles) {
   const raw = fs.readFileSync(filePath, 'utf-8');
   const lines = raw.split('\n');
 
