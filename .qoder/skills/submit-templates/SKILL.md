@@ -15,7 +15,23 @@ description: 提交 Prompt 模板库到 GitHub。自动递增 manifest.json 版�
 
 ## 执行流程
 
-### 1. 解析并递增版本号
+### 1. JSON 格式验证（强制）
+
+提交前必须运行验证脚本，确保所有模板 JSON 文件格式正确：
+
+```bash
+cd med_ai_assistant_1.0_bs_backend/prompt-templates
+node validate-templates.js
+```
+
+检查点：
+- 退出码必须为 0（全部通过）
+- 如有失败文件，必须先修复 JSON 语法错误再继续提交
+- 常见错误：字符串内未转义的双引号（应写为 `\"`）
+
+❗ **验证失败时禁止继续执行后续步骤。**
+
+### 2. 解析并递增版本号
 
 读取 `prompt-templates/manifest.json` 中的 `version` 字段，格式为 `M.m.p`（如 `1.0.2`）。
 
@@ -50,7 +66,7 @@ console.log('版本号: ' + oldVer + ' → ' + newVer);
 "
 ```
 
-### 2. 确认变更文件
+### 3. 确认变更文件
 
 ```bash
 git -C "med_ai_assistant_1.0_bs_backend" status
@@ -60,7 +76,7 @@ git -C "med_ai_assistant_1.0_bs_backend" status
 - `prompt-templates/manifest.json`（版本号已更新）
 - `prompt-templates/` 下的各模板 `.json` 文件
 
-### 3. 提交并推送
+### 4. 提交并推送
 
 ```bash
 # Stage 所有模板变更
