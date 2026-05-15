@@ -29,13 +29,14 @@ med_ai_assistant_1.0_bs_vue/
 │   │   ├── login-record.cy.js  # 登录录屏演示
 │   │   ├── ai-diagnosis.cy.js  # AI 诊断测试
 │   │   ├── todo.cy.js          # 待办事项测试
-│   │   └── treatment-plan-todo.cy.js  # 诊疗计划测试
+│   │   └── treatment-plan-items.cy.js  # 诊疗计划测试
 │   ├── fixtures/               # 固定数据
 │   ├── screenshots/            # 失败截图（自动生成）
 │   ├── videos/                 # 测试录制视频（自动生成）
 │   └── support/
 │       ├── e2e.js              # 全局支持
-│       └── commands.js         # 自定义命令
+│       ├── commands.js         # 自定义命令
+│       └── login-utils.js      # 共享登录工具函数（realLogin, getTokenAndDept）
 ```
 
 ## 配置文件 (`cypress.config.js`)
@@ -68,44 +69,14 @@ Cypress.on('uncaught:exception', (err) => {
 
 | 命令 | 参数 | 功能 |
 |------|------|------|
-| `cy.login()` | `(username?, password?, department?)` | 通过 UI 完整登录 |
+| `cy.login()` | `(username?, password?, department?)` | 通过 UI 完整登录（已封装，但仍建议测试文件直接使用 `login-utils.js`） |
 | `cy.waitForApi()` | `(alias, timeout?)` | 等待 API 请求 |
 | `cy.mockLogin()` | `(options?)` | 直接设置 localStorage 模拟登录态 |
 | `cy.navigateTo()` | `(path, waitForSelector?)` | 导航+等待元素 |
 
 ### cy.login() 内部流程
 
-```javascript
-Cypress.Commands.add('login', (username, password, department) => {
-  cy.visit('/login')
-  cy.get('.login-container').should('be.visible')
-  // 填写用户名
-  cy.get('.el-form-item').contains('label', '用户')
-    .parent().find('.el-input__inner').clear().type(user)
-  // ★ 关键：触发失焦（点击密码标签区域），触发科室列表从后端加载
-  cy.contains('.el-form-item', '密码').click()
-  cy.wait(2000)
-  // 填写密码
-  cy.get('.el-form-item').contains('label', '密码')
-    .parent().find('.el-input__inner').clear().type(pass)
-  // 选择科室
-  cy.get('.el-form-item').contains('label', '科室')
-    .parent().find('.el-select').click()
-  cy.get('.el-select-dropdown__item').should('have.length.gte', 1)
-  // 选择指定科室或第一个
-  if (department) {
-    cy.get('.el-select-dropdown__item').contains(department).click()
-  } else {
-    cy.get('.el-select-dropdown__item').first().click()
-  }
-  // 点击登录
-  cy.get('button.el-button--primary').contains('登录').click()
-  // 处理免责声明弹窗
-  cy.contains('button', '我已阅读并同意', { timeout: 5000 }).click()
-  // 等待跳转
-  cy.url().should('not.include', '/login', { timeout: 15000 })
-})
-```
+`cy.login()` 命令定义在 `commands.js` 中。**新测试文件推荐直接导入 `login-utils.js` 的 `realLogin()` 函数**（保持登录逻辑唯一来源），详见下方「需要登录态的功能页面测试」章节。
 
 ### cy.mockLogin() 直接设登录态
 
@@ -164,15 +135,18 @@ describe('登录页面（真实API）', () => {
 
 ### 2. 需要登录态的功能页面测试
 
-所有非登录页面的测试，**都必须先登录**，有两种方式：
+所有非登录页面的测试，**都必须先登录**，有三种方式：
 
-#### 方式一：通过 UI 完整登录（推荐，端到端验证）
+#### 方式一（推荐）：导入 `login-utils.js` 的 `realLogin()`
+
+所有测试文件统一从 `support/login-utils.js` 导入共享的登录函数，确保登录逻辑一致。
 
 ```javascript
+import { realLogin } from '../support/login-utils'
+
 describe('病人列表页面', () => {
   beforeEach(() => {
-    cy.login() // 完整登录流程：填凭据→选科室→点登录→同意免责
-    // 登录后默认跳转到 /patients
+    realLogin() // 完整 UI 登录流程：填凭据→选科室→点登录→同意免责→跳转 /patients
   })
 
   it('应显示病人列表', () => {
@@ -181,7 +155,21 @@ describe('病人列表页面', () => {
 })
 ```
 
-#### 方式二：mockLogin 绕过 UI（适合不关心登录细节的测试）
+#### 方式二：使用 `cy.login()` 命令
+
+```javascript
+describe('病人列表页面', () => {
+  beforeEach(() => {
+    cy.login() // 完整登录流程：填凭据→选科室→点登录→同意免责
+  })
+
+  it('应显示病人列表', () => {
+    cy.get('.patient-list, .el-table', { timeout: 10000 }).should('be.visible')
+  })
+})
+```
+
+#### 方式三：mockLogin 绕过 UI（适合不关心登录细节的测试）
 
 ```javascript
 describe('待办事项功能', () => {
@@ -202,8 +190,33 @@ describe('待办事项功能', () => {
 
 #### 从 localStorage 获取凭据
 
+直接从 `support/login-utils.js` 导入 `getTokenAndDept()`：
+
 ```javascript
-function getTokenAndDept() {
+import { realLogin, getTokenAndDept } from '../support/login-utils'
+
+describe('API 测试', () => {
+  beforeEach(() => {
+    realLogin()
+  })
+
+  it('应调用受保护 API', () => {
+    getTokenAndDept().then(({ token }) => {
+      cy.request({
+        url: `${Cypress.env('apiUrl')}/some-endpoint`,
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    })
+  })
+})
+```
+
+`getTokenAndDept()` 内部实现（已封装在 `login-utils.js`，测试文件无需重复定义）：
+
+```javascript
+// login-utils.js 中已定义，测试文件直接 import 使用：
+// import { getTokenAndDept } from '../support/login-utils'
+export function getTokenAndDept() {
   return cy.window().then((win) => {
     const token = win.localStorage.getItem('token')
     let departmentName = ''
@@ -421,7 +434,7 @@ npm run test:e2e:open    # 交互模式
 ## 注意事项
 
 - **禁止 mock**：不拦截 API 请求，所有数据来自真实后端
-- **登录前置**：非登录页测试必须在 `beforeEach` 中 `cy.login()` 或 `cy.mockLogin()`
+- **登录前置**：非登录页测试必须在 `beforeEach` 中调用 `realLogin()`（推荐，从 `login-utils.js` 导入）或 `cy.login()` / `cy.mockLogin()`
 - **el-select 特殊性**：Element Plus 的下拉选项渲染在 `<body>` 下，不能用常规 `cy.get()` 定位
 - **等待策略**：真实 API 需要 `cy.wait(ms)` 和可配置的 `timeout` 断言配合，不能用 cy.intercept mock 数据
 - **测试隔离**：`beforeEach` 必须清理 localStorage 和 cookies
