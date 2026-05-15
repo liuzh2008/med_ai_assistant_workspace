@@ -122,8 +122,10 @@
 import { ref, nextTick, watch, onMounted } from 'vue'
 
 // ==================== 配置 ====================
-// 需要替换为实际的 Cloudflare Worker 地址
-const API_URL = 'https://medai-docs-ai.your-subdomain.workers.dev'
+// 自动检测：本地开发使用本地 Worker，生产环境使用 Cloudflare Worker
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://127.0.0.1:8787'
+  : 'https://medai-docs-ai.your-subdomain.workers.dev'
 
 // ==================== 类型 ====================
 interface ChatMessage {

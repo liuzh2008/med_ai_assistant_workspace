@@ -6,7 +6,7 @@ import { getSystemPrompt, getKnowledgeContext } from './knowledge';
 import { checkRateLimit } from './ratelimit';
 
 export interface Env {
-  GITHUB_TOKEN: string;
+  DEEPSEEK_API_KEY: string;
   RATE_LIMIT: KVNamespace;
   ALLOWED_ORIGIN?: string;
 }
@@ -146,21 +146,23 @@ async function handleChat(request: Request, env: Env): Promise<Response> {
 
   messages.push({ role: 'user', content: message });
 
-  // 调用 GitHub Models API
+  // 调用 DeepSeek API
   let apiResponse: Response;
   try {
     apiResponse = await fetch(
-      'https://models.inference.ai.azure.com/chat/completions',
+      'https://api.deepseek.com/v1/chat/completions',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+          Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'deepseek-v4-flash',
           messages,
           stream: true,
+          temperature: 0.7,
+          max_tokens: 4096,
         }),
       }
     );

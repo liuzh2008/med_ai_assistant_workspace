@@ -6,9 +6,7 @@ export default defineConfig({
   description: '智能病历质控与DRG分析平台',
   base: '/med_ai_assistant_workspace/',
 
-  head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }]
-  ],
+  // 本地开发时移除 favicon 引用（无 .ico 文件）
 
   themeConfig: {
     nav: [
