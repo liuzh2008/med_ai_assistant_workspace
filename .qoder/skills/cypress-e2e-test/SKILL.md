@@ -14,6 +14,9 @@ description: Cypress E2E 前端测试。使用真实 API 场景测试登录页�
 - **真实场景测试**：所有请求打到真实后端 API，禁止 mock
 - **登录前置**：除登录页面测试外，其它页面均需要先进行正确登录后才能测试
 - **测试隔离**：每个 `beforeEach` 执行 `cy.clearLocalStorage()` + `cy.clearCookies()`，从干净状态开始
+- **元素存在性检查用 body 代理**：当元素可能不存在（如有数据才渲染的表格、空状态降级），用 `cy.get('body').then($body => $body.find('.class').length > 0)` 而非 `cy.get('.class')`，后者会因超时而断言失败
+- **异步一致性**：`.then()` 回调中禁止混用 `cy` 命令和同步返回值。回调内但凡调用了 `cy.request()` 等命令，其返回值必须用 `cy.wrap()` 包裹，确保 Cypress 命令队列不混乱
+- **API 响应格式兼容**：后端响应可能有多种包装格式——平数组、`{data: [...]}`、`{content: [...]}`——查询时必须做兼容处理
 
 ## 测试架构
 
@@ -79,6 +82,9 @@ Cypress.Commands.add('login', (username, password, department) => {
   // 填写用户名
   cy.get('.el-form-item').contains('label', '用户')
     .parent().find('.el-input__inner').clear().type(user)
+  // ★ 关键：触发失焦（点击密码标签区域），触发科室列表从后端加载
+  cy.contains('.el-form-item', '密码').click()
+  cy.wait(2000)
   // 填写密码
   cy.get('.el-form-item').contains('label', '密码')
     .parent().find('.el-input__inner').clear().type(pass)
@@ -188,6 +194,112 @@ describe('待办事项功能', () => {
     cy.get('.todo-layout', { timeout: 10000 }).should('be.visible')
   })
 })
+```
+
+### 3. 真实 API CRUD 测试
+
+使用 `cy.request()` 直接测试后端 API 端点，不依赖 UI 操作，适用于验证增删改查接口的正确性。
+
+#### 从 localStorage 获取凭据
+
+```javascript
+function getTokenAndDept() {
+  return cy.window().then((win) => {
+    const token = win.localStorage.getItem('token')
+    let departmentName = ''
+    try {
+      const userInfo = JSON.parse(win.localStorage.getItem('userInfo') || '{}')
+      departmentName = userInfo.departmentName || ''
+    } catch (e) { /* ignore */ }
+    return { token, departmentName }
+  })
+}
+```
+
+#### 条件跳过模式
+
+当前置数据不存在时（如当前科室无患者、无诊疗计划），优雅跳过而非断言失败：
+
+```javascript
+it('应执行操作', () => {
+  getPrerequisiteData().then((data) => {
+    if (!data) {
+      cy.log('⚠ 前置条件不满足，跳过测试')
+      return
+    }
+    // ... 执行测试逻辑
+  })
+})
+```
+
+#### failOnStatusCode 控制
+
+测试错误场景时，必须设置 `failOnStatusCode: false`，否则 Cypress 会在非 2xx 响应时自动失败：
+
+```javascript
+cy.request({
+  url: `${Cypress.env('apiUrl')}/some-endpoint/-1`,
+  method: 'GET',
+  failOnStatusCode: false  // ★ 允许捕获 4xx/5xx
+}).then((resp) => {
+  expect([400, 404, 500]).to.include(resp.status)
+})
+```
+
+#### 顺序遍历替代递归
+
+需要顺序检查多个数据项时，用**函数属性模式**代替递归（递归会导致 Cypress 命令队列混乱）：
+
+```javascript
+return cy.wrap(null).then(function checkNext() {
+  const idx = checkNext._index || 0
+  if (idx >= maxCheck) { return cy.wrap(null) }
+  checkNext._index = idx + 1
+  const item = items[idx]
+  if (!item) { return checkNext() }
+  return cy.request({ url, ... }).then((resp) => {
+    if (resp.status === 200 && resp.body) { return cy.wrap(resp.body) }
+    return checkNext()
+  })
+})
+```
+
+#### CRUD 数据生命周期
+
+对 PUT/DELETE 测试，先通过 POST 创建数据再操作，避免依赖数据库中已有数据：
+
+```javascript
+// 1. POST 创建测试数据
+cy.request({ method: 'POST', body: testData, ... })
+// 2. GET 查询获取 itemId
+cy.request({ method: 'GET', url }).then((resp) => {
+  const target = resp.body.find(item => item.itemDescription.includes('E2E测试'))
+  // 3. PUT/DELETE 操作
+  cy.request({ method: 'PUT', url: `${url}/${target.itemId}`, ... })
+})
+```
+
+#### HTTP + 业务状态双重验证
+
+CRUD 测试须同时验证 HTTP 状态码和响应体中的业务字段：
+
+```javascript
+cy.request({ method: 'POST', url, body, ... }).then((resp) => {
+  expect(resp.status).to.eq(200)                       // HTTP 状态
+  expect(resp.body).to.have.property('status', 'SAVED') // 业务状态
+  expect(resp.body).to.have.property('count')
+  expect(resp.body).to.have.property('timestamp')
+})
+```
+
+#### 测试数据标记
+
+E2E 测试创建的数据应在描述中包含 `（E2E测试）` 标记，便于与真实数据区分：
+
+```javascript
+const testItems = [
+  { itemDescription: '血常规（E2E测试）', itemType: '检查及化验' }
+]
 ```
 
 ## 通用交互模式
@@ -315,3 +427,9 @@ npm run test:e2e:open    # 交互模式
 - **测试隔离**：`beforeEach` 必须清理 localStorage 和 cookies
 - **类型支持**：若需 IntelliSense，安装 `@types/cypress` 并配置 tsconfig
 - **长时间测试**：使用 `{ timeout: 20000 }` 覆盖 API 响应慢的场景
+- **登录关键步骤——触发用户名 blur 事件**：填写用户名后，必须先点击密码标签区域触发 username 的 blur 事件，然后等待科室列表从后端加载完成，再填密码。直接跳到选科室会导致科室下拉无选项而登录失败。
+  正确顺序：`type(用户名) → click(密码标签触发blur) → wait(2000ms等待科室API) → type(密码) → 选科室 → 登录`
+- **`cy.log()` 辅助调试**：在条件分支和关键步骤处放置 `cy.log()`，便于无头模式运行时的诊断
+- **非 2xx 自动失败**：`cy.request()` 默认在 4xx/5xx 时自动断言失败。测试错误场景时必须设置 `failOnStatusCode: false` 来捕获响应
+- **测试数据标记**：E2E 测试创建的测试数据应在描述中包含 `（E2E测试）` 标记，便于与真实数据区分
+- **`cy.visit()` 路径**：访问登录页用 `cy.visit('/')` 而非 `'/login'`（与系统路由一致），避免路径不匹配导致的导航异常
