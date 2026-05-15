@@ -70,7 +70,8 @@
               :class="['message-row', msg.role === 'user' ? 'message-user' : 'message-assistant']"
             >
               <div class="message-bubble">
-                <div class="message-content">{{ msg.content }}</div>
+                <div v-if="msg.role === 'user'" class="message-content">{{ msg.content }}</div>
+                <div v-else class="message-content markdown-body" v-html="renderMarkdown(msg.content)"></div>
               </div>
             </div>
             <!-- AI 正在输入指示器 -->
@@ -120,6 +121,13 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  html: false,
+  breaks: true,
+  linkify: true
+})
 
 // ==================== 配置 ====================
 // 自动检测：本地开发使用本地 Worker，生产环境使用阿里云函数计算
@@ -256,6 +264,12 @@ async function sendMessage() {
       inputRef.value?.focus()
     })
   }
+}
+
+// ==================== Markdown 渲染 ====================
+function renderMarkdown(content: string): string {
+  if (!content) return ''
+  return md.render(content)
 }
 
 // ==================== SSR 兼容 ====================
@@ -504,6 +518,93 @@ onMounted(() => {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* ==================== Markdown 样式 ==================== */
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3),
+.markdown-body :deep(h4) {
+  margin: 8px 0 4px;
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.markdown-body :deep(p) {
+  margin: 4px 0;
+}
+
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.markdown-body :deep(li) {
+  margin: 2px 0;
+}
+
+.markdown-body :deep(code) {
+  background: var(--vp-c-bg-soft, #f1f5f9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.markdown-body :deep(pre) {
+  background: var(--vp-c-bg-soft, #f1f5f9);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 6px 0;
+}
+
+.markdown-body :deep(pre code) {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.markdown-body :deep(blockquote) {
+  border-left: 3px solid var(--vp-c-brand-1, #2563eb);
+  padding-left: 10px;
+  margin: 6px 0;
+  color: var(--vp-c-text-2, #475569);
+}
+
+.markdown-body :deep(strong) {
+  font-weight: 600;
+}
+
+.markdown-body :deep(a) {
+  color: var(--vp-c-brand-1, #2563eb);
+  text-decoration: underline;
+}
+
+.markdown-body :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 6px 0;
+  font-size: 13px;
+}
+
+.markdown-body :deep(th),
+.markdown-body :deep(td) {
+  border: 1px solid var(--vp-c-border, #e2e8f0);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.markdown-body :deep(th) {
+  background: var(--vp-c-bg-soft, #f8fafc);
+  font-weight: 600;
+}
+
+.markdown-body :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--vp-c-border, #e2e8f0);
+  margin: 8px 0;
 }
 
 /* ==================== 错误提示 ==================== */
