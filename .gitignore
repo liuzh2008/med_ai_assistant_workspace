@@ -16,6 +16,12 @@ node_modules
 # Build output directories
 medai-builds/
 
+# Wrangler (Cloudflare Workers) cache and temp files
+.wrangler/
+
+# Temporary files
+temp/
+
 # Log files
 npm-debug.log*
 yarn-debug.log*
