@@ -123,8 +123,7 @@ import { ref, nextTick, watch, onMounted } from 'vue'
 
 // ==================== 配置 ====================
 // 自动检测：本地开发使用本地 Worker，生产环境使用阿里云函数计算
-// TODO: 部署阿里云 FC 后，将下面 URL 替换为实际触发器地址
-const ALIYUN_FC_URL = 'https://YOUR_ALIYUN_FC_URL' // ← 部署后替换
+const ALIYUN_FC_URL = 'https://medai-docs-gzwldrdfvn.cn-chengdu.fcapp.run'
 
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://127.0.0.1:8787'
