@@ -53,8 +53,5 @@ export default defineConfig({
       copyright: 'Copyright © 2024-present MedAiAssistant'
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/MedAiAssistant' }
-    ]
   }
 })
