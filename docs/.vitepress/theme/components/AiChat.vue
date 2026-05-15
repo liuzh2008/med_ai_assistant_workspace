@@ -1,7 +1,7 @@
 <!--
   @component AiChat
   @description VitePress 文档站 AI 聊天浮动窗口组件
-  功能：浮动气泡按钮 → 聊天窗口 → 流式 AI 回复（Cloudflare Worker 代理）
+  功能：浮动气泡按钮 → 聊天窗口 → 非流式 AI 回复（阿里云函数计算代理）
   支持：暗色模式自适应、IP 限流提示、快捷问题、移动端适配
 -->
 <template>
@@ -122,10 +122,13 @@
 import { ref, nextTick, watch, onMounted } from 'vue'
 
 // ==================== 配置 ====================
-// 自动检测：本地开发使用本地 Worker，生产环境使用 Cloudflare Worker
+// 自动检测：本地开发使用本地 Worker，生产环境使用阿里云函数计算
+// TODO: 部署阿里云 FC 后，将下面 URL 替换为实际触发器地址
+const ALIYUN_FC_URL = 'https://YOUR_ALIYUN_FC_URL' // ← 部署后替换
+
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://127.0.0.1:8787'
-  : 'https://medai-docs-ai.47044356.workers.dev'
+  : ALIYUN_FC_URL
 
 // ==================== 类型 ====================
 interface ChatMessage {
@@ -237,77 +240,16 @@ async function sendMessage() {
       if (response.status === 429) {
         throw new Error('请求过于频繁，请稍后再试')
       }
-      throw new Error(`请求失败: ${response.status}`)
+      const errData = await response.json().catch(() => ({}))
+      throw new Error(errData.error || `请求失败: ${response.status}`)
     }
 
-    const reader = response.body?.getReader()
-    if (!reader) {
-      throw new Error('无法读取响应流')
-    }
-
-    // 添加空的 AI 消息，用于流式填充
-    const assistantMsg: ChatMessage = { role: 'assistant', content: '' }
-    messages.value.push(assistantMsg)
-
-    const decoder = new TextDecoder()
-    let buffer = ''
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() || ''
-
-      for (const line of lines) {
-        const trimmed = line.trim()
-        if (!trimmed.startsWith('data: ')) continue
-
-        const dataStr = trimmed.slice(6)
-        if (dataStr === '[DONE]') continue
-
-        try {
-          const data = JSON.parse(dataStr)
-          const delta = data.choices?.[0]?.delta?.content
-          if (delta) {
-            assistantMsg.content += delta
-            // 强制触发响应式更新
-            messages.value = [...messages.value]
-          }
-        } catch {
-          // 忽略解析失败的行
-        }
-      }
-    }
-
-    // 处理剩余 buffer
-    if (buffer.trim()) {
-      const trimmed = buffer.trim()
-      if (trimmed.startsWith('data: ')) {
-        const dataStr = trimmed.slice(6)
-        if (dataStr !== '[DONE]') {
-          try {
-            const data = JSON.parse(dataStr)
-            const delta = data.choices?.[0]?.delta?.content
-            if (delta) {
-              assistantMsg.content += delta
-              messages.value = [...messages.value]
-            }
-          } catch {
-            // 忽略
-          }
-        }
-      }
-    }
+    const data = await response.json()
+    const content = data.content || ''
+    messages.value.push({ role: 'assistant', content })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : '网络错误，请检查连接后重试'
     errorMessage.value = message
-    // 如果 AI 消息已添加但为空，则移除
-    const lastMsg = messages.value[messages.value.length - 1]
-    if (lastMsg?.role === 'assistant' && lastMsg.content === '') {
-      messages.value.pop()
-    }
   } finally {
     isLoading.value = false
     nextTick(() => {
