@@ -47,7 +47,7 @@ export default defineConfig({
     },
 
     footer: {
-      message: '医疗AI辅助系统 - 智能病历质控与DRG分析平台',
+      message: '医疗AI辅助系统 MedAIAssistant (MAA)',
       copyright: 'Copyright © 2024-present MedAiAssistant'
     },
 

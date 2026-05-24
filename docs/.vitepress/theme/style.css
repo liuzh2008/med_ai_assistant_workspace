@@ -1,98 +1,462 @@
-/* 医疗AI辅助系统 - 医疗蓝色调自定义主题 */
+/* ============================================================
+   医疗AI辅助系统 - 液态玻璃主题 (Liquid Glass Theme)
+   ============================================================ */
 
 :root {
-  /* 主色调 - 医疗蓝 */
-  --vp-c-brand-1: #2563eb;
-  --vp-c-brand-2: #1d4ed8;
-  --vp-c-brand-3: #1e40af;
-  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
+  /* 主色调 - 液态蓝 */
+  --vp-c-brand-1: #3b8bff;
+  --vp-c-brand-2: #2d7af0;
+  --vp-c-brand-3: #1a5fd4;
+  --vp-c-brand-soft: rgba(59, 139, 255, 0.12);
 
-  /* 背景色 */
-  --vp-c-bg: #ffffff;
-  --vp-c-bg-soft: #f8fafc;
-  --vp-c-bg-mute: #f1f5f9;
-  --vp-c-bg-alt: #f0f5ff;
+  /* 背景色 - 通透玻璃感 */
+  --vp-c-bg: rgba(255, 255, 255, 0.65);
+  --vp-c-bg-soft: rgba(248, 250, 255, 0.55);
+  --vp-c-bg-mute: rgba(241, 245, 255, 0.5);
+  --vp-c-bg-alt: rgba(235, 242, 255, 0.4);
 
   /* 文字色 */
-  --vp-c-text-1: #0f172a;
-  --vp-c-text-2: #475569;
-  --vp-c-text-3: #94a3b8;
+  --vp-c-text-1: #0c1a3a;
+  --vp-c-text-2: #3d5178;
+  --vp-c-text-3: #7e91b3;
 
-  /* 边框色 */
-  --vp-c-border: #e2e8f0;
-  --vp-c-divider: #e2e8f0;
-  --vp-c-gutter: #e2e8f0;
+  /* 边框色 - 玻璃边缘 */
+  --vp-c-border: rgba(255, 255, 255, 0.5);
+  --vp-c-divider: rgba(200, 215, 240, 0.4);
+  --vp-c-gutter: rgba(200, 215, 240, 0.3);
 
   /* 强调色 */
-  --vp-c-accent: #2563eb;
-  --vp-c-success: #16a34a;
-  --vp-c-warning: #d97706;
-  --vp-c-danger: #dc2626;
+  --vp-c-accent: #3b8bff;
+  --vp-c-success: #22c55e;
+  --vp-c-warning: #f59e0b;
+  --vp-c-danger: #ef4444;
 
   /* Hero 区域 */
-  --vp-home-hero-name-color: #2563eb;
-  --vp-home-hero-image-background-image: linear-gradient(
-    135deg,
-    rgba(37, 99, 235, 0.08) 10%,
-    rgba(30, 64, 175, 0.12) 100%
-  );
-  --vp-home-hero-image-filter: blur(44px);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-image-background-image: none;
+  --vp-home-hero-image-filter: none;
 
-  /* 按钮样式 */
-  --vp-button-brand-border: transparent;
+  /* 按钮 - 玻璃按钮 */
+  --vp-button-brand-border: rgba(255, 255, 255, 0.3);
   --vp-button-brand-text: #ffffff;
-  --vp-button-brand-bg: #2563eb;
-  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-bg: rgba(59, 139, 255, 0.75);
+  --vp-button-brand-hover-border: rgba(255, 255, 255, 0.5);
   --vp-button-brand-hover-text: #ffffff;
-  --vp-button-brand-hover-bg: #1d4ed8;
-  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-hover-bg: rgba(59, 139, 255, 0.9);
+  --vp-button-brand-active-border: rgba(255, 255, 255, 0.4);
   --vp-button-brand-active-text: #ffffff;
-  --vp-button-brand-active-bg: #1e40af;
+  --vp-button-brand-active-bg: rgba(45, 122, 240, 0.95);
 
   /* 自定义块 */
-  --vp-custom-block-tip-border: #2563eb;
-  --vp-custom-block-tip-text: #1e40af;
-  --vp-custom-block-tip-bg: rgba(37, 99, 235, 0.06);
-
-  --vp-custom-block-warning-border: #d97706;
+  --vp-custom-block-tip-border: rgba(59, 139, 255, 0.4);
+  --vp-custom-block-tip-text: #1a5fd4;
+  --vp-custom-block-tip-bg: rgba(59, 139, 255, 0.06);
+  --vp-custom-block-warning-border: rgba(245, 158, 11, 0.4);
   --vp-custom-block-warning-text: #92400e;
-  --vp-custom-block-warning-bg: rgba(217, 119, 6, 0.06);
-
-  --vp-custom-block-danger-border: #dc2626;
+  --vp-custom-block-warning-bg: rgba(245, 158, 11, 0.06);
+  --vp-custom-block-danger-border: rgba(239, 68, 68, 0.4);
   --vp-custom-block-danger-text: #991b1b;
-  --vp-custom-block-danger-bg: rgba(220, 38, 38, 0.06);
+  --vp-custom-block-danger-bg: rgba(239, 68, 68, 0.06);
+
+  /* 液态玻璃变量 */
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-bg-hover: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 8px 32px rgba(0, 40, 120, 0.08);
+  --glass-blur: 20px;
+  --glass-radius: 20px;
 }
 
-/* 暗色主题 */
+/* ========== 暗色主题 ========== */
 .dark {
   --vp-c-brand-1: #60a5fa;
   --vp-c-brand-2: #3b82f6;
   --vp-c-brand-3: #2563eb;
-  --vp-c-brand-soft: rgba(96, 165, 250, 0.14);
+  --vp-c-brand-soft: rgba(96, 165, 250, 0.12);
 
-  --vp-c-bg: #0f172a;
-  --vp-c-bg-soft: #1e293b;
-  --vp-c-bg-mute: #1e293b;
-  --vp-c-bg-alt: #0c1425;
+  --vp-c-bg: rgba(10, 15, 30, 0.75);
+  --vp-c-bg-soft: rgba(18, 25, 50, 0.6);
+  --vp-c-bg-mute: rgba(22, 30, 55, 0.55);
+  --vp-c-bg-alt: rgba(8, 12, 25, 0.7);
 
-  --vp-c-text-1: #f1f5f9;
-  --vp-c-text-2: #94a3b8;
-  --vp-c-text-3: #64748b;
+  --vp-c-text-1: #e8edf5;
+  --vp-c-text-2: #94a3c0;
+  --vp-c-text-3: #5e6d8a;
 
-  --vp-c-border: #1e293b;
-  --vp-c-divider: #1e293b;
+  --vp-c-border: rgba(80, 100, 150, 0.25);
+  --vp-c-divider: rgba(80, 100, 150, 0.2);
 
-  --vp-home-hero-name-color: #60a5fa;
-  --vp-home-hero-image-background-image: linear-gradient(
-    135deg,
-    rgba(37, 99, 235, 0.2) 10%,
-    rgba(30, 64, 175, 0.3) 100%
-  );
+  --vp-home-hero-name-color: transparent;
 
-  --vp-button-brand-bg: #2563eb;
-  --vp-button-brand-hover-bg: #3b82f6;
+  --vp-button-brand-bg: rgba(59, 130, 246, 0.6);
+  --vp-button-brand-hover-bg: rgba(59, 130, 246, 0.8);
+  --vp-button-brand-border: rgba(100, 150, 255, 0.3);
 
-  --vp-custom-block-tip-border: #3b82f6;
+  --vp-custom-block-tip-border: rgba(96, 165, 250, 0.3);
   --vp-custom-block-tip-text: #93c5fd;
-  --vp-custom-block-tip-bg: rgba(59, 130, 246, 0.1);
+  --vp-custom-block-tip-bg: rgba(59, 130, 246, 0.08);
+
+  --glass-bg: rgba(15, 20, 40, 0.5);
+  --glass-bg-hover: rgba(20, 30, 60, 0.65);
+  --glass-border: rgba(80, 110, 180, 0.25);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   全局玻璃化 - 导航栏
+   ============================================================ */
+.VPNav {
+  background: transparent !important;
+}
+
+.VPNavBar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  box-shadow: 0 1px 12px rgba(0, 40, 120, 0.04) !important;
+}
+
+.VPNavBar.has-sidebar .content {
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+/* ============================================================
+   全局玻璃化 - 侧边栏
+   ============================================================ */
+.VPSidebar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+/* ============================================================
+   全局玻璃化 - 页面背景
+   ============================================================ */
+body {
+  background: linear-gradient(135deg, #e8f0fe 0%, #f0e8ff 30%, #e0f4ff 60%, #f5f0ff 100%) !important;
+}
+
+.dark body {
+  background: linear-gradient(135deg, #080c1a 0%, #0c0a1e 30%, #060e1c 60%, #0a0818 100%) !important;
+}
+
+.VPContent,
+.VPHome,
+.VPDoc {
+  background: transparent !important;
+}
+
+/* ============================================================
+   Hero 区域 - 液态玻璃标题
+   ============================================================ */
+.VPHero .name {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 40%, #06b6d4 80%, #3b82f6 100%) !important;
+  background-size: 200% 200% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: gradient-shift 6s ease-in-out infinite !important;
+}
+
+.VPHero .text {
+  background: linear-gradient(135deg, #1e40af 0%, #6d28d9 50%, #0891b2 100%) !important;
+  background-size: 200% 200% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: gradient-shift 8s ease-in-out infinite reverse !important;
+}
+
+.dark .VPHero .name {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 40%, #22d3ee 80%, #818cf8 100%) !important;
+  background-size: 200% 200% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.dark .VPHero .text {
+  background: linear-gradient(135deg, #93c5fd 0%, #c4b5fd 50%, #67e8f9 100%) !important;
+  background-size: 200% 200% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.VPHero .tagline {
+  color: var(--vp-c-text-2) !important;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ============================================================
+   Hero 按钮 - 玻璃态
+   ============================================================ */
+.VPHero .actions .VPButton.brand {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 4px 16px rgba(59, 139, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.VPHero .actions .VPButton.brand:hover {
+  box-shadow:
+    0 6px 24px rgba(59, 139, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.VPHero .actions .VPButton.alt {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+  color: var(--vp-c-brand-1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.VPHero .actions .VPButton.alt:hover {
+  background: var(--glass-bg-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 40, 120, 0.12);
+}
+
+/* ============================================================
+   Feature 卡片 - 液态玻璃
+   ============================================================ */
+.VPFeatures .VPFeature {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: var(--glass-shadow) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.VPFeatures .VPFeature::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6) 20%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.6) 80%,
+    transparent
+  );
+  opacity: 0.8;
+}
+
+.VPFeatures .VPFeature:hover {
+  background: var(--glass-bg-hover) !important;
+  border-color: rgba(59, 139, 255, 0.3) !important;
+  box-shadow:
+    0 12px 40px rgba(0, 40, 120, 0.12),
+    0 0 0 1px rgba(59, 139, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-4px);
+}
+
+.dark .VPFeatures .VPFeature::before {
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(100, 150, 255, 0.15) 20%,
+    rgba(100, 150, 255, 0.25) 50%,
+    rgba(100, 150, 255, 0.15) 80%,
+    transparent
+  );
+}
+
+/* Feature 图标 - 发光效果 */
+.VPFeature .icon {
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px rgba(59, 139, 255, 0.3));
+  transition: filter 0.3s ease;
+}
+
+.VPFeature:hover .icon {
+  filter: drop-shadow(0 0 16px rgba(59, 139, 255, 0.5));
+}
+
+/* Feature 标题 */
+.VPFeature .title {
+  color: var(--vp-c-text-1) !important;
+  font-weight: 600 !important;
+}
+
+.VPFeature .details {
+  color: var(--vp-c-text-2) !important;
+}
+
+/* ============================================================
+   首页 Markdown 内容区 - 玻璃卡片
+   ============================================================ */
+.vp-doc.is-home {
+  padding: 0 24px;
+}
+
+.is-home h2 {
+  background: linear-gradient(135deg, #1e40af, #7c3aed) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.dark .is-home h2 {
+  background: linear-gradient(135deg, #93c5fd, #c4b5fd) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.is-home table {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-radius: 16px !important;
+  overflow: hidden;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+.is-home table th {
+  background: rgba(59, 139, 255, 0.08) !important;
+  backdrop-filter: blur(8px);
+  border-color: var(--glass-border) !important;
+}
+
+.is-home table td {
+  border-color: rgba(200, 215, 240, 0.25) !important;
+}
+
+.is-home table tr:hover td {
+  background: rgba(59, 139, 255, 0.04) !important;
+}
+
+/* 列表项 - 液态玻璃子弹 */
+.is-home ul li {
+  position: relative;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  list-style: none;
+  transition: all 0.3s ease;
+}
+
+.is-home ul li:hover {
+  background: var(--glass-bg-hover);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 40, 120, 0.08);
+}
+
+.is-home ul {
+  padding-left: 0 !important;
+}
+
+/* ============================================================
+   页脚 - 玻璃效果
+   ============================================================ */
+.VPFooter {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  border-top: 1px solid var(--glass-border) !important;
+}
+
+/* ============================================================
+   文档页面 - 内容区玻璃容器
+   ============================================================ */
+.VPDoc .container .content {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow);
+  margin: 16px;
+  padding: 24px;
+}
+
+/* ============================================================
+   搜索框 - 玻璃态
+   ============================================================ */
+.VPNavBarSearch .DocSearch-Button,
+.VPNavBarSearchButton .DocSearch-Button {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+}
+
+/* ============================================================
+   滚动条 - 玻璃风格
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 139, 255, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 139, 255, 0.4);
+}
+
+/* ============================================================
+   全局动画 - 平滑过渡
+   ============================================================ */
+* {
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: 0.25s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 排除动画元素避免干扰 */
+.light-orb,
+.light-beam,
+.glass-grid,
+[class*="animate"],
+[class*="transition"] {
+  transition-property: none;
+}
+
+/* ============================================================
+   响应式 - 移动端适配
+   ============================================================ */
+@media (max-width: 768px) {
+  .VPFeatures .VPFeature {
+    border-radius: 16px !important;
+  }
+
+  .VPDoc .container .content {
+    margin: 8px;
+    padding: 16px;
+    border-radius: 16px;
+  }
 }
