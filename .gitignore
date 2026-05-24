@@ -21,6 +21,7 @@ medai-builds/
 
 # Temporary files
 temp/
+nul
 
 # Root-level package files (generated accidentally)
 /package.json
