@@ -13,6 +13,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '功能介绍', link: '/features/ai-diagnosis' },
       { text: '使用指南', link: '/guide/getting-started' },
+      { text: '帮助文档', link: '/help/login' },
       { text: '常见问题', link: '/faq/' },
       { text: '意见反馈', link: '/feedback/' }
     ],
@@ -37,6 +38,21 @@ export default defineConfig({
             { text: '快速入门', link: '/guide/getting-started' },
             { text: '患者管理', link: '/guide/patient-management' },
             { text: 'AI助手使用', link: '/guide/ai-assistant' }
+          ]
+        }
+      ],
+      '/help/': [
+        {
+          text: '帮助文档',
+          items: [
+            { text: '登录系统', link: '/help/login' },
+            { text: '患者管理', link: '/help/patient' },
+            { text: 'AI诊断', link: '/help/diagnosis' },
+            { text: '病历质控', link: '/help/qc' },
+            { text: 'DRG分析', link: '/help/drg' },
+            { text: '诊疗计划', link: '/help/treatment' },
+            { text: '临床指引', link: '/help/clinical-guidance' },
+            { text: '语音识别', link: '/help/voice' }
           ]
         }
       ]
