@@ -46,7 +46,14 @@ export default defineConfig({
           text: '帮助文档',
           items: [
             { text: '登录系统', link: '/help/login' },
-            { text: '患者管理', link: '/help/patient' },
+            { 
+              text: '患者管理',
+              link: '/help/patient',
+              collapsed: false,
+              items: [
+                { text: '基本信息', link: '/help/basic-info' }
+              ]
+            },
             { text: 'AI诊断', link: '/help/diagnosis' },
             { text: '病历质控', link: '/help/qc' },
             { text: 'DRG分析', link: '/help/drg' },
