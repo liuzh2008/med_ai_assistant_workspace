@@ -12,7 +12,7 @@
 
 ### 1. 切换至临床指引标签页
 
-![临床指引概览](/screenshots/help/clinical-guidance/clinical-guidance-overview.png)
+![临床指引概览](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/clinical-guidance-overview.png)
 
 点击右侧标签栏中的**"临床指引"**标签，系统会自动检测患者诊断是否有变更，并并发加载以下数据：
 
@@ -24,7 +24,7 @@
 
 ### 2. 确认病种（如果存在新病种）
 
-![病种确认面板](/screenshots/help/clinical-guidance/disease-confirmation-panel.png)
+![病种确认面板](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/disease-confirmation-panel.png)
 
 切换到临床指引标签页时，如果 AI 识别到新的单病种，页面顶部会显示**黄色警告面板**（病种确认面板），包含：
 
@@ -37,7 +37,7 @@
 
 ### 3. 查看诊疗计划表
 
-![诊疗计划表](/screenshots/help/clinical-guidance/treatment-plan-table.png)
+![诊疗计划表](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/treatment-plan-table.png)
 
 页面中部展示患者最近一次的 **AI 诊疗计划表**，以表格形式展示各项诊疗项目：
 
@@ -51,7 +51,7 @@
 
 #### 3.1 双击编辑
 
-![编辑模式](/screenshots/help/clinical-guidance/edit-mode.png)
+![编辑模式](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/edit-mode.png)
 
 双击项目行或点击操作列的"更多操作"下拉选择**编辑**，可进入行编辑模式：
 
@@ -63,7 +63,7 @@
 
 #### 3.2 标记筛选
 
-![标记筛选](/screenshots/help/clinical-guidance/tag-filter.png)
+![标记筛选](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/tag-filter.png)
 
 在注意事项列头部下拉框中可按标记类型筛选项目。标记格式为 **`[标记名]`**（如 `[新增]`、`[调整]`、`[保留]`、`[移除]`）：
 
@@ -74,7 +74,7 @@
 
 #### 3.3 添加待办
 
-![添加待办](/screenshots/help/clinical-guidance/add-todo.png)
+![添加待办](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/add-todo.png)
 
 点击操作列的 **待办按钮**（黄色备忘录图标），可将当前诊疗项目添加为待办事项：
 
@@ -85,7 +85,7 @@
 
 #### 3.4 AI 解读
 
-![AI 解读对话框](/screenshots/help/clinical-guidance/ai-interpret-dialog.png)
+![AI 解读对话框](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/ai-interpret-dialog.png)
 
 点击操作列的"更多操作"下拉选择 **AI解读**，将打开 AI 解读对话框：
 
@@ -95,20 +95,20 @@
 
 #### 3.5 删除/恢复
 
-![删除确认框](/screenshots/help/clinical-guidance/delete-confirm.png)
+![删除确认框](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/delete-confirm.png)
 
 点击操作列的"更多操作"下拉选择**删除**，弹出确认对话框：
 
 - 点击"确定删除"：项目显示为**灰色删除线**，不再计入活跃项目计数
 - 删除后可随时点击行内的 **恢复按钮**（绿色循环箭头图标）还原
 
-![已删除行](/screenshots/help/clinical-guidance/delete-row.png)
+![已删除行](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/delete-row.png)
 
 已删除的行以半透明灰色显示，文字带删除线，底部统计显示"共 N 项（已删除 M 项）"，方便了解当前计划中已删除和活跃项目数量。
 
 #### 3.6 保存更改
 
-![保存更改](/screenshots/help/clinical-guidance/save-changes.png)
+![保存更改](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/save-changes.png)
 
 所有编辑、删除、恢复操作完成后，点击表格底部的 **保存诊疗计划** 按钮提交到服务器：
 
@@ -118,7 +118,7 @@
 
 ### 4. 使用底部工具栏
 
-![底部工具栏](/screenshots/help/clinical-guidance/toolbar-panel.png)
+![底部工具栏](/med_ai_assistant_workspace/screenshots/help/clinical-guidance/toolbar-panel.png)
 
 页面底部为工具栏面板，分为三个区域：
 

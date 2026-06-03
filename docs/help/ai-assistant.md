@@ -16,7 +16,7 @@
 - **已执行 Prompt**：展示已完成的 AI 分析记录，包含标题和日期
 - **未执行 Prompt**：展示等待执行的 AI 分析任务
 
-![Prompt列表](/screenshots/help/ai-assistant/prompt-list.png)
+![Prompt列表](/med_ai_assistant_workspace/screenshots/help/ai-assistant/prompt-list.png)
 
 已执行的 Prompt 可以直接点击查看详细内容。未执行的 Prompt 点击后会提示"该 Prompt 尚未执行完成，请等待执行结果"。
 
@@ -28,7 +28,7 @@
 - 内容区域上方为 **操作工具栏**，包含编辑、删除、复制等功能按钮
 - 底部（或内容区域下方）显示 AI **免责声明**："AI生成内容仅供参考，请医生审核后使用"
 
-![查看AI结果](/screenshots/help/ai-assistant/ai-result.png)
+![查看AI结果](/med_ai_assistant_workspace/screenshots/help/ai-assistant/ai-result.png)
 
 ### 3. 编辑内容
 
@@ -38,7 +38,7 @@
 - 编辑完成后点击 **确定** 保存修改，点击 **取消** 放弃本次编辑
 - 修改后的内容会覆盖原始 AI 结果，并记录修改人和修改时间
 
-![编辑内容](/screenshots/help/ai-assistant/edit-content.png)
+![编辑内容](/med_ai_assistant_workspace/screenshots/help/ai-assistant/edit-content.png)
 
 ### 4. 删除 AI 结果
 
@@ -48,7 +48,7 @@
 - 确认删除后，该结果将从列表中移除且不可恢复
 - 取消操作可关闭对话框
 
-![删除确认对话框](/screenshots/help/ai-assistant/delete-result.png)
+![删除确认对话框](/med_ai_assistant_workspace/screenshots/help/ai-assistant/delete-result.png)
 
 ### 5. 复制内容
 
@@ -58,7 +58,7 @@
 - 复制后的内容适合粘贴到病历记录、会诊报告等文书中
 - 如需保留原始 Markdown 格式的换行结构，请使用编辑功能手动复制
 
-![复制操作](/screenshots/help/ai-assistant/copy-result.png)
+![复制操作](/med_ai_assistant_workspace/screenshots/help/ai-assistant/copy-result.png)
 
 ### 6. 使用 Prompt 模板
 
@@ -70,7 +70,7 @@
 - 部分模板（如会诊记录、日常对话等）会弹出补充信息窗口，用户可输入额外的参考信息后执行
 - 生成的 Prompt 会出现在"未执行 Prompt"列表中，等待后台处理完成
 
-![Prompt模板面板](/screenshots/help/ai-assistant/prompt-templates.png)
+![Prompt模板面板](/med_ai_assistant_workspace/screenshots/help/ai-assistant/prompt-templates.png)
 
 ### 补充信息输入
 
@@ -81,9 +81,9 @@
 
 补充信息可为空直接跳过，也可输入具体说明内容（如会诊目的、需要解决的问题等）。
 
-![补充信息窗口](/screenshots/help/ai-assistant/additional-info.png)
+![补充信息窗口](/med_ai_assistant_workspace/screenshots/help/ai-assistant/additional-info.png)
 
-![已填写补充信息](/screenshots/help/ai-assistant/additional-info-filled.png)
+![已填写补充信息](/med_ai_assistant_workspace/screenshots/help/ai-assistant/additional-info-filled.png)
 
 点击 **确认** 提交补充信息后执行模板，点击 **跳过** 则不补充信息直接执行。新的 Prompt 会出现在左侧"未执行 Prompt"列表中，等待执行完成后即可查看 AI 分析结果。
 
