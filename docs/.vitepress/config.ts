@@ -56,7 +56,12 @@ export default defineConfig({
               ]
             },
             { text: 'AI诊断', link: '/help/ai-diagnosis' },
-            { text: '病历质控', link: '/help/qc' },
+            { text: '病历质控', link: '/help/qc',
+              collapsed: false,
+              items: [
+                { text: '质控详情', link: '/help/qc-detail' }
+              ]
+            },
             { text: 'DRG分析', link: '/help/drg' },
             { text: '诊疗计划', link: '/help/treatment' },
             { text: '临床指引', link: '/help/clinical-guidance' },
