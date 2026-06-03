@@ -55,24 +55,18 @@ export default defineConfig({
                 { text: '病情小结', link: '/help/patient-summary' }
               ]
             },
+            { text: '待办事项', link: '/help/todo' },
             { text: 'AI诊断', link: '/help/ai-diagnosis' },
-            { text: 'AI辅助', link: '/help/ai-assistant',
-              collapsed: false,
-              items: [
-                { text: '待办事项', link: '/help/todo' }
-              ]
-            },
+            { text: 'AI辅助', link: '/help/ai-assistant' },
             { text: '病历记录', link: '/help/medical-records' },
-            { text: '病历质控', link: '/help/qc',
+            { text: '病历质控', link: '/help/qc' },
+            { text: 'DRG分析', link: '/help/drg' },
+            { text: '临床指引', link: '/help/clinical-guidance',
               collapsed: false,
               items: [
                 { text: '质控详情', link: '/help/qc-detail' }
               ]
-            },
-            { text: 'DRG分析', link: '/help/drg' },
-            { text: '诊疗计划', link: '/help/treatment' },
-            { text: '临床指引', link: '/help/clinical-guidance' },
-            { text: '语音识别', link: '/help/voice' }
+            }
           ]
         }
       ]
