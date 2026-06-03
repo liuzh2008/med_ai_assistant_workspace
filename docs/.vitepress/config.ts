@@ -54,7 +54,7 @@ export default defineConfig({
                 { text: '基本信息', link: '/help/basic-info' }
               ]
             },
-            { text: 'AI诊断', link: '/help/diagnosis' },
+            { text: 'AI诊断', link: '/help/ai-diagnosis' },
             { text: '病历质控', link: '/help/qc' },
             { text: 'DRG分析', link: '/help/drg' },
             { text: '诊疗计划', link: '/help/treatment' },
