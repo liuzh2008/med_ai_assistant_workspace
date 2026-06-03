@@ -51,7 +51,8 @@ export default defineConfig({
               link: '/help/patient',
               collapsed: false,
               items: [
-                { text: '基本信息', link: '/help/basic-info' }
+                { text: '基本信息', link: '/help/basic-info' },
+                { text: '病情小结', link: '/help/patient-summary' }
               ]
             },
             { text: 'AI诊断', link: '/help/ai-diagnosis' },
