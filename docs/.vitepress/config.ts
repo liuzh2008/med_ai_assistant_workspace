@@ -56,6 +56,7 @@ export default defineConfig({
               ]
             },
             { text: 'AI诊断', link: '/help/ai-diagnosis' },
+            { text: 'AI辅助', link: '/help/ai-assistant' },
             { text: '病历记录', link: '/help/medical-records' },
             { text: '病历质控', link: '/help/qc',
               collapsed: false,
