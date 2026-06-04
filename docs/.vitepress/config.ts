@@ -45,6 +45,7 @@ export default defineConfig({
         {
           text: '帮助文档',
           items: [
+            { text: '常用工作流', link: '/help/' },
             { text: '登录系统', link: '/help/login' },
             { 
               text: '患者管理',
