@@ -57,6 +57,7 @@ export default defineConfig({
               ]
             },
             { text: '待办事项', link: '/help/todo' },
+            { text: '手术任务', link: '/help/surgery-task' },
             { text: 'AI诊断', link: '/help/ai-diagnosis' },
             { text: 'AI辅助', link: '/help/ai-assistant' },
             { text: '病历记录', link: '/help/medical-records' },
