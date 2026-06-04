@@ -11,7 +11,7 @@
 
 ### 1. 基本信息概览
 
-![基本信息概览](/med_ai_assistant_workspace/screenshots/help/basic-info/basic-info-overview.png)
+![基本信息概览](/screenshots/help/basic-info/basic-info-overview.png)
 
 在患者管理页面选中左侧列表中的任意患者后，右侧默认显示"基本信息"标签页。页面分为三个区域：
 
@@ -23,7 +23,7 @@
 
 ### 2. 查看患者详细信息
 
-![患者详细信息](/med_ai_assistant_workspace/screenshots/help/basic-info/patient-details.png)
+![患者详细信息](/screenshots/help/basic-info/patient-details.png)
 
 患者信息卡片展示了以下核心数据：
 
@@ -40,7 +40,7 @@
 
 ### 3. 管理诊断列表
 
-![诊断列表](/med_ai_assistant_workspace/screenshots/help/basic-info/diagnosis-list.png)
+![诊断列表](/screenshots/help/basic-info/diagnosis-list.png)
 
 诊断列表以表格形式展示患者的诊断信息：
 
@@ -57,7 +57,7 @@
 
 ### 4. 管理手术列表
 
-![手术列表](/med_ai_assistant_workspace/screenshots/help/basic-info/surgery-list.png)
+![手术列表](/screenshots/help/basic-info/surgery-list.png)
 
 手术列表以表格形式展示患者的手术信息：
 

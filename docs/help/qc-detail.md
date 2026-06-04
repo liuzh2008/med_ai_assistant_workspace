@@ -12,7 +12,7 @@
 
 ### 1. 进入质控详情抽屉
 
-![质控详情概览](/med_ai_assistant_workspace/screenshots/help/qc-detail/drawer-overview.png)
+![质控详情概览](/screenshots/help/qc-detail/drawer-overview.png)
 
 在**临床指引**页面底部工具栏中，点击**"查看质控详情"**按钮，从右侧打开质控详情抽屉。抽屉采用左右双栏布局：
 
@@ -24,7 +24,7 @@
 
 ### 2. 查看顶部汇总信息
 
-![抽屉头部汇总](/med_ai_assistant_workspace/screenshots/help/qc-detail/drawer-header.png)
+![抽屉头部汇总](/screenshots/help/qc-detail/drawer-header.png)
 
 抽屉顶部汇总区域展示：
 
@@ -36,7 +36,7 @@
 
 ### 3. 按状态筛选指标
 
-![按状态筛选](/med_ai_assistant_workspace/screenshots/help/qc-detail/filter-by-status.png)
+![按状态筛选](/screenshots/help/qc-detail/filter-by-status.png)
 
 在筛选栏中，可通过单选按钮组按状态筛选指标：
 
@@ -49,7 +49,7 @@
 
 ### 4. 选中指标查看详情
 
-![选中指标](/med_ai_assistant_workspace/screenshots/help/qc-detail/indicator-selected.png)
+![选中指标](/screenshots/help/qc-detail/indicator-selected.png)
 
 点击左侧表格中的任意指标行，该行高亮显示，右侧详情卡片同步展示该指标的完整评估信息：
 
@@ -63,7 +63,7 @@
 
 ### 5. 查看指标详情卡片
 
-![详情卡片](/med_ai_assistant_workspace/screenshots/help/qc-detail/detail-card.png)
+![详情卡片](/screenshots/help/qc-detail/detail-card.png)
 
 详情卡片以结构化方式展示选中指标的完整评估信息：
 
@@ -74,7 +74,7 @@
 
 ### 6. 添加待办事项
 
-![添加待办](/med_ai_assistant_workspace/screenshots/help/qc-detail/add-todo.png)
+![添加待办](/screenshots/help/qc-detail/add-todo.png)
 
 在筛选栏右侧，点击**"待办"按钮**（黄色，需先选中一个指标行），可将当前指标的评估内容添加为待办事项：
 
@@ -84,7 +84,7 @@
 
 ### 7. 保存评估记录
 
-![保存记录](/med_ai_assistant_workspace/screenshots/help/qc-detail/save-record.png)
+![保存记录](/screenshots/help/qc-detail/save-record.png)
 
 点击抽屉顶部汇总区域的**"保存记录"**按钮，将当前质控评估结果持久化保存到数据库：
 

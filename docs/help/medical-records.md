@@ -17,7 +17,7 @@
 - **左侧面板**：包含"病历记录"、"EMR病历"、"收集建议"三个子标签页
 - **右侧面板**：病历编辑区域，包含操作按钮组和病历内容编辑器
 
-![病历记录页面概览](/med_ai_assistant_workspace/screenshots/help/medical-records/records-overview.png)
+![病历记录页面概览](/screenshots/help/medical-records/records-overview.png)
 
 ### 2. 选择病历记录
 
@@ -26,7 +26,7 @@
 - 列表显示记录的**类型**（如病程记录、入院记录等）和**记录日期**
 - 选中后右侧编辑器会展示完整的病历内容，可进行查看或编辑
 
-![选择病历记录](/med_ai_assistant_workspace/screenshots/help/medical-records/select-record.png)
+![选择病历记录](/screenshots/help/medical-records/select-record.png)
 
 ### 3. 新建病历记录
 
@@ -38,7 +38,7 @@
 - **记录医生**：自动填充当前登录医生姓名（不可修改）
 - **病历内容**：在文本框中输入病历详细内容
 
-![新建病历记录](/med_ai_assistant_workspace/screenshots/help/medical-records/create-record.png)
+![新建病历记录](/screenshots/help/medical-records/create-record.png)
 
 > 新建模式下，按钮变为"**放弃**"，点击可取消新建并清空当前输入。
 
@@ -50,7 +50,7 @@
 - AI 会根据已有的内容上下文，补充规范化的描述语句
 - 完善后可根据需要进一步手动调整
 
-![AI完善病历](/med_ai_assistant_workspace/screenshots/help/medical-records/ai-enhance.png)
+![AI完善病历](/screenshots/help/medical-records/ai-enhance.png)
 
 ### 5. 智录录入
 
@@ -61,7 +61,7 @@
 - 支持双击文本区域中的标点符号快速弹出智录列表
 - 再次点击 **智录** 按钮可关闭面板
 
-![智录录入](/med_ai_assistant_workspace/screenshots/help/medical-records/smart-input.png)
+![智录录入](/screenshots/help/medical-records/smart-input.png)
 
 ### 6. 语音录入
 
@@ -72,7 +72,7 @@
 - 单次录音时间控制在 5 分钟内
 - 需 HTTPS 或 localhost 环境下使用（localhost 视为安全上下文）
 
-![语音录入](/med_ai_assistant_workspace/screenshots/help/medical-records/voice-recognition.png)
+![语音录入](/screenshots/help/medical-records/voice-recognition.png)
 
 ### 7. 添加待办事项
 
@@ -82,7 +82,7 @@
 - 创建待办后可在待办管理页面统一查看和处理
 - 待办事项会关联当前患者的身份信息
 
-![添加待办事项](/med_ai_assistant_workspace/screenshots/help/medical-records/add-todo.png)
+![添加待办事项](/screenshots/help/medical-records/add-todo.png)
 
 ### 8. 草稿管理
 
@@ -93,7 +93,7 @@
 - 草稿管理器左侧为草稿列表（支持多选），右侧显示选中草稿的详细内容
 - 支持 **插入选中**（将草稿内容恢复到编辑区）和 **丢弃选中** 操作
 
-![草稿管理](/med_ai_assistant_workspace/screenshots/help/medical-records/draft-manager.png)
+![草稿管理](/screenshots/help/medical-records/draft-manager.png)
 
 > **其他操作按钮**：点击 **退格** 按钮可快速删除光标前一个字符，适用于移动端或触屏设备操作。编辑完成后点击 **保存** 按钮持久化记录，点击 **删除** 按钮可删除当前选中的记录。
 
@@ -107,7 +107,7 @@
 
 > **技巧**：可打开收集建议，进行语音录入，以便于完善资料。
 
-![收集建议](/med_ai_assistant_workspace/screenshots/help/medical-records/collection-advice.png)
+![收集建议](/screenshots/help/medical-records/collection-advice.png)
 
 ### 10. EMR病历同步
 
@@ -117,7 +117,7 @@
 - 点击列表中的任意 EMR 记录，可在右侧编辑器中查看详细内容（只读）
 - EMR 记录不可修改，如需引用可复制内容到新建的病历记录中
 
-![EMR病历](/med_ai_assistant_workspace/screenshots/help/medical-records/emr-tab.png)
+![EMR病历](/screenshots/help/medical-records/emr-tab.png)
 
 ## 注意事项
 

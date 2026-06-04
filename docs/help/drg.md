@@ -16,7 +16,7 @@
 
 页面加载后自动获取患者诊断信息、手术信息、费用数据和历史分析结果。
 
-![DRG分析页面概览](/med_ai_assistant_workspace/screenshots/help/drg/drg-analysis-overview.png)
+![DRG分析页面概览](/screenshots/help/drg/drg-analysis-overview.png)
 
 页面顶部展示三个操作按钮和患者的费用信息：
 
@@ -34,7 +34,7 @@
 
 ### 2. 开始分析
 
-![DRG费用表格](/med_ai_assistant_workspace/screenshots/help/drg/drg-fee-card.png)
+![DRG费用表格](/screenshots/help/drg/drg-fee-card.png)
 
 点击 **开始分析** 按钮，系统根据患者的诊断名称和手术名称，与DRG目录进行批量匹配。匹配完成后，页面自动展示 **DRG费用** 卡片，以表格形式列出匹配到的所有DRG分组记录，包含以下字段：
 
@@ -53,7 +53,7 @@
 
 ### 3. DRG分析（AI深度分析）
 
-![DRG分析确认对话框](/med_ai_assistant_workspace/screenshots/help/drg/drg-analysis-confirm.png)
+![DRG分析确认对话框](/screenshots/help/drg/drg-analysis-confirm.png)
 
 点击 **DRG分析** 按钮，弹出确认对话框，提示"将调用AI进行LLM分析，是否继续？"。
 
@@ -66,7 +66,7 @@
 
 ### 4. MCC分析
 
-![MCC分析确认对话框](/med_ai_assistant_workspace/screenshots/help/drg/mcc-analysis-confirm.png)
+![MCC分析确认对话框](/screenshots/help/drg/mcc-analysis-confirm.png)
 
 点击 **MCC分析** 按钮，弹出确认对话框。点击 **确认** 后，系统对患者的诊断列表进行MCC和CC预筛选：
 
@@ -77,7 +77,7 @@
 
 ### 5. 查看合并症或并发症分析历史结果
 
-![合并症或并发症分析历史结果](/med_ai_assistant_workspace/screenshots/help/drg/comorbidity-result.png)
+![合并症或并发症分析历史结果](/screenshots/help/drg/comorbidity-result.png)
 
 页面中部展示 **合并症或并发症分析历史结果** 卡片，以结构化表格形式分类展示AI的分析结果：
 
@@ -91,13 +91,13 @@
 
 ### 6. 选中DRG查看盈亏详情
 
-![选中DRG费用行](/med_ai_assistant_workspace/screenshots/help/drg/drg-selected-fee-row.png)
+![选中DRG费用行](/screenshots/help/drg/drg-selected-fee-row.png)
 
 在DRG费用表格中点击任意一行，该行高亮显示，便于选中特定的DRG分组进行后续操作。
 
 ### 7. 查看完整页面
 
-![DRG分析完整页面](/med_ai_assistant_workspace/screenshots/help/drg/drg-full-page.png)
+![DRG分析完整页面](/screenshots/help/drg/drg-full-page.png)
 
 完整的DRG分析页面从上到下依次包含：顶部操作栏和费用信息、合并症或并发症分析历史结果、DRG费用表格，以及页面底部的AI免责声明。
 

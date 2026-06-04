@@ -32,7 +32,7 @@
 
 ### 2. 待办事项弹窗概览
 
-![待办事项弹窗概览](/med_ai_assistant_workspace/screenshots/help/todo/todo-dialog-overview.png)
+![待办事项弹窗概览](/screenshots/help/todo/todo-dialog-overview.png)
 
 待办事项弹窗采用左右分栏布局：
 
@@ -43,7 +43,7 @@
 
 ### 3. 筛选与浏览病人列表
 
-![待办病人模式左侧面板](/med_ai_assistant_workspace/screenshots/help/todo/todo-left-panel.png)
+![待办病人模式左侧面板](/screenshots/help/todo/todo-left-panel.png)
 
 左侧面板顶部提供两个筛选条件：
 
@@ -67,13 +67,13 @@
 
 ### 4. 全科筛选模式
 
-![全科筛选模式](/med_ai_assistant_workspace/screenshots/help/todo/todo-all-departments.png)
+![全科筛选模式](/screenshots/help/todo/todo-all-departments.png)
 
 将筛选维度切换为「全科」后，左侧面板会显示当前科室的全部在院患者（含无待办患者）。该系统默认按「待办病人」模式显示，仅在需要对比查看全科患者待办覆盖情况时使用全科模式。
 
 ### 5. 查看患者详细信息
 
-![选中患者查看详情](/med_ai_assistant_workspace/screenshots/help/todo/todo-patient-selected.png)
+![选中患者查看详情](/screenshots/help/todo/todo-patient-selected.png)
 
 点击左侧患者卡片后，右侧面板顶部显示患者基本信息卡片：
 
@@ -82,7 +82,7 @@
 
 ### 6. 新增待办事项
 
-![新增待办](/med_ai_assistant_workspace/screenshots/help/todo/todo-add-new.png)
+![新增待办](/screenshots/help/todo/todo-add-new.png)
 
 在右侧面板的「新增待办事项」区域：
 
@@ -100,7 +100,7 @@
 
 ### 7. 查看患者的全部待办事项
 
-![待办事项卡片列表](/med_ai_assistant_workspace/screenshots/help/todo/todo-list-cards.png)
+![待办事项卡片列表](/screenshots/help/todo/todo-list-cards.png)
 
 选中患者后，右侧面板下方展示该患者的全部待办事项列表：
 
@@ -111,7 +111,7 @@
 
 ### 8. 编辑待办事项
 
-![编辑待办](/med_ai_assistant_workspace/screenshots/help/todo/todo-edit-mode.png)
+![编辑待办](/screenshots/help/todo/todo-edit-mode.png)
 
 双击任意待办事项的内容区域，进入编辑模式：
 

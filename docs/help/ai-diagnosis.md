@@ -17,7 +17,7 @@
 - **AI诊断分析**（默认显示）：展示AI对患者病历的诊断分析结果
 - **逻辑推理**：基于逻辑推理树的深度诊断分析工具
 
-![AI诊断分析概览](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/ai-diagnosis-overview.png)
+![AI诊断分析概览](/screenshots/help/ai-diagnosis/ai-diagnosis-overview.png)
 
 ### 2. 诊断编辑面板
 
@@ -48,7 +48,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 ### 3. 点击诊断，查看诊断说明
 
-![点击诊断查看诊断说明](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/click-diagnosis.png)
+![点击诊断查看诊断说明](/screenshots/help/ai-diagnosis/click-diagnosis.png)
 
 在左侧AI诊断列表中，用鼠标**点击任意一行诊断**，右侧"诊断说明"标签页会立即显示该诊断的详细内容：
 
@@ -61,7 +61,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 ### 4. 添加诊断
 
-![添加诊断](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/add-diagnosis.png)
+![添加诊断](/screenshots/help/ai-diagnosis/add-diagnosis.png)
 
 点击左侧工具栏的 **新增** 按钮，会在AI诊断列表末尾新增一行空白诊断，自动进入编辑模式（显示输入框）：
 
@@ -73,7 +73,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 ### 5. 插入诊断到目前诊断
 
-![插入诊断](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/insert-diagnosis.png)
+![插入诊断](/screenshots/help/ai-diagnosis/insert-diagnosis.png)
 
 将AI诊断结果应用到患者的"目前诊断"：
 
@@ -85,7 +85,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 ### 6. 保存诊断
 
-![保存诊断](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/save-diagnosis.png)
+![保存诊断](/screenshots/help/ai-diagnosis/save-diagnosis.png)
 
 在右侧"目前诊断"列表中修改诊断内容后（如编辑诊断名称），点击 **保存** 按钮（黄色）将修改提交到服务器：
 
@@ -97,7 +97,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 ### 7. 删除诊断
 
-![删除诊断](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/delete-diagnosis.png)
+![删除诊断](/screenshots/help/ai-diagnosis/delete-diagnosis.png)
 
 删除"目前诊断"中的诊断条目：
 
@@ -110,7 +110,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 ### 8. 重新分析
 
-![重新分析](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/reanalyze-diagnosis.png)
+![重新分析](/screenshots/help/ai-diagnosis/reanalyze-diagnosis.png)
 
 如果需要重新对患者进行AI诊断分析：
 
@@ -128,7 +128,7 @@ AI诊断分析结果以**左右两栏**布局展示：
 
 切换到 **逻辑推理** 子标签页，可进行深度逻辑推理分析：
 
-![逻辑推理面板](/med_ai_assistant_workspace/screenshots/help/ai-diagnosis/logical-reasoning.png)
+![逻辑推理面板](/screenshots/help/ai-diagnosis/logical-reasoning.png)
 
 **顶部标题栏**：
 - **开始推理**（蓝色按钮）：启动逻辑推理分析流程

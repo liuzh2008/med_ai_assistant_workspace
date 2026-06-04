@@ -14,7 +14,7 @@
 
 ### 2. 切换至病情小结标签页
 
-![病情小结概览](/med_ai_assistant_workspace/screenshots/help/patient-summary/summary-overview.png)
+![病情小结概览](/screenshots/help/patient-summary/summary-overview.png)
 
 点击右侧标签栏中的**"病情小结"**标签，切换至病情小结页面。页面包含以下信息区域：
 
@@ -24,7 +24,7 @@
 
 ### 3. 查看病情小结内容
 
-![病情小结内容区域](/med_ai_assistant_workspace/screenshots/help/patient-summary/summary-content-area.png)
+![病情小结内容区域](/screenshots/help/patient-summary/summary-content-area.png)
 
 病情小结内容按以下优先级展示：
 

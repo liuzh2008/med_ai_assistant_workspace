@@ -12,7 +12,7 @@
 
 ### 1. 进入EMR病历质控页面
 
-![EMR病历质控页面概览](/med_ai_assistant_workspace/screenshots/help/emr-qc/emr-qc-overview.png)
+![EMR病历质控页面概览](/screenshots/help/emr-qc/emr-qc-overview.png)
 
 在**质控管理 → EMR病历质控**菜单中进入质控页面。页面分为三个区域：
 
@@ -24,7 +24,7 @@
 
 ### 2. 一键触发批量质控
 
-![一键质控触发](/med_ai_assistant_workspace/screenshots/help/emr-qc/emr-qc-triggered.png)
+![一键质控触发](/screenshots/help/emr-qc/emr-qc-triggered.png)
 
 点击顶部操作区的**"一键质控"**按钮，系统将自动遍历当前患者所有EMR病历文书，逐条提交AI质控评估。触发后：
 
@@ -36,7 +36,7 @@
 
 ### 3. 查看质控结果
 
-![质控结果页面](/med_ai_assistant_workspace/screenshots/help/emr-qc/emr-qc-result.png)
+![质控结果页面](/screenshots/help/emr-qc/emr-qc-result.png)
 
 在左侧病历列表中，对状态为"已完成"的病历行，点击**"查看"**按钮，右侧详情面板将展示该病历的完整质控结果：
 
@@ -50,7 +50,7 @@
 
 ### 4. 查看缺陷详情
 
-![缺陷详情](/med_ai_assistant_workspace/screenshots/help/emr-qc/emr-qc-rule-detail.png)
+![缺陷详情](/screenshots/help/emr-qc/emr-qc-rule-detail.png)
 
 在左侧缺陷列表中单击任意缺陷行，右侧详情区域会同步展示该缺陷的详细信息：
 
@@ -63,7 +63,7 @@
 
 ### 5. 查看原始病历
 
-![原始病历内容](/med_ai_assistant_workspace/screenshots/help/emr-qc/emr-qc-original-emr.png)
+![原始病历内容](/screenshots/help/emr-qc/emr-qc-original-emr.png)
 
 在右侧面板顶部，点击**"原始病历"**标签页，切换到原始病历内容视图：
 

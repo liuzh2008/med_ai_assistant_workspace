@@ -9,29 +9,29 @@
 
 ### 1. 打开登录页面
 
-![登录页面](/med_ai_assistant_workspace/screenshots/help/login/login-visit-page.png)
+![登录页面](/screenshots/help/login/login-visit-page.png)
 
 在浏览器地址栏中输入系统地址（由医院信息科提供），进入登录页面。页面左侧展示医院实景图片，右侧为登录表单，包含四个输入项：**用户**、**密码**、**科室**和**专业组**。
 
 ### 2. 输入用户名
 
-![输入用户名](/med_ai_assistant_workspace/screenshots/help/login/login-enter-username.png)
+![输入用户名](/screenshots/help/login/login-enter-username.png)
 
 在"用户"输入框中输入您的账号。输入完成后，点击密码输入框区域，系统将自动根据您的账号加载可选的科室列表。
 
 ### 3. 选择科室
 
-![科室下拉列表](/med_ai_assistant_workspace/screenshots/help/login/login-select-department.png)
+![科室下拉列表](/screenshots/help/login/login-select-department.png)
 
 点击"科室"下拉框，系统弹出科室选择列表（如 CCU病区、心血管一病区、心血管二病区）。从列表中选择您当前所属的科室。科室为必选项，未选择科室将无法登录。
 
 选择科室后，下拉框将显示已选科室名称：
 
-![科室已选择](/med_ai_assistant_workspace/screenshots/help/login/login-department-selected.png)
+![科室已选择](/screenshots/help/login/login-department-selected.png)
 
 ### 4. 输入密码
 
-![输入密码](/med_ai_assistant_workspace/screenshots/help/login/login-enter-password.png)
+![输入密码](/screenshots/help/login/login-enter-password.png)
 
 在"密码"输入框中输入您的登录密码。密码输入框以圆点遮蔽显示，确保输入安全。如需查看输入的密码，可点击输入框右侧的眼睛图标切换明文显示。
 
@@ -41,25 +41,25 @@
 
 ### 6. 确认登录
 
-![表单填写完毕](/med_ai_assistant_workspace/screenshots/help/login/login-form-complete.png)
+![表单填写完毕](/screenshots/help/login/login-form-complete.png)
 
 确认所有信息填写无误后，点击蓝色的「登录」按钮提交登录请求。
 
 ### 7. 阅读免责声明
 
-![免责声明](/med_ai_assistant_workspace/screenshots/help/login/login-disclaimer.png)
+![免责声明](/screenshots/help/login/login-disclaimer.png)
 
 首次登录或系统更新后，会弹出免责声明弹窗。请仔细阅读声明内容，确认后点击「我已阅读并同意」按钮进入系统主页。
 
 ### 8. 进入系统主页
 
-![患者列表主页](/med_ai_assistant_workspace/screenshots/help/login/login-patient-list.png)
+![患者列表主页](/screenshots/help/login/login-patient-list.png)
 
 登录成功后，系统自动跳转至患者列表页面。页面顶部显示导航菜单（病人管理、AI辅助、工具、设置、系统）和当前用户信息。左侧为本科室患者列表，可按床号排序查看。右侧为患者详情区域，默认显示"基本信息"标签页。
 
 ### 9. 退出登录
 
-![顶部用户菜单](/med_ai_assistant_workspace/screenshots/help/login/login-user-menu.png)
+![顶部用户菜单](/screenshots/help/login/login-user-menu.png)
 
 如需退出登录，点击顶部导航菜单中的「系统」→「退出登录」即可安全退出系统。系统会清除当前登录状态，返回登录页面。
 

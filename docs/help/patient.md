@@ -11,13 +11,13 @@
 
 ### 1. 病人列表页面概览
 
-![病人列表概览](/med_ai_assistant_workspace/screenshots/help/patient/patient-overview.png)
+![病人列表概览](/screenshots/help/patient/patient-overview.png)
 
 登录系统后，默认进入患者管理页面。页面采用左右分栏布局：**左侧**为本科室患者列表（显示床号和姓名），**右侧**为患者详情区域（包含基本信息、病情小结、AI诊断等多个标签页）。顶部导航栏显示当前用户信息和所在科室。
 
 ### 2. 病人状态颜色标识
 
-![状态颜色标识](/med_ai_assistant_workspace/screenshots/help/patient/patient-list-colors.png)
+![状态颜色标识](/screenshots/help/patient/patient-list-colors.png)
 
 患者列表使用不同背景颜色区分患者状态：
 - **红色背景**：病危患者，需立即关注
@@ -28,25 +28,25 @@
 
 ### 3. 点击病人查看详情
 
-![选中病人查看详情](/med_ai_assistant_workspace/screenshots/help/patient/patient-select-detail.png)
+![选中病人查看详情](/screenshots/help/patient/patient-select-detail.png)
 
 在左侧患者列表中点击任意患者行，右侧详情区域会切换显示该患者的信息。默认显示"基本信息"标签页，包含患者的住院号、入院时间、诊断信息等关键数据。选中患者后，顶部用户信息栏会同步显示该患者的床号和姓名。
 
 ### 4. 查看病历记录
 
-![病历记录标签页](/med_ai_assistant_workspace/screenshots/help/patient/patient-tabs-records.png)
+![病历记录标签页](/screenshots/help/patient/patient-tabs-records.png)
 
 选中患者后，点击右侧标签栏中的"病历记录"标签，可查看该患者的病历文书列表。支持查看入院记录、病程记录、手术记录等各类病历文书，点击具体记录可展开全文阅读。
 
 ### 5. 查看临床指引
 
-![临床指引标签页](/med_ai_assistant_workspace/screenshots/help/patient/patient-tabs-guidance.png)
+![临床指引标签页](/screenshots/help/patient/patient-tabs-guidance.png)
 
 选中患者后，点击"临床指引"标签，系统根据患者诊断信息自动匹配并展示相关的临床指南推荐。临床指引内容来源于最新医学指南，为医生提供诊疗决策参考。
 
 ### 6. 病人查询页面
 
-![病人查询页面](/med_ai_assistant_workspace/screenshots/help/patient/patient-search-page.png)
+![病人查询页面](/screenshots/help/patient/patient-search-page.png)
 
 通过顶部导航菜单「病人管理」→「查询」进入病人查询页面。查询页面提供多条件检索功能，支持按以下条件组合查询：
 - **ID**：按患者ID精确查找
@@ -59,7 +59,7 @@
 
 ### 7. 查看查询结果
 
-![查询结果](/med_ai_assistant_workspace/screenshots/help/patient/patient-search-result.png)
+![查询结果](/screenshots/help/patient/patient-search-result.png)
 
 查询完成后，系统自动跳转回患者列表页面，并将符合条件的患者加载到左侧列表中。查询结果按床号升序排列，便于快速浏览。如需返回查看全部在院患者，可通过「病人管理」→「筛选」→「在院」恢复默认视图。
 
