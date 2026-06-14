@@ -11,43 +11,9 @@ description: Push Git commits to GitHub via SSH with aTrust VPN-compatible KEX a
 
 ## Push Workflow
 
-### Step 1: 验证 SSH 配置
+### Step 1: 直接推送（优先尝试）
 
-```powershell
-powershell -Command "
-if (-not (Test-Path '$env:USERPROFILE\.ssh\config')) {
-    Write-Output 'SSH config not found'
-} else {
-    $config = Get-Content '$env:USERPROFILE\.ssh\config' -Raw
-    if ($config -match 'Host github.com' -and $config -match 'KexAlgorithms diffie-hellman-group-exchange-sha256') {
-        Write-Output 'SSH config OK'
-    } else {
-        Write-Output 'SSH config MISSING github.com KexAlgorithms'
-    }
-}
-"
-```
-
-### Step 2: 如缺失，追加配置
-
-在 `~/.ssh/config` 末尾添加：
-
-```
-Host github.com
-    HostName github.com
-    User git
-    KexAlgorithms diffie-hellman-group-exchange-sha256
-```
-
-### Step 3: 验证 SSH 连接
-
-```powershell
-ssh -T git@github.com
-```
-
-预期输出：`Hi liuzh2008! You've successfully authenticated...`
-
-### Step 4: 多仓库推送
+先不检查配置，直接对有提交的仓库执行 `git push`。绝大多数情况下 SSH 配置已就绪，无需额外步骤。
 
 本项目有三个独立仓库，按顺序推送：
 
@@ -67,14 +33,58 @@ git push
 
 直推有提交的仓库即可，无需全部。
 
-## 推送失败诊断
+**若全部推送成功 → 流程结束，无需后续步骤。**
 
-若 `git push` 报 `Connection reset` 或 `Connection timed out`：
+### Step 2: 失败时才进入诊断（仅在 push 报错时执行）
 
-1. 运行 `ssh -vT git@github.com` 获取详细输出
-2. 若卡在 `expecting SSH2_MSG_KEX_ECDH_REPLY` → KEX 算法被拦截，检查 Step 1-2
-3. 若 `ssh -T` 成功但 `git push` 失败 → 检查 remote URL 是否为 SSH 格式（`git@github.com:...`），禁止 HTTPS
-4. 若仍失败 → 断开 aTrust VPN 重试
+若 `git push` 报 `Connection reset`、`Connection timed out` 或 `Could not read from remote repository`：
+
+#### 2a. 检查 SSH 配置
+
+读取 `~/.ssh/config`，确认包含以下配置块：
+
+```
+Host github.com
+    HostName github.com
+    User git
+    KexAlgorithms diffie-hellman-group-exchange-sha256
+```
+
+#### 2b. 如缺失，追加配置
+
+在 `~/.ssh/config` 末尾添加上述配置块。注意文件末尾保留一个空行。
+
+#### 2c. 验证 SSH 连接
+
+```powershell
+ssh -T git@github.com
+```
+
+预期输出：`Hi liuzh2008! You've successfully authenticated...`
+
+若卡在 `expecting SSH2_MSG_KEX_ECDH_REPLY` → KEX 算法被拦截（配置未生效或被覆盖）。
+
+#### 2d. 检查 remote URL
+
+若 `ssh -T` 成功但 `git push` 仍失败 → 确认 remote URL 为 SSH 格式（`git@github.com:liuzh2008/xxx.git`），禁止 HTTPS。
+
+```powershell
+git remote -v
+```
+
+若为 HTTPS 格式，切换为 SSH：
+
+```powershell
+git remote set-url origin git@github.com:liuzh2008/<repo>.git
+```
+
+#### 2e. 重试推送
+
+修复后重新执行 Step 1 的推送命令。
+
+#### 2f. 终极手段
+
+若仍失败 → 断开 aTrust VPN 重试。
 
 ## 参考
 
