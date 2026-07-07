@@ -60,3 +60,6 @@ medai-images.tar
 
 # Build output logs
 build_output*.log
+
+# AIMedTeach sub-project (independent git repo)
+AIMedTeach/
