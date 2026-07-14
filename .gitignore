@@ -5,6 +5,9 @@ node_modules
 # Office temporary files
 ~$*
 
+# Python cache
+__pycache__/
+
 
 # local env files
 .env.local
