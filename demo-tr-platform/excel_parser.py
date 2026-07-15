@@ -13,18 +13,26 @@ import json
 import sys
 from pathlib import Path
 
-# 强制 stdout/stderr 输出 UTF-8 字节，避免 Windows 编码问题（BOM/UTF-16 等）
 def _write_stdout(data):
     """将 dict/list 以 UTF-8 JSON 写入 stdout，追加换行。"""
-    json_bytes = json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8')
-    sys.stdout.buffer.write(json_bytes + b'\n')
-    sys.stdout.buffer.flush()
+    json_str = json.dumps(data, ensure_ascii=False, indent=2) + '\n'
+    try:
+        sys.stdout.write(json_str)
+        sys.stdout.flush()
+    except (UnicodeEncodeError, TypeError):
+        sys.stdout.buffer.write(json_str.encode('utf-8'))
+        sys.stdout.buffer.flush()
+
 
 def _write_stderr(data):
     """将 dict 以 UTF-8 JSON 写入 stderr。"""
-    json_bytes = json.dumps(data, ensure_ascii=False).encode('utf-8')
-    sys.stderr.buffer.write(json_bytes + b'\n')
-    sys.stderr.buffer.flush()
+    json_str = json.dumps(data, ensure_ascii=False) + '\n'
+    try:
+        sys.stderr.write(json_str)
+        sys.stderr.flush()
+    except (UnicodeEncodeError, TypeError):
+        sys.stderr.buffer.write(json_str.encode('utf-8'))
+        sys.stderr.buffer.flush()
 
 try:
     import openpyxl
