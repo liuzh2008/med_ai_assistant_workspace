@@ -66,3 +66,6 @@ build_output*.log
 
 # AIMedTeach sub-project (independent git repo)
 AIMedTeach/
+
+# 医学院资料目录(独立 git 仓库,不纳入根仓库版本管理)
+项目相关/医学院/
