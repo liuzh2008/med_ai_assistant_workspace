@@ -1,0 +1,185 @@
+{
+  "summary": {
+    "projectName": "MedAiAssistant 1.0 BS",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 25,
+    "overview": "项目拥有14条规则和13项技能构成丰富的Agent指导层，但会话诊断显示编辑和验证监测存在盲区——远程开发模式（SSH+SQL+git-push）产生的变更未被工作区检测捕获，验证执行证据完全缺失。资产清单与磁盘实际状态不一致。repowiki知识库已在规则中添加指引。",
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 62,
+        "summary": "14条always_on规则提供明确的架构和技术指导，但资产清单路径不完整可能影响Agent对可用资产的完整认知。"
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 68,
+        "summary": "13项技能和6个命令覆盖了关键操作路径，权限守卫已配置（Bash允许/删除询问），但4项SSH技能存在路由重叠。"
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 45,
+        "summary": "会话分析显示0次编辑事件和0次验证执行记录，已有testing-verification意图标记但验证通道未被观测到——变更验证循环的有效性不可评估。"
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 48,
+        "summary": "3个GitHub工作流提供CI/CD管道，但16个长会话候选（35.6%）未经验收复核，交付验收和恢复路径的证据缺失。"
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 38,
+        "summary": "尚无可比较的后期结果窗口验证任何可复用改进的有效性。repowiki知识库已通过规则添加访问指引。"
+      }
+    ],
+    "aiAgentPractice": {
+      "inspectedSurfaces": ["Rules", "Skills", "Commands", "Workflows", "Custom Agents"],
+      "coverageRows": [
+        {
+          "surface": "Rules",
+          "scopes": ["Project"],
+          "count": 14,
+          "paths": [
+            ".qoder/rules/00-project-identity.md",
+            ".qoder/rules/01-java-backend.md",
+            ".qoder/rules/02-vue-frontend.md",
+            ".qoder/rules/03-api-design.md",
+            ".qoder/rules/04-database-oracle.md",
+            ".qoder/rules/05-medical-security.md",
+            ".qoder/rules/06-testing.md",
+            ".qoder/rules/07-git-workflow.md",
+            ".qoder/rules/08-deployment.md",
+            ".qoder/rules/09-logging-monitoring.md",
+            ".qoder/rules/10-version-management.md",
+            ".qoder/rules/01-java-backend/examples.md"
+          ]
+        },
+        {
+          "surface": "Skills",
+          "scopes": ["Project"],
+          "count": 13,
+          "paths": [
+            ".qoder/skills/check-test-dev-servers/SKILL.md",
+            ".qoder/skills/check-test-docker-servers/SKILL.md",
+            ".qoder/skills/generate-help-page/SKILL.md",
+            ".qoder/skills/git-push-github/SKILL.md",
+            ".qoder/skills/json-edit/SKILL.md",
+            ".qoder/skills/lookup-unfinished-features/SKILL.md",
+            ".qoder/skills/record-page-demo/SKILL.md",
+            ".qoder/skills/ssh-testserver/SKILL.md",
+            ".qoder/skills/submit-clinical-rules/SKILL.md",
+            ".qoder/skills/submit-qc-standards/SKILL.md",
+            ".qoder/skills/submit-templates/SKILL.md",
+            ".qoder/skills/testserver-deploy/SKILL.md"
+          ]
+        },
+        {
+          "surface": "Commands",
+          "scopes": ["Project"],
+          "count": 6,
+          "paths": [
+            ".qoder/commands/code-review.md",
+            ".qoder/commands/generate_qc.md",
+            ".qoder/commands/git_commit.md",
+            ".qoder/commands/query_question.md",
+            ".qoder/commands/save_question.md",
+            ".qoder/commands/ssh_testserver.md"
+          ]
+        },
+        {
+          "surface": "Workflows",
+          "scopes": ["Project"],
+          "count": 3,
+          "paths": [
+            ".github/workflows/deploy-docs.yml",
+            ".github/workflows/release-frontend.yml",
+            ".github/workflows/security-scan.yml"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": ["Project"],
+          "count": 0
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "change-detection-blind-spot",
+      "title": "变更监测盲区：远程开发模式绕过工作区编辑检测",
+      "severity": "Medium",
+      "reason": "会话分析显示0次编辑事件和0个变更集，但技能使用统计中 git-push-github 被调用11次、sql-devpc 13次、ssh-testserver 4次——表明工作以测试服务器为中心（SSH远程编辑→SQL直接操作→提交推送），变更未被工作区检测机制捕获。5个候选片段中有4个涉及代码变更场景（后端启动修复、PPT生成界面增强），closure均为no-change-observed，与技能调用模式矛盾。",
+      "dimensionRefs": ["change-validation"],
+      "subdimensionRefs": ["relevant-check"],
+      "aiFixPrompt": "/better-harness fix this issue\n\n增强会话编辑检测以覆盖远程开发模式\n\n## 问题\n\n当前编辑检测仅覆盖本地工作区的文件变更，但实际开发工作通过SSH远程编辑、SQL直接操作完成，变更在`git push`前不被捕获。\n\n## 修复方案\n\n1. 确认session-analysis能否通过git操作历史（提交记录）推断变更事件\n2. 评估是否需要在远程操作（ssh-testserver, sql-devpc）的会话跟踪中添加变更标记\n3. 考虑在git-push-github技能中集成变更断言，触发后记录摘要\n\n## 验证\n\n- 运行session-analysis facts确认新配置下的编辑检测覆盖率\n- 模拟一次SSH编辑→推送流程，确认变更事件被捕获",
+      "expectedArtifact": "诊断配置更新",
+      "expectedOutput": [
+        "扩大变更检测范围以覆盖SSH远程编辑和git push事件",
+        "变更监测覆盖率从0/5候选提升到可观测水平"
+      ]
+    },
+    {
+      "id": "validation-execution-gap",
+      "title": "验证执行证据缺失：testing-verification意图存在但无验证命令记录",
+      "severity": "Medium",
+      "reason": "候选E2被分析器标记为testing-verification生命周期意图（置信度High），changelidation相关检查维度也被触发。然而会话观测显示：0次检查事件、0次相关检查复核、0次结果信号。用户曾提及\"maven test\"但无匹配命令执行记录。验证意图存在但验证循环的执行证据完全不可观测。",
+      "dimensionRefs": ["change-validation"],
+      "subdimensionRefs": ["failure-repair"],
+      "aiFixPrompt": "/better-harness fix this issue\n\n桥接验证意图与可观测验证执行\n\n## 问题\n\n会话中识别出testing-verification意图，但无任何验证命令执行（build/test/lint）被捕获。验证循环有效性的评估完全阻塞。\n\n## 修复方案\n\n1. 在maven/npm测试命令执行点添加会话事件标记\n2. 验证session-analysis是否正确捕获测试命令的tool events\n3. 考虑在测试运行技能（如TDD流程）触发后写入验证事件记录\n\n## 验证\n\n- 运行一次`mvn test`并确认验证事件被捕获\n- 在E2的上下文中重现验证流程并检查记录",
+      "expectedArtifact": "验证监测配置更新",
+      "expectedOutput": [
+        "验证命令执行（mvn test, npm test等）在会话分析中可观测",
+        "验证执行证据从0提升到至少1条可确认记录"
+      ]
+    },
+    {
+      "id": "asset-inventory-gap",
+      "title": "资产清单与磁盘状态不一致：规则/技能路径不全，agents/目录未被覆盖",
+      "severity": "Medium",
+      "reason": "Step 1基线清单仅列出5条规则路径，但磁盘实际有12个规则文件+2个示例文件（01-java-backend/examples.md, 02-vue-frontend/examples.md）。13个技能中8个路径缺失。commands共6个但路径列表只列5个。.qoder/agents/目录存在于项目结构中但未被任何清单表面收录——活跃的自定义代理配置可能在不与清单匹配的情况下静默运行。AIMedTeach子项目有独立的.qoder/目录（含repowiki知识和技能），在主清单中完全未体现。",
+      "dimensionRefs": ["task-understanding"],
+      "subdimensionRefs": ["relevant-context"],
+      "aiFixPrompt": "/better-harness fix this issue\n\n同步资产清单与磁盘实际状态\n\n## 需要修复的资产\n\n1. 更新清单至完整路径列表（12个规则文件+示例、13个技能完整路径、6个命令完整路径）\n2. 确认`.qoder/agents/`目录内容并纳入清单\n3. 确认AIMedTeach子项目的独立`.qoder/`是否应纳入主清单\n\n## 验证\n\n- 运行完整的资产清单扫描并与磁盘比较，确认100%覆盖\n- 确认agents/目录中的资产被正确识别和分类",
+      "expectedArtifact": "清单配置文件",
+      "expectedOutput": [
+        "规则路径从5条扩展到12+条",
+        "技能路径从5条扩展到13条",
+        "agents/和子项目资产状态已明确"
+      ]
+    },
+    {
+      "id": "ssh-skill-routing-overlap",
+      "title": "四项SSH技能路由重叠且无交叉引用",
+      "severity": "Low",
+      "reason": "check-test-dev-servers(216行)、check-test-docker-servers(183行)、ssh-testserver、testserver-deploy(266行)四项技能都通过SSH连接到同一目标100.66.1.4，描述字段包含重叠触发术语（\"服务器状态\"、\"检查\"、\"部署\"、\"SSH\"）。没有技能引用另一技能或声明路由优先级。用户提出模糊的服务器查询时，技能选择存在歧义。这4项技能中有3项超过130行且无渐进式Markdown引用（lint已标记为advisory）。",
+      "dimensionRefs": ["controlled-execution"],
+      "subdimensionRefs": ["supported-operation"],
+      "aiFixPrompt": "/better-harness fix this issue\n\n减少SSH技能路由重叠\n\n## 受影响技能\n\n- `.qoder/skills/check-test-dev-servers/SKILL.md`\n- `.qoder/skills/check-test-docker-servers/SKILL.md`\n- `.qoder/skills/ssh-testserver/SKILL.md`\n- `.qoder/skills/testserver-deploy/SKILL.md`\n\n## 修复方案\n\n1. 评估能否合并重叠技能（如将dev/docker检查合并到ssh-testserver）\n2. 或者每项技能在描述中补充路由决断条件（\"如果目标明确是检查XX则使用此技能\"）\n3. 长技能（>130行）考虑添加渐进式引用或拆分\n\n## 验证\n\n- 对模糊查询\"检查服务器状态\"运行技能选择测试\n- 确认选中的技能为目标中最精确的匹配",
+      "expectedArtifact": "技能维护",
+      "expectedOutput": [
+        "SSH目标技能的路由重叠已消除或明确化",
+        "模糊查询能路由到最精确的技能"
+      ]
+    },
+    {
+      "id": "repowiki-not-routed-in-rules",
+      "title": "repowiki知识库未被规则引导使用（已修复）",
+      "severity": "Fixed",
+      "reason": "完整性检查报告memories.titleCount=0是正常的——repowiki和Memory是Qoder两套独立机制，前者是文件型Wiki知识库，后者是工具管理的记忆存储。\n\n真正的问题是：Agent的规则中没有任何指引告知其repowiki知识库的存在及如何访问，导致Agent不会主动查阅这些文档。\n\n已于00-project-identity.md中添加「知识库」章节，指引Agent使用Read/Glob访问.repowiki/zh/content/和AIMedTeach子项目知识库。",
+      "dimensionRefs": ["task-understanding"],
+      "subdimensionRefs": ["relevant-context"],
+      "aiFixPrompt": "Already fixed — see .qoder/rules/00-project-identity.md ## 知识库",
+      "expectedArtifact": "规则文件",
+      "expectedOutput": [
+        "Agent在遇到领域知识问题时能通过Read/Glob主动查阅repowiki内容",
+        "titleCount和repowiki文档数量无需一致（两套系统）"
+      ]
+    }
+  ]
+}
