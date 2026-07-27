@@ -1,0 +1,16 @@
+name: 本体一致性检查
+
+on:
+  pull_request:
+    paths:
+      - "med_ai_assistant_1.0_bs_backend/src/main/java/com/example/medaiassistant/medteach/**/*.java"
+      - "AIMedTeach/Doc/整体方案/aimedteach.owl"
+
+jobs:
+  ontology-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 检查本体-代码一致性
+        run: python3 AIMedTeach/scripts/check-ontology-sync.py --ci
