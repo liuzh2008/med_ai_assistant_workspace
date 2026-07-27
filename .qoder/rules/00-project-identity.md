@@ -10,6 +10,16 @@ alwaysApply: true
 - **核心包**：`com.example.medaiassistant`
 - **架构**：主服务器 + 执行服务器双节点，Prompt模板驱动AI交互
 
+## 知识库
+
+项目自带了 Wiki 知识库（repowiki），遇到不确定的领域知识时优先查阅：
+
+- **主项目知识库**：`.qoder/repowiki/zh/content/`
+  - 涵盖：系统架构、API 参考、数据库操作、运维指南、开发环境、质控标准等
+  - 使用 `Read` 工具读取具体 `.md` 文件，或用 `Glob` 列出可用文档
+- **AIMedTeach 子项目知识库**：`AIMedTeach/.qoder/repowiki/knowledge/zh/`
+  - 涵盖：AI 医学教学系统相关文档
+
 ## 全局安全约束
 
 - ✗ 禁止日志输出患者PII（姓名、身份证号、手机号、医保号）
