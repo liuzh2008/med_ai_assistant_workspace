@@ -1,0 +1,76 @@
+<Window x:Class="MedAiPanel.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False"
+        Width="14" Height="420"
+        MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave">
+    <Grid>
+        <!-- 收起态：窄竖条（QQ 贴边风格），鼠标悬停触发 MouseEnter -->
+        <Border x:Name="CollapsedBar" Width="14" HorizontalAlignment="Right"
+                Background="#0d6efd" CornerRadius="7,0,0,7">
+            <TextBlock Text="医" Foreground="White" FontSize="9" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- 展开态：病人列表面板 -->
+        <Border x:Name="ExpandedPanel" Width="246" HorizontalAlignment="Right"
+                Background="#F8F9FA" BorderBrush="#0d6efd" BorderThickness="1"
+                CornerRadius="8,0,0,8" Padding="8" Visibility="Collapsed">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Grid.Row="0">
+                    <TextBlock Text="在院病人" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="UserInfoText" Margin="8,0,0,0" FontSize="10" Foreground="#666666"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <ListBox x:Name="PatientListBox" Grid.Row="1" Margin="0,6,0,6"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectionChanged="PatientListBox_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="210">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding BedNumber}" FontWeight="Bold" FontSize="12"
+                                           Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Name}" Grid.Column="1" FontSize="12"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <!-- 状态色：病危红 / 病重橙 / 普通绿（与主系统配色一致） -->
+                                <Border Grid.Column="2" Width="8" Height="8" CornerRadius="4"
+                                        VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#28a745"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="病危">
+                                                    <Setter Property="Background" Value="#dc3545"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="病重">
+                                                    <Setter Property="Background" Value="#fd7e14"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock x:Name="StatusText" Grid.Row="2" FontSize="10" Foreground="#999999"
+                           TextTrimming="CharacterEllipsis"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

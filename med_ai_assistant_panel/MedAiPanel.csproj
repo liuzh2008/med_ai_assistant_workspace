@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- 托盘图标复用 WinForms NotifyIcon，避免引入外部 NuGet 包（内网还原友好） -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>MedAiPanel</AssemblyName>
+    <RootNamespace>MedAiPanel</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>医疗AI助手 - 桌面侧边栏面板</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

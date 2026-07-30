@@ -1,0 +1,5 @@
+{
+  "serverBaseUrl": "http://localhost:8081",
+  "windowTitleKeyword": "医疗AI",
+  "pollIntervalSeconds": 5
+}
