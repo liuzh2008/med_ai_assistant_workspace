@@ -31,6 +31,9 @@ public partial class MainWindow : Window
     private bool _expanded;
     private bool _animating;
 
+    /// <summary>用户是否手动隐藏了侧边栏（true 时轮询循环不自动显示）</summary>
+    private bool _userHidden;
+
     public MainWindow(AppConfig config, Action requestShutdown)
     {
         InitializeComponent();
@@ -46,6 +49,33 @@ public partial class MainWindow : Window
 
     /// <summary>停止轮询循环（应用退出前调用）</summary>
     public void StopPolling() => _cts.Cancel();
+
+    /// <summary>
+    /// 托盘菜单手动切换侧边栏显隐（覆盖轮询自动逻辑）。
+    /// 用户隐藏后轮询不再自动显示，直到用户再次点击显示。
+    /// </summary>
+    public void ToggleUserVisibility()
+    {
+        _userHidden = !_userHidden;
+        Dispatcher.Invoke(() =>
+        {
+            if (_userHidden)
+            {
+                if (IsVisible) Hide();
+            }
+            else
+            {
+                // 恢复显示：仅当存在活跃会话时才显示
+                if (_session?.Active == true && !IsVisible)
+                {
+                    Show();
+                }
+            }
+        });
+    }
+
+    /// <summary>当前侧边栏是否由用户手动隐藏</summary>
+    public bool IsUserHidden => _userHidden;
 
     /// <summary>
     /// 窗口初始定位：贴屏幕右缘，垂直居中
@@ -83,7 +113,7 @@ public partial class MainWindow : Window
                     }
                     await Dispatcher.InvokeAsync(() =>
                     {
-                        if (!IsVisible)
+                        if (!IsVisible && !_userHidden)
                         {
                             Show();
                         }
@@ -270,8 +300,8 @@ public partial class MainWindow : Window
         var result = BrowserActivator.ActivateByTitleKeyword(_config.WindowTitleKeyword);
         if (result == BrowserActivator.ActivateResult.NotFound)
         {
-            // 浏览器未运行：用默认浏览器打开系统地址
-            BrowserActivator.OpenSystemInBrowser(_config.ServerBaseUrl);
+            // 浏览器未运行：用默认浏览器打开前端页面地址（开发模式 8080，生产模式由 nginx 代理到同一地址）
+            BrowserActivator.OpenSystemInBrowser(_config.FrontendUrl);
         }
         // 置前失败时 BrowserActivator 已自动触发任务栏闪动提示
 

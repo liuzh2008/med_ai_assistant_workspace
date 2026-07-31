@@ -10,9 +10,13 @@ namespace MedAiPanel.Models;
 /// </summary>
 public class AppConfig
 {
-    /// <summary>主服务器地址（含协议与端口，如 https://192.168.x.x）</summary>
+    /// <summary>主服务器 API 地址（含协议与端口，如 https://192.168.x.x:8081），供 WPF 客户端调用后端接口</summary>
     [JsonPropertyName("serverBaseUrl")]
     public string ServerBaseUrl { get; set; } = "https://localhost";
+
+    /// <summary>前端页面地址（含协议与端口，如 http://localhost:8080），用于浏览器未运行时打开主系统</summary>
+    [JsonPropertyName("frontendUrl")]
+    public string FrontendUrl { get; set; } = "http://localhost:8080";
 
     /// <summary>浏览器主系统窗口标题模糊匹配关键字（用于 Win32 激活窗口）</summary>
     [JsonPropertyName("windowTitleKeyword")]

@@ -23,6 +23,7 @@ public partial class App : Application
     private static Mutex? _mutex;
     private NotifyIcon? _trayIcon;
     private ToolStripMenuItem? _autoStartMenuItem;
+    private ToolStripMenuItem? _toggleSidebarMenuItem;
     private MainWindow? _mainWindow;
     private AppConfig _config = new();
 
@@ -45,10 +46,15 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// 初始化托盘图标与右键菜单（退出 / 开机自启）
+    /// 初始化托盘图标与右键菜单（显示/隐藏侧边栏 / 开机自启 / 退出）
     /// </summary>
     private void SetupTrayIcon()
     {
+        _toggleSidebarMenuItem = new ToolStripMenuItem("隐藏侧边栏", null, (_, _) =>
+        {
+            _mainWindow?.ToggleUserVisibility();
+        });
+
         _autoStartMenuItem = new ToolStripMenuItem("开机自启")
         {
             Checked = IsAutoStartEnabled(),
@@ -57,8 +63,17 @@ public partial class App : Application
         _autoStartMenuItem.CheckedChanged += (_, _) => SetAutoStart(_autoStartMenuItem.Checked);
 
         var contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add(_toggleSidebarMenuItem);
+        contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add(_autoStartMenuItem);
         contextMenu.Items.Add(new ToolStripMenuItem("退出", null, (_, _) => RequestShutdown()));
+
+        // 菜单打开时动态更新"显示/隐藏侧边栏"文案
+        contextMenu.Opening += (_, _) =>
+        {
+            if (_toggleSidebarMenuItem == null || _mainWindow == null) return;
+            _toggleSidebarMenuItem.Text = _mainWindow.IsUserHidden ? "显示侧边栏" : "隐藏侧边栏";
+        };
 
         _trayIcon = new NotifyIcon
         {

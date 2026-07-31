@@ -24,6 +24,7 @@ public static class BrowserActivator
     }
 
     private const int SwRestore = 9;
+    private const int SwShow = 5;
     private const byte VkMenu = 0x12; // Alt 键
     private const uint KeyeventfKeyup = 0x0002;
     private const uint FlashwTray = 0x00000002;
@@ -39,6 +40,9 @@ public static class BrowserActivator
 
     [DllImport("user32.dll")]
     private static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
@@ -146,11 +150,13 @@ public static class BrowserActivator
     }
 
     /// <summary>
-    /// 强制将窗口置前：恢复最小化 → 附加前台线程输入队列 + 模拟 Alt 键 → SetForegroundWindow
+    /// 强制将窗口置前：最小化时恢复 → 附加前台线程输入队列 + 模拟 Alt 键 → SetForegroundWindow。
+    /// 使用 SW_SHOW 而非 SW_RESTORE 保持最大化状态不变。
     /// </summary>
     private static void ForceForeground(IntPtr hWnd)
     {
-        ShowWindow(hWnd, SwRestore);
+        // 仅在窗口最小化时使用 SW_RESTORE 恢复；否则用 SW_SHOW 保持当前窗口状态（最大化/普通）
+        ShowWindow(hWnd, IsIconic(hWnd) ? SwRestore : SwShow);
         BringWindowToTop(hWnd);
 
         var foregroundWindow = GetForegroundWindow();
