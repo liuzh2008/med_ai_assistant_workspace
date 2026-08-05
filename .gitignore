@@ -67,5 +67,12 @@ build_output*.log
 # AIMedTeach sub-project (independent git repo)
 AIMedTeach/
 
+# 临时截图（桌面/托盘演示截图）
+screenshot*.png
+fullscreen_screenshot.png
+
+# 侧边栏实验应用构建产物（bin/obj 无源码）
+sidebar-app/
+
 # 医学院资料目录(独立 git 仓库,不纳入根仓库版本管理)
 项目相关/医学院/
