@@ -1,6 +1,6 @@
 ---
 name: generate-help-page
-description: Generate help documentation pages with Cypress screenshots for the Medical AI Assistant system. Covers the full pipeline: writing element-screenshot Cypress scripts, running tests, copying screenshots, writing Markdown help pages, updating VitePress sidebar config, rebuilding AI knowledge base, and starting preview. Use when the user asks to create help pages, generate operation guides, add help documentation, or requests screenshots for documentation with terms like "帮助页面", "帮助文档", "操作指南", "生成截图".
+description: 'Generate help documentation pages with Cypress screenshots for the Medical AI Assistant system. Covers the full pipeline: writing element-screenshot Cypress scripts, running tests, copying screenshots, writing Markdown help pages, updating VitePress sidebar config, rebuilding AI knowledge base, and starting preview. Use when the user asks to create help pages, generate operation guides, add help documentation, or requests screenshots for documentation with terms like "帮助页面", "帮助文档", "操作指南", "生成截图".'
 ---
 
 # 帮助页面生成
