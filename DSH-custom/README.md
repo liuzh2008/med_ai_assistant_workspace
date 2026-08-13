@@ -20,6 +20,8 @@
 
 ## 从零重建步骤
 
+**方式 A：从官方仓库 + 补丁重建**（官方代码丢失也不受影响，推荐）
+
 ```powershell
 # 1. 克隆官方仓库
 git clone https://github.com/deepseek-ai/deepseek-harness.git
@@ -45,6 +47,17 @@ pnpm build
 pnpm dsh web
 ```
 
+**方式 B：从 GitHub fork 直接克隆**（定制已推送到 fork 的 `custom/medai` 分支）
+
+```powershell
+git clone git@github.com:liuzh2008/deepseek-harness.git
+cd deepseek-harness
+git checkout custom/medai
+pnpm install
+pnpm build
+pnpm dsh web
+```
+
 启动后浏览器访问 http://127.0.0.1:3080/（本机）或 http://<局域网IP>:3080/。
 
 ## 日常维护约定
@@ -61,6 +74,10 @@ pnpm dsh web
 
 - 当前工作副本：`C:\Users\Administrator\Documents\Qoder\2026-08-13\chat-1\deepseek-harness`
 - 定制分支：`custom/medai`（基于官方 `master`，含全部定制提交）
+- GitHub fork 备份（2026-08-13 建立，已推送 custom/medai）：
+  - fork：https://github.com/liuzh2008/deepseek-harness
+  - SSH：`git@github.com:liuzh2008/deepseek-harness.git`（工作副本内 remote 名为 `backup`）
+  - 推送命令：`git push backup custom/medai`
 - 主项目仓库（本档案随其备份）：`git@github.com:liuzh2008/med_ai_assistant_workspace.git`
 
 ## 技能链接重建
