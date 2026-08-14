@@ -2,7 +2,9 @@
 -- 步骤3/3：导出目前诊断（医生最终诊断，按患者聚合）
 -- 输出文件：current_diagnoses.txt
 -- 每行一条诊断，字段以 |#| 分隔：
---   患者哈希ID | 诊断文本 | IsPrimary | StatusFlag | ModificationType | DiagnosisIndex
+--   患者哈希ID | 诊断文本 | IsPrimary | StatusFlag | ModificationType | DiagnosisIndex | ICD10Code
+-- ICD10Code 为末位字段（医生最终诊断的医院编码，供诊断编码词典回填）；
+-- 追加在末尾不破坏 parse_and_generate.py / build_dict_skeleton.py 的解析（parts[2] 仍为 IsPrimary）。
 -- 范围：仅"有诊断分析记录（近90天）"的患者
 -- 脱敏：PatientID 加盐哈希（与步骤2同一盐值，保证可关联）
 -- ============================================================
@@ -27,7 +29,8 @@ SELECT SUBSTR(RAWTOHEX(STANDARD_HASH('MEDAI_DIAG_EXTRACT' || d.PatientID, 'SHA25
        NVL(d.IsPrimary, 0) || '|#|' ||
        NVL(d.StatusFlag, 0) || '|#|' ||
        NVL(d.ModificationType, 0) || '|#|' ||
-       NVL(d.DiagnosisIndex, 0)
+       NVL(d.DiagnosisIndex, 0) || '|#|' ||
+       NVL(d.ICD10Code, '')
 FROM diagnosis d
 WHERE NVL(d.is_deleted, 0) = 0
   AND d.PatientID IN (
@@ -42,6 +45,6 @@ ORDER BY d.PatientID, NVL(d.IsPrimary, 0) DESC, NVL(d.DiagnosisIndex, 0);
 
 SPOOL OFF
 
-PROMPT 导出完成：current_diagnoses.txt
+PROMPT 导出完成：current_diagnoses.txt（含 ICD10Code 末位字段）
 
 EXIT;

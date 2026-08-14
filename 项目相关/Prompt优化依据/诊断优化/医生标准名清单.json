@@ -1,0 +1,3362 @@
+{
+ "schema_version": "1.0",
+ "purpose": "医生标准诊断名清单（生产库 DIAGNOSIS.ICD10Code 回填后即为标准名→编码权威映射）",
+ "generated_at": "2026-08-14 16:19",
+ "entries": [
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病",
+   "freq": 173,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "混合型血脂异常",
+   "freq": 172,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高尿酸血症",
+   "freq": 118,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病",
+   "freq": 108,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝功能异常",
+   "freq": 100,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病",
+   "freq": 70,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病3级（很高危）",
+   "freq": 55,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化",
+   "freq": 51,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低蛋白血症",
+   "freq": 51,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低钾血症",
+   "freq": 39,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉粥样硬化",
+   "freq": 35,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "糖耐量异常",
+   "freq": 34,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "凝血功能异常",
+   "freq": 30,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低T3综合征",
+   "freq": 29,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "血小板减少症",
+   "freq": 29,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性心力衰竭",
+   "freq": 29,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病3期",
+   "freq": 26,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭急性加重",
+   "freq": 25,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺疾病",
+   "freq": 23,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "轻度贫血",
+   "freq": 23,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心房颤动",
+   "freq": 22,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高脂血症",
+   "freq": 22,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺部感染",
+   "freq": 21,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高氯血症",
+   "freq": 21,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "亚临床甲状腺功能减退症",
+   "freq": 19,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺气肿",
+   "freq": 19,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病2级（高危）",
+   "freq": 18,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉粥样硬化伴斑块形成",
+   "freq": 17,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低白蛋白血症",
+   "freq": 17,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "原发性高血压",
+   "freq": 16,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病2期",
+   "freq": 15,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脂肪肝（非酒精性）",
+   "freq": 15,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低钠血症",
+   "freq": 14,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病2级",
+   "freq": 14,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉支架植入后状态",
+   "freq": 14,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脂肪肝",
+   "freq": 14,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "非酒精性脂肪性肝病",
+   "freq": 14,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑萎缩",
+   "freq": 13,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前列腺增生",
+   "freq": 13,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺疾病急性加重期",
+   "freq": 12,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低钙血症",
+   "freq": 12,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病2级（很高危）",
+   "freq": 12,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低磷血症",
+   "freq": 12,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "甲状腺功能减退症",
+   "freq": 12,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣反流（轻度）",
+   "freq": 12,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "睡眠障碍",
+   "freq": 11,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性脑梗死",
+   "freq": 11,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺动脉高压（轻度）",
+   "freq": 11,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高甘油三酯血症",
+   "freq": 11,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病3级（极高危）",
+   "freq": 10,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "晕厥",
+   "freq": 10,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣反流（中度）",
+   "freq": 10,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭",
+   "freq": 9,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉支架植入术后",
+   "freq": 9,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "中度贫血",
+   "freq": 9,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病伴血糖控制不佳",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "不稳定型心绞痛",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性非ST段抬高型心肌梗死",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "混合型高脂血症",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣反流（重度）",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊结石",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "贫血",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病1级",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左心房增大",
+   "freq": 8,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉粥样硬化斑",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心房扑动",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉粥样硬化",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾性贫血",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "贫血（轻度）",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低高密度脂蛋白胆固醇血症",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "频发室性早搏",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "泌尿道感染",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾功能不全",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝囊肿",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺动脉高压（中度）",
+   "freq": 7,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "糖化血红蛋白升高",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高脂蛋白(a)血症",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊切除术后状态",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性胃炎",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压性心脏病",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺动脉高压",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性肾损伤",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣关闭不全（重度）",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "白细胞减少症",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "病态窦房结综合征",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "阵发性心房颤动",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左房增大",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低镁血症",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣反流（中度）",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "快速心房颤动",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "扩张型心肌病",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "维生素D缺乏",
+   "freq": 6,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病（支架植入术后）",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "小细胞低色素性贫血",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "痛风",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（射血分数保留型）",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣反流（重度）",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧胸腔积液",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "电解质紊乱",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压亚急症",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑梗死个人史",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "窦性心动过缓",
+   "freq": 5,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺动脉高压（重度）",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病3a期",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "焦虑障碍",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双房增大",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肺源性心脏病",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "焦虑状态",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "具有心脏起搏器",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧颈动脉粥样硬化斑",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高纤维蛋白原血症",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心包积液（少量）",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "室间隔增厚",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病3级（高危）",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腔隙性脑梗死",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "原发性高血压病3级（很高危）",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病（不稳定型心绞痛）",
+   "freq": 4,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低氯血症",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病（三支病变）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高钙血症",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣反流（中度）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（NYHA III级）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "便秘",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低血压",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病5期",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "代谢性碱中毒",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺炎",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "一度房室阻滞",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊胆固醇沉积",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙型病毒性肝炎",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性下壁心肌梗死",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "完全性右束支传导阻滞",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉粥样硬化斑块",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "卵圆孔未闭（复杂型）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病3级",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "糖代谢异常",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰椎间盘突出",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高密度脂蛋白胆固醇降低",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾囊肿",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左侧颈动脉粥样硬化斑",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺源性心脏病",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "食管裂孔疝",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "反流性食管炎",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "完全性右束支阻滞",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "升主动脉增宽",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压急症",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病（CKD 3期）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前列腺增生伴钙化",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "卵圆孔未闭",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性肾损伤（1期）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "风湿性心脏病",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病4期",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺占位性病变",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三度房室传导阻滞",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊结石伴胆囊炎",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "甲状腺功能减退症（亚临床）",
+   "freq": 3,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "干燥综合征",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣狭窄（重度）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉微循环损伤",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉支架植入术后再狭窄",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾性骨病",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高脂蛋白血症(a)",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "室性早搏",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "头晕",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性咽喉炎",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙肝病毒感染恢复期",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝功能不全",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性乙型肝炎",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺诊断性影像异常",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病性周围神经病",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙型病毒性肝炎（既往感染）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "I型呼吸衰竭",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭急性失代偿",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性肋骨骨折",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "焦虑抑郁状态",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "荨麻疹",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣关闭不全（中度）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重度骨质疏松",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "嗜酸性粒细胞增多症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脾大",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣狭窄（中度）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心包积液",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颅内动脉瘤",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "凝血酶原时间延长",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "骨质疏松",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈椎间盘突出",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肾囊肿",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺病伴有急性加重",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病（三支病变+左主干病变）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性前壁心肌梗死",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心源性休克",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉粥样硬化斑块",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性非萎缩性胃窦炎伴糜烂",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病（三支病变，支架植入术后）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前纵隔结节",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊结石（充满型）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "频发性室性期前收缩",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左侧颈动脉粥样硬化斑块",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝内钙化灶",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "偏头痛",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（射血分数降低的心力衰竭）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "完全性左束支传导阻滞",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑动脉粥样硬化",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑白质脱髓鞘变",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺疾病急性加重",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "缺血性心肌病",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性非萎缩性胃炎",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性支气管炎",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "白细胞增多症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉痉挛",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑梗死后遗症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "一度房室传导阻滞",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心房颤动（阵发性）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "子宫切除术后状态",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性萎缩性胃炎（C2型）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "锁骨下动脉粥样硬化",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "原发性高血压病2级（高危）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高钠血症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "动脉粥样硬化",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高乳酸血症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "房室结双径路伴房室结内折返性心动过速",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "甲状腺功能亢进症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心包积液（大量）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性冠脉综合征",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性非萎缩性胃窦炎",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病伴有并发症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "中央型房间隔缺损（卵圆孔型）",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性萎缩性胃炎",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腹泻",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉瘘",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊息肉",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺微小结节",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高钾血症",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性心肌梗死",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "Ⅱ度房室传导阻滞",
+   "freq": 2,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "抗中性粒细胞胞浆抗体相关性血管炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "呼吸性碱中毒合并代谢性酸中毒（代偿性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "Ⅰ度房室传导阻滞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "非典型脑膜瘤术后复发侵犯颅骨恶变伴肝内多发肝转移IV期",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "偏瘫",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝部继发性恶性肿瘤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭(NYHA IV级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心包腔积液",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "小细胞低色素性贫血（轻度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙型肝炎病毒感染（既往感染）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（射血分数降低）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病5期（尿毒症期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病（2级，极高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性下壁心肌梗死",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "小气道功能障碍",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前庭周围性眩晕",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性副鼻窦炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "会厌囊肿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性脑梗死（左侧基底节区）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病（很高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "甲状腺功能减退症（亚临床型）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病（病因未明，分期待查）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "原发性高血压（3级，很高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性左心衰竭",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "缓慢型心房颤动",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾功能不全",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "中度肺动脉高压",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重度三尖瓣反流",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑白质脱髓鞘改变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧锁骨下动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高度房室传导阻滞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣狭窄（重度）并反流（轻度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脊髓炎后遗症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉及锁骨下动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "III度房室传导阻滞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脓毒症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "下肢静脉曲张伴有溃疡",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺栓塞（病史）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉粥样硬化伴斑块形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾结石",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "经皮左心耳封堵术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心脏射频消融术后（房颤）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（射血分数保留型心衰）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "老年性虚弱",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胃肠功能紊乱",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "先天性主动脉瓣二叶瓣畸形",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肺上叶磨玻璃结节",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "射血分数保留的心力衰竭",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "下消化道出血",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "弥漫性动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣前叶脱垂伴关闭不全（重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "凝血功能障碍",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑梗死（腔隙性，陈旧性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "代谢性酸中毒",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双肺多发结节",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胸腔积液（双侧）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性支气管炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性肾损伤（2期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭(HFrEF，NYHA IV级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低维生素D血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双膝关节骨关节病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "糖类抗原125升高",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭(HFrEF，NYHA III级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心房颤动（持续性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺部阴影",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病（严重三支血管病变）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "亚急性心肌梗死",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉内支架植入术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心包积液（少-中量）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性肝损伤（肝细胞型）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "结肠恶性肿瘤术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性硬脑膜下血肿引流术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "多发性动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心肌桥",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双膝关节退行性骨关节病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰椎间盘突出症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "中度限制性肺通气功能障碍",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性前壁ST段抬高型心肌梗死",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣狭窄（中度）并反流（轻度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣反流（轻度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺动脉高压（中-重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭急性加重(HFrEF，NYHA IV级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣前叶脱垂并反流（极重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "经导管瘤内扰流装置(WEB)置入栓塞术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病（G1期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊胆固醇沉积症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉内中膜增厚",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "红细胞增多症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧第3-5肋骨骨折",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "血管迷走性晕厥",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前降支-肺动脉瘘",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺恶性肿瘤伴肺内、纵隔淋巴结转移（IVA期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左心耳血栓",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "泌尿系感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭(HFpEF，NYHA IV)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "毛细血管后孤立性肺动脉高压",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "白癜风",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "睡眠呼吸暂停低通气综合征",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙型肝炎表面抗体阳性",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高密度脂蛋白胆固醇升高",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "排尿淋漓",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低载脂蛋白B血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低三碘甲状原氨酸综合征",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乳房结节切除术后状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "补体C3降低",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "剖腹产术后状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "非酒精性脂肪肝",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双膝关节轻度退行性变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧上颌窦炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高原性心脏病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "椎动脉发育异常",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "钙化性脊膜瘤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧颈内动脉狭窄（70-80%）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "大脑动脉狭窄脑梗死",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧大脑中动脉狭窄",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "经皮大脑中动脉球囊扩张成形术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "帕金森病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺栓塞？",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰椎椎体骨折",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "骨质疏松症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣重度反流",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "Ⅲ度房室传导阻滞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前降支支架内再狭窄",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰椎间盘突出症（L5-S1）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "室性期前收缩（频发）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胰腺囊肿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺大泡",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺结节",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "泌尿道感染可能",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑梗死恢复期",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（心功能II级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性乙型肝炎（既往感染）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病（1级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性萎缩性胃炎C2",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉肌桥",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉扩张",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "轻度肺动脉高压",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "维生素D缺乏症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重度骨质疏松症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双下肢动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性胃炎（病史）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "非均匀性脂肪肝",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压3级",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "特发性震颤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "空蝶鞍",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "结肠息肉切除术史",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "消化道出血史",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝外胆管扩张",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "轻度小细胞低色素性贫血",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "包裹性脓胸术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰肌劳损",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "椎间盘源性腰痛",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "反射性晕厥（血管迷走性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "药物性肝损害",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "硬膜下血肿钻孔引流术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺真菌感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣关闭不全（轻-中度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性肺结核",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "食管下段壁增厚",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "副脾",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "尿路感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "凝血功能正常",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "酒精性脂肪性肝病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病3级极高危",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "膀胱恶性肿瘤个人史",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高磷血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（HFpEF，NYHA III级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊结石伴慢性胆囊炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑软化灶",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "甲状腺结节",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "十二指肠溃疡",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "下肢深静脉血栓形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣反流（极重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "末梢小动脉栓塞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（HFpEF，NYHA IV级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰椎间盘突出术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "直肠肿瘤术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣关闭不全（轻度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（射血分数保留型，NYHA IV级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧椎动脉狭窄（重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊息肉样病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病2级（极高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三叉神经痛",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "纤维蛋白原升高",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "支气管扩张伴感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右下肢皮疹",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "反流性食管炎（LA-A级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胃食管反流病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉粥样硬化性心脏病 不稳定型心绞痛",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心房颤动射频消融术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重度贫血",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病（3级，很高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙肝病毒感染（既往感染恢复期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑梗死（陈旧性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭急性加重（射血分数保留的心力衰竭）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "结节性红斑",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧胸腔积液",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉动脉瘤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉弓-降主动脉支架植入术",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "血脂异常",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "QT间期延长",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病3b期",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胰腺占位性病变（性质待定）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病性肾病（早期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病性周围神经病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病（伴血糖控制不佳）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腔隙性脑梗死（急性期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙型肝炎小三阳",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病1级（高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病1级（极高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胃溃疡",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心房颤动",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣狭窄（重度）并反流（重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺疾病（III级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "社区获得性肺炎（非重症）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心脏起搏器置入状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "透明细胞癌术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "偶发室性早搏",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧锁骨下动脉粥样硬化斑块形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺部结节",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "陈旧性脑出血",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "膈疝（双侧）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "原发性高血压病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "反流性食管炎（B级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胃腺癌术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉硬化斑块形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右肺上叶前段慢性感染伴支气管扩张",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "长程心电记录仪植入术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "黑矇",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧颈动脉粥样硬化斑块",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "全血细胞减少",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "呼吸困难",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾性糖尿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "继发性高血压",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "继发性醛固酮增多症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧颈总动脉粥样硬化斑块",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "全身性硬皮病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低补体血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左锁骨下动脉粥样硬化支架植入术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "全身性骨关节炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣人工瓣膜狭窄",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性肾脏病（2期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣狭窄（轻度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肺腺癌伴肺内转移（cT4N2M1a IVa期，驱动基因阴性，TPS 10%）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重症肺炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺栓塞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "混合性碱中毒（呼吸性+代谢性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肝内胆管结石",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性乙型病毒性肝炎（既往感染）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "化疗相关性周围神经病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前列腺恶性肿瘤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣狭窄（TAVR术后状态）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "输尿管支架置入术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆石症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾结石取石术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "多浆膜腔积液",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重度甲状腺功能减退症（原发性，自身免疫性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "中重度限制性肺通气功能障碍",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腹腔积液（少量）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性ST段抬高型心肌梗死（前壁）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病（2级，很高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙肝病毒携带状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺通气功能障碍（中重度混合性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "混合性肺动脉高压（毛细血管前合并毛细血管后）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心脏起搏器植入状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（NYHA III级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣反流（轻-中度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肾结石",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "支气管炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性乙型病毒性肝炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "补体系统异常",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "结核性心包炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（急性失代偿）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "大量心包积液",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "抑郁症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "周期性眩晕",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左侧甲状旁腺囊肿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "冠状动脉支架植入术后状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左膝半月板损伤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "糖尿病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "哮喘",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "房间隔缺损（继发孔-中央型）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左侧胸腔积液",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右肾结石",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝脏脂肪沉积（脂肪肝）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "强直性脊柱炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈椎病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "阵发性室上性心动过速",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "稳定性心绞痛（CCS II级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "房室折返性心动过速",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙肝表面抗原携带者（既往感染）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "房室结折返性心动过速",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "房室结双径路",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "非甲状腺疾病综合征",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "痔疮",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低游离甲状腺素血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "中度三尖瓣反流",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉及右侧锁骨下动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "梅毒（特异性抗体阳性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "轻度肾功能不全",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肺上叶尖段炎性病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣反流（中-重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭急性加重(NYHA IV级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺腺Ca",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心包增厚（心包转移Ca？）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颅内动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胆囊胆固醇沉积（胆固醇息肉）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右侧基底节区腔隙性脑梗死",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血糖高渗状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高同型半胱氨酸血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腔隙性脑梗死（既往史）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉内中膜增厚",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧感音神经性听觉丧失",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脾切除术后状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心功能不全(NYHA III级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "完全性左束支阻滞",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性ST段抬高型心肌梗死（下壁）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "重度二尖瓣反流",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右臀部皮下脓肿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性支气管炎伴肺气肿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "贫血（中度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "消化道出血",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "T12椎体压缩性骨折",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "梅毒",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病 2级（高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左肺上叶恶性肿瘤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（射血分数保留，NYHA IV级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "营养不良",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "衰弱",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "频发室性期前收缩（二联律）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右室心肌病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "致心律失常性右心室心肌病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "局限性系统性硬化症（CREST综合征）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "凝血功能异常（高纤维蛋白原血症）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（急性失代偿期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双侧颈动脉粥样硬化斑块形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左下肢动脉粥样硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右下肢肌间静脉血栓形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "衰弱前期",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低氧血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "25-羟维生素D缺乏",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性血栓栓塞性肺动脉高压",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "下肢静脉曲张",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右心功能不全",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肾功能异常",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "房性心动过速（HIS旁）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "前庭性偏头痛",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "25-羟基维生素D缺乏",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高胆固醇血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "蛋白尿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高肾素血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胰体部囊性病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "射血分数保留的心力衰竭(NYHA IV级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "左侧颈动脉粥样硬化斑块形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙肝核心抗体阳性（既往感染）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "持续性心房颤动",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胸椎退行性变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "室间隔基底段增厚",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性萎缩性胃炎（C2，活动性？）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "血小板减少",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺疾病伴有急性下呼吸道感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腹腔积液",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "升主动脉瘤（扩张至77 mm）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "主动脉瓣关闭不全（中度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "Ⅰ型呼吸衰竭",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胸腰椎退行性变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肋骨骨折（陈旧性）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭(射血分数保留, NYHA III级)",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "酒精性脂肪性肝炎伴胆汁淤积",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "极重度高甘油三酯血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣反流（极重度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "酒精性肝硬化",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "膀胱肿瘤",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "低尿酸血症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（射血分数保留）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脑梗塞个人史",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "2型糖尿病性肾病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "二尖瓣机械瓣置换状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "三尖瓣生物瓣置换状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "抗核抗体阳性",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心脏瓣膜病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "混合性结缔组织病",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "继发性甲状旁腺功能亢进",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "血液透析",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "急性心力衰竭（NYHA IV级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺切除术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "颈动脉粥样硬化斑",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "频发房性早搏",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "亚急性甲状腺炎",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心力衰竭（NYHA IV级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "风湿性二尖瓣狭窄（重度）伴关闭不全（中度）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右肺上叶占位性病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压病3级很高危",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "衰弱状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "电解质代谢紊乱",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "食管静脉球",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "起搏器",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心源性晕厥",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "混合型酸碱失衡",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "食管粘膜病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "胃角溃疡",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "上消化道出血",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺部小结节",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性心力衰竭（心功能II级）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "右肾上腺增粗",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "十二指肠球部隆起性病变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "认知障碍",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性硬膜下血肿",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血压性心脏病（左室肥厚）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "乙型肝炎病毒既往感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "痔疮术后状态",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "心脏神经官能症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "烟草依赖",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "代谢性碱中毒（代偿期）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "下肢动脉粥样硬化闭塞症（右下肢支架术后状态）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "高血糖症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肺纤维灶",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双腔永久起搏器植入术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "下肢静脉血栓形成",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "肝外胆道梗阻",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "双膝关节退行性变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "腰椎退行性变",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "食管肿瘤术后",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "原发性高血压病3级（极高危）",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "脂蛋白(a)升高",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "药物性皮疹",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "血小板增多症",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "慢性阻塞性肺病伴有急性下呼吸道感染",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "正常甲状腺功能病态综合征",
+   "freq": 1,
+   "icd10_code": ""
+  },
+  {
+   "standard_name": "反流性食管炎（LA-B）",
+   "freq": 1,
+   "icd10_code": ""
+  }
+ ]
+}
