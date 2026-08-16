@@ -49,6 +49,16 @@ export function maskInpatientNo(inpatientNo: string): string {
 }
 
 /**
+ * 姓名掩码：保留首字，其余以单个 * 替代（与 M2 `McpOutputDesensitizer.maskName` 同源）。
+ * “张伟” → “张*”，“欧阳娜娜” → “欧*”，“李小明” → “李*”。
+ */
+export function maskName(name: string): string {
+  const s = name.trim();
+  if (!s) return name;
+  return s.charAt(0) + '*';
+}
+
+/**
  * 轻量正则掩码入口：文本中的身份证/手机/医保/住院号全部掩码。
  * 不误伤临床数字（血压 120/80、剂量 5mg 等）。
  */
