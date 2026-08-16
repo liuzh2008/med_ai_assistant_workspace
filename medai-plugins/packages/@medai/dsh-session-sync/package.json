@@ -1,0 +1,27 @@
+{
+  "name": "@medai/dsh-session-sync",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "DSH 侧会话同步插件（N2a：身份内存持有 / 每患者一会话 / 事件同步 / 三层清理）",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "test": "vitest run"
+  },
+  "dsh": {
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}

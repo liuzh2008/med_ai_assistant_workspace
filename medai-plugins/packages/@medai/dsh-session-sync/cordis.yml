@@ -1,0 +1,4 @@
+# @medai/dsh-session-sync cordis 插件声明（DSH 侧会话同步，N2a）
+name: '@medai/dsh-session-sync'
+version: 0.1.0
+main: src/index.ts

@@ -17,6 +17,18 @@ importers:
         specifier: ^3.0.0
         version: 3.2.7
 
+  packages/@medai/dsh-session-sync:
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      typescript:
+        specifier: ^5.5.0
+        version: 5.5.2
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7
+
   packages/@medai/dsh-ui-report-card:
     devDependencies:
       '@types/react':
