@@ -1,0 +1,14 @@
+{
+  "name": "@medai/dsh-pii-guard",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "DSH 侧轻量正则脱敏插件（前端减负，不做阻断；与 M3 PiiPatternDetector 掩码口径同源）",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "medai-plugins",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MedAI 医疗 AI 助手 DSH 插件交付物（一期：MCP 接线 + 轻量正则脱敏）",
+  "scripts": {
+    "test": "pnpm -r run test"
+  }
+}

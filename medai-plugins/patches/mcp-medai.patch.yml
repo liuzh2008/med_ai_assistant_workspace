@@ -1,0 +1,21 @@
+# DSH profile patch：注册 medai MCP server（主服务器 M2 网关，DSH 插件化一期 M1 接线）
+#
+# 用法：dsh plugin --profile <name> add @deepseek-ai/dsh-mcp-client（npm 0.0.1-rc.1，不随默认 bundles 加载）
+# 然后把本文件作为 profile 的 cordis.patch.yml 补丁层（或合并进 profile 的 patch）。
+# 每机 token 经环境变量 MEDAI_MCP_TOKEN 注入（M2 侧按 SHA-256 哈希注册，不落明文）。
+- insert:
+    - id: mcp-medai
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: medai
+        transport: streamable-http
+        # 主服务器内网 IP（本机形态=127.0.0.1；联调时改为实际内网地址）
+        url: http://127.0.0.1:8081/mcp
+        headers:
+          Authorization: !!js '`Bearer ${process.env.MEDAI_MCP_TOKEN}`'
+        # 解绑启动：网关宕机时 DSH 照常启动（不因网关失败拒启）。
+        # 明示降级由 @medai/dsh-pii-guard 承担：对话中检测 medai 工具缺失/调用失败 →
+        # 注入提示，agent 明确告知"数据服务暂不可用"并禁止编造。
+        failOnStartupError: false
+        # 工具调用超时（查询 ≤ 60s；长任务二期走 ctx.jobs）
+        toolCallTimeoutMs: 60000

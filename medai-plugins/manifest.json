@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "medai-plugins",
+  "dshBaseline": "47f943859b",
+  "backendVersion": "0.9.250",
+  "packages": [
+    {
+      "name": "@medai/dsh-pii-guard",
+      "version": "0.1.0",
+      "purpose": "LLM 调用前轻量正则脱敏（前端减负，不做阻断；阻断职责在 M3）",
+      "hooks": ["agent/pre-step"],
+      "requiresBackend": ">=0.9.250"
+    }
+  ],
+  "mcp": {
+    "patch": "patches/mcp-medai.patch.yml",
+    "serverName": "medai",
+    "endpoint": "http://<主服务器内网IP>:8081/mcp",
+    "auth": "env MEDAI_MCP_TOKEN（每机独立，M2 按哈希注册）",
+    "failOnStartupError": false,
+    "degradeSemantics": "网关宕机 → DSH 照常启动（解绑）；@medai/dsh-pii-guard 在对话中检测 medai 工具缺失/调用失败 → 注入提示，agent 明确告知'数据服务暂不可用'并禁止编造",
+    "toolCallTimeoutMs": 60000
+  }
+}

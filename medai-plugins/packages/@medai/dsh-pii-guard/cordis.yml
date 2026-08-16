@@ -1,0 +1,4 @@
+# @medai/dsh-pii-guard cordis 插件声明（DSH 侧轻量正则脱敏，一期）
+name: '@medai/dsh-pii-guard'
+version: 0.1.0
+main: src/index.ts
