@@ -18,12 +18,16 @@ import z from '@deepseek-ai/schemastery'
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import { RECONNECT_DEFAULTS, resolveReconnectPolicy, startConnection } from './connection.ts'
 import type { ReconnectConfig } from './connection.ts'
+import { createServiceJwtProvider } from './serviceJwt.ts'
+import type { ServiceJwtProvider } from './serviceJwt.ts'
 // Side-effect type import: declaration-merges `ctx.tools` onto Context.
 import type {} from '@deepseek-ai/dsh-tools'
 
 export type { McpResult } from './tools.ts'
 export type { ReconnectConfig, ResolvedReconnectPolicy } from './connection.ts'
-export { buildDynamicHeaders } from './transport.ts'
+// buildDynamicHeaders 定义于 dynamicHeaders.ts（原误从 transport.ts 导出；fork 此前从未被 DSH
+// 实际加载，2026-08-17 3080 正式实例切 fork 时暴露 SyntaxError）
+export { buildDynamicHeaders } from './dynamicHeaders.ts'
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'mcp-client'
@@ -105,6 +109,14 @@ export interface StreamableHttpConfig {
   url: string
   /** Additional headers attached to MCP requests. */
   headers: Record<string, string>
+  /**
+   * N4 接线（2026-08-17）：每机 token。提供时连接生命周期内自动调
+   * `/mcp/auth/exchange` 换取服务 JWT 作为动态 Authorization（每请求头），
+   * 到期前自动刷新；未提供则回退 headers.Authorization 静态头。
+   */
+  exchangeToken?: string
+  /** exchange 端点；缺省由 url 推导（`<url>/../mcp/auth/exchange`）。 */
+  exchangeUrl?: string
   /** Per-tool-call timeout in milliseconds. */
   toolCallTimeoutMs: number
   /** Fail plugin activation when the initial connection or tool synchronization fails. */
@@ -140,6 +152,9 @@ export const Config = z.union([
     serverName: z.string().required().pattern(SERVER_NAME_PATTERN),
     url: z.string().required(),
     headers: z.dict(String).default({}),
+    // schemastery schema 默认可选（无需 .optional()，zod v4 API 在此不可用）
+    exchangeToken: z.string(),
+    exchangeUrl: z.string(),
     toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
     failOnStartupError: z.boolean().default(false),
     reconnect: Reconnect,
@@ -162,6 +177,18 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // effect registers.
   const reconnect = resolveReconnectPolicy(config.reconnect, `mcp-client(${config.serverName}): reconnect`)
 
+  // N4 接线：配置了 exchangeToken 时自动换取服务 JWT 作为动态 Authorization。
+  // 优先级：工作站登录人 JWT（setCredentials）> 服务 JWT（exchange）> 静态头。
+  let serviceJwtProvider: ServiceJwtProvider | undefined
+  if (config.transport === 'streamable-http' && config.exchangeToken) {
+    const exchangeUrl = config.exchangeUrl ??
+      config.url.replace(/\/mcp\/?$/, '/mcp/auth/exchange')
+    serviceJwtProvider = createServiceJwtProvider({ exchangeUrl, token: config.exchangeToken })
+  }
+  ctx.effect(() => {
+    return () => serviceJwtProvider?.dispose()
+  }, 'mcp-client.serviceJwt')
+
   // Reserve the namespace next: a duplicate `serverName` fails THIS instance
   // at load with an actionable error and leaves the earlier instance intact.
   ctx.effect(() => {
@@ -183,7 +210,9 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // loop, and the live tool registrations; disposal stops reconnection,
   // quiesces in-flight work, and unregisters the current generation.
   // Fork 扩展：runtime 透传每请求 JWT getter（动态头）。
-  const connection = startConnection(ctx, config, reconnect, { getJwt: getCredentials })
+  const connection = startConnection(ctx, config, reconnect, {
+    getJwt: () => serviceJwtProvider?.getJwt() ?? getCredentials(),
+  })
 
   ctx.effect(() => {
     return () => connection.dispose()
