@@ -2,5 +2,9 @@ packages:
   - "packages/*"
   - "packages/@medai/*"
 
+# @medai/dsh-mcp-client 的 @deepseek-ai/* peer 由 DSH 运行时提供（非 npm 发布包），
+# 禁止 pnpm 自动从 registry 拉取 peer（否则 404 中断安装）
+autoInstallPeers: false
+
 allowBuilds:
   esbuild: true

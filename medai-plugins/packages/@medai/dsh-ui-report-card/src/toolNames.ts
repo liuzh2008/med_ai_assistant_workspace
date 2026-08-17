@@ -30,3 +30,9 @@ export const TOOL_SECTION_KEYS: string[] = Object.values(REPORT_TOOLS)
 export function sectionKeyOf(toolName: string): string | undefined {
   return REPORT_TOOLS[toolName]
 }
+
+/** 折叠行展示名：去 `mcp__medai__` 前缀（如 medai_patient_diagnoses）。 */
+export function displayNameOf(toolName: string): string {
+  if (typeof toolName !== 'string' || toolName === '') return 'Tool call'
+  return toolName.startsWith(MEDAI_TOOL_PREFIX) ? toolName.slice(MEDAI_TOOL_PREFIX.length) : toolName
+}

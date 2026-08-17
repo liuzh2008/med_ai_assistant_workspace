@@ -10,15 +10,13 @@
  *   - N2 零医疗判断：重入院/转科 key 变化自然开新会话。
  *
  * navigator/store 均为注入依赖：sessionNavigator 接口隔离 S1 会话导航
- * API 的替换点（实现方案 §4.3 / §11）；文件 store 由 client 半以
- * DSH_SESSION_ROOT/map.json 实例化。持久化失败不阻塞对话（降级铁律），
- * 内存映射始终可用，下次变更再写。
+ * API 的替换点（实现方案 §4.3 / §11）；文件 store 见
+ * {@link sessionMapFileStore}（node:fs，仅 host 侧）；
+ * client 浏览器侧用 {@link createBrowserSessionMapStore}（localStorage）。
+ * 持久化失败不阻塞对话（降级铁律），内存映射始终可用，下次变更再写。
  *
  * @module @medai/dsh-session-sync/sessionMap
  */
-
-import { promises as fs } from 'node:fs'
-import type { FsPromisesLike } from './fsTypes'
 
 /** DSH 会话导航抽象（S1 spike 结论：ctx.sessions.open/create）。 */
 export interface SessionNavigator {
@@ -86,30 +84,5 @@ export async function createSessionMap(
       await persist()
     },
     persist,
-  }
-}
-
-/**
- * 文件持久化实现：`{contextKey: sessionId}` 写 `map.json`。
- * 原子写 = 同目录临时文件写入 + rename（杜绝半写文件被读）。
- * 文件不存在/损坏 → load 返回空映射（不抛，后续重建）。
- */
-export function createFileSessionMapStore(
-  filePath: string,
-  fsImpl: FsPromisesLike = fs,
-): SessionMapStore {
-  return {
-    async load() {
-      try {
-        return JSON.parse(await fsImpl.readFile(filePath, 'utf8')) as Record<string, string>
-      } catch {
-        return {}
-      }
-    },
-    async save(map: Record<string, string>) {
-      const tmpPath = `${filePath}.tmp`
-      await fsImpl.writeFile(tmpPath, JSON.stringify(map, null, 2), 'utf8')
-      await fsImpl.rename(tmpPath, filePath)
-    },
   }
 }

@@ -15,7 +15,8 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { createSessionMap, createFileSessionMapStore } from './sessionMap'
+import { createSessionMap } from './sessionMap'
+import { createFileSessionMapStore } from './sessionMapFileStore'
 import { mkdtempSync, readFileSync, existsSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

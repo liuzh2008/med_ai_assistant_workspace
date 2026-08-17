@@ -144,6 +144,7 @@ function buildReportSection(sectionKey, item) {
 }
 
 // src/toolNames.ts
+var MEDAI_TOOL_PREFIX = "mcp__medai__";
 var REPORT_TOOLS = {
   "mcp__medai__medai_patient_list_by_department": "PATIENT_LIST",
   "mcp__medai__medai_patient_basic_info": "PATIENT_BASIC",
@@ -158,41 +159,112 @@ var TOOL_SECTION_KEYS = Object.values(REPORT_TOOLS);
 function sectionKeyOf(toolName) {
   return REPORT_TOOLS[toolName];
 }
+function displayNameOf(toolName) {
+  if (typeof toolName !== "string" || toolName === "") return "Tool call";
+  return toolName.startsWith(MEDAI_TOOL_PREFIX) ? toolName.slice(MEDAI_TOOL_PREFIX.length) : toolName;
+}
 
 // src/result.ts
+function isSettled(block) {
+  return Array.isArray(block?.content) && block.content.length > 0;
+}
+function resultTextOf(block) {
+  if (!isSettled(block)) return null;
+  const parts = [];
+  for (const c of block.content ?? []) {
+    if (typeof c?.text === "string" && c.text !== "") parts.push(c.text);
+  }
+  return parts.length > 0 ? parts.join("\n") : null;
+}
+function argsSummary(block) {
+  const raw = block?.argsRaw;
+  if (typeof raw !== "string" || raw === "") return void 0;
+  const nl = raw.indexOf("\n");
+  const first = nl === -1 ? raw : raw.slice(0, nl);
+  return first.length > 80 ? `${first.slice(0, 80)}\u2026` : first;
+}
+function errorTextOf(block) {
+  if (!block || block.isError !== true) return null;
+  const e = block.error;
+  if (typeof e === "string") return e === "" ? null : e;
+  if (e && typeof e === "object") {
+    const msg = e.message ?? e.code ?? e.name;
+    return typeof msg === "string" && msg !== "" ? msg : null;
+  }
+  return null;
+}
 function parseToolResult(block) {
   if (!block) return null;
-  const raw = block.result;
-  if (typeof raw === "string") {
-    try {
-      return parseEnvelope(JSON.parse(raw));
-    } catch {
-      return null;
-    }
+  const text = resultTextOf(block);
+  if (text === null) return null;
+  const first = tryParseEnvelope(text);
+  if (first !== null) return first;
+  if (text.includes('\\"')) {
+    const unescaped = text.replace(/\\"/g, '"');
+    const second = tryParseEnvelope(unescaped);
+    if (second !== null) return second;
   }
-  return parseEnvelope(raw);
+  return null;
+}
+function tryParseEnvelope(text) {
+  try {
+    return parseEnvelope(JSON.parse(text));
+  } catch {
+    return null;
+  }
 }
 function blockErrorView(block) {
   if (!block || block.isError !== true) return null;
-  const text = typeof block.error === "string" ? block.error : "";
+  const text = errorTextOf(block) ?? "";
   return classifyError(void 0, text);
 }
 
 // src/ReportCard.tsx
+var rowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "6px 10px",
+  cursor: "pointer",
+  userSelect: "none",
+  fontSize: "13px",
+  lineHeight: "20px",
+  color: "var(--dsw-alias-label-primary, #222)",
+  borderRadius: "6px"
+};
+var rowHoverStyle = {
+  ...rowStyle,
+  background: "rgba(0,0,0,0.04)"
+};
+var titleStyle = {
+  fontWeight: 600,
+  whiteSpace: "nowrap"
+};
+var summaryStyle = {
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  opacity: 0.7
+};
+var cardStyle = {
+  borderTop: "1px solid rgba(0,0,0,0.08)",
+  padding: "8px 10px",
+  fontSize: "13px"
+};
 function rowsView(kind, rows) {
   if (kind === "lab-report") {
     return (0, import_react.createElement)(
       "table",
-      { className: "medai-card-table" },
+      { style: { borderCollapse: "collapse", width: "100%" } },
       (0, import_react.createElement)(
         "tbody",
         null,
         rows.map(
           (row, i) => (0, import_react.createElement)(
             "tr",
-            { key: i, className: row.abnormal ? "medai-row-abnormal" : void 0 },
-            (0, import_react.createElement)("td", { className: "medai-cell-label" }, row.label),
-            (0, import_react.createElement)("td", null, row.value)
+            { key: i, style: row.abnormal ? { background: "rgba(255,200,0,0.12)" } : void 0 },
+            (0, import_react.createElement)("td", { style: { padding: "2px 8px 2px 0", opacity: 0.7 } }, row.label),
+            (0, import_react.createElement)("td", { style: { padding: "2px 8px" } }, row.value)
           )
         )
       )
@@ -200,60 +272,89 @@ function rowsView(kind, rows) {
   }
   return (0, import_react.createElement)(
     "dl",
-    { className: "medai-card-rows" },
+    { style: { margin: 0 } },
     rows.map(
       (row, i) => (0, import_react.createElement)(
         import_react.Fragment,
         { key: i },
-        (0, import_react.createElement)("dt", null, row.label),
-        (0, import_react.createElement)("dd", null, row.value)
+        (0, import_react.createElement)("dt", { style: { fontWeight: 600, marginTop: 4 } }, row.label),
+        (0, import_react.createElement)("dd", { style: { margin: "0 0 2px 12px" } }, row.value)
       )
     )
   );
 }
-function ReportCard({ toolName, block }) {
-  const errorKind = blockErrorView(block);
-  if (errorKind) {
-    return (0, import_react.createElement)("div", { className: "medai-card medai-card-error" }, ERROR_MESSAGES[errorKind]);
-  }
-  const env = parseToolResult(block);
-  if (!env) {
-    return null;
-  }
+function cardBody(toolName, env) {
   const sectionKey = sectionKeyOf(toolName);
   const truncated = truncationText(env);
   const items = Array.isArray(env.items) ? env.items : [];
   const sourceRefs = Array.isArray(env.sourceRefs) ? env.sourceRefs : [];
   return (0, import_react.createElement)(
     "div",
-    { className: "medai-card" },
-    env.patientLabel ? (0, import_react.createElement)("div", { className: "medai-card-head" }, env.patientLabel) : null,
-    (0, import_react.createElement)(
-      "div",
-      { className: "medai-card-body" },
-      items.map(
-        (item, i) => (0, import_react.createElement)(
-          "div",
-          { key: i, className: "medai-card-section" },
-          (0, import_react.createElement)(
-            "h5",
-            null,
-            buildReportSection(sectionKey, item ?? {}).title
-          ),
-          rowsView(
-            buildReportSection(sectionKey, item ?? {}).kind,
-            buildReportSection(sectionKey, item ?? {}).rows
-          )
-        )
-      )
-    ),
-    truncated ? (0, import_react.createElement)("div", { className: "medai-card-truncated" }, truncated) : null,
+    { style: cardStyle },
+    env.patientLabel ? (0, import_react.createElement)("div", { style: { fontWeight: 600, marginBottom: 6 } }, env.patientLabel) : null,
+    items.map((item, i) => {
+      const section = buildReportSection(sectionKey, item ?? {});
+      return (0, import_react.createElement)(
+        "div",
+        { key: i, style: { marginBottom: 8 } },
+        (0, import_react.createElement)("h5", { style: { margin: "8px 0 4px", fontSize: 13 } }, section.title),
+        rowsView(section.kind, section.rows)
+      );
+    }),
+    truncated ? (0, import_react.createElement)("div", { style: { opacity: 0.6, marginTop: 4 } }, truncated) : null,
     sourceRefs.length > 0 ? (0, import_react.createElement)(
       "div",
-      { className: "medai-card-refs" },
+      { style: { opacity: 0.5, marginTop: 4, wordBreak: "break-all" } },
       "\u6EAF\u6E90\uFF1A",
-      sourceRefs.map((ref, i) => (0, import_react.createElement)("span", { key: i, className: "medai-card-ref" }, ref))
+      sourceRefs.map((ref, i) => (0, import_react.createElement)("span", { key: i }, `${ref} `))
     ) : null
+  );
+}
+function ReportCard({ toolName, block }) {
+  const [expanded, setExpanded] = (0, import_react.useState)(false);
+  const errorKind = blockErrorView(block);
+  const env = parseToolResult(block);
+  const displayName = displayNameOf(toolName);
+  let summary;
+  if (!isSettled(block)) {
+    summary = argsSummary(block) ?? "\u8FD0\u884C\u4E2D\u2026";
+  } else if (errorKind) {
+    summary = errorTextOf(block) ?? "\u8C03\u7528\u5931\u8D25";
+  } else if (env) {
+    summary = env.patientLabel ?? (Array.isArray(env.items) ? `\u5DF2\u8FD4\u56DE ${env.items.length} \u6761\u7ED3\u679C` : "\u67E5\u8BE2\u5B8C\u6210") ?? truncationText(env);
+  } else {
+    summary = "\u7ED3\u679C\u4E0D\u53EF\u89E3\u6790";
+  }
+  const expandable = env !== null || errorKind !== null;
+  const toggle = () => {
+    if (expandable) setExpanded((v) => !v);
+  };
+  const chevron = expandable ? expanded ? "\u25BE" : "\u25B8" : "\xB7";
+  return (0, import_react.createElement)(
+    "div",
+    { className: "medai-tool-row", "data-tool": toolName },
+    (0, import_react.createElement)(
+      "div",
+      {
+        className: "medai-tool-row-head",
+        style: expanded ? rowHoverStyle : rowStyle,
+        role: expandable ? "button" : void 0,
+        tabIndex: expandable ? 0 : void 0,
+        "aria-expanded": expandable ? expanded : void 0,
+        onClick: toggle,
+        onKeyDown: (e) => {
+          if (expandable && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            toggle();
+          }
+        }
+      },
+      (0, import_react.createElement)("span", { style: { width: 14, textAlign: "center" } }, chevron),
+      (0, import_react.createElement)("span", { style: titleStyle }, displayName),
+      (0, import_react.createElement)("span", { style: summaryStyle }, summary)
+    ),
+    expanded && errorKind ? (0, import_react.createElement)("div", { style: cardStyle }, ERROR_MESSAGES[errorKind]) : null,
+    expanded && env ? cardBody(toolName, env) : null
   );
 }
 
