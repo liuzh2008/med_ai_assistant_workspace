@@ -1,0 +1,4 @@
+# @medai/dsh-feature-guide cordis 插件声明（功能索求检测与页面跳转）
+name: '@medai/dsh-feature-guide'
+version: 0.1.0
+main: src/index.ts

@@ -31,6 +31,13 @@
       "purpose": "MCP client fork（S2 定 A）：每请求动态 JWT 头（工作站登录人身份；STATELESS 网关无会话表，换人仅头变化无需重建连接），setCredentials 注入",
       "hooks": ["host:tools", "dynamicHeaders"],
       "requiresBackend": ">=0.9.255"
+    },
+    {
+      "name": "@medai/dsh-feature-guide",
+      "version": "0.1.0",
+      "purpose": "功能索求检测与页面跳转（G1-G4）：内置功能目录（20 路由）、pre-step 索要意图双命中检测 + 核对指令注入、medai_feature_guide 本地工具、toolview 说明卡片与跳转按钮、工作站 navigate 协议（origin/路径白名单 + 路由守卫兜底）",
+      "hooks": ["agent/pre-step", "host:tools", "client:slots.inject('tool.call.toolview')", "client:postMessage"],
+      "requiresBackend": ">=0.9.255"
     }
   ],
   "mcp": {
