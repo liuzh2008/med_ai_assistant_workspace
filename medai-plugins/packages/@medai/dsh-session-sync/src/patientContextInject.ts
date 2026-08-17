@@ -50,15 +50,47 @@ export function buildPatientPrompt(patient: PatientContext | null): string {
     .replace('{id}', patient.patientId)
 }
 
-/** 去重注入 system 提示：已含同 content 则原样返回。 */
+/** 判断 messages 中是否已含该提示（兼容字符串与数组两种 content 形态）。 */
+function hasPrompt(
+  messages: Array<{ [key: string]: unknown; content?: unknown }>,
+  prompt: string,
+): boolean {
+  return messages.some((m) => {
+    const c = m?.content
+    if (c === prompt) return true
+    if (Array.isArray(c) && c.length === 1 && c[0]?.type === 'text' && c[0]?.text === prompt) return true
+    return false
+  })
+}
+
+/** 去重注入上下文消息：已含同 text 则原样返回。
+ * 消息结构对齐 DSH 官方 pre-step 注入（time-context 用 createUserMessage）：
+ * - role='user'（事件层 user/message 约定；官方注入如 agent-instructions 事件 role 也是 user）
+ * - id 非空（会话持久化验证要求：core/session assertMessageEventShape，缺 id 报
+ *   "lacks an identified message"，历史加载失败）
+ * - content 为 ContentBlock 数组（字符串 content 崩序列化 contentHasImage → TRANSPORT）
+ * - source（kind:'plugin'）——上下文注入区可辨来源 + 避免 source.kind 读取路径崩溃
+ */
 export function injectPatientContext(
   messages: Array<{ [key: string]: unknown; content?: unknown }>,
   prompt: string,
 ): Array<{ [key: string]: unknown; content?: unknown }> {
-  if (messages.some((m) => m?.content === prompt)) {
+  if (hasPrompt(messages, prompt)) {
     return messages
   }
-  return [...messages, { role: 'system', content: prompt }]
+  return [...messages, {
+    role: 'user',
+    id: randomId(),
+    content: [{ type: 'text', text: prompt }],
+    source: { kind: 'plugin', plugin: '@medai/dsh-session-sync' },
+  }]
+}
+
+/** 生成消息 id（node/browser 均有 crypto.randomUUID）。 */
+function randomId(): string {
+  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `medai-${Date.now()}-${Math.floor(Math.random() * 1e9)}`
 }
 
 /**

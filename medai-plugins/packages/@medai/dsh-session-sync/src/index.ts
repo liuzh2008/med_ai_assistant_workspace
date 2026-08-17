@@ -5,7 +5,8 @@
  *   - 会话事件同步：订阅 DSH `session/event`（core/session 全局事件）→ 缓冲
  *     → 掩码（复用 pii-guard 同源）→ 增量推送 N3 → watermark 推进/退避重试
  *   - 患者上下文注入：`agent/pre-step`（patientContextInject；当前患者状态由
- *     {@link setHostPatientContext} 提供，联调接 client 状态通道，未选患者反问降级）
+ *     {@link setHostPatientContext} 提供，经 HTTP 端点（POST /medai/patient-context，
+ *     工作站直报）更新，未选患者反问降级）
  *   - 三层清理：登出 flush / 出院·转科 / 定时兜底（inpatientWatcher + cleaner 组合，
  *     联调接入点：真实 DSH 会话删除 API 与在院清单拉取）
  *
@@ -15,12 +16,17 @@
  * 注意：禁止 export default（对齐官方 tsdown 产物：仅命名导出）。
  */
 
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { apply as applyPatientInject, type PatientContext } from './patientContextInject'
 import { createEventBuffer, TURN_END_TYPE, type EventBuffer, type SyncEvent } from './syncEngine'
 import { maskEvents } from './maskEvents'
 import { createPushEngine, createFileWatermarkStore, type ArchivePushContext, type PushEngine, type WatermarkStore } from './pushEngine'
+import { createPatientContextHandler, PATIENT_CONTEXT_PATH } from './patientContextEndpoint'
 
 export const name = '@medai/dsh-session-sync'
+
+/** host 插件服务依赖：webServer（DSH HTTP 路由注册；headless 等无 web 场景不加载本插件）。 */
+export const inject = ['webServer']
 
 /** DSH 会话事件（core/session SessionEvent 子集，自声明不 import DSH 包）。 */
 export interface SessionEventLike {
@@ -35,9 +41,22 @@ export interface SessionLike {
   id: string
 }
 
-/** host 插件上下文（agent/pre-step 与 session/event 事件面）。 */
+/** host 插件上下文（agent/pre-step 与 session/event 事件面 + webServer 路由）。 */
 export interface HostContext {
   on(event: string, listener: (...args: unknown[]) => void, opts?: { global?: boolean }): unknown
+  /**
+   * DSH webServer 服务（HTTP 路由注册；测试注入缺省时判空跳过）。
+   * 端点注册失败（重复路径等）不阻塞插件（捕获记录）。
+   */
+  webServer?: {
+    register(route: {
+      kind: 'exact' | 'prefix'
+      path: string
+      handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>
+    }): () => void
+  }
+  /** cordis logger（可选；记录端点注册失败）。 */
+  logger?: { warn?(message: unknown): void }
 }
 
 export interface HostSyncOptions {
@@ -56,10 +75,10 @@ export interface HostSyncOptions {
   fetchImpl?: typeof fetch
 }
 
-/** 当前患者状态（host pre-step 注入源；client 状态通道联调接入）。 */
+/** 当前患者状态（host pre-step 注入源；由 patientContextEndpoint 上报更新）。 */
 let currentPatient: PatientContext | null = null
 
-/** 联调接入：client 状态通道（信任文件/DSH 会话 meta）更新当前患者。 */
+/** 更新当前患者（HTTP 端点 setPatient 接入；null = 清除，反问降级）。 */
 export function setHostPatientContext(patient: PatientContext | null): void {
   currentPatient = patient
 }
@@ -134,12 +153,29 @@ export function apply(ctx: HostContext, options: HostSyncOptions = {}): void {
   // ② 患者上下文注入（agent/pre-step；未选患者 → 反问降级，N2 零医疗判断）
   applyPatientInject(ctx as Parameters<typeof applyPatientInject>[0], () => currentPatient)
 
+  // ②' 患者上下文 HTTP 端点（US-N2-03 联调接入）：工作站选中患者直报 host，
+  //     绕过 client→host 状态通道（S1 spike 遗留开放问题，实现方案 §12.3 候选②
+  //     的 HTTP 变体）。只更新内存 currentPatient，不落盘、不写日志 PII。
+  let disposeEndpoint: (() => void) | undefined
+  if (typeof ctx.webServer?.register === 'function') {
+    try {
+      disposeEndpoint = ctx.webServer.register({
+        kind: 'exact',
+        path: PATIENT_CONTEXT_PATH,
+        handler: createPatientContextHandler({ setPatient: (p) => setHostPatientContext(p) }),
+      })
+    } catch (error) {
+      ctx.logger?.warn?.(`dsh-session-sync: 注册 ${PATIENT_CONTEXT_PATH} 失败: ${String(error)}`)
+    }
+  }
+
   // ③ 三层清理组装（联调接入点）：登出 flush 由 client pre-logout 触发
   //    （flushBeforeLogout 注入）；出院/定时由 inpatientWatcher + cleaner 组合，
   //    依赖真实 DSH 会话删除 API 与在院清单端点，T22 联调接入。
 
   // 插件卸载清理
   ;(apply as unknown as { __dispose?: () => void }).__dispose = () => {
+    if (disposeEndpoint) disposeEndpoint()
     buffer.dispose()
     pushEngine.dispose()
   }

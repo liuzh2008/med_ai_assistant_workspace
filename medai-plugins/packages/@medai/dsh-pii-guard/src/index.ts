@@ -102,8 +102,11 @@ export function apply(ctx: PluginContext): void {
   ctx.on('agent/pre-step', async ({ messages }, next): Promise<PreStepDecision> => {
     const decision = await next();
     if (decision?.kind === 'enter' && Array.isArray(decision.messages)) {
+      // 掩码只针对用户自由文本（role !== 'system'）：@medai/dsh-session-sync 注入的
+      // system 患者上下文提示（含真实 patientId，供 AI 调 MCP 工具）必须保持原文，
+      // 否则 AI 拿到掩码后的 patientId，medai_* 工具调用必然失败（查无此患者）。
       let cleaned = decision.messages.map((m) => {
-        if (typeof m?.content === 'string') {
+        if (typeof m?.content === 'string' && m.role !== 'system') {
           return { ...m, content: maskPii(nameMapper.apply(m.content).text) };
         }
         return m;

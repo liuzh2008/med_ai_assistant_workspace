@@ -48,9 +48,14 @@ describe('patientContextInject（US-N2-03 患者上下文提示注入）', () =>
     )
 
     expect(decision.kind).toBe('enter')
-    const injected = (decision as PreStepDecision).messages?.at(-1)
-    // 注入的是 buildPatientPrompt 填充产物（非模板常量原文）
-    expect(injected).toEqual({ role: 'system', content: buildPatientPrompt(PATIENT) })
+    const injected = (decision as PreStepDecision).messages?.at(-1) as Record<string, unknown>
+    // 消息结构对齐 DSH 官方 pre-step 注入（createUserMessage 契约）：
+    // role='user'（事件层约定）+ id 非空（持久化验证）+ content 数组 + source
+    expect(injected.role).toBe('user')
+    expect(typeof injected.id).toBe('string')
+    expect((injected.id as string).length).toBeGreaterThan(0)
+    expect(injected.content).toEqual([{ type: 'text', text: buildPatientPrompt(PATIENT) }])
+    expect(injected.source).toEqual({ kind: 'plugin', plugin: '@medai/dsh-session-sync' })
     // 既有消息不被改写
     expect((decision as PreStepDecision).messages?.[0]).toEqual({ role: 'user', content: '3床患者今天情况怎么样？' })
   })
@@ -65,7 +70,11 @@ describe('patientContextInject（US-N2-03 患者上下文提示注入）', () =>
       async () => ({ kind: 'enter', messages: [{ role: 'user', content: '帮我看看检验结果' }] }),
     )
 
-    expect((decision as PreStepDecision).messages?.at(-1)).toEqual({ role: 'system', content: NO_PATIENT_PROMPT })
+    const injected = (decision as PreStepDecision).messages?.at(-1) as Record<string, unknown>
+    expect(injected.role).toBe('user')
+    expect(typeof injected.id).toBe('string')
+    expect(injected.content).toEqual([{ type: 'text', text: NO_PATIENT_PROMPT }])
+    expect(injected.source).toEqual({ kind: 'plugin', plugin: '@medai/dsh-session-sync' })
   })
 
   it('不拦截工具调用：含 tool_calls 的消息原样透传，注入仅 append', async () => {
