@@ -1,0 +1,44 @@
+# dsh-api-proxy source 空读防御补丁
+# ============================================================
+# 来源：DSH 助手患者上下文联调（2026-08-17，medai-plugins dsh-session-sync
+#       新增 POST /medai/patient-context 端点 + agent/pre-step 注入）。
+# 适用：deepseek-harness（3080 使用实例）本地克隆，官方仓库未合入。
+# 文件：packages/host/apiproxy/src/api-proxy.ts
+#
+# 背景：第三方 pre-step 注入的上下文消息（如 @medai/dsh-session-sync 的患者
+#   上下文）在契约修复前可能不带 source 字段；DSH 多处按约定直接读
+#   `source.kind` 无防御，单条异常消息即可让 session.list 投影 / queue
+#   投影整体 500（实测：Cannot read properties of undefined (reading 'kind')）。
+#   插件侧已修复根因（注入带 source），本补丁兜底历史残留与边界情况。
+#
+# 重新应用（补丁目录相对 deepseek-harness 根）：
+#   git apply patches/dsh-api-proxy-source-guard.patch
+#   （或用 git diff packages/host/apiproxy/src/api-proxy.ts 核对一致性）
+# ============================================================
+diff --git a/packages/host/apiproxy/src/api-proxy.ts b/packages/host/apiproxy/src/api-proxy.ts
+index bda99362b6..0e01cb35b0 100644
+--- a/packages/host/apiproxy/src/api-proxy.ts
++++ b/packages/host/apiproxy/src/api-proxy.ts
+@@ -511,7 +511,9 @@ function sessionBlank(session: Session): boolean {
+ /** Advance the Session-list hint projection by one committed event. */
+ function applySessionListMetadata(state: SessionListMetadata, event: SessionEvent): SessionListMetadata {
+   const blank = state.blank && event.type !== 'turn/start'
+-  const lastPromptAt = event.type === 'user/message' && event.data.source.kind === 'user'
++  // 防御：第三方 pre-step 注入的 system 消息（如 @medai/dsh-session-sync 的患者
++  // 上下文）可能不带 source；source 缺失按"非用户消息"处理，不崩列表投影。
++  const lastPromptAt = event.type === 'user/message' && event.data.source?.kind === 'user'
+     ? event.time
+     : state.lastPromptAt
+   return blank === state.blank && lastPromptAt === state.lastPromptAt
+@@ -1340,8 +1342,9 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
+         id: message.id,
+         // Only user-origin messages are steering; injected context (approval
+         // notices, task completion, attached snapshots) is not a user action
+-        // and must not render as a pending steering bubble.
+-        placement: message.source.kind === 'user' ? 'steering' as const : 'context' as const,
++        // and must not render as a pending steering bubble. 防御同 session.list：
++        // 第三方注入消息可能无 source。
++        placement: message.source?.kind === 'user' ? 'steering' as const : 'context' as const,
+         message,
+       })),
+     ]
