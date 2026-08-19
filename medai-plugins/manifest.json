@@ -38,6 +38,27 @@
       "purpose": "功能索求检测与页面跳转（G1-G4）：内置功能目录（20 路由）、pre-step 索要意图双命中检测 + 核对指令注入、medai_feature_guide 本地工具、toolview 说明卡片与跳转按钮、工作站 navigate 协议（origin/路径白名单 + 路由守卫兜底）",
       "hooks": ["agent/pre-step", "host:tools", "client:slots.inject('tool.call.toolview')", "client:postMessage"],
       "requiresBackend": ">=0.9.255"
+    },
+    {
+      "name": "@medai/dsh-record-sync",
+      "version": "0.1.0",
+      "purpose": "快速类病历同步生成（F2b+F3，T2.3）：medai_record_generate_sync TS 工具（timeoutMs 120s 自声明），fetch 同步等待端点 POST /api/mcp/generate-sync（≈90s），返回完成状态+脱敏摘要+promptId，超时降级转 medai_record_status；JWT 复用 mcp-client 凭据单一来源（setCredentials 注入）",
+      "hooks": ["host:tools"],
+      "requiresBackend": ">=0.9.255"
+    },
+    {
+      "name": "@medai/dsh-ui-draft-card",
+      "version": "0.1.0",
+      "purpose": "明文草稿卡片（F4，T2.5）：tool.call.toolview keyed slot 注册 medai_record_generate_sync，按 promptId 直连 GET /api/mcp/draft/{promptId}（F2e）渲染明文草稿；明文只进卡片、不进模型上下文/会话日志，401 显示无权限",
+      "hooks": ["client:slots.inject('tool.call.toolview')"],
+      "requiresBackend": ">=0.9.255"
+    },
+    {
+      "name": "@medai/dsh-flow-validator",
+      "version": "0.1.0",
+      "purpose": "医生工作流程 DSH 结合校验器（F1，T1.1/1.2）：SKILL.md frontmatter schema 校验（name/description/whenToUse + medai_* 工具白名单）+ 35 步 ↔ 10 剧本覆盖矩阵校验（需 AI 介入全覆盖、不介入组不被引用）",
+      "hooks": [],
+      "requiresBackend": ">=0.9.255"
     }
   ],
   "mcp": {

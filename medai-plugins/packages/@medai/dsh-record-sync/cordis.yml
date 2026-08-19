@@ -1,0 +1,4 @@
+# @medai/dsh-record-sync cordis 插件声明（快速类同步生成，F2b+F3）
+name: '@medai/dsh-record-sync'
+version: 0.1.0
+main: src/index.ts

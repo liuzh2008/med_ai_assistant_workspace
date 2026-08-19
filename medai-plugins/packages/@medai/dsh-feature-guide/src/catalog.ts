@@ -1,5 +1,11 @@
 /**
- * G1 功能目录：系统功能元数据清单 + 确定性检索（纯数据 + 纯函数，零依赖）。
+ * G1 功能目录：系统功能/能力元数据清单 + 确定性检索（纯数据 + 纯函数，零依赖）。
+ *
+ * 两类条目（2026-08-18 起）：
+ * - 页面功能条目：route 对应前端 router/index.js 业务路由（2026-08-17 提取，catalog.test.ts 漂移告警）；
+ * - 能力条目（consultation/ward-round-records 等文书生成类）：route 复用承载页面（/medical-records 或
+ *   /ai-assistant），aliases 覆盖"语义重排型"用户说法（如"请内分泌科会诊"→ 请会诊记录模板），
+ *   description 指引 medai_record_generate 对应模板——新增能力模板时同步补此类条目（同类缺口排查）。
  *
  * SoC 铁律：
  * - G1 不感知对话、UI、协议——清单增删只动本文件一处；
@@ -198,6 +204,62 @@ export const FEATURE_ENTRIES: FeatureEntry[] = [
     summary: '教研室数据演示环境。',
     description: '教研室场景的数据演示页面，用于教学展示。',
     route: '/tr-demo',
+  },
+  {
+    id: 'consultation',
+    name: '会诊申请（请会诊记录）',
+    aliases: ['会诊', '请会诊', '会诊申请', '会诊记录', '请会诊记录', '专科会诊', '内分泌科会诊', '心内科会诊', '神经内科会诊', '呼吸科会诊', '邀请会诊'],
+    summary: '生成《请会诊记录》文书草稿（AI 辅助）。',
+    description: '支持会诊申请：经 AI 辅助生成《请会诊记录》文书。在对话中说明会诊科室与目的（如"请内分泌科会诊，评估血糖控制方案"），助手可调用 medai_record_generate（模板"请会诊记录"，附会诊目的/病情摘要，系统自动脱敏）生成文书草稿，完整结果请在工作站 AI 辅助界面查看。会诊流程本身（通知/安排/会诊意见）由科室间人工协调，AI 只生成文书。',
+    route: '/ai-assistant',
+  },
+  {
+    id: 'ward-round-records',
+    name: '查房记录/病程记录生成',
+    aliases: ['查房记录', '写查房记录', '查房', '病程记录', '日常病程', '上级医师查房', '主任查房', '主治查房', '病程'],
+    summary: 'AI 辅助生成查房记录与日常病程记录。',
+    description: '支持查房记录/病程记录生成：说明患者与查房要点（病情变化、查体、检查回报、医嘱调整依据），助手可调用 medai_record_generate（模板"上级医师查房记录"/"病程记录"）生成草稿，完整结果请在工作站 AI 辅助界面查看，审核后正式保存。',
+    route: '/medical-records',
+  },
+  {
+    id: 'preop-documents',
+    name: '术前文书生成',
+    aliases: ['术前讨论', '术前讨论记录', '术前小结', '术前访视', '手术记录', '写术前讨论', '手术文书', '术前评估'],
+    summary: 'AI 辅助生成术前讨论/术前小结/手术记录等文书。',
+    description: '支持术前文书生成：说明患者与手术信息，助手可调用 medai_record_generate（模板"术前讨论记录"/"术前小结"/"术前访视记录"/"手术记录"）按数据库 Prompt 模板约束生成草稿，完整结果请在工作站 AI 辅助界面查看，审核后正式保存。',
+    route: '/ai-assistant',
+  },
+  {
+    id: 'discharge-documents',
+    name: '出院文书生成',
+    aliases: ['出院小结', '出院记录', '出院证明', '出院证明书', '写出院小结'],
+    summary: 'AI 辅助生成出院小结/出院证明书。',
+    description: '支持出院文书生成：助手可调用 medai_record_generate（模板"出院小结"/"出院证明书"）汇总全病程生成草稿，完整结果请在工作站 AI 辅助界面查看，审核后正式保存。',
+    route: '/medical-records',
+  },
+  {
+    id: 'admission-documents',
+    name: '入院文书生成',
+    aliases: ['入院记录', '首次病程记录', '首程', '写首程', '入院记录总结', '现病史', '问诊记录'],
+    summary: 'AI 辅助生成入院记录/首次病程记录等入院文书。',
+    description: '支持入院文书生成：助手可调用 medai_record_generate（模板"入院记录"/"首次病程记录"/"入院记录总结"/"现病史"）生成草稿（首程 8h、入院记录 24h 时限），完整结果请在工作站 AI 辅助界面查看，审核后正式保存。',
+    route: '/medical-records',
+  },
+  {
+    id: 'transfer-record',
+    name: '转科记录生成',
+    aliases: ['转科', '转科申请', '转科记录', '办理转科', '转呼吸内科', '转呼吸科', '转心内科', '转神经内科', '转到其他科室', '转病区'],
+    summary: 'AI 辅助生成《转科记录》文书草稿。',
+    description: '支持转科记录生成：说明转科去向与原因（如"转呼吸内科，因肺部感染加重"），助手可调用 medai_record_generate（模板"转科记录"，附转科原因，系统自动脱敏）生成文书草稿，完整结果请在工作站 AI 辅助界面查看。',
+    route: '/medical-records',
+  },
+  {
+    id: 'discussion-documents',
+    name: '病例讨论记录生成',
+    aliases: ['病例讨论', '疑难病例讨论', '危重病例讨论', '多学科讨论', 'MDT', '讨论记录', '讨论材料', '病例讨论材料'],
+    summary: 'AI 辅助生成多学科/疑难病例讨论记录草稿。',
+    description: '支持病例讨论记录生成：助手汇总病史+检验+检查材料并调用 medai_record_generate（模板"多学科讨论记录"/"四级手术术前多学科讨论记录"）生成讨论记录草稿，完整结果请在工作站 AI 辅助界面查看，审核后正式保存。',
+    route: '/ai-assistant',
   },
 ]
 

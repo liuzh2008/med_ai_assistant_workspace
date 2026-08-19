@@ -33,7 +33,7 @@ describe('G2 medai_feature_guide 工具执行 executeGuide', () => {
   })
 
   it('tool_execute_未命中_应返回matched=false加引导文案', () => {
-    const result = executeGuide(FEATURE_CATALOG, { query: '会诊排班' })
+    const result = executeGuide(FEATURE_CATALOG, { query: '会议排班系统' })
     expect(result.matched).toBe(false)
     expect(result.features).toEqual([])
     expect(result.hint).toBe(NO_MATCH_HINT)
