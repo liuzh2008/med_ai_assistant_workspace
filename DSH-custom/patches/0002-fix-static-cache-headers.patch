@@ -1,0 +1,74 @@
+From e7a04a9ac61d4a267e53c042192cbd0405e631e8 Mon Sep 17 00:00:00 2001
+From: Administrator <admin@example.com>
+Date: Fri, 21 Aug 2026 12:16:31 +0800
+Subject: [PATCH] fix(client-modules,frontend-static): immutable long-cache
+ hashed client bundles and /assets
+
+/plugins/<id>/client.js?rev=<sha1> URLs are content-addressed (rev = sha1 of
+the bundle), yet the route served Cache-Control: no-cache with no ETag, so
+every page reload re-downloaded ~10 MB across 44 client bundles. Serve them
+immutable for a year; a rebuilt bundle changes the rev -> URL -> cache key.
+
+The Vite shell under /assets/ (index-*.js/css) is hashed the same way; serve
+it immutable too. index.html stays no-cache (dynamic boot-manifest injection).
+---
+ packages/client/modules/src/index.ts       |  7 ++++++-
+ packages/host/frontend-static/src/index.ts | 15 +++++++++++++--
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/packages/client/modules/src/index.ts b/packages/client/modules/src/index.ts
+index aa0ff5d59d..dee326f7c8 100644
+--- a/packages/client/modules/src/index.ts
++++ b/packages/client/modules/src/index.ts
+@@ -444,9 +444,14 @@ export class ClientModuleRegistry extends Service {
+     }
+     try {
+       const body = await readFile(path)
++      // The bundle URL already carries the content-hash rev
++      // (`/plugins/<id>/client.js?rev=<sha1>`), so a rebuilt bundle changes the
++      // URL and invalidates this cache entry. Immutable long caching turns every
++      // reload after the first into a zero-request hit instead of re-downloading
++      // ~10 MB of client bundles (source maps follow the same rev).
+       res.writeHead(200, {
+         'content-type': isSourceMap ? 'application/json; charset=utf-8' : 'text/javascript; charset=utf-8',
+-        'cache-control': 'no-cache',
++        'cache-control': 'public, max-age=31536000, immutable',
+       })
+       res.end(body)
+     } catch {
+diff --git a/packages/host/frontend-static/src/index.ts b/packages/host/frontend-static/src/index.ts
+index 7d0f409f03..72e90bba96 100644
+--- a/packages/host/frontend-static/src/index.ts
++++ b/packages/host/frontend-static/src/index.ts
+@@ -68,7 +68,9 @@ export async function serveStatic(
+   }
+   const serveIndex = async (): Promise<void> => {
+     const body = await renderIndex()
+-    res.writeHead(200, { 'content-type': MIME['.html'] })
++    // The index is the SPA entry and carries the dynamically injected boot
++    // manifest, so it must be revalidated on every load — never long-cached.
++    res.writeHead(200, { 'content-type': MIME['.html'], 'cache-control': 'no-cache' })
+     res.end(body)
+   }
+   if (target === distRoot || target === distIndex) {
+@@ -77,7 +79,16 @@ export async function serveStatic(
+   }
+   try {
+     const body = await readFile(target)
+-    res.writeHead(200, { 'content-type': MIME[extname(target)] ?? 'application/octet-stream' })
++    // Hashed build assets under /assets/ (index-<hash>.js/css, vendor-*.js) are
++    // content-addressed: a rebuild changes the filename, so immutable long
++    // caching is safe and turns reloads into zero-request hits. Everything else
++    // (manifest.webmanifest, favicon, ...) stays revalidated to avoid stale
++    // metadata after an update.
++    const hashed = pathname.startsWith('/assets/')
++    res.writeHead(200, {
++      'content-type': MIME[extname(target)] ?? 'application/octet-stream',
++      'cache-control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache',
++    })
+     res.end(body)
+   } catch {
+     // Miss (ENOENT/EISDIR) falls back to index.html with 200 (SPA routing).
+-- 
+2.52.0.windows.1
+
