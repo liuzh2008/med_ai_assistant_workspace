@@ -37,18 +37,22 @@ function activeEnvelope(): Record<string, unknown> {
 }
 
 describe('keyed slot 注册（tool.call.toolview）', () => {
-  it('① apply 为 medai_flow_tasks 注册 keyed renderer（双 key）', () => {
-    const register = vi.fn()
+  it('① apply 为 medai_flow_tasks 注册 keyed renderer（双 key，toolview 子集）', () => {
+    const register = vi.fn(() => () => {})
     const inject = vi.fn(() => register)
     const ctx = { slots: { inject, register } }
 
     apply(ctx as never)
 
     expect(inject).toHaveBeenCalledWith('tool.call.toolview', expect.any(Function))
-    const providers = inject.mock.calls.map((c) => c[1]) as Array<() => unknown>
-    for (const provider of providers) provider()
-    expect(register).toHaveBeenCalledTimes(2)
-    const keys = register.mock.calls.map((c) => (c[0] as { key: string }).key)
+    // 仅取 tool.call.toolview 的注册（apply 另有 overlay/view 两路，见 board.test.tsx）
+    const toolviewProviders = inject.mock.calls
+      .filter((c) => c[0] === 'tool.call.toolview')
+      .map((c) => c[1]) as Array<() => unknown>
+    for (const provider of toolviewProviders) provider()
+    const toolviewRegs = register.mock.calls.filter((c) => (c[0] as { name: string }).name === 'tool.call.toolview')
+    expect(toolviewRegs).toHaveLength(2)
+    const keys = toolviewRegs.map((c) => (c[0] as { key: string }).key)
     expect(keys).toContain('medai_flow_tasks')
     expect(keys).toContain('mcp__medai__medai_flow_tasks')
   })

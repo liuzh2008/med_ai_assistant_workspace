@@ -1,34 +1,45 @@
 /**
- * @medai/dsh-flow-panel client 半（TDD 指南 T4.3，browser bundle）。
+ * @medai/dsh-flow-panel client 半（TDD 指南 C10~C12，browser bundle）。
  *
- * 为 medai_flow_tasks 注册 `tool.call.toolview` keyed renderer（双 key：
- * 本地工具名 + MCP 前缀兜底，对齐 draft-card 惯例）。面板渲染当前病人
- * 流程任务情况（进度/状态/失败原因），任务项后续联调接入 AI 辅助页面跳转。
+ * 三路注册：
+ *   ① tool.call.toolview keyed renderer（既有）：medai_flow_tasks 单患者任务卡片；
+ *   ② shell.overlay（G4 常驻概要角标）：全局浮层「N 进行中 · M 失败」；
+ *   ③ conversation.view（G4 流程看板 Tab）：与 Chat/Trajectory 并列的完整看板。
+ * 数据均经 host 半 G3 同源端点（/medai/flow-board）获取，client 不持凭据。
  */
 
 import { FlowPanel } from './FlowPanel.js'
+import { BoardBadge } from './BoardBadge.js'
+import { BoardTab } from './BoardTab.js'
 
 export const name = '@medai/dsh-flow-panel'
 
 /** Required service: the slot registry that owns the tool.call.toolview seats. */
 export const inject = ['slots']
 
-/** 注册 key：本地工具名 + MCP 前缀兜底。 */
+/** 注册 key：本地工具名 + MCP 前缀兜底（既有 toolview 卡片）。 */
 export const TOOL_KEYS = ['medai_flow_tasks', 'mcp__medai__medai_flow_tasks']
 
 interface SlotCtx {
   slots: {
     inject(key: string, provider: () => unknown): unknown
-    register(options: { name: string; key: string }, component: unknown): unknown
+    register(options: { name: string; key?: string; id?: string; label?: string }, component: unknown): unknown
   }
 }
 
-/** 浏览器端为 medai_flow_tasks 注册任务面板 renderer。 */
+/** 浏览器端注册三路 UI（toolview 卡片 + overlay 角标 + 流程看板 Tab）。 */
 export function apply(ctx: SlotCtx): void {
+  // ① tool.call.toolview（既有单患者卡片）
   for (const key of TOOL_KEYS) {
     ctx.slots.inject('tool.call.toolview', () =>
       ctx.slots.register({ name: 'tool.call.toolview', key }, FlowPanel))
   }
+  // ② shell.overlay 常驻概要角标（root scope，全场景可见）
+  ctx.slots.inject('shell.overlay', () =>
+    ctx.slots.register({ name: 'shell.overlay', id: 'medai-flow-badge' }, BoardBadge))
+  // ③ conversation.view 流程看板 Tab（session scope，与 Chat/Trajectory 并列）
+  ctx.slots.inject('conversation.view', () =>
+    ctx.slots.register({ name: 'conversation.view', id: 'medai-flow-board', label: '流程看板' }, BoardTab))
 }
 
 // 注意：禁止 export default。vendor/loader 的 unwrapExports 优先取
