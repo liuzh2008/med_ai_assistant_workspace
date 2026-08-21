@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "medai-plugins",
   "dshBaseline": "47f943859b",
-  "backendVersion": "0.9.255",
+  "backendVersion": "0.9.266",
   "packages": [
     {
       "name": "@medai/dsh-pii-guard",
@@ -59,6 +59,13 @@
       "purpose": "医生工作流程 DSH 结合校验器（F1，T1.1/1.2）：SKILL.md frontmatter schema 校验（name/description/whenToUse + medai_* 工具白名单）+ 35 步 ↔ 10 剧本覆盖矩阵校验（需 AI 介入全覆盖、不介入组不被引用）",
       "hooks": [],
       "requiresBackend": ">=0.9.255"
+    },
+    {
+      "name": "@medai/dsh-flow-panel",
+      "version": "0.1.0",
+      "purpose": "医疗流程任务面板（G4，T4.3）：tool.call.toolview keyed slot 注册 medai_flow_tasks，点击查看当前病人流程任务情况（首诊收治流水线进度/状态/失败原因/更新时间）；后端配套 medai_flow_tasks/medai_flow_trigger 2 工具（16 工具面）",
+      "hooks": ["client:slots.inject('tool.call.toolview')"],
+      "requiresBackend": ">=0.9.266"
     }
   ],
   "mcp": {

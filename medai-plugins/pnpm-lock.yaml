@@ -32,6 +32,30 @@ importers:
         specifier: ^3.0.0
         version: 3.2.7(@types/node@24.13.3)(jsdom@24.0.0)
 
+  packages/@medai/dsh-flow-panel:
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.31
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.2.0
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.5.2
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@24.13.3)(jsdom@24.0.0)
+
   packages/@medai/dsh-flow-validator:
     devDependencies:
       '@types/node':
