@@ -20,6 +20,7 @@ export const STATUS_LABELS: Record<string, string> = {
   ACTIVE: '进行中',
   DONE: '已完成',
   FAILED: '失败',
+  CANCELLED: '已取消',
 }
 
 /** 流程任务项（信封 items 元素，字段全部可选容错）。 */

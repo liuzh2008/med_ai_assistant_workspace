@@ -44,7 +44,8 @@ var STEP_LABELS = {
 var STATUS_LABELS = {
   ACTIVE: "\u8FDB\u884C\u4E2D",
   DONE: "\u5DF2\u5B8C\u6210",
-  FAILED: "\u5931\u8D25"
+  FAILED: "\u5931\u8D25",
+  CANCELLED: "\u5DF2\u53D6\u6D88"
 };
 function flowStepLabel(step) {
   if (typeof step !== "string" || step === "") return "\u5F85\u542F\u52A8";

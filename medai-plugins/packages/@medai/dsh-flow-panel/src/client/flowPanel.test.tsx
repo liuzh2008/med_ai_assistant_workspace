@@ -67,6 +67,7 @@ describe('视图模型（纯函数）', () => {
     expect(model.tasks[0].statusLabel).toBe('进行中')
     expect(flowStepLabel('wait-orders-window')).toBe('等待医嘱窗口（约1小时）')
     expect(flowStatusLabel('FAILED')).toBe('失败')
+    expect(flowStatusLabel('CANCELLED')).toBe('已取消')
   })
 
   it('④ FAILED 实例 → 失败原因透出', () => {
@@ -75,6 +76,14 @@ describe('视图模型（纯函数）', () => {
     })
     expect(model.tasks[0].statusLabel).toBe('失败')
     expect(model.tasks[0].failureReason).toBe('生成超时')
+  })
+
+  it('④ CANCELLED 实例 → 状态"已取消"且取消原因透出', () => {
+    const model = buildPanelModel({
+      items: [{ flowId: 'admission-first-mile', currentStep: 'wait-orders-window', status: 'CANCELLED', failureReason: '手动取消' }],
+    })
+    expect(model.tasks[0].statusLabel).toBe('已取消')
+    expect(model.tasks[0].failureReason).toBe('手动取消')
   })
 })
 
