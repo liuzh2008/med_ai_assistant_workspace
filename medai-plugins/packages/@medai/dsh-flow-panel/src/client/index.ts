@@ -11,11 +11,26 @@
 import { FlowPanel } from './FlowPanel.js'
 import { BoardBadge } from './BoardBadge.js'
 import { BoardTab } from './BoardTab.js'
+import { MEDAI_FLOW_STYLES, STYLE_TAG_ID } from './styles.js'
 
 export const name = '@medai/dsh-flow-panel'
 
 /** Required service: the slot registry that owns the tool.call.toolview seats. */
 export const inject = ['slots']
+
+/**
+ * 幂等注入插件样式（<style data-plugin="@medai/dsh-flow-panel">）。
+ * 带 data-plugin 属性 → 纳入 DSH client-modules 样式认领/清理（HMR、卸载自动管理）；
+ * 重复 apply 不产生重复标签（同 data-plugin 已存在则跳过）。
+ */
+function ensureStylesInjected(): void {
+  if (typeof document === 'undefined') return
+  if (document.head.querySelector(`style[data-plugin=${JSON.stringify(STYLE_TAG_ID)}]`) !== null) return
+  const tag = document.createElement('style')
+  tag.setAttribute('data-plugin', STYLE_TAG_ID)
+  tag.textContent = MEDAI_FLOW_STYLES
+  document.head.append(tag)
+}
 
 /** 注册 key：本地工具名 + MCP 前缀兜底（既有 toolview 卡片）。 */
 export const TOOL_KEYS = ['medai_flow_tasks', 'mcp__medai__medai_flow_tasks']
@@ -29,6 +44,8 @@ interface SlotCtx {
 
 /** 浏览器端注册三路 UI（toolview 卡片 + overlay 角标 + 流程看板 Tab）。 */
 export function apply(ctx: SlotCtx): void {
+  // 样式先行：三路 UI 的类名样式统一由本插件注入
+  ensureStylesInjected()
   // ① tool.call.toolview（既有单患者卡片）
   for (const key of TOOL_KEYS) {
     ctx.slots.inject('tool.call.toolview', () =>

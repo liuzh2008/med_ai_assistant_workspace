@@ -363,11 +363,381 @@ function BoardTab() {
   });
 }
 
+// src/client/styles.ts
+var STYLE_TAG_ID = "@medai/dsh-flow-panel";
+var MEDAI_FLOW_STYLES = `
+/* ============ \u2460 \u6D41\u7A0B\u770B\u677F Tab\uFF08conversation.view\uFF09 ============ */
+.medai-board {
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.medai-board *,
+.medai-board *::before,
+.medai-board *::after {
+  box-sizing: border-box;
+}
+
+/* ---- \u7EDF\u8BA1\u5361\uFF08\u56DB\u7C7B\u8BA1\u6570\uFF09 ---- */
+.medai-board-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  flex: none;
+}
+.medai-board-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px 11px;
+  background: var(--dsw-alias-bg-layer-2);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.medai-board-stat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.medai-board-stat.stat-active::before { background: var(--dsw-alias-state-business-primary); }
+.medai-board-stat.stat-done::before   { background: var(--dsw-alias-state-success-primary); }
+.medai-board-stat.stat-failed::before { background: var(--dsw-alias-state-error-primary); }
+.medai-board-stat.stat-cancelled::before { background: var(--dsw-alias-label-tertiary); }
+.medai-board-stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.medai-board-stat-label {
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* ---- \u5DE5\u5177\u680F\uFF08\u5237\u65B0 + \u63D0\u793A\uFF09 ---- */
+.medai-board-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  min-height: 28px;
+}
+.medai-board-refresh {
+  appearance: none;
+  border: 1px solid var(--dsw-alias-border-l3);
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-secondary);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.medai-board-refresh:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+  border-color: var(--dsw-alias-border-l4);
+}
+.medai-board-notice {
+  font-size: 12px;
+  color: var(--dsw-alias-state-warn-label);
+}
+
+/* ---- \u75C5\u4EBA\u5361\u7247\u5217\u8868 ---- */
+.medai-board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+}
+.medai-board-patient {
+  background: var(--dsw-alias-bg-layer-2);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.medai-board-patient:hover {
+  border-color: var(--dsw-alias-border-l4);
+}
+.medai-board-patient-failed {
+  border-color: var(--dsw-alias-state-error-secondary);
+  background: var(--dsw-alias-interactive-bg-hover-danger);
+}
+.medai-board-patient-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.medai-board-patient-head:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.medai-board-bed {
+  flex: none;
+  min-width: 46px;
+  text-align: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--dsw-alias-state-business-tertiary);
+  color: var(--dsw-alias-state-business-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.medai-board-patient-failed .medai-board-bed {
+  background: var(--dsw-alias-state-error-secondary);
+  color: var(--dsw-alias-state-error-primary);
+}
+.medai-board-name {
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+.medai-board-summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.medai-board-toggle {
+  flex: none;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+}
+
+/* ---- \u5C55\u5F00\u660E\u7EC6 ---- */
+.medai-board-detail {
+  padding: 0 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.medai-board-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+.medai-board-flow-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+.medai-board-flow-status {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.medai-board-flow-active .medai-board-flow-status {
+  background: var(--dsw-alias-state-business-tertiary);
+  color: var(--dsw-alias-state-business-primary);
+}
+.medai-board-flow-done .medai-board-flow-status {
+  background: var(--dsw-alias-state-success-tertiary);
+  color: var(--dsw-alias-state-success-primary);
+}
+.medai-board-flow-failed .medai-board-flow-status {
+  background: var(--dsw-alias-state-error-secondary);
+  color: var(--dsw-alias-state-error-primary);
+}
+.medai-board-flow-cancelled .medai-board-flow-status {
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-tertiary);
+}
+.medai-board-flow-step {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.medai-board-flow-time {
+  flex: none;
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.medai-board-flow-reason {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--dsw-alias-state-error-primary);
+  background: var(--dsw-alias-interactive-bg-hover-danger);
+  border-radius: 6px;
+  padding: 6px 10px;
+  word-break: break-all;
+}
+.medai-board-cancel {
+  flex: none;
+  appearance: none;
+  border: 1px solid var(--dsw-alias-state-error-secondary);
+  background: transparent;
+  color: var(--dsw-alias-state-error-primary);
+  border-radius: 6px;
+  padding: 3px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.medai-board-cancel:hover:not(:disabled) {
+  background: var(--dsw-alias-state-error-primary);
+  color: var(--dsw-alias-label-primary-inverted);
+}
+.medai-board-cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---- \u7A7A\u6001 ---- */
+.medai-board-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  border: 1px dashed var(--dsw-alias-border-l3);
+  border-radius: 10px;
+}
+
+/* ============ \u2461 \u5E38\u9A7B\u6982\u8981\u89D2\u6807\uFF08shell.overlay\uFF09 ============ */
+.medai-flow-badge {
+  position: fixed;
+  right: 16px;
+  bottom: 72px;
+  z-index: 21;
+  max-width: 320px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary-foreground);
+  background: var(--dsw-alias-button-contrast-fill);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.medai-flow-badge-alert {
+  background: var(--dsw-alias-state-error-primary);
+  animation: medai-badge-pulse 2s ease-in-out infinite;
+}
+@keyframes medai-badge-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24); }
+  50% { box-shadow: 0 4px 20px var(--dsw-alias-state-error-secondary); }
+}
+.medai-flow-badge-hidden {
+  display: none;
+}
+
+/* ============ \u2462 \u6D41\u7A0B\u4EFB\u52A1 toolview \u5361\u7247 ============ */
+.medai-flow-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 12px;
+  color: var(--dsw-alias-label-primary);
+}
+.medai-flow-task-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-2);
+}
+.medai-flow-task-flow {
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+.medai-flow-task-step {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.medai-flow-task-status {
+  flex: none;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.7;
+  font-weight: 500;
+}
+.medai-flow-task-status-active {
+  background: var(--dsw-alias-state-business-tertiary);
+  color: var(--dsw-alias-state-business-primary);
+}
+.medai-flow-task-status-done {
+  background: var(--dsw-alias-state-success-tertiary);
+  color: var(--dsw-alias-state-success-primary);
+}
+.medai-flow-task-status-failed {
+  background: var(--dsw-alias-state-error-secondary);
+  color: var(--dsw-alias-state-error-primary);
+}
+.medai-flow-task-status-cancelled {
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-tertiary);
+}
+.medai-flow-task-reason {
+  flex-basis: 100%;
+  color: var(--dsw-alias-state-error-primary);
+  word-break: break-all;
+}
+.medai-flow-task-time {
+  flex-basis: 100%;
+  color: var(--dsw-alias-label-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+`;
+
 // src/client/index.ts
 var name = "@medai/dsh-flow-panel";
 var inject = ["slots"];
+function ensureStylesInjected() {
+  if (typeof document === "undefined") return;
+  if (document.head.querySelector(`style[data-plugin=${JSON.stringify(STYLE_TAG_ID)}]`) !== null) return;
+  const tag = document.createElement("style");
+  tag.setAttribute("data-plugin", STYLE_TAG_ID);
+  tag.textContent = MEDAI_FLOW_STYLES;
+  document.head.append(tag);
+}
 var TOOL_KEYS = ["medai_flow_tasks", "mcp__medai__medai_flow_tasks"];
 function apply(ctx) {
+  ensureStylesInjected();
   for (const key of TOOL_KEYS) {
     ctx.slots.inject("tool.call.toolview", () => ctx.slots.register({ name: "tool.call.toolview", key }, FlowPanel));
   }
