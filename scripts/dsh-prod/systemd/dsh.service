@@ -1,0 +1,32 @@
+# DeepSeek Harness Web — MedAi 生产服务（openEuler 10.120.11.43）
+# 安装：sudo cp dsh.service /etc/systemd/system/ && sudo systemctl daemon-reload
+#        sudo systemctl enable --now dsh
+# 注意：/opt/node 与 /opt/deepseek-harness 为离线解包路径（见 doc/DSH生产部署指南.md §10）
+
+[Unit]
+Description=DeepSeek Harness Web (MedAi production)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dsh
+Group=dsh
+WorkingDirectory=/opt/deepseek-harness
+# DSH 数据目录（会话/凭据/profile/附件，备份对象）
+Environment=DSH_HOME=/var/lib/dsh
+# LLM 每机 token（M3 代理 Bearer，哈希注册在执行服务器 medai.llmproxy.machines[]）
+Environment=DSH_MACHINE_TOKEN=CHANGE_ME_LLM_MACHINE_TOKEN
+# MCP 网关每机 token（主服务器按 SHA-256 注册，M2 通道；可复用同一 token）
+Environment=MEDAI_MCP_TOKEN=CHANGE_ME_MCP_MACHINE_TOKEN
+# 执行服务器 M3 代理地址（settings.yaml 亦可配置）
+Environment=DEEPSEEK_BASE_URL=http://10.120.10.251:8082/api/dsh-llm
+ExecStart=/opt/node/bin/pnpm dsh web --host 127.0.0.1
+Restart=always
+RestartSec=5
+# 前端 UI + SSE 长连接
+LimitNOFILE=65535
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
