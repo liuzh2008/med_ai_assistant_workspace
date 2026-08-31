@@ -31,6 +31,9 @@ description: GitHub 提交并推送，自动更新版本号、生成更新日志
 ### 第 2 步：清理临时文件与代码注释
 删除临时生成的 diff 文件，清除调试语句，补充 JSDoc/Javadoc 注释。
 
+### 第 2.5 步：按钮帮助文档同步检查
+若前端有按钮或功能修改，按 `sync_help_docs` 命令同步 `AiMedTeach/med-teach-frontend/src/help/entries/` 帮助条目（完整流程见 `.qoder/commands/sync_help_docs.md`）。
+
 ### 第 3 步：更新版本号
 在项目根目录执行 `bump-version.ps1`，禁止手动编辑版本号。
 
