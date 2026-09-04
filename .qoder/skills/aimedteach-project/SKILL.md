@@ -22,7 +22,7 @@ description: 对话开始的项目上下文声明——表明本次对话适用�
 | 代码位置 | `AiMedTeach/`（前端 `AiMedTeach/med-teach-frontend/`、后端 `AiMedTeach/med-teach-backend/`） |
 | 后端 | Spring Boot 3.5 + Java 21 + LangChain4j 1.0+（包 `com.medteach`），JWT 认证 |
 | 前端 | Vue 3.5 + TypeScript + Vite 6 + Element Plus + ECharts 6 |
-| 数据库 | 达梦 DM8（教学库）；从医院 Oracle HIS **只读**取数，HanLP 医疗 NER + 正则规则脱敏后导入 |
+| 数据库 | **Oracle**（与 MedAi 主系统共享同一 Oracle 库：设计决策 D8「同库分表、零迁移」，schema 由主系统 sql-scripts 统一管理）。驱动 ojdbc11、`jdbc:oracle:thin`；数据源 `local`=本地/测试 Oracle（容器 med-ai-oracle，127.0.0.1 或 100.66.1.4:1521）、`internal`=医院内网 10.120.11.18:1521/orcl。病例脱敏数据源同为 Oracle HIS（只读，HanLP NER + 正则脱敏后导入教学库） |
 | AI 服务 | DeepSeek / 通义千问、阿里云百炼 PPT、阿里云智能语音；Langfuse 3.x（PostgreSQL）可观测 |
 | 测试部署 | 100.66.1.4（SSH 别名 `testserver`，用户 liuzh2008）：前端 8085（nginx 容器）、后端 8083（宿主机） |
 | 部署路径 | `/root/docker/med-teach-frontend`（root 所有，需 sudo）、`/home/liuzh2008/medai/aimedteach/testServer` |
@@ -32,6 +32,7 @@ description: 对话开始的项目上下文声明——表明本次对话适用�
 ## 适用规则与知识来源
 
 - AiMedTeach 无独立 AGENTS.md / .qoder/rules：编码规范与架构见 `AiMedTeach/.qoder/repowiki/knowledge/zh/AI医学教学系统整体技术方案/`（概述 / 架构设计 / 技术栈 / 编码规范）。
+  > ⚠️ 该知识库的《技术栈.md》仍写着"数据库选用达梦 DM8"，**属过时规划文案**；实际落地是 Oracle（与主系统共享、同库分表），以本技能速查表与 `med-teach-backend` 源码/配置为准。
 - 同工作区根的 `AGENTS.md`、`.qoder/rules/*`、`记忆库/` 属于 **MedAiAssistant**：处理 AiMedTeach 任务时，
   只把它当环境约束（编码/语言/沙箱规则），**不得**把其中 Java/Oracle/临床剧本规则当作本项目事实，默认**不写入** MedAi 的记忆库。
 

@@ -42,7 +42,7 @@ description: 对话开始的项目上下文声明——表明本次对话适用�
 ## 防混淆红线（重要）
 
 - ✗ 本工作区子目录 `AiMedTeach/`（med-teach-frontend / med-teach-backend）是 **AI 医学教学系统**，不是本项目；教学相关需求先加载 `/aimedteach-project`。
-- ✗ 临床剧本技能只服务 MedAiAssistant；AiMedTeach 的任务不得使用，也别把教学系统的技术事实（达梦 DM8、LangChain4j、8085/8083 部署）当作本项目数据。
+- ✗ 临床剧本技能只服务 MedAiAssistant；AiMedTeach 的任务不得使用，也别把教学系统的技术事实（LangChain4j、8085/8083 部署等）当作本项目数据。注意：AiMedTeach 教学微服务与主系统**共享同一 Oracle 库（同库分表）**，改库结构/执行初始化脚本时须确认影响范围。
 - ✗ 记忆库 `记忆库/` 只沉淀 MedAiAssistant 的内容，不写入 AiMedTeach 事项（AiMedTeach 没有自己的记忆库，其要点记入其项目文档即可）。
 - ✗ 部署勿错乱：MedAi 走 8081/8082；AiMedTeach 的构建产物（med-teach-frontend/med-teach-backend）只经 `/aimedteach-deploy` 部署。
 - 本会话中途要切到 AiMedTeach 时，加载 `/aimedteach-project` 重新声明。
