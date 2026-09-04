@@ -1,0 +1,840 @@
+<!doctype html>
+<!--
+  OD simple-deck seed — MedAiAssistant 1.0 医疗AI助手系统（宣发优化版）
+  由 20260416 原稿 27 页重组为 26 页：政策论证精简、数据口径统一、文案精炼。
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MedAiAssistant 1.0 · 医疗AI助手系统 · 产品宣发</title>
+  <style>
+    :root {
+      --bg:      #f5f8fc;
+      --surface: #ffffff;
+      --fg:      #0e2a47;
+      --muted:   #5b7286;
+      --border:  #dce7f2;
+      --accent:  #0e7dd1;
+      --accent-2:#0aa39a;
+      --accent-soft: color-mix(in oklch, var(--accent) 12%, transparent);
+
+      --font-display: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+      --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+      --font-mono:    ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+    }
+    body::-webkit-scrollbar { display: none; }
+    p { text-wrap: pretty; }
+    h1, h2, h3 { text-wrap: balance; }
+
+    /* ─── slide surface ─────────────────────────────────────────────── */
+    .slide {
+      flex: 0 0 100vw;
+      width: 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      padding: clamp(40px, 6vw, 80px) clamp(48px, 8vw, 112px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .slide.light { background: var(--bg); color: var(--fg); }
+    .slide.dark  { background: var(--fg); color: var(--bg); }
+    .slide.dark { --accent: #4da3ff; --accent-2: #2fd6c8; --accent-soft: color-mix(in oklch, #4da3ff 16%, transparent); }
+    .slide.dark .muted    { color: rgba(245,248,252,0.72); }
+    .slide.dark .border   { border-color: rgba(245,248,252,0.18); }
+    .slide.hero { padding-block: clamp(56px, 8vw, 112px); }
+
+    /* center alignment variant — for cover, big-stat, big-quote */
+    .slide.center { align-items: center; text-align: center; justify-content: center; }
+    .slide.center .body { margin-inline: auto; }
+
+    /* ─── eyebrow / kicker ──────────────────────────────────────────── */
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 24px;
+    }
+    .eyebrow.no-up { text-transform: none; letter-spacing: 0.04em; }
+
+    /* ─── type ──────────────────────────────────────────────────────── */
+    .h-hero {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 7vw, 96px);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      margin: 0 0 20px;
+      max-width: 16ch;
+    }
+    .h-xl {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 4.5vw, 56px);
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      margin: 0 0 18px;
+      max-width: 22ch;
+    }
+    .h-md {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 2.6vw, 32px);
+      line-height: 1.22;
+      letter-spacing: -0.01em;
+      margin: 0 0 14px;
+    }
+    .lead {
+      font-size: clamp(18px, 1.5vw, 22px);
+      line-height: 1.55;
+      color: var(--muted);
+      max-width: 60ch;
+      margin: 0;
+    }
+    .slide.dark .lead { color: rgba(245,248,252,0.8); }
+    .meta { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+    .small { font-size: 14px; }
+
+    /* ─── big-stat layout ───────────────────────────────────────────── */
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(96px, 14vw, 176px);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      font-weight: 600;
+      margin: 0 0 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-num .unit { font-size: 0.36em; opacity: 0.9; margin-left: 4px; font-weight: 500; }
+    .stat-caption {
+      font-size: clamp(16px, 1.4vw, 20px);
+      color: var(--muted);
+      max-width: 30ch;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; margin-top: 56px; }
+    .stat-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .stat-block { text-align: left; }
+
+    /* ─── 3-column point layout ─────────────────────────────────────── */
+    .pt-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 32px;
+    }
+    .pt-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .pt-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .pt {
+      border-top: 2px solid var(--accent);
+      padding-top: 14px;
+    }
+    .pt h3 { font-size: 18px; font-weight: 600; margin: 0 0 8px; letter-spacing: -0.005em; }
+    .pt p  { color: var(--muted); margin: 0; font-size: 15px; line-height: 1.5; }
+    .slide.dark .pt p { color: rgba(245,248,252,0.72); }
+
+    /* ─── pipeline (numbered steps) ─────────────────────────────────── */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      margin-top: 32px;
+    }
+    .step .nb { font-family: var(--font-mono); font-size: 13px; color: var(--accent); letter-spacing: 0.06em; }
+    .step h3 { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin: 6px 0 6px; line-height: 1.25; }
+    .step p  { color: var(--muted); margin: 0; font-size: 13px; line-height: 1.5; }
+
+    /* ─── cards / feature rows ──────────────────────────────────────── */
+    .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 28px; }
+    .card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+    .slide.dark .card { background: rgba(255,255,255,0.05); border-color: rgba(245,248,252,0.14); }
+    .card h3 { font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+    .card p { color: var(--muted); margin: 0; font-size: 14px; line-height: 1.5; }
+    .slide.dark .card p { color: rgba(245,248,252,0.72); }
+    .card .k { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--accent); display: block; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+
+    /* ─── tables ────────────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 15px; }
+    th { text-align: left; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); font-weight: 500; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+    .slide.dark th, .slide.dark td { border-color: rgba(245,248,252,0.14); }
+    .tag {
+      display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 999px;
+      background: var(--accent-soft); color: var(--accent); margin-right: 6px; white-space: nowrap;
+    }
+    .slide.dark .tag { color: #8ec9ff; }
+
+    /* ─── before/after ──────────────────────────────────────────────── */
+    .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; margin-top: 28px; }
+    .ba-col .ba-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+    .ba-col h3 { font-family: var(--font-display); font-size: 28px; line-height: 1.15; margin: 0 0 16px; max-width: 16ch; }
+    .ba-col p  { color: var(--muted); font-size: 16px; line-height: 1.5; margin: 0; }
+    .slide.dark .ba-col p { color: rgba(245,248,252,0.72); }
+
+    /* ─── layered architecture ──────────────────────────────────────── */
+    .layers { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; }
+    .layer {
+      display: grid; grid-template-columns: 120px 1fr; gap: 24px; align-items: center;
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; background: var(--surface);
+    }
+    .slide.dark .layer { background: rgba(255,255,255,0.05); border-color: rgba(245,248,252,0.14); }
+    .layer .l-no { font-family: var(--font-mono); font-size: 26px; font-weight: 600; color: var(--accent); }
+    .layer h3 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+    .layer p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .slide.dark .layer p { color: rgba(245,248,252,0.72); }
+
+    /* ─── footer / footnote ─────────────────────────────────────────── */
+    .footnote { margin-top: 36px; font-size: 13px; color: var(--muted); }
+    .slide.dark .footnote { color: rgba(245,248,252,0.6); }
+
+    /* ─── chrome (counter, hint, progress) — fixed, never scrolls ──── */
+    .deck-counter {
+      position: fixed;
+      bottom: 24px; right: 32px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--fg);
+      background: var(--surface);
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      letter-spacing: 0.04em;
+      z-index: 10;
+    }
+    .deck-hint {
+      position: fixed;
+      bottom: 24px; left: 32px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      z-index: 10;
+    }
+    .deck-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: var(--accent);
+      width: 0;
+      z-index: 10;
+      transition: width 0.18s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= 01 封面 ================= -->
+  <section class="slide hero light center" data-screen-label="01 封面">
+    <div class="eyebrow no-up">MedAiAssistant 1.0 · 成都轻舟数科科技 × 西南科技大学联合开发 · 2026.07</div>
+    <h1 class="h-hero">医疗AI助手系统</h1>
+    <p class="lead">基于大模型的智能诊疗辅助平台 —— 构建精准、高效、可信的医疗智能中枢，让基层医院用得起、用得好。</p>
+    <div style="margin-top:48px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <span class="tag">临床决策支持</span><span class="tag">私有化部署</span><span class="tag">诊疗流程优化</span><span class="tag">多层安全架构</span>
+    </div>
+  </section>
+
+  <!-- ================= 02 核心亮点 ================= -->
+  <section class="slide dark" data-screen-label="02 核心亮点">
+    <p class="eyebrow">Why MedAiAssistant</p>
+    <h2 class="h-xl">四个数字，看懂系统价值</h2>
+    <div class="stat-grid cols-4">
+      <div class="stat-block">
+        <div class="stat-num">92<span class="unit">%</span></div>
+        <p class="stat-caption">心内科大模型辅助诊断符合率，达到三甲专家水平</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">5~10<span class="unit">万元</span></div>
+        <p class="stat-caption">硬件投入，对比传统 AI 系统数百万级，成本降低 95%+</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">10~15<span class="unit">分钟</span></div>
+        <p class="stat-caption">病历书写时间（原 1-2 小时/份），日均节省 3-5 小时</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">35<span class="unit">项</span></div>
+        <p class="stat-caption">三层质控体系指标，实时比对并弹窗提示</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 03 目录 ================= -->
+  <section class="slide light" data-screen-label="03 目录">
+    <p class="eyebrow">Contents</p>
+    <h2 class="h-xl">目录</h2>
+    <div class="pt-grid cols-2" style="max-width: 1000px;">
+      <div class="pt"><h3>01 · 行业与政策</h3><p>基层医疗的缺口与政策东风</p></div>
+      <div class="pt"><h3>02 · 痛点与思路</h3><p>六大核心痛点与四大解决思路</p></div>
+      <div class="pt"><h3>03 · 技术架构</h3><p>双服务器分离与多层安全防护</p></div>
+      <div class="pt"><h3>04 · 核心功能</h3><p>AI 诊疗、DRG 分析、MCC 筛查、语音病历</p></div>
+      <div class="pt"><h3>05 · 价值证明</h3><p>量化效能、低成本部署与政策对标</p></div>
+      <div class="pt"><h3>06 · 合作与演示</h3><p>试点计划、现场演示与互动答疑</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 04 行业背景 ================= -->
+  <section class="slide light" data-screen-label="04 行业背景">
+    <p class="eyebrow">Industry Context</p>
+    <h2 class="h-xl">优质资源高度集中，基层诊疗能力缺口巨大</h2>
+    <p class="lead" style="max-width: 68ch;">中国医疗机构呈典型的倒金字塔结构：顶级医院虹吸优质资源，而承担基础诊疗的基层机构数量庞大、能力有限。</p>
+    <div class="pt-grid cols-4" style="margin-top:36px;">
+      <div class="pt"><h3>复旦百强</h3><p>约 100 家，仅分布 23 城，90%+ 地级市无百强医院</p></div>
+      <div class="pt"><h3>三甲医院</h3><p>1,876 家，占医院总数不足 5%，2024 年承担 28.7 亿人次诊疗</p></div>
+      <div class="pt"><h3>其他医院</h3><p>三乙/二级/一级等约 3.7 万家，连接顶层与基层</p></div>
+      <div class="pt"><h3>基层机构</h3><p>约 105.5 万个，村卫生室 56.0 万 + 诊所 42.4 万，构成"第一道防线"</p></div>
+    </div>
+    <p class="footnote">庞大基层数量与有限诊疗能力的反差，为医疗 AI 提供了广阔的应用空间。</p>
+  </section>
+
+  <!-- ================= 05 政策东风 ================= -->
+  <section class="slide dark" data-screen-label="05 政策东风">
+    <p class="eyebrow">Policy Tailwind</p>
+    <h2 class="h-xl">两大政策文件，指明行业方向</h2>
+    <div class="card-grid cols-2" style="margin-top:32px;">
+      <div class="card">
+        <span class="tag">2025.01 发布</span>
+        <h3>《国家数据基础设施建设指引》</h3>
+        <p>构建"横向联通、纵向贯通"的国家级数据基础设施，未来五年带动总投资 <strong style="color:var(--accent)">2 万亿元</strong>。医疗要求：电子病历跨区域共享互认、多维健康数据融合、可信数据空间与隐私保护。</p>
+      </div>
+      <div class="card">
+        <span class="tag">国卫办规划发〔2025〕30号</span>
+        <h3>《"人工智能+医疗卫生"应用实施意见》</h3>
+        <p><strong style="color:var(--accent)">2027</strong> 建立高质量数据集、临床专病专科垂直大模型，基层智能辅助广泛应用；<strong style="color:var(--accent)">2030</strong> 基层基本全覆盖，二级以上医院普遍开展影像智能辅助诊断。</p>
+      </div>
+    </div>
+    <p class="footnote">政策驱动医疗数据要素化与价值释放，基层 AI 医疗进入窗口期。</p>
+  </section>
+
+  <!-- ================= 06 政策契合：数据/安全/互联 ================= -->
+  <section class="slide light" data-screen-label="06 政策契合·数据安全互联">
+    <p class="eyebrow">Policy Alignment 01</p>
+    <h2 class="h-xl">契合数据中心建设要求</h2>
+    <p class="lead">在数据标准、安全规范、互联互通三大维度全面响应《国家数据基础设施建设指引》。</p>
+    <div class="card-grid cols-3" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">数据标准</span>
+        <p>国家卫健委强制标准 + 临床指南 + 专家共识三层质控，35 项指标，与"高质量数据集"要求一致。</p>
+      </div>
+      <div class="card">
+        <span class="k">安全规范</span>
+        <p>区域 AI 服务中心统一模型、质控与数据；轻量化 Docker 部署，敏感数据县域统一出口加密，满足"可信数据空间"。</p>
+      </div>
+      <div class="card">
+        <span class="k">互联互通</span>
+        <p>"1 个县级牵头医院 + N 家乡镇卫生院"星形网络，对接"东数西算"网络主干道技术路线。</p>
+      </div>
+    </div>
+    <p class="footnote">实现数据"供得出、流得动、用得好、保安全"。</p>
+  </section>
+
+  <!-- ================= 07 政策契合：基层AI应用 ================= -->
+  <section class="slide dark" data-screen-label="07 政策契合·基层AI应用">
+    <p class="eyebrow">Policy Alignment 02</p>
+    <h2 class="h-xl">满足基层 AI 应用需求</h2>
+    <div class="card-grid cols-2" style="margin-top:24px;">
+      <div class="card">
+        <span class="k">2027 → 5,000 家机构</span>
+        <p>完成县域全覆盖；"数万元/机构"低成本快速复制。</p>
+      </div>
+      <div class="card">
+        <span class="k">2030 → 覆盖 105.5 万基层机构</span>
+        <p>功能覆盖政策列举的 23 个细分应用场景，助力医疗质量、公卫、慢病协同、家庭医生签约智能化升级。</p>
+      </div>
+    </div>
+    <div class="pt-grid cols-4" style="margin-top:28px;">
+      <div class="pt"><h3>全科辅诊</h3><p>92% 符合率心内科大模型</p></div>
+      <div class="pt"><h3>处方审核</h3><p>实时比对 35 项质控指标并弹窗</p></div>
+      <div class="pt"><h3>随访管理</h3><p>自动生成随访计划与干预建议</p></div>
+      <div class="pt"><h3>中医辅诊</h3><p>辨证分型与处方推荐</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 08 技术架构符合政策 ================= -->
+  <section class="slide light" data-screen-label="08 技术架构符合政策">
+    <p class="eyebrow">Policy Alignment 03</p>
+    <h2 class="h-xl">技术架构符合政策标准</h2>
+    <p class="lead">分层式架构从终端到数据层，完全符合国家政策标准与规范。</p>
+    <div class="layers" style="margin-top:28px;">
+      <div class="layer">
+        <div class="l-no">1</div>
+        <div><h3>终端层</h3><p>键盘、平板手写、语音识别、智录四种录入方式，适配基层多样化硬件，满足"低成本、易使用"要求。</p></div>
+      </div>
+      <div class="layer">
+        <div class="l-no">2</div>
+        <div><h3>区域 AI 服务中心层</h3><p>统一运行大模型、质控引擎、DRG 引擎，模型与指南由中心统一推送、全网同步，对应"集约化建设、避免重复投入"。</p></div>
+      </div>
+      <div class="layer">
+        <div class="l-no">3</div>
+        <div><h3>数据层</h3><p>县级医共体统一汇聚电子病历、检验、影像、公卫数据，形成"高质量数据集"。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 09 政策目标预期效果 ================= -->
+  <section class="slide dark" data-screen-label="09 政策预期效果">
+    <p class="eyebrow">Expected Outcomes</p>
+    <h2 class="h-xl">政策目标 → 项目量化指标</h2>
+    <table>
+      <thead><tr><th style="width:22%">政策目标</th><th>项目指标</th></tr></thead>
+      <tbody>
+        <tr><td>缩小基层与三甲差距</td><td>基层诊断准确率 60-75% → <strong style="color:var(--accent)">92%</strong>，达三甲专家水平</td></tr>
+        <tr><td>建立高质量数据集</td><td>每县域年均新增结构化病历 ≥10 万份、影像数据 ≥50 万幅，实时回传国家数据中心</td></tr>
+        <tr><td>DRG/DIP 基层落地</td><td>DRG 分组准确率提升 30%，医保拒付率下降 50%，县域基金结余率提升 3-5 个百分点</td></tr>
+        <tr><td>让基层医生"愿意留下"</td><td>文书时间 1-2 小时 → 10-15 分钟/份，日均节省 3-5 小时，医生满意度提升 40%</td></tr>
+        <tr><td>打造医疗 AI 科创基地</td><td>可复制"基层 AI + 紧密型医共体"方案，为全国 105.5 万基层机构提供实战训练场，带动产业链产值超千亿元</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================= 10 六大痛点 ================= -->
+  <section class="slide light" data-screen-label="10 六大痛点">
+    <p class="eyebrow">Current Challenges</p>
+    <h2 class="h-xl">医疗信息化六大核心痛点</h2>
+    <p class="lead">制约医疗服务质量与运营效率的六大问题。</p>
+    <div class="pt-grid cols-3" style="margin-top:28px;">
+      <div class="pt"><h3>诊断编码不完整</h3><p>医生凭经验编码，并发症/合并症易遗漏，影响 DRG 分组准确性</p></div>
+      <div class="pt"><h3>DRG 管理粗放</h3><p>缺乏实时分组与盈亏分析工具，无法及时调整诊疗策略</p></div>
+      <div class="pt"><h3>质控工作量大</h3><p>质控指标靠人工逐案筛查，效率低、覆盖范围有限</p></div>
+      <div class="pt"><h3>病历书写效率低</h3><p>依赖键盘逐字录入，格式不规范，消耗医生大量时间</p></div>
+      <div class="pt"><h3>信息孤岛严重</h3><p>HIS/LIS/PACS 各自独立，数据不互通，难形成完整患者画像</p></div>
+      <div class="pt"><h3>AI 门槛高</h3><p>传统 AI 系统动辄百万投入，基层医院无力承担，技术普惠困难</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 11 痛点后果 ================= -->
+  <section class="slide dark" data-screen-label="11 痛点后果">
+    <p class="eyebrow">Severe Consequences</p>
+    <h2 class="h-xl">痛点直接导致运营与诊疗质量下滑</h2>
+    <div class="card-grid cols-3" style="margin-top:28px;">
+      <div class="card"><span class="k">医保收益流失</span><p>编码不完整导致 DRG 分组不准，医保支付未能反映实际服务成本与医疗价值。</p></div>
+      <div class="card"><span class="k">收入持续下降</span><p>缺乏 DRG 精细化管理工具，医保付费改革下医院收入面临持续下滑。</p></div>
+      <div class="card"><span class="k">人力消耗巨大</span><p>质控依赖人工逐案筛查，漏检率高，耗费大量人力成本。</p></div>
+      <div class="card"><span class="k">诊疗效率低下</span><p>病历书写占用大量临床时间，直接影响诊疗服务效率。</p></div>
+      <div class="card"><span class="k">决策依据不全</span><p>信息孤岛使医生缺乏患者全景视图，临床决策缺少完整数据支持。</p></div>
+      <div class="card"><span class="k">数字鸿沟加剧</span><p>高 AI 投入门槛使基层被排除在技术红利之外，合规风险高企。</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 12 解决思路 ================= -->
+  <section class="slide light" data-screen-label="12 解决思路">
+    <p class="eyebrow">Solution Framework</p>
+    <h2 class="h-xl">AI 增强临床决策，而非替代医生判断</h2>
+    <p class="lead">围绕这一核心理念，构建四大解决思路，直击基层医院痛点。</p>
+    <div class="pt-grid cols-4" style="margin-top:32px;">
+      <div class="pt"><h3>低成本</h3><p>硬件投入仅 5~10 万元，Docker 容器化一键部署，大幅降低 AI 应用门槛</p></div>
+      <div class="pt"><h3>强安全</h3><p>患者敏感数据本地加密处理，遵循"最小必要化"原则</p></div>
+      <div class="pt"><h3>全流程</h3><p>覆盖住院部从入院到出院完整诊疗流程，AI 辅助无缝嵌入关键环节</p></div>
+      <div class="pt"><h3>临床导向</h3><p>医生主导设计，贴合临床实际工作流，确保系统好用、爱用</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 13 双服务器架构 ================= -->
+  <section class="slide light" data-screen-label="13 双服务器架构">
+    <p class="eyebrow">System Architecture</p>
+    <h2 class="h-xl">双服务器分离架构</h2>
+    <p class="lead">主服务器与执行服务器职责分离，业务系统与 AI 计算高可用解耦。</p>
+    <div class="card-grid cols-2" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">主服务器</span>
+        <p>业务逻辑处理、REST API 接口、患者数据管理、任务调度，以及与医院 HIS/LIS 系统对接。</p>
+      </div>
+      <div class="card">
+        <span class="k">执行服务器</span>
+        <p>独立负责 AI 大模型调用引擎、Prompt 组装与管理、长耗时任务异步处理及重试与熔断机制。</p>
+      </div>
+    </div>
+    <div class="pt-grid cols-4" style="margin-top:24px;">
+      <div class="pt"><h3>性能隔离</h3><p>AI 计算与日常操作分离，高负载不阻塞系统</p></div>
+      <div class="pt"><h3>故障隔离</h3><p>执行服务异常不影响主业务</p></div>
+      <div class="pt"><h3>独立扩展</h3><p>按负载各自水平扩展，资源利用更高效</p></div>
+      <div class="pt"><h3>灵活部署</h3><p>支持单院独立与区域集中部署</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 14 安全体系 ================= -->
+  <section class="slide dark" data-screen-label="14 安全体系">
+    <p class="eyebrow">Security Architecture</p>
+    <h2 class="h-xl">多层安全防护体系</h2>
+    <p class="lead">从网络、应用、数据、接口四个层面全方位防护，确保患者隐私安全。</p>
+    <div class="card-grid cols-4" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">Layer 01</span>
+        <h3>网络安全</h3><p>HTTPS/TLS 加密传输 · 防火墙配置 · 访问控制</p>
+      </div>
+      <div class="card">
+        <span class="k">Layer 02</span>
+        <h3>应用安全</h3><p>Spring Security 框架 · JWT 令牌认证 · 会话超时控制</p>
+      </div>
+      <div class="card">
+        <span class="k">Layer 03</span>
+        <h3>数据安全</h3><p>AES-256-CBC 加密 · 敏感数据脱敏 · 完整审计日志</p>
+      </div>
+      <div class="card">
+        <span class="k">Layer 04</span>
+        <h3>接口安全</h3><p>严格参数校验 · 标准化错误码 · 智能限流控制</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 15 AI诊疗辅助 ================= -->
+  <section class="slide light" data-screen-label="15 AI诊疗辅助">
+    <p class="eyebrow">AI Diagnostic System</p>
+    <h2 class="h-xl">AI 诊疗辅助系统</h2>
+    <p class="lead">智能组装患者数据为 Prompt，调用大语言模型提供诊断建议和治疗方案参考。</p>
+    <div class="card-grid cols-2" style="margin-top:24px;">
+      <div class="card">
+        <span class="k">核心功能</span>
+        <p><strong>Prompt 智能组装</strong>：内置诊断分析、治疗建议、风险评估模板，支持自定义<br><strong>多模型支持</strong>：DeepSeek Chat、阿里百炼等灵活切换<br><strong>流式响应</strong>：实时返回生成结果<br><strong>结果管理</strong>：历史分析可编辑反馈</p>
+      </div>
+      <div class="card">
+        <span class="k">工作流程</span>
+        <p style="font-family:var(--font-mono); font-size:14px; line-height:2;">患者数据 → 智能组装 Prompt → 调用大模型 → 生成诊断建议 → 医生参考决策</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 16 DRG智能分析 ================= -->
+  <section class="slide dark" data-screen-label="16 DRG智能分析">
+    <p class="eyebrow">DRG Intelligence</p>
+    <h2 class="h-xl">DRG 智能分析系统</h2>
+    <p class="lead">自动匹配 DRG 分组，实时计算医保盈亏，辅助医保精细化管理。</p>
+    <div class="card-grid cols-2" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">DRG 自动匹配</span>
+        <p style="font-family:var(--font-mono); font-size:14px;">ICD 精确匹配 → 名称双向包含 → 相似度智能匹配（≥0.7）<br>有手术/无手术患者双向严格分流</p>
+      </div>
+      <div class="card">
+        <span class="k">盈亏实时计算</span>
+        <p>实时对比医保支付标准与实际费用；通过智能算法降低人工编码错误率，实现医保控费与医疗质量的双重提升。</p>
+      </div>
+    </div>
+    <div class="pt-grid cols-3" style="margin-top:24px;">
+      <div class="pt"><h3>提升分组准确性</h3><p>智能算法降低人工编码错误</p></div>
+      <div class="pt"><h3>优化医保收益</h3><p>实时盈亏洞察辅助决策</p></div>
+      <div class="pt"><h3>精细化管理</h3><p>支持医院运营精细化</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 17 并发症筛查 ================= -->
+  <section class="slide light" data-screen-label="17 并发症筛查">
+    <p class="eyebrow">MCC / CC Screening</p>
+    <h2 class="h-xl">并发症智能筛查</h2>
+    <p class="lead">基于 12,000+ 条 MCC 字典，自动筛查严重并发症/合并症（MCC）与一般并发症/合并症（CC），提升诊断编码完整率。</p>
+    <div class="pt-grid cols-4" style="margin-top:32px;">
+      <div class="pt"><h3>智能匹配算法</h3><p>编码精确匹配 + 名称相似度匹配（Levenshtein），双重保障筛查准确性</p></div>
+      <div class="pt"><h3>自动排除规则</h3><p>内置医学逻辑排除规则引擎，过滤误匹配项，避免假阳性</p></div>
+      <div class="pt"><h3>分组优先级排序</h3><p>按来源诊断智能分组，MCC 优先于 CC 呈现，符合临床诊断逻辑</p></div>
+      <div class="pt"><h3>编码完整率提升</h3><p>直接提升诊断编码完整率，为 DRG 分组提供支撑</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 18 语音识别 ================= -->
+  <section class="slide dark" data-screen-label="18 语音识别">
+    <p class="eyebrow">Voice Recognition</p>
+    <h2 class="h-xl">语音识别病历辅助</h2>
+    <p class="lead">医生通过语音实时录入病历，AI 辅助整理格式，大幅提升病历书写效率。</p>
+    <div class="card-grid cols-2" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">两种识别模式</span>
+        <table style="margin-top:8px;">
+          <tbody>
+            <tr><td><strong>实时语音识别</strong></td><td>WebSocket 长连接 · 查房现场输入</td></tr>
+            <tr><td><strong>录音文件识别</strong></td><td>HTTP 文件上传 · 录音后批量识别</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <span class="k">技术优势</span>
+        <p>延迟 &lt;1 秒，支持中英文混合识别<br>识别结果可直接写入病历</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 19 量化效能 ================= -->
+  <section class="slide light" data-screen-label="19 量化效能">
+    <p class="eyebrow">Performance Metrics</p>
+    <h2 class="h-xl">量化效能提升</h2>
+    <p class="lead">系统应用后，各项关键指标显著改善。</p>
+    <div class="stat-grid cols-3" style="margin-top:28px;">
+      <div class="stat-block">
+        <div class="stat-num" style="font-size:clamp(64px,8vw,110px);">+30~50<span class="unit">%</span></div>
+        <p class="stat-caption">诊断编码完整率（AI 辅助识别遗漏 MCC/CC）</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" style="font-size:clamp(64px,8vw,110px);">+10~20<span class="unit">%</span></div>
+        <p class="stat-caption">医保收益优化（DRG 精准分组 + 盈亏分析）</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" style="font-size:clamp(64px,8vw,110px);">-50<span class="unit">%</span></div>
+        <p class="stat-caption">病历书写时间（语音识别 + AI 整理）</p>
+      </div>
+    </div>
+    <div class="pt-grid cols-3" style="margin-top:36px;">
+      <div class="pt"><h3>并发处理 100+</h3><p>系统并发承载能力</p></div>
+      <div class="pt"><h3>MCC 筛查 &lt;100ms</h3><p>毫秒级筛查响应</p></div>
+      <div class="pt"><h3>质控效率显著提升</h3><p>自动化覆盖全量病历</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 20 低成本部署 ================= -->
+  <section class="slide dark" data-screen-label="20 低成本部署">
+    <p class="eyebrow">Deployment Advantage</p>
+    <h2 class="h-xl">低成本部署优势</h2>
+    <p class="lead">轻量级架构设计，大幅降低医院信息化投入门槛。</p>
+    <div class="stat-grid cols-3" style="margin-top:32px;">
+      <div class="stat-block">
+        <div class="stat-num" style="font-size:clamp(64px,8vw,110px);">5~10<span class="unit">万元</span></div>
+        <p class="stat-caption">硬件投入，对比传统 AI 数百万级，成本降低 95%+</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" style="font-size:clamp(64px,8vw,110px);">2~3<span class="unit">周</span></div>
+        <p class="stat-caption">部署上线周期，从传统数月缩短至以周为单位</p>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" style="font-size:clamp(64px,8vw,110px);">1<span class="unit">名IT</span></div>
+        <p class="stat-caption">即可完成日常运维维护</p>
+      </div>
+    </div>
+    <div class="pt-grid cols-2" style="margin-top:32px;">
+      <div class="pt"><h3>部署方式</h3><p>Docker 容器化一键部署 · Docker Compose 一键编排全套服务</p></div>
+      <div class="pt"><h3>技术保障</h3><p>Windows/Linux 双平台 · 环境变量统一管理 · 健康检查 + 自动重启</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 21 灵活部署 ================= -->
+  <section class="slide light" data-screen-label="21 灵活部署">
+    <p class="eyebrow">Deployment Options</p>
+    <h2 class="h-xl">灵活部署模式</h2>
+    <p class="lead">根据医院规模与组织架构，提供两种可落地部署方案，兼顾数据安全与成本效益。</p>
+    <div class="card-grid cols-2" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">单院模式 · Independent</span>
+        <p><strong>医院内网独立部署</strong>，与公网物理隔离<br>数据不出院，符合三级等保要求<br>适合具备独立 IT 运维能力的二级以上医院</p>
+      </div>
+      <div class="card">
+        <span class="k">区域中心模式 · Regional</span>
+        <p><strong>医共体牵头医院/卫健部门统一建中心</strong><br>基层经专网/VPN 远程调用，无需本地机房，按服务付费<br>促进优质资源下沉，提升基层诊疗同质化</p>
+      </div>
+    </div>
+    <div class="pt-grid cols-3" style="margin-top:24px;">
+      <div class="pt"><h3>01 大型医院</h3><p>推荐单院模式，保障数据主权与响应速度</p></div>
+      <div class="pt"><h3>02 医共体/集团</h3><p>推荐区域中心模式，资源集约化管理</p></div>
+      <div class="pt"><h3>03 基层机构</h3><p>接入区域中心，零门槛享受 AI 能力</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 22 目标用户 ================= -->
+  <section class="slide light" data-screen-label="22 目标用户">
+    <p class="eyebrow">Target Users</p>
+    <h2 class="h-xl">目标用户价值</h2>
+    <p class="lead">覆盖医院多层级用户群体，为不同角色提供精准功能支持。</p>
+    <div class="card-grid cols-3" style="margin-top:28px;">
+      <div class="card"><span class="k">临床医生</span><p>AI 诊断辅助 · 语音病历 · 待办事项<br><span class="tag">提升诊疗效率</span><span class="tag">减少漏诊</span></p></div>
+      <div class="card"><span class="k">科室管理者</span><p>DRG 分析 · MCC 筛查 · 盈亏计算<br><span class="tag">精细化成本管理</span></p></div>
+      <div class="card"><span class="k">医保管理人员</span><p>DRG 分组分析 · 费用预测<br><span class="tag">支持医保付费改革</span></p></div>
+      <div class="card"><span class="k">质控人员</span><p>AI 辅助质控分析<br><span class="tag">提升质控效率</span></p></div>
+      <div class="card"><span class="k">系统管理员</span><p>系统监控 · 配置管理<br><span class="tag">保障稳定运行</span></p></div>
+    </div>
+  </section>
+
+  <!-- ================= 23 政策对标总结 ================= -->
+  <section class="slide dark" data-screen-label="23 政策对标">
+    <p class="eyebrow">Policy Alignment Summary</p>
+    <h2 class="h-xl">与国家政策核心定位完全对标</h2>
+    <p class="lead">体现"基层医院用得起、用得好的 AI"定位。</p>
+    <table style="margin-top:20px;">
+      <thead><tr><th style="width:22%">政策要求</th><th style="width:38%">政策依据</th><th>系统实现</th></tr></thead>
+      <tbody>
+        <tr><td>降低基层应用成本</td><td>鼓励省级统筹集约化建设，降低基层成本</td><td>硬件投入 5-10 万元（传统百万级）· 单院/区域双模式</td></tr>
+        <tr><td>快速部署上线</td><td>快速上线运行</td><td>Docker 容器化一键部署，2~3 周上线</td></tr>
+        <tr><td>易于维护</td><td>降低运维难度</td><td>1 名 IT 人员即可维护</td></tr>
+        <tr><td>支持中小机构</td><td>服务基层医院</td><td>专为基层设计，对标紧密型县域医共体</td></tr>
+      </tbody>
+    </table>
+    <p class="footnote">功能体系：医共体智能化、基层"AI 助手"、慢病管理、数据安全已实现；医学影像规划中（PACS 集成）；中医药特色可定制开发。</p>
+  </section>
+
+  <!-- ================= 24 合作邀请 ================= -->
+  <section class="slide light" data-screen-label="24 合作邀请">
+    <p class="eyebrow">Partnership Invitation</p>
+    <h2 class="h-xl">诚邀各医院参与试点计划</h2>
+    <div class="card-grid cols-2" style="margin-top:28px;">
+      <div class="card">
+        <span class="k">试点支持</span>
+        <p>免费系统部署与培训<br>专业技术团队全程支持<br>定制化功能开发配合</p>
+      </div>
+      <div class="card">
+        <span class="k">参与条件</span>
+        <p>具备基础 IT 环境<br>配合数据对接与测试<br>提供使用反馈与建议</p>
+      </div>
+    </div>
+    <p class="footnote" style="font-size:16px; margin-top:32px;"><strong>联系我们：刘朝晖　13458003688</strong>　·　共同推进基层医疗 AI 化进程，开启智慧医疗新篇章</p>
+  </section>
+
+  <!-- ================= 25 现场演示 ================= -->
+  <section class="slide dark" data-screen-label="25 现场演示">
+    <p class="eyebrow">Live Demo</p>
+    <h2 class="h-xl">现场演示环节</h2>
+    <p class="lead">系统功能演示：AI 诊断分析、DRG 分析、语音识别等核心能力。</p>
+    <div class="pipeline">
+      <div class="step"><div class="nb">STEP 01</div><h3>患者列表</h3><p>选择患者，查看多维度融合的患者画像</p></div>
+      <div class="step"><div class="nb">STEP 02</div><h3>AI 诊断分析</h3><p>查看 Prompt 与推理过程，辅助诊断建议</p></div>
+      <div class="step"><div class="nb">STEP 03</div><h3>DRG 分析</h3><p>实时分组预测 · 费用结构分析</p></div>
+      <div class="step"><div class="nb">STEP 04</div><h3>MCC/CC 筛查</h3><p>并发症与合并症智能识别</p></div>
+      <div class="step"><div class="nb">STEP 05</div><h3>语音 + 待办</h3><p>实时语音转写 · 智能任务优先级</p></div>
+    </div>
+    <p class="footnote">互动问答：技术实现细节 · 临床应用场景 · 数据安全策略 · 部署实施方案；演示后预留 15 分钟专项答疑。</p>
+  </section>
+
+  <!-- ================= 26 结尾 ================= -->
+  <section class="slide hero dark center" data-screen-label="26 感谢聆听">
+    <div class="eyebrow">Thank You</div>
+    <h2 class="h-hero">期待与您携手<br>共创智慧医疗新未来</h2>
+    <p class="lead" style="margin-top:24px;">MedAiAssistant 1.0 · 医疗AI助手系统<br>成都轻舟数科科技 × 西南科技大学</p>
+  </section>
+
+  <!-- chrome -->
+  <div class="deck-progress" id="deck-progress" aria-hidden></div>
+  <div class="deck-counter"  id="deck-counter">1 / 26</div>
+  <div class="deck-hint">← / → · scroll · swipe</div>
+
+  <script>
+    /* shot-mode: ?slide=N 时只渲染第 N 页，供 headless 截图逐页光栅化 */
+    (function () {
+      var m = /[?&]slide=(\d+)/.exec(location.search);
+      if (m) {
+        var idx = parseInt(m[1], 10) - 1;
+        var all = document.querySelectorAll('.slide');
+        if (idx >= 0 && idx < all.length) {
+          for (var i = 0; i < all.length; i++) { all[i].style.display = (i === idx) ? 'flex' : 'none'; }
+          document.body.style.overflow = 'hidden';
+          var cc = document.querySelectorAll('.deck-counter, .deck-hint, .deck-progress');
+          for (var j = 0; j < cc.length; j++) { cc[j].style.display = 'none'; }
+        }
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var slides   = document.querySelectorAll('.slide');
+      var counter  = document.getElementById('deck-counter');
+      var progress = document.getElementById('deck-progress');
+      var KEY      = 'od-deck-pos';
+      var active   = 0;
+
+      function scrollContainers() {
+        return [document.scrollingElement, document.documentElement, document.body]
+          .filter(Boolean)
+          .filter(function (el, idx, arr) { return arr.indexOf(el) === idx; });
+      }
+      function overflowX(el) {
+        if (!el) return 0;
+        return Math.max(0, (el.scrollWidth || 0) - (el.clientWidth || 0));
+      }
+      function scrollLeftOf(el) {
+        if (!el) return 0;
+        try { return Number(el.scrollLeft) || 0; } catch (_) { return 0; }
+      }
+      function activeScrollLeft() {
+        var candidates = scrollContainers();
+        var best = 0;
+        for (var i = 0; i < candidates.length; i++) {
+          var left = scrollLeftOf(candidates[i]);
+          if (Math.abs(left) > Math.abs(best)) best = left;
+        }
+        return best;
+      }
+      function scroller() {
+        var candidates = scrollContainers();
+        var best = candidates[0] || document.documentElement;
+        var bestScore = -1;
+        for (var i = 0; i < candidates.length; i++) {
+          var el = candidates[i];
+          var score = overflowX(el) + Math.abs(scrollLeftOf(el)) * 2;
+          if (score > bestScore) { best = el; bestScore = score; }
+        }
+        return best;
+      }
+      function scrollToLeft(left, behavior) {
+        var candidates = scrollContainers();
+        for (var i = 0; i < candidates.length; i++) {
+          try { candidates[i].scrollLeft = left; } catch (_) {}
+          try { candidates[i].scrollTo({ left: left, behavior: behavior || 'smooth' }); } catch (_) {}
+        }
+      }
+      function setActive(i) {
+        active = i;
+        if (counter)  counter.textContent  = (i + 1) + ' / ' + slides.length;
+        if (progress) progress.style.width = (((i + 1) / slides.length) * 100) + '%';
+        try { localStorage.setItem(KEY, String(i)); } catch (_) {}
+      }
+      function go(i) {
+        var next = Math.max(0, Math.min(slides.length - 1, i));
+        setActive(next);
+        scrollToLeft(next * window.innerWidth, 'smooth');
+      }
+      function syncFromScroll() {
+        var i = Math.round(activeScrollLeft() / window.innerWidth);
+        if (i !== active && i >= 0 && i < slides.length) setActive(i);
+      }
+      function onKey(e) {
+        if (e.defaultPrevented) return;
+        var t = e.target;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+        if      (e.key === 'ArrowRight' || e.key === ' '       || e.key === 'PageDown') { e.preventDefault(); go(active + 1); }
+        else if (e.key === 'ArrowLeft'  || e.key === 'PageUp')                            { e.preventDefault(); go(active - 1); }
+        else if (e.key === 'Home')                                                        { e.preventDefault(); go(0); }
+        else if (e.key === 'End')                                                         { e.preventDefault(); go(slides.length - 1); }
+      }
+
+      window.addEventListener('keydown', onKey, true);
+      document.addEventListener('keydown', onKey, true);
+      document.addEventListener('scroll', syncFromScroll, { passive: true, capture: true });
+      window.addEventListener('scroll', syncFromScroll,   { passive: true });
+
+      document.body.setAttribute('tabindex', '-1');
+      document.body.style.outline = 'none';
+      function focusDeck() { try { window.focus(); document.body.focus({ preventScroll: true }); } catch (_) {} }
+      document.addEventListener('mousedown', focusDeck);
+      window.addEventListener('load', focusDeck);
+      focusDeck();
+
+      try {
+        var saved = parseInt(localStorage.getItem(KEY) || '0', 10);
+        if (!isNaN(saved) && saved >= 0 && saved < slides.length) {
+          setActive(saved);
+          scrollToLeft(saved * window.innerWidth, 'instant');
+        } else {
+          setActive(0);
+        }
+      } catch (_) { setActive(0); }
+    })();
+  </script>
+</body>
+</html>

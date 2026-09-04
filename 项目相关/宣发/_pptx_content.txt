@@ -1,0 +1,1264 @@
+﻿============================================================
+SLIDE 1 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] System Version
+  [TEXT] 成都轻舟数科科技有限公司 |   | 2026.07
+  [NO-TEXT-SHAPE]
+  [TEXT] MedAIAssistant 1.0
+  [TEXT] 医疗AI
+  [TEXT] 助手系统
+  [TEXT] 基于 | 大模型 | 的智能诊疗辅助平台，
+  [TEXT] 构建精准、高效、可信的医疗智能中枢
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心能力
+  [TEXT] 临床决策支持
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 安全架构
+  [TEXT] 私有化部署
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 效率提升
+  [TEXT] 诊疗流程优化
+  [TEXT] 与西南科技大学联合开发
+
+============================================================
+SLIDE 2 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Contents
+  [TEXT] 目录
+  [NO-TEXT-SHAPE]
+  [TEXT] 01
+  [TEXT] 痛点分析
+  [TEXT] 当前医疗场景中的关键挑战与瓶颈识别
+  [NO-TEXT-SHAPE]
+  [TEXT] 02
+  [TEXT] 解决方案
+  [TEXT] AI驱动的系统性问题解决路径设计
+  [NO-TEXT-SHAPE]
+  [TEXT] 03
+  [TEXT] 技术架构
+  [TEXT] 分层式系统架构与核心技术栈解析
+  [NO-TEXT-SHAPE]
+  [TEXT] 04
+  [TEXT] 核心功能
+  [TEXT] 智能辅助诊疗与临床决策支持模块
+  [NO-TEXT-SHAPE]
+  [TEXT] 05
+  [TEXT] 价值证明
+  [TEXT] 量化效益分析与临床验证数据展示
+  [NO-TEXT-SHAPE]
+  [TEXT] 06
+  [TEXT] 合作模式
+  [TEXT] 灵活部署方案与长期合作生态构建
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 3 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 中国医院等级金字塔分布
+  [NO-TEXT-SHAPE]
+  [TEXT] 中国医疗机构呈现典型的 | 倒金字塔结构 | ，优质医疗资源高度集中，而承担基础诊疗服务的基层机构数量庞大。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 顶级医院（复旦百强）
+  [TEXT] 约 | 100家 | ，仅分布在23个城市，超过90%的地级市无百强医院。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 三甲医院
+  [TEXT] 1,876家 | ，占全国医院总数不足5%，却承担了最大比例的诊疗量（2024年28.7亿人次），虹吸效应严重。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 其他医院
+  [TEXT] 包括三乙、二级、一级及未定级医院，合计约 | 3.7万家 | ，是连接顶层与基层的关键环节。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 基层医疗卫生机构
+  [TEXT] 约 | 105.5万个 | ，构成服务体系的绝对主体。其中村卫生室（56.0万）和诊所（42.4万）占比最高，是服务民众的"第一道防线"。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 庞大的基层机构数量与有限的诊疗能力形成巨大反差，为医疗AI系统提供了广阔的应用空间。
+  [NO-TEXT-SHAPE]
+  [TEXT] 中国医疗机构数量分布
+  [TEXT] 单位：家/个（采用对数坐标展示数量级差异）
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 4 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 国家数据中心建设政策
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策文件与目标
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心文件
+  [TEXT] 《国家数据基础设施建设指引》
+  [TEXT] 2025年1月发布
+  [NO-TEXT-SHAPE]
+  [TEXT] 总体愿景
+  [TEXT] 构建 | "横向联通、纵向贯通、协调有力" | 的国家级数据基础设施，实现数据 | "供得出、流得动、用得好、保安全" | 。
+  [NO-TEXT-SHAPE]
+  [TEXT] 投资规模
+  [TEXT] 未来五年带动总投资
+  [TEXT] 2 | 万亿元
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 对医疗行业的具体要求
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据共享与互认
+  [TEXT] 推动电子病历数据跨区域、跨机构共享与互认，完善个人健康数据档案制度。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 健康数据融合
+  [TEXT] 融合体检、就诊、疾控等多维健康数据，创新基于数据驱动的职业病监测、公共卫生事件预警等服务模式。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据与安全保障
+  [TEXT] 建立卫生健康行业高质量数据集，构建可信数据空间，完善数据隐私保护机制，推进医疗数据安全合规利用。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策驱动医疗数据要素化与价值释放
+
+============================================================
+SLIDE 5 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 基层AI医疗应用政策
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策文件与目标
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心文件
+  [TEXT] 《关于促进和规范"人工智能+医疗卫生"应用发展的实施意见》
+  [TEXT] 国卫办规划发〔2025〕30号
+  [NO-TEXT-SHAPE]
+  [TEXT] 2027
+  [TEXT] 近期目标
+  [TEXT] 建立卫生健康行业 | 高质量数据集 | ，形成 | 临床专病专科垂直大模型 | ，基层诊疗智能辅助广泛应用。
+  [NO-TEXT-SHAPE]
+  [TEXT] 2030
+  [TEXT] 远期目标
+  [TEXT] 基层诊疗智能辅助应用基本实现 | 全覆盖 | ，二级以上医院普遍开展 | 医学影像智能辅助诊断 | 。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 主要任务与要求
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 智能辅助诊疗
+  [TEXT] 开发面向基层 | 常见病、多发病 | 的智能辅助诊疗系统，提供辅助诊断、处方审核、随访管理等服务。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 智慧县域医共体
+  [TEXT] 建设 | 紧密型县域医共体 | 智能应用，强化医学影像、心电、检验等资源共享中心。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 慢病管理创新
+  [TEXT] 建立 | 智能慢性病管理 | 和个人健康画像应用，推动居民电子健康档案向个人开放。
+
+============================================================
+SLIDE 6 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 契合数据中心建设要求
+  [NO-TEXT-SHAPE]
+  [TEXT] 本项目在数据标准、安全规范、互联互通三大核心维度上，全面响应国家数据中心建设政策要求。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据标准
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 三层质控体系
+  [TEXT] 采用 | 国家卫健委强制标准 | 、 | 临床指南 | 、 | 专家共识 | 三层质控，共 | 35项指标 | ，与建立"高质量数据集"要求一致。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 安全规范
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 区域AI服务中心
+  [TEXT] 构建 | 区域AI服务中心 | ，统一模型、质控与数据，避免数据孤岛，契合"横向联通、纵向贯通"的基础设施要求。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 轻量化安全部署
+  [TEXT] 采用 | 轻量化Docker部署 | ，敏感数据在县域统一出口加密传输，满足"隐私保护计算、可信数据空间"要求。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 互联互通
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 1+N星形网络
+  [TEXT] 部署" | 1个县级牵头医院+N家乡镇卫生院 | "的星形网络。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 东数西算对接
+  [TEXT] 对应"东数西算"工程中" | 打通国家枢纽节点与非枢纽节点间网络主干道 | "的技术路线。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 全面响应《国家数据基础设施建设指引》政策要求
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 实现数据"供得出、流得动、用得好、保安全"
+
+============================================================
+SLIDE 7 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 满足基层AI应用需求
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策要求
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 时间节点
+  [TEXT] 2027
+  [TEXT] 基层智能辅助广泛应用
+  [TEXT] 2030
+  [TEXT] 基本实现全覆盖
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心任务
+  [TEXT] 开发面向基层 | 常见病 | 的智能辅助诊疗系统，提供辅助诊疗、处方审核、随访管理等服务。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 应用场景
+  [TEXT] • 智慧县域医共体建设
+  [TEXT] • 基层医疗卫生机构智慧化
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 项目实现
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 实施路径
+  [NO-TEXT-SHAPE]
+  [TEXT] 2027年前 | 完成县域全覆盖
+  [NO-TEXT-SHAPE]
+  [TEXT] 2030年前 | 覆盖全国 | 104万 | 基层机构
+  [NO-TEXT-SHAPE]
+  [TEXT] " | 数万元/机构 | "低成本快速复制
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 功能覆盖
+  [TEXT] 全科
+  [TEXT] 辅助诊断 | ： | 92% | 符合率的心内科大模型
+  [TEXT] 处方
+  [TEXT] 处方审核 | ：实时比对 | 35项 | 质控指标并弹窗提示
+  [TEXT] 随访
+  [TEXT] 随访管理 | ：自动生成随访计划与个性化干预建议
+  [TEXT] 中医
+  [TEXT] 中医智能辅诊 | ：支持辨证分型与处方推荐
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 全面赋能
+  [NO-TEXT-SHAPE]
+  [TEXT] 覆盖政策列举的 | 23个 | 细分应用场景
+  [NO-TEXT-SHAPE]
+  [TEXT] 助力医疗质量、基本公卫、慢病协同管理、家庭医生签约等服务智能化升级
+
+============================================================
+SLIDE 8 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 技术架构符合政策标准
+  [NO-TEXT-SHAPE]
+  [TEXT] 项目采用分层式技术架构，从终端到数据中心，完全符合国家政策标准与规范要求。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 1
+  [TEXT] 终端层
+  [TEXT] 支持键盘、平板手写、语音识别、智录四种录入方式，适配基层多样化硬件条件。满足政策对 | "低成本、易使用" | 的要求。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 2
+  [TEXT] 区域AI服务中心层
+  [TEXT] 统一运行大模型、质控引擎、DRG引擎，模型与指南更新由中心统一推送，确保全网同步。对应政策提出的 | "集约化建设、避免重复投入" | 要求。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 3
+  [TEXT] 数据层
+  [TEXT] 县级医共体统一汇聚电子病历、检验、影像、公卫数据，形成 | "高质量数据集" | 。
+
+============================================================
+SLIDE 9 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [TEXT] 实现政策目标预期效果
+  [NO-TEXT-SHAPE]
+  [TEXT] 项目实施路径与国家政策时间节点精准对齐，并通过量化指标全面实现政策预期效果。
+  [NO-TEXT-SHAPE]
+  [TEXT] 项目实施路径与政策节点对接
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 2027年
+  [TEXT] 5,000
+  [TEXT] 家机构
+  [NO-TEXT-SHAPE]
+  [TEXT] 2030年
+  [TEXT] 80万
+  [TEXT] 家机构
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 诊断能力均等化
+  [TEXT] 政策目标要求缩小基层与三甲医院诊疗差距，项目指标显示基层诊断准确率可由 | 60-75%提升至92% | ，达到三甲专家水平。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据驱动的行业治理
+  [TEXT] 政策目标要求建立高质量数据集，项目指标为每县域年均新增 | 结构化病历≥10万份 | 、 | 影像数据≥50万幅 | ，实时回传国家数据中心。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 医保资金效率提升
+  [TEXT] 政策目标要求DRG/DIP改革在基层落地，项目指标可实现基层DRG分组准确率 | 提升30% | ，医保拒付率 | 下降50% | ，县域医保基金结余率 | 提升3-5个百分点 | 。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 基层医生工作负荷减轻
+  [TEXT] 政策目标要求让基层医生"愿意留在基层"，项目指标可将文书书写时间由 | 1-2小时/份压缩至10-15分钟/份 | ，日均节省3-5小时，医生满意度 | 提升40% | 。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 区域复制与产业带动
+  [TEXT] 政策目标要求打造全球领先的医疗AI科技创新基地，项目指标为形成可复制的"基层AI+紧密型医共体"解决方案，为全国 | 104万基层机构 | 提供实战训练场，带动产业链产值 | 超千亿元 | 。
+
+============================================================
+SLIDE 10 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Current Challenges
+  [TEXT] 医疗信息化现状
+  [TEXT] 当前医疗信息化面临六大核心痛点，制约着医疗服务质量与运营效率的提升
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 诊断编码不完整
+  [TEXT] 医生凭经验编码，并发症/合并症易遗漏，影响DRG分组准确性
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] DRG管理粗放
+  [TEXT] 缺乏实时分组与盈亏分析工具，无法及时调整诊疗策略
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 质控工作量大
+  [TEXT] 质控指标靠人工逐案筛查，效率低下且覆盖范围有限
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 病历书写效率低
+  [TEXT] 依赖键盘逐字录入，格式不规范，消耗医生大量宝贵时间
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 信息孤岛严重
+  [TEXT] HIS/LIS/PACS各自独立，数据不互通，难以形成完整患者画像
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] AI门槛高
+  [TEXT] 传统AI系统动辄百万投入，基层医院无力承担，技术普惠困难
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 11 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Severe Consequences
+  [TEXT] 痛点带来的后果
+  [TEXT] 医疗信息化的核心痛点正直接导致医院运营与诊疗质量的严重下滑：
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 医保收益流失
+  [TEXT] 诊断编码的完整性与准确性不足，将直接影响 | DRG | 分组的精准度，导致医保支付未能充分反映医疗机构的实际服务成本与医疗价值。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 收入持续下降
+  [TEXT] 缺乏DRG精细化管理工具，在医保付费改革下，医院收入面临持续下滑风险。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 人力消耗巨大
+  [TEXT] 质控工作依赖人工逐案筛查，漏检率高，且耗费大量人力成本。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 诊疗效率低下
+  [TEXT] 病历书写效率低，占用医生大量临床时间，直接影响诊疗服务效率。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 决策依据不全
+  [TEXT] 信息孤岛导致医生缺乏患者全景视图，临床决策缺乏完整数据支持。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 数字鸿沟加剧
+  [TEXT] 高昂的AI投入门槛使基层医院被排除在技术红利之外，加剧医疗资源不均。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 合规风险高企
+  [TEXT] 患者隐私数据安全顾虑，使医院对应用AI系统持谨慎态度，面临合规挑战。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 12 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Solution Framework
+  [TEXT] 我们的解决思路
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心理念
+  [TEXT] AI增强临床决策， | 而非替代医生判断
+  [TEXT] 我们围绕此理念，构建了四大核心解决思路，直击基层医院痛点，确保技术真正服务于临床。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 低成本
+  [TEXT] 硬件投入仅需 | 5~10万元 | ，通过Docker容器化实现一键部署，大幅降低AI应用门槛。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 强安全
+  [TEXT] 患者敏感数据本地加密处理，遵循 | "最小必要化" | 原则，确保数据安全与合规。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 全流程
+  [TEXT] 覆盖住院部从入院到出院的完整诊疗流程，实现AI辅助在关键环节的无缝嵌入。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 临床导向
+  [TEXT] 由医生主导设计，充分贴合临床实际工作流与需求，确保系统好用、爱用。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 13 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] System Architecture
+  [TEXT] 双服务器分离架构
+  [TEXT] 通过主服务器与执行服务器的职责分离，实现业务系统与AI计算的高可用解耦
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 主服务器
+  [NO-TEXT-SHAPE]
+  [TEXT] 负责业务逻辑处理、REST API接口、患者数据管理
+  [NO-TEXT-SHAPE]
+  [TEXT] 任务调度及与医院HIS/LIS系统对接
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 执行服务器
+  [NO-TEXT-SHAPE]
+  [TEXT] 独立负责AI大模型调用引擎、Prompt组装与管理
+  [NO-TEXT-SHAPE]
+  [TEXT] 长耗时任务的异步处理及重试与熔断机制
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 性能隔离
+  [TEXT] AI计算与日常操作分离，避免高负载任务阻塞系统
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 故障隔离
+  [TEXT] 执行服务异常不影响主业务，保障核心连续性
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 独立扩展
+  [TEXT] 根据负载各自水平扩展，资源利用更高效
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 灵活部署
+  [TEXT] 支持单院独立与区域集中部署，满足不同规模
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 14 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Security Architecture
+  [TEXT] 多层安全防护体系
+  [TEXT] 从网络、应用、数据、接口四个层面构建全方位安全防护，确保患者隐私安全
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Layer 01
+  [TEXT] 网络安全
+  [NO-TEXT-SHAPE]
+  [TEXT] HTTPS/TLS加密传输
+  [NO-TEXT-SHAPE]
+  [TEXT] 防火墙配置
+  [NO-TEXT-SHAPE]
+  [TEXT] 访问控制
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Layer 02
+  [TEXT] 应用安全
+  [NO-TEXT-SHAPE]
+  [TEXT] Spring Security框架
+  [NO-TEXT-SHAPE]
+  [TEXT] JWT令牌认证
+  [NO-TEXT-SHAPE]
+  [TEXT] 会话超时控制
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Layer 03
+  [TEXT] 数据安全
+  [NO-TEXT-SHAPE]
+  [TEXT] AES-256-CBC加密
+  [NO-TEXT-SHAPE]
+  [TEXT] 敏感数据脱敏
+  [NO-TEXT-SHAPE]
+  [TEXT] 完整审计日志
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Layer 04
+  [TEXT] 接口安全
+  [NO-TEXT-SHAPE]
+  [TEXT] 严格参数校验
+  [NO-TEXT-SHAPE]
+  [TEXT] 标准化错误码
+  [NO-TEXT-SHAPE]
+  [TEXT] 智能限流控制
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 15 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] AI Diagnostic System
+  [TEXT] AI诊疗辅助系统
+  [TEXT] 智能组装患者数据为Prompt，调用大语言模型提供诊断建议和治疗方案参考
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心功能
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Prompt智能组装
+  [TEXT] 内置多种模板（诊断分析、治疗建议、风险评估），支持自定义
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 多模型支持
+  [TEXT] DeepSeek Chat、阿里百炼等，灵活切换
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 流式响应
+  [TEXT] 实时返回生成结果，无需长时间等待
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 结果管理
+  [TEXT] 存储历史分析结果，医生可编辑反馈
+  [NO-TEXT-SHAPE]
+  [TEXT] 工作流程
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 患者数据
+  [NO-TEXT-SHAPE]
+  [TEXT] 1
+  [TEXT] 智能组装Prompt
+  [NO-TEXT-SHAPE]
+  [TEXT] 2
+  [TEXT] 调用大模型
+  [NO-TEXT-SHAPE]
+  [TEXT] 3
+  [TEXT] 生成诊断建议
+  [NO-TEXT-SHAPE]
+  [TEXT] 4
+  [TEXT] 医生参考决策
+  [NO-TEXT-SHAPE]
+  [TEXT] 5
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 16 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Core Capabilities
+  [TEXT] DRG智能分析系统
+  [TEXT] 自动匹配DRG分组，实时计算医保盈亏，辅助医保精细化管理
+  [TEXT] 核心能力
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] DRG自动匹配
+  [NO-TEXT-SHAPE]
+  [TEXT] ICD精确匹配
+  [TEXT] →
+  [NO-TEXT-SHAPE]
+  [TEXT] 名称双向包含
+  [TEXT] →
+  [NO-TEXT-SHAPE]
+  [TEXT] 相似度智能匹配（≥0.7）
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 双向严格分流
+  [TEXT] 有手术/无手术患者分别匹配对应DRG组
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 盈亏实时计算
+  [TEXT] 实时对比医保支付标准与实际费用
+  [TEXT] 价值体现
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 核心收益
+  [NO-TEXT-SHAPE]
+  [TEXT] 提升DRG分组准确性
+  [NO-TEXT-SHAPE]
+  [TEXT] 优化医保收益
+  [NO-TEXT-SHAPE]
+  [TEXT] 支持医院精细化管理
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 通过智能算法降低人工编码错误率，实现医保控费与医疗质量的双重提升
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 17 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Intelligent Screening
+  [TEXT] 并发症智能筛查
+  [TEXT] 基于12,000+条MCC字典，自动筛查患者可能的严重并发症/合并症（MCC）和一般并发症/合并症（CC），提升诊断编码完整率。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 智能匹配算法
+  [TEXT] 编码精确匹配结合名称相似度匹配（Levenshtein算法），双重保障确保筛查准确性，有效识别潜在并发症。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 自动排除规则
+  [TEXT] 内置医学逻辑排除规则引擎，自动检查并过滤误匹配项，避免假阳性结果，确保临床参考价值。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 分组优先级排序
+  [TEXT] 按来源诊断智能分组展示，MCC（严重并发症）优先于CC（一般并发症）呈现，符合临床诊断逻辑。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 演示要点
+  [TEXT] 查看患者MCC/CC筛查结果 → 展示候选并发症列表
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 18 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Voice Recognition
+  [TEXT] 语音识别病历辅助
+  [TEXT] 支持医生通过语音实时录入病历，AI辅助整理格式， | 大幅提升病历书写效率 | 。
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 两种识别模式
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 模式
+  [NO-TEXT-SHAPE]
+  [TEXT] 方式
+  [NO-TEXT-SHAPE]
+  [TEXT] 场景
+  [NO-TEXT-SHAPE]
+  [TEXT] 实时语音识别
+  [NO-TEXT-SHAPE]
+  [TEXT] WebSocket长连接
+  [TEXT] 医生查房时现场语音输入
+  [TEXT] 录音文件识别
+  [NO-TEXT-SHAPE]
+  [TEXT] HTTP文件上传
+  [TEXT] 录音后批量识别
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 技术优势
+  [NO-TEXT-SHAPE]
+  [TEXT] 延迟<1秒 | ，支持中英文混合识别
+  [NO-TEXT-SHAPE]
+  [TEXT] 识别结果 | 可直接写入 | 病历
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 演示要点
+  [TEXT] 点击录音按钮 → 语音输入 → 查看实时转写结果
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 19 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Performance Metrics
+  [TEXT] 量化效能提升
+  [TEXT] 系统应用后，各项关键指标均实现显著改善
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 诊断编码完整率
+  [TEXT] AI辅助识别遗漏的MCC/CC
+  [TEXT] 30~50%
+  [TEXT] 提升
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 医保收益优化
+  [TEXT] DRG精准分组+盈亏分析
+  [TEXT] 10~20%
+  [TEXT] 优化
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 病历书写效率
+  [TEXT] 语音识别+AI整理
+  [TEXT] ~50%
+  [TEXT] 时间减少
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 系统性能表现
+  [NO-TEXT-SHAPE]
+  [TEXT] 并发处理
+  [TEXT] 100+
+  [NO-TEXT-SHAPE]
+  [TEXT] MCC筛查
+  [TEXT] <100ms
+  [NO-TEXT-SHAPE]
+  [TEXT] 质控效率
+  [TEXT] 显著提升
+  [NO-TEXT-SHAPE]
+  [TEXT] 系统效能提升对比
+  [TEXT] 各项关键指标改善幅度范围（%）
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 20 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Deployment Advantage
+  [TEXT] 低成本部署优势
+  [TEXT] 轻量级架构设计，大幅降低医院信息化投入门槛
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 硬件投入成本
+  [TEXT] 对比传统AI系统数百万级投入
+  [TEXT] 5~10
+  [TEXT] 万元
+  [NO-TEXT-SHAPE]
+  [TEXT] 成本降低 95%+
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 部署上线周期
+  [TEXT] 从传统数月缩短至以周为单位
+  [TEXT] 2~3
+  [TEXT] 周
+  [NO-TEXT-SHAPE]
+  [TEXT] 快速上线运行
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 运维成本
+  [TEXT] 1
+  [TEXT] 名IT人员即可维护
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 部署方式
+  [TEXT] Docker容器化，一键部署
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 技术优势
+  [NO-TEXT-SHAPE]
+  [TEXT] Docker Compose 一键编排全套服务
+  [NO-TEXT-SHAPE]
+  [TEXT] 支持 Windows / Linux 双平台部署
+  [NO-TEXT-SHAPE]
+  [TEXT] 环境变量统一管理，配置与代码分离
+  [NO-TEXT-SHAPE]
+  [TEXT] 健康检查 + 自动重启策略保障稳定
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 21 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Deployment Options
+  [TEXT] 灵活部署模式
+  [TEXT] 根据医院规模与组织架构，提供两种可落地的部署方案，兼顾数据安全与成本效益
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 单院模式
+  [TEXT] Independent Deployment
+  [NO-TEXT-SHAPE]
+  [TEXT] 医院内网独立部署
+  [TEXT] 系统完全部署在医院内部服务器，与公网物理隔离
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据不出院，安全可控
+  [TEXT] 患者敏感信息全程院内流转，符合三级等保要求
+  [NO-TEXT-SHAPE]
+  [TEXT] 适合二级以上医院
+  [TEXT] 具备独立IT运维能力的大型医疗机构首选方案
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 区域中心模式
+  [TEXT] Regional Center Deployment
+  [NO-TEXT-SHAPE]
+  [TEXT] 区域中心统一部署
+  [TEXT] 在医共体牵头医院或卫健部门建立统一计算中心
+  [NO-TEXT-SHAPE]
+  [TEXT] 基层医院远程调用
+  [TEXT] 通过专网或VPN安全通道访问AI服务，无需本地建机房
+  [NO-TEXT-SHAPE]
+  [TEXT] 降低基层医院投入成本
+  [TEXT] 免除服务器采购与运维人员配置，按 | 服务 | 付费
+  [NO-TEXT-SHAPE]
+  [TEXT] 实现区域资源共享
+  [TEXT] 促进优质医疗资源下沉，提升基层诊疗同质化水平
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 选择建议
+  [NO-TEXT-SHAPE]
+  [TEXT] 01
+  [TEXT] 大型医院
+  [TEXT] 推荐单院模式，确保数据主权与系统响应速度
+  [NO-TEXT-SHAPE]
+  [TEXT] 02
+  [TEXT] 医共体/集团
+  [TEXT] 推荐区域中心模式，实现资源集约化管理
+  [NO-TEXT-SHAPE]
+  [TEXT] 03
+  [TEXT] 基层医疗机构
+  [TEXT] 建议接入区域中心，零门槛享受AI能力
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 22 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Target Users
+  [TEXT] 目标用户价值
+  [TEXT] 系统覆盖医院多层级用户群体，为不同角色提供精准的功能支持与价值实现：
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 临床医生
+  [NO-TEXT-SHAPE]
+  [TEXT] AI诊断辅助
+  [NO-TEXT-SHAPE]
+  [TEXT] 语音病历
+  [NO-TEXT-SHAPE]
+  [TEXT] 待办事项
+  [NO-TEXT-SHAPE]
+  [TEXT] 提升诊疗效率，减少漏诊
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 科室管理者
+  [NO-TEXT-SHAPE]
+  [TEXT] DRG分析
+  [NO-TEXT-SHAPE]
+  [TEXT] MCC筛查
+  [NO-TEXT-SHAPE]
+  [TEXT] 盈亏计算
+  [NO-TEXT-SHAPE]
+  [TEXT] 精细化成本管理
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 医保管理人员
+  [NO-TEXT-SHAPE]
+  [TEXT] DRG分组分析
+  [NO-TEXT-SHAPE]
+  [TEXT] 费用预测
+  [NO-TEXT-SHAPE]
+  [TEXT] 支持医保付费改革
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 质控人员
+  [NO-TEXT-SHAPE]
+  [TEXT] AI辅助质控分析
+  [NO-TEXT-SHAPE]
+  [TEXT] 提升质控效率
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 系统管理员
+  [NO-TEXT-SHAPE]
+  [TEXT] 系统监控
+  [NO-TEXT-SHAPE]
+  [TEXT] 配置管理
+  [NO-TEXT-SHAPE]
+  [TEXT] 保障系统稳定运行
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 23 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 与国家政策 | 核心定位完全对标
+  [TEXT] 展示系统与政策要求的高度契合，体现"基层医院用得起、用得好的AI"定位
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 降低基层应用成本
+  [TEXT] 契合度
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策要求
+  [TEXT] 降低基层AI应用门槛
+  [TEXT] 系统实现
+  [TEXT] 硬件投入仅 | 5-10万元 | （传统AI系统百万级）
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 支持快速部署
+  [TEXT] 契合度
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策要求
+  [TEXT] 快速上线运行
+  [TEXT] 系统实现
+  [TEXT] Docker容器化一键部署， | 1-2周 | 上线
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 易于维护
+  [TEXT] 契合度
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策要求
+  [TEXT] 降低运维难度
+  [TEXT] 系统实现
+  [TEXT] 1名IT人员 | 即可维护
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 支持中小医疗机构
+  [TEXT] 契合度
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策要求
+  [TEXT] 服务基层医院
+  [TEXT] 系统实现
+  [TEXT] 专为基层医院设计，对标 | 紧密型县域医共体
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 政策依据
+  [TEXT] 国家卫健委要求"鼓励由省级统筹集约化建设AI服务平台"，降低基层成本；系统的 | 单院/区域中心双模式部署 | 完全满足此要求。
+
+============================================================
+SLIDE 24 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 功能体系全面对应
+  [TEXT] 展示系统功能与政策五大应用方向的完整匹配关系
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 医共体内部智能化赋能
+  [NO-TEXT-SHAPE]
+  [TEXT] 已完整实现
+  [TEXT] 政策应用方向
+  [TEXT] 提升医共体整体诊疗水平
+  [TEXT] MedAiAssistant对应功能
+  [TEXT] DRG智能分析系统、MCC/CC并发症智能筛查
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 基层医生"AI助手"
+  [NO-TEXT-SHAPE]
+  [TEXT] 已完整实现
+  [TEXT] 政策应用方向
+  [TEXT] 为基层医生提供智能辅助
+  [TEXT] MedAiAssistant对应功能
+  [TEXT] AI诊疗辅助系统、Prompt智能组装
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 慢性病与重点人群管理
+  [NO-TEXT-SHAPE]
+  [TEXT] 已基础实现
+  [TEXT] 政策应用方向
+  [TEXT] 加强慢病管理和重点人群健康服务
+  [TEXT] MedAiAssistant对应功能
+  [TEXT] 患者数据管理、待办事项生成（医生提醒）
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 医学影像分析
+  [NO-TEXT-SHAPE]
+  [TEXT] 规划中
+  [TEXT] 政策应用方向
+  [TEXT] 提升影像诊断效率
+  [TEXT] MedAiAssistant对应功能
+  [TEXT] 支持与医院PACS系统集成
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据安全与隐私保护
+  [NO-TEXT-SHAPE]
+  [TEXT] 已完整实现
+  [TEXT] 政策应用方向
+  [TEXT] 保障医疗数据安全
+  [TEXT] MedAiAssistant对应功能
+  [TEXT] 多层安全防护体系、本地化部署
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 中医药特色应用
+  [NO-TEXT-SHAPE]
+  [TEXT] 可定制开发
+  [TEXT] 政策应用方向
+  [TEXT] 开发中医药特色应用
+  [TEXT] MedAiAssistant对应功能
+  [TEXT] Prompt | 模板支持定制中医诊疗逻辑
+
+============================================================
+SLIDE 25 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Partnership Invitation
+  [TEXT] 合作邀请
+  [TEXT] 诚邀各医院参与试点计划
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 试点支持
+  [NO-TEXT-SHAPE]
+  [TEXT] 免费系统部署与培训
+  [NO-TEXT-SHAPE]
+  [TEXT] 专业技术团队全程支持
+  [NO-TEXT-SHAPE]
+  [TEXT] 定制化功能开发配合
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 参与条件
+  [NO-TEXT-SHAPE]
+  [TEXT] 具备基础IT环境
+  [NO-TEXT-SHAPE]
+  [TEXT] 配合数据对接与测试
+  [NO-TEXT-SHAPE]
+  [TEXT] 提供使用反馈与建议
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 共同目标
+  [TEXT] 推进基层医疗AI化进程，提升医疗服务质量与效率
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 联系我们 | ： | 刘朝晖 |  13458003688
+  [TEXT] 开启智慧医疗新篇章
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 26 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] Live Demo
+  [TEXT] 现场演示环节
+  [TEXT] 即将进行系统功能演示，展示AI诊断分析、DRG分析、语音识别等核心功能
+  [TEXT] 演示流程
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 1
+  [TEXT] 患者列表
+  [NO-TEXT-SHAPE]
+  [TEXT] 选择患者
+  [NO-TEXT-SHAPE]
+  [TEXT] 查看患者画像
+  [TEXT] 综合信息展示 · 多维度数据融合
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 2
+  [TEXT] AI诊断分析
+  [NO-TEXT-SHAPE]
+  [TEXT] 查看Prompt
+  [NO-TEXT-SHAPE]
+  [TEXT] AI分析结果
+  [TEXT] 智能推理过程透明化 · 辅助诊断建议
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 3
+  [TEXT] DRG分析
+  [NO-TEXT-SHAPE]
+  [TEXT] 查看匹配结果
+  [NO-TEXT-SHAPE]
+  [TEXT] 盈亏计算
+  [TEXT] 实时分组预测 · 费用结构分析
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 4
+  [TEXT] MCC/CC筛查
+  [TEXT] 并发症与合并症智能识别
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 5
+  [TEXT] 语音识别
+  [TEXT] 实时语音转写 · 病历自动生成
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 6
+  [TEXT] 待办事项
+  [TEXT] 智能任务列表 · 优先级排序
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 互动问答
+  [TEXT] Q&A Session
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 准备好您的问题
+  [TEXT] 演示过程中欢迎随时提出疑问，我们将针对系统架构、算法逻辑及临床应用进行详细解答
+  [NO-TEXT-SHAPE]
+  [TEXT] 技术实现细节
+  [NO-TEXT-SHAPE]
+  [TEXT] 临床应用场景
+  [NO-TEXT-SHAPE]
+  [TEXT] 数据安全策略
+  [NO-TEXT-SHAPE]
+  [TEXT] 部署实施方案
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 演示后预留15分钟专项答疑时间
+  [NO-TEXT-SHAPE]
+
+============================================================
+SLIDE 27 (含图片: True)
+============================================================
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [TEXT] 感谢聆听
+  [TEXT] 期待与您携手，共创智慧医疗新未来
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+  [NO-TEXT-SHAPE]
+
