@@ -82,15 +82,19 @@ else
   touch "$TOKENS_FILE"; chmod 600 "$TOKENS_FILE"
   grep -q "^$KEY=" "$TOKENS_FILE" 2>/dev/null || printf '%s=%s\n' "$KEY" "$TOKEN" >> "$TOKENS_FILE"
   log "llmproxy machines[$N] 已注册 ($KEY, sha256前缀=${HASH:0:8})"
-  log "重启 execution 容器（模型 ~60s 不可用）..."
-  docker restart med-ai-execution-server >/dev/null
-  for i in $(seq 1 40); do
-    code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8082/api/execute/health 2>/dev/null || echo 000)
-    [ "$code" = "200" ] && break
-    sleep 6
-  done
-  [ "$code" = "200" ] || die "execution health 未恢复"
-  log "execution health 200 ✓"
+  if [ "${PROVISION_NO_EXEC_RESTART:-0}" != "1" ]; then
+    log "重启 execution 容器（模型 ~60s 不可用）..."
+    docker restart med-ai-execution-server >/dev/null
+    for i in $(seq 1 40); do
+      code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8082/api/execute/health 2>/dev/null || echo 000)
+      [ "$code" = "200" ] && break
+      sleep 6
+    done
+    [ "$code" = "200" ] || die "execution health 未恢复"
+    log "execution health 200 ✓"
+  else
+    log "PROVISION_NO_EXEC_RESTART=1：跳过 execution 重启（批量模式，最后统一重启）"
+  fi
 fi
 
 # ---------- 4. 启动实例（env 注入 llmproxy token） ----------

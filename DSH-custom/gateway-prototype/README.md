@@ -9,7 +9,23 @@ MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实�
 - v0.2：实例引导代管（登录后服务端完成实例 bootstrap、注入 dsh-auth cookie）；AJAX 登录页。
 - v0.1：登录代理 + 会话 + 路由透传骨架。
 
-## 开户自动化（阶段 1）
+## 批量开户与常驻（阶段 1 实测，2026-09-08）
+
+```bash
+# 批量开户：list 文件每行一个 userId（# 注释）；自动 key=u<N>；注册不重启，最后统一 sync+验证
+bash /srv/dsh-platform/gateway/batch-provision.sh <list-file>
+
+# 平台服务管理（systemd 托管，开机自启）
+sudo cp dsh-platform.service /etc/systemd/system/ && sudo systemctl daemon-reload
+sudo systemctl enable --now dsh-platform.service
+/srv/dsh-platform/bin/dsh-platform.sh {start|stop|status}   # 手动管理（前台监督模式）
+```
+
+实测：5 账号批量开户（10102→u4、1119→u5、1201→u6、1418→u7、1592→u8）+ 原 u1-u3 = **8 用户全通**。测试库账号密码哈希已升级 argon2（`temp/upgrade_users_hash_123456.sql`，密码 123456，备份表 `USERS_BAK_20260908`）。
+
+> 实例被 systemd/监督拉起后 bootstrap token 轮换——`dsh-platform.sh` 会自动刷新 `state/<key>.token` 并清网关 instAuth（网关下次转发自动重引导），无需手工干预。
+
+## 单户开户（provision-user.sh）
 
 ```bash
 # 服务器（100.66.1.4）：一个命令开户 → 自动完成 目录/端口/llmproxy token 注册/实例启动/settings/bootstrap token/网关配置
