@@ -1,18 +1,10 @@
 #!/usr/bin/env node
 /**
- * dsh-gateway v0.2（阶段 0-Linux 原型）
- * 职责：MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实例（单 origin 透传）
+ * dsh-gateway v0.3（阶段 0-Linux 原型 → 阶段 1 试点基线）
+ * MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实例（单 origin 透传）
  *
- * v0.2 新增：实例引导代管（instanceAuth）
- * - 浏览器只需登录一次；网关在登录成功后服务端完成目标实例的 bootstrap
- *   （GET /?token=<bootstrap> → 捕获实例签发的 dsh-auth-* cookie 存入内存），
- *   后续转发时注入该 cookie —— 实例侧"已引导"会话完全由网关持有，浏览器无感知。
- * - bootstrap token 来源：开户/重启后由 provision 落盘到 stateDir/<key>.token（600）。
- *
- * 安全说明：
- * - 网关不持有 MedAi JWT secret；验真走 MedAi 受保护端点（默认 GET /api/users/{id}，
- *   响应含 passwordHash——只取状态码，body 一律丢弃且不写日志；正式换 /api/auth/me）
- * - 实例 cookie 只在网关内存，重启实例后需新 token 文件重新引导（实例 30 天有效期内无需重引导）
+ * v0.3：会话与实例 cookie 持久化到 state.json（网关重启不丢登录态、免重新引导实例）。
+ * 其余同 v0.2：登录代理 + 验真（MedAi 自验签）+ 实例引导代管（bootstrap token → dsh-auth 注入）。
  */
 'use strict'
 
@@ -26,12 +18,11 @@ const { createProxyServer } = require('http-proxy')
 const CONFIG = {
   listenPort: Number(process.env.GW_PORT || 3200),
   medaiBase: process.env.MEDAI_BASE || 'http://127.0.0.1:8081/api',
-  /** 实例键 → 实例端口 + bootstrap token 文件 */
+  stateFile: process.env.GW_STATE_FILE || '/srv/dsh-platform/gateway/state.json',
   instances: {
     u1: { port: 3101, tokenFile: '/srv/dsh-platform/state/u1.token' },
     u2: { port: 3102, tokenFile: '/srv/dsh-platform/state/u2.token' },
   },
-  /** MedAi userId → 实例键 */
   userMap: {
     '1657': 'u1', // 刘朝晖
     '0001': 'u2', // Administrator
@@ -40,34 +31,54 @@ const CONFIG = {
   cookieName: 'dshgw',
 }
 
-// ---------- 会话存储（原型内存版） ----------
-const sessions = new Map() // sessionId -> {userId, name, expiresAt}
+// ---------- 持久化（轻量 JSON，同步写——变更即落盘，防进程被杀丢状态） ----------
+function persist() {
+  try {
+    const data = {
+      sessions: [...sessions.entries()].map(([sid, s]) => [sid, s]),
+      instAuth: [...instAuth.entries()],
+    }
+    fs.writeFileSync(CONFIG.stateFile, JSON.stringify(data), { mode: 0o600 })
+  } catch (e) { console.error('[gw] state save failed:', e.message) }
+}
+function loadState() {
+  try {
+    const data = JSON.parse(fs.readFileSync(CONFIG.stateFile, 'utf8'))
+    const now = Date.now()
+    for (const [sid, s] of data.sessions || []) {
+      if (s.expiresAt > now) sessions.set(sid, s)
+    }
+    for (const [k, v] of data.instAuth || []) instAuth.set(k, v)
+    console.log(`[gw] state restored: sessions=${sessions.size} instAuth=${instAuth.size}`)
+  } catch { console.log('[gw] no prior state') }
+}
+
+// ---------- 会话存储 ----------
+const sessions = new Map()
+const instAuth = new Map() // instanceKey -> 'dsh-auth-xxx=value'
 
 function issueSession(userId, name) {
   const sid = crypto.randomBytes(24).toString('hex')
   sessions.set(sid, { userId, name, expiresAt: Date.now() + CONFIG.sessionTtlMs })
+  persist()
   return sid
 }
 function readSession(req) {
   const m = (req.headers.cookie || '').match(new RegExp(CONFIG.cookieName + '=([^;]+)'))
   if (!m) return null
-  const s = sessions.get(decodeURIComponent(m[1]))
+  const sid = decodeURIComponent(m[1])
+  const s = sessions.get(sid)
   if (!s) return null
-  if (s.expiresAt < Date.now()) { sessions.delete(m[1]); return null }
+  if (s.expiresAt < Date.now()) { sessions.delete(sid); persist(); return null }
   return s
 }
 
 // ---------- 实例侧授权（引导代管） ----------
-const instAuth = new Map() // instanceKey -> 'dsh-auth-xxx=value'（实例签发 cookie 串）
-
-/** 读 bootstrap token 文件 */
 function readBootstrapToken(key) {
   const inst = CONFIG.instances[key]
   if (!inst) return null
   try { return fs.readFileSync(inst.tokenFile, 'utf8').trim() } catch { return null }
 }
-
-/** 服务端完成实例引导：GET /?token= → 捕获 Set-Cookie(dsh-auth-*) */
 async function ensureInstanceAuth(key) {
   if (instAuth.has(key)) return true
   const inst = CONFIG.instances[key]
@@ -78,7 +89,8 @@ async function ensureInstanceAuth(key) {
     const setCookies = typeof r.headers.getSetCookie === 'function' ? r.headers.getSetCookie() : []
     const auth = setCookies.find((c) => c.startsWith('dsh-auth-'))
     if (auth) {
-      instAuth.set(key, auth.split(';')[0]) // 只留 name=value
+      instAuth.set(key, auth.split(';')[0])
+      persist()
       return true
     }
     return false
@@ -98,8 +110,6 @@ function medaiLogin(id, password) {
     return { ok: true, token: body.token, userId: String(body.userId), name: body.name || body.username || body.userId }
   }).catch((e) => ({ ok: false, status: 0, reason: String(e.message || e) }))
 }
-
-/** 验真：调 MedAi 受保护端点，只信状态码，body 丢弃（防 passwordHash 泄露）。 */
 function medaiVerify(token, userId) {
   return fetch(`${CONFIG.medaiBase}/users/${encodeURIComponent(userId)}`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -112,14 +122,11 @@ proxy.on('error', (err, _req, res) => {
   if (res && !res.headersSent) { res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('网关到实例转发失败: ' + err.message) }
   else if (res) res.end()
 })
-
 function targetFor(userId) {
   const key = CONFIG.userMap[userId]
   const inst = key && CONFIG.instances[key]
   return inst ? { key, url: `http://127.0.0.1:${inst.port}` } : null
 }
-
-/** 转发前统一改写：Host 回环、实例 cookie 注入、剥浏览器信任头 */
 function prepareProxyHeaders(req, t) {
   req.headers.host = `127.0.0.1:${CONFIG.instances[t.key].port}`
   const instCookie = instAuth.get(t.key)
@@ -147,14 +154,11 @@ f.addEventListener('submit',async(e)=>{
   try{
     const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:document.getElementById('id').value.trim(),password:document.getElementById('pw').value})});
     if(r.redirected){location.href=r.url;return}
-    const t=await r.text();
     err.textContent=(r.status===401)?'工号或密码错误，或账号未激活':(r.status===403?'账号未开通 DSH 工作区':('登录失败('+r.status+')'));
   }catch(x){err.textContent='网络错误：'+x.message}
   btn.disabled=false; btn.textContent='登录';
 });
 </script></body></html>`
-
-function errPage(code, html) { return (res) => send(res, code, html) }
 function send(res, code, html) { res.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(html) }
 
 // ---------- HTTP 主循环 ----------
@@ -185,7 +189,7 @@ const server = http.createServer(async (req, res) => {
     if (!valid) return send(res, 401, LOGIN_HTML.replace('<p style="color:#b91c1c;min-height:18px" id="err"></p>', '<p style="color:#b91c1c;min-height:18px" id="err">登录态校验失败</p>'))
     const t = targetFor(r.userId)
     if (!t) return send(res, 403, `<h3>账号未开通 DSH 工作区</h3><p>userId=${r.userId}（${r.name}）。请联系管理员在 userMap 中开通。</p>`)
-    await ensureInstanceAuth(t.key) // 实例引导代管（失败不阻断登录，转发时实例会 401 提示）
+    await ensureInstanceAuth(t.key)
     const sid = issueSession(r.userId, r.name)
     res.writeHead(302, {
       Location: '/',
@@ -197,7 +201,7 @@ const server = http.createServer(async (req, res) => {
   const session = readSession(req)
   if (!session) { res.writeHead(302, { Location: '/login' }); return res.end() }
   const t = targetFor(session.userId)
-  if (!t) { return errPage(403, `<h3>账号未开通 DSH 工作区</h3><p>userId=${session.userId}（${session.name}）。</p>`)(res) }
+  if (!t) { return send(res, 403, `<h3>账号未开通 DSH 工作区</h3><p>userId=${session.userId}（${session.name}）。</p>`) }
   if (!instAuth.has(t.key)) await ensureInstanceAuth(t.key)
   prepareProxyHeaders(req, t)
   proxy.web(req, res, { target: t.url })
@@ -212,7 +216,9 @@ server.on('upgrade', (req, socket, head) => {
   proxy.ws(req, socket, head, { target: t.url })
 })
 
+loadState()
 server.listen(CONFIG.listenPort, '0.0.0.0', () => {
-  console.log(`dsh-gateway v0.2 listening on http://0.0.0.0:${CONFIG.listenPort}`)
+  console.log(`dsh-gateway v0.3 listening on http://0.0.0.0:${CONFIG.listenPort}`)
   console.log(`userMap: ${Object.entries(CONFIG.userMap).map(([uid, k]) => `${uid}->${k}`).join(', ')}`)
+  console.log(`stateFile: ${CONFIG.stateFile}`)
 })

@@ -1,6 +1,12 @@
-# dsh-gateway-prototype（阶段 0-Linux 原型网关）
+# dsh-gateway-prototype（阶段 0-Linux 原型网关 → 阶段 1 试点基线）
 
 MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实例（单 origin 透传）。
+
+## 版本
+
+- **v0.3（当前）**：会话 + 实例 cookie 同步持久化到 `state.json`（600）——网关重启不丢登录态、免重新引导实例（实测：重启后旧 cookie 直接 200）。
+- v0.2：实例引导代管（登录后服务端完成实例 bootstrap、注入 dsh-auth cookie）；AJAX 登录页。
+- v0.1：登录代理 + 会话 + 路由透传骨架。
 
 ## 架构语义
 
@@ -17,6 +23,7 @@ MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实�
 - 实例仅回环 127.0.0.1；浏览器不能直连 31xx。
 - 透传时改写 Host、剥离 origin/sec-fetch 头（DSH 回环特权接口 + Host 围栏要求）。
 - **v0.2 实例引导代管**：登录成功后网关服务端 GET `/?token=<bootstrap>`（token 从 `/srv/dsh-platform/state/<key>.token` 读，由 provision 落盘）捕获实例签发的 `dsh-auth-*` cookie 存内存，转发时注入——浏览器只登录一次，实例侧授权全由网关持有。实例重启后 token 轮换 → 需更新 state 文件重新引导。
+- **v0.3 状态持久化**：`state.json`（默认 `/srv/dsh-platform/gateway/state.json`，0600）同步保存 sessions 与 instAuth；启动时加载（`state restored: sessions=N instAuth=N`）。重启后浏览器登录态与实例授权均不丢。
 
 ## 运行
 
