@@ -4,9 +4,36 @@ MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实�
 
 ## 版本
 
-- **v0.3（当前）**：会话 + 实例 cookie 同步持久化到 `state.json`（600）——网关重启不丢登录态、免重新引导实例（实测：重启后旧 cookie 直接 200）。
+- **v0.4（当前）**：CONFIG 外置 `gateway.config.json`（instances/userMap 配置化，provision 改写即扩容）；配套 `provision-user.sh` 开户自动化。
+- v0.3：会话 + 实例 cookie 同步持久化到 `state.json`（600）——网关重启不丢登录态、免重新引导实例（实测：重启后旧 cookie 直接 200）。
 - v0.2：实例引导代管（登录后服务端完成实例 bootstrap、注入 dsh-auth cookie）；AJAX 登录页。
 - v0.1：登录代理 + 会话 + 路由透传骨架。
+
+## 开户自动化（阶段 1）
+
+```bash
+# 服务器（100.66.1.4）：一个命令开户 → 自动完成 目录/端口/llmproxy token 注册/实例启动/settings/bootstrap token/网关配置
+bash /srv/dsh-platform/gateway/provision-user.sh <MedAi-userId> <key> [port]
+# 例：
+bash /srv/dsh-platform/gateway/provision-user.sh 20001 u3        # 端口自动分配（自 3103 起）
+bash /srv/dsh-platform/gateway/provision-user.sh 1658 u4 3110    # 指定端口
+```
+
+脚本流程：建 DSH_HOME/workspace → 分配端口 → 注册 llmproxy machine（`openssl rand` 明文 + sha256 追加 execution `application-execution.properties`，重启 execution ~60s）→ 实例启动（env 注入 token）→ 写 settings.yaml（medai-llmproxy provider）→ bootstrap token 落盘 `state/<key>.token` → 更新 `gateway.config.json` + 重启网关。
+
+> 注意：注册新用户会重启 execution 容器（~60s 模型不可用）——批量开户可分批或后续改为"注册不重启、统一重启"模式。
+
+### ⚠️ 配置漂移自愈（必读）
+
+`application-execution.properties` 被 git 跟踪（服务器 deploy 目录随代码库 pull 同步）——**未提交的 machines 注册会被 git pull/reset 还原**（2026-09-08 实测发生：u1/u2 注册丢失致 token 401）。对策：
+
+```bash
+# 以 .llmproxy-tokens 为权威源补全缺失的 machines 注册 + 重启 execution + 验证
+bash /srv/dsh-platform/gateway/sync-machines.sh          # 补全并重启
+bash /srv/dsh-platform/gateway/sync-machines.sh --check  # 只检查
+```
+
+建议：每次服务器代码 pull/升级后、或发现 token 401 时先跑 sync-machines.sh。长期方案：把每环境 machines 注册移出 git 跟踪文件（env 注入/独立配置），见方案 §7.6 待办。
 
 ## 架构语义
 

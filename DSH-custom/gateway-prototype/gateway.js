@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /**
- * dsh-gateway v0.3（阶段 0-Linux 原型 → 阶段 1 试点基线）
+ * dsh-gateway v0.4（阶段 1 试点基线）
  * MedAi SSO 登录代理 → HttpOnly 会话 → 按用户路由到对应 DSH 实例（单 origin 透传）
  *
- * v0.3：会话与实例 cookie 持久化到 state.json（网关重启不丢登录态、免重新引导实例）。
- * 其余同 v0.2：登录代理 + 验真（MedAi 自验签）+ 实例引导代管（bootstrap token → dsh-auth 注入）。
+ * v0.4：CONFIG 外置到 gateway.config.json（instances/userMap 可配置化）——
+ *       provision-user.sh 开户时改写配置并重启网关即可扩容，无需改代码。
+ * v0.3：会话与实例 cookie 持久化到 state.json（重启不丢）。
+ * v0.2：登录代理 + 验真 + 实例引导代管（bootstrap token → dsh-auth 注入）。
  */
 'use strict'
 
@@ -14,22 +16,28 @@ const path = require('node:path')
 const crypto = require('node:crypto')
 const { createProxyServer } = require('http-proxy')
 
-// ---------- CONFIG ----------
-const CONFIG = {
-  listenPort: Number(process.env.GW_PORT || 3200),
-  medaiBase: process.env.MEDAI_BASE || 'http://127.0.0.1:8081/api',
-  stateFile: process.env.GW_STATE_FILE || '/srv/dsh-platform/gateway/state.json',
-  instances: {
-    u1: { port: 3101, tokenFile: '/srv/dsh-platform/state/u1.token' },
-    u2: { port: 3102, tokenFile: '/srv/dsh-platform/state/u2.token' },
-  },
-  userMap: {
-    '1657': 'u1', // 刘朝晖
-    '0001': 'u2', // Administrator
-  },
+// ---------- CONFIG（外置 gateway.config.json，可被 provision 改写） ----------
+const CONFIG_FILE = process.env.GW_CONFIG_FILE || path.join(__dirname, 'gateway.config.json')
+const DEFAULTS = {
+  listenPort: 3200,
+  medaiBase: 'http://127.0.0.1:8081/api',
+  stateFile: '/srv/dsh-platform/gateway/state.json',
+  stateDir: '/srv/dsh-platform/state', // bootstrap token 落盘目录（<key>.token）
+  instances: { u1: { port: 3101 }, u2: { port: 3102 } },
+  userMap: { '1657': 'u1', '0001': 'u2' },
   sessionTtlMs: 12 * 3600 * 1000,
   cookieName: 'dshgw',
 }
+let CONFIG = { ...DEFAULTS }
+try {
+  const ext = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'))
+  CONFIG = { ...DEFAULTS, ...ext }
+  console.log(`[gw] config loaded from ${CONFIG_FILE}`)
+} catch {
+  console.warn(`[gw] config file missing (${CONFIG_FILE}), using defaults`)
+}
+CONFIG.instances = CONFIG.instances || {}
+CONFIG.userMap = CONFIG.userMap || {}
 
 // ---------- 持久化（轻量 JSON，同步写——变更即落盘，防进程被杀丢状态） ----------
 function persist() {
@@ -77,7 +85,7 @@ function readSession(req) {
 function readBootstrapToken(key) {
   const inst = CONFIG.instances[key]
   if (!inst) return null
-  try { return fs.readFileSync(inst.tokenFile, 'utf8').trim() } catch { return null }
+  try { return fs.readFileSync(path.join(CONFIG.stateDir, `${key}.token`), 'utf8').trim() } catch { return null }
 }
 async function ensureInstanceAuth(key) {
   if (instAuth.has(key)) return true

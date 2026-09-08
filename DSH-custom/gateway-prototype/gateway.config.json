@@ -1,0 +1,14 @@
+{
+  "listenPort": 3200,
+  "medaiBase": "http://127.0.0.1:8081/api",
+  "stateFile": "/srv/dsh-platform/gateway/state.json",
+  "stateDir": "/srv/dsh-platform/state",
+  "instances": {
+    "u1": { "port": 3101 },
+    "u2": { "port": 3102 }
+  },
+  "userMap": {
+    "1657": "u1",
+    "0001": "u2"
+  }
+}
