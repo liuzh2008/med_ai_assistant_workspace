@@ -1,0 +1,13 @@
+{
+  "name": "dsh-gateway-prototype",
+  "version": "0.0.1",
+  "private": true,
+  "description": "DSH 多租户平台原型网关：MedAi SSO 登录代理 + 会话路由（阶段 0-Linux）",
+  "main": "gateway.js",
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
