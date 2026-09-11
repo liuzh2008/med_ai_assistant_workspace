@@ -31,6 +31,7 @@
 | 教学前端 | `/root/docker/med-teach-frontend/`（root 所有，需 `sudo`） |
 | 部署日志 | `/home/liuzh2008/medai/logs/`（`git-poll-deploy.log`、`frontend-build-*.log` 等） |
 | **容器内存上限合计** | **≈8.0 GiB**（7 容器全部有上限，除 Oracle 外 6 个禁用容器 swap） |
+| **DSH 平台** | `dsh-platform.service`（enabled）；网关 :3200 + 用户实例 u1(3101)/u2(3102)（仅 `127.0.0.1`）；systemd 已设 `MemoryMax=2G`；平台实测 **384 MiB** |
 
 ---
 
@@ -43,6 +44,7 @@
 | MedAi 前端 | 8080 | 0.9.296 对应 dist（`js/app.6a0a1b37.js`） | `/` → 200 |
 | AIMedTeach 后端 | 8083 | 0.9.236 | `/api/health` → 200 |
 | AIMedTeach 前端 | 8085 | 0.1.32 | `/` → 200 |
+| DSH 平台 | 3200（网关）/ 3101、3102（实例） | DSH 0.1.2-rc.1（npm 版） | 网关未登录 302、实例无 token 401（符合预期） |
 
 ---
 
