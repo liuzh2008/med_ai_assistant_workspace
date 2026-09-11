@@ -51,7 +51,9 @@ description: "项目规则体系说明文档，非自动加载规则"
 ├── 06-testing.md                         # 测试规范
 ├── 07-git-workflow.md                    # Git工作流
 ├── 08-deployment.md                      # 部署与环境规范
-└── 09-logging-monitoring.md              # 日志与监控规范
+├── 09-logging-monitoring.md              # 日志与监控规范
+├── 10-version-management.md              # 版本管理规范
+└── 11-local-network-troubleshooting.md   # 本机连不上测试服务器排查速查（manual 触发）
 ```
 
 ---
@@ -125,6 +127,12 @@ description: "项目规则体系说明文档，非自动加载规则"
 - 级别：debug参数/info成功/warn恢复/error失败+堆栈
 - 格式：中文描述 + 占位符，禁止拼接
 - 禁止：System.out、PII入日志、循环内debug
+
+### 11-local-network-troubleshooting.md（`trigger: manual`，非常驻、按需查阅）
+- 本机连不上测试服务器 100.66.1.4 时按四步走：① GUI 进程 `nblink.exe` → ② 组网路由表 → ③ 四个陷阱 → ④ 真实业务响应验证
+- 三个网络分工：aTrust(`2.0.0.0/24`) 无关 / **NodeBabyLink(`100.66.1.x`) 唯一通道** / 外网穿透 `nb.nblink.cc:16619` 备用
+- 在线与可达判据：`127.0.0.1:2080/tun/routers` + `/glp/peerlist`，**不是** ping、**不是** `peerinfo`
+- 来源：2026-09-11 组网中断事故（档案见 `doc/问题修复/2026-09-11-本机节点小宝GUI开机崩溃导致测试服务器组网中断修复.md`）
 
 ---
 
