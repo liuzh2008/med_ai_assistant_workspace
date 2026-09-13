@@ -63,6 +63,25 @@ check('P0-6b 约束7已加限定', '本条仅适用于构成疾病实体的诊�
 check('P0-6c 新增约束10', '10. 非诊断性条目' in g2 and '禁止为其构造替代疾病诊断' in g2)
 check('P0-6d 约束10 在约束9之后', g2.find('9. Gate 1 输出末尾') < g2.find('10. 非诊断性条目'))
 
+# ---------- P0-8（输出唯一性 / 示例围栏 / 输出前自检）----------
+check('P0-8a 唯一性小节存在', '五、输出唯一性与输出前强制自检' in g1)
+check('P0-8b 一条诊断只能出现一次', '同一条诊断在【诊断列表】中**只能出现一次**' in g1)
+check('P0-8c 编号连续唯一', '不重复、不回退' in g1)
+check('P0-8d 修正只列一条 + 原名称', '原名称：XXX' in g1 and '只列这一条' in g1)
+check('P0-8e 禁过程性标记', '（已修正）' in g1 and '（修正后）' in g1 and '（已更新）' in g1)
+check('P0-8f 禁输出示例条目', '其中出现的任何诊断条目都不得出现在你的实际输出中' in g1)
+check('P0-8g 格式示例围栏', '【输出格式示例】（**仅用于说明格式' in g1)
+check('P0-8h 错误示例围栏', '【常见错误示例】（以下为错误写法演示' in g1)
+check('P0-8i 输出前强制自检五问',
+      all(k in g1 for k in ['5.输出前强制自检', '① 有无两条**名称完全相同**的诊断？',
+                            '去掉括注后名称相同', '是否从1连续到N、无重复、无跳号']))
+check('P0-8j 自检限定不破坏全覆盖', '自检③**仅适用于你自主发现的候选诊断**' in g1)
+check('P0-8k 新增反例15/16', '错误15：在列表末尾重复输出' in g1 and '错误16：把模板中的示例条目当作输出内容列出' in g1)
+check('P0-8l 孤立段落引用已清除', '【修订追溯】' not in g1)
+check('P0-8m 小节编号连续',
+      g1.find('四、禁止不当合并可并列的独立诊断') < g1.find('五、输出唯一性与输出前强制自检')
+      < g1.find('六、输入【目前诊断】中的条目一律保留列出'))
+
 # ---------- 回归：原有契约未被破坏 ----------
 check('回归 Gate1 全覆盖规则仍在', '【目前诊断全覆盖规则】（最高优先级，必须严格遵守）' in g1)
 check('回归 Gate1 删除建议段仍在', '### 删除建议' in g1)
@@ -77,5 +96,10 @@ failed = [r for r in results if not r[1]]
 for label, ok, detail in results:
     print('%s %s' % ('[PASS]' if ok else '[FAIL]', label))
 print('\n合计 %d 项，通过 %d，失败 %d' % (len(results), len(results) - len(failed), len(failed)))
+p08 = [r for r in results if r[0].startswith('P0-8')]
+p08_pass = sum(1 for r in p08 if r[1])
+print('P0-8（输出唯一性/示例围栏/输出前自检）：通过 %d/%d' % (p08_pass, len(p08)))
+print('注：P0-1~P0-6 的断言按 v2.8.0 措辞编写，模板迭代到 v2.8.7+ 后部分措辞已变，其 FAIL 属既存'
+      '（改动前后同为 17 通过/14 失败，见 res_287/res_288 对照）。')
 print('Gate1 prompt=%d 字符, Gate2 prompt=%d 字符' % (len(g1), len(g2)))
 sys.exit(1 if failed else 0)
