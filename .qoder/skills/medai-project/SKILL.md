@@ -35,7 +35,7 @@ description: 对话开始的项目上下文声明——表明本次对话适用�
 | 类别 | 技能 |
 |------|------|
 | 临床剧本 | `/ward-round`（查房）、`/admission-record`（入院）、`/consultation`（会诊）、`/critical-value`（危急值）、`/discharge-summary`（出院）、`/handover`（交班）、`/preop-discussion`（手术期）、`/time-limit-monitor`（时限）、`/discussion-material`（病例讨论材料）、`/medical-record-save`（病历落库） |
-| 工程/质量 | `/code-review`、`/save-question`、`/query-question`、`/generate-qc`、`/generate-tdd-guide`、`/lookup-unfinished-features` |
+| 工程/质量 | `/code-review`、`/save-question`、`/query-question`、`/generate-qc`、`/generate-tdd-guide`、`/lookup-unfinished-features`、`/principle-docs`（原则文档路由：改模板/调输入布局/大范围重构/复杂需求讨论时必走） |
 | 发布/部署 | `/git-commit`、`/git-push-github`、`/trigger-release-build`、`/testserver-deploy`、`/check-test-dev-servers`、`/check-test-docker-servers`、`/sync-devpc-code`、`/submit-*`（临床规则/质控标准/Prompt 模板） |
 | 记忆 | `/memory-manager`（会话中关键信息按规范写入 `记忆库/`） |
 
