@@ -80,3 +80,13 @@ sidebar-app/
 # Local .dsh skill links (junction layer over .qoder/skills)
 .dsh/
 
+# 工作区临时产物（不入库）
+# /body_*.txt 为 LLM 请求体抓取文件，文件名/内容可能含患者标识，禁止入库
+/body_*.txt
+/temp_*
+/nice_intro.html
+/doc/调研/_current_contract_*.md
+
+# DSH 路由插件套件（独立项目：源码 + lib 构建产物 + probe 实验结果，非本项目内容）
+/dsh-routing-suite/
+
