@@ -34,6 +34,38 @@ ssh -o BatchMode=yes devpc "ver & whoami & hostname"
 - 主仓库 remote: `origin = git@github.com:liuzh2008/med_ai_assistant_workspace.git`(分支 master);另有 `gitee = git@gitee.com:chengdu-qingzhou_0/med_ai_assistant_workspace.git`
 - 子模块(**无 .gitmodules,裸 gitlink**): `med_ai_assistant_1.0_bs_backend`(分支 main)、`med_ai_assistant_1.0_bs_vue`(分支 master);remote 同为 github liuzh2008 / gitee chengdu-qingzhou_0
 
+## devpc 上的第二个仓库: AIMedTeach(教学系统)
+
+"同步代码到 100.66.1.1"可能涉及**两个独立仓库**,动手前先确认用户指哪个:
+
+| 仓库 | devpc 路径 | remote | 分支 |
+|---|---|---|---|
+| med_ai_assistant_workspace(主项目) | `D:\MedAiAssistant 1.0\MedAiAssistant 1.0 BS` | github liuzh2008/med_ai_assistant_workspace | master |
+| AIMedTeach(教学系统) | `D:\MedAiAssistant 1.0\MedAiAssistant 1.0 BS\AIMedTeach` | github liuzh2008/AIMedTeach | master |
+
+- ⚠️ devpc 的 `D:\AIMedTeach`(D 盘根)是**另一份旧副本**(同 remote;2026-09-17 核查时 behind 177),**不是**用户指认的仓库目录,勿误操作
+- AIMedTeach 的 `med-teach-backend/`、`med-teach-frontend/` 是**普通子目录**(无独立 `.git`),整个教学系统就是一个仓库,不存在子模块问题
+- 教学系统任务**不写入** MedAi 的 `记忆库/`(见 `aimedteach-project` 技能的防混淆红线);本技能只作为"devpc 上怎么同步"的操作手册
+
+### 大批落后 + 本地改动与上游重叠 → 覆盖式同步(需用户明确同意覆盖)
+
+2026-09-17 实测: devpc AIMedTeach 本地 HEAD 还停在 2026-08-12,落后 **117** 提交;22 个已修改文件里 **21 个**上游也改过同一文件(+698/-276)。此场景下 `stash pop` 必然大面积**代码级冲突**(不是记忆库那种追加型,无法自动归并)。用户指示"有冲突就覆盖"时的无损流程:
+
+1. **双保险备份**(全程无损,任何一步都可回退):
+   ```powershell
+   # ① patch 落盘 —— 必须用 git 自己的 --output(字节级安全)
+   git diff HEAD --binary --output="D:\aimed-backup-YYYYMMDD\local-changes.patch"
+   # 不要用 PowerShell 的 > / Out-File 重定向: PS 5.1 会写成 UTF-16/BOM,patch 不可用
+   git stash push -m "devpc-<repo>-local-YYYYMMDD"          # ② 已跟踪文件的改动入 stash
+   git stash push -u -m "devpc-<repo>-untracked-YYYYMMDD"   # ③ 未跟踪文件也入 stash,工作区彻底干净
+   ```
+2. `git pull --ff-only origin master`(工作区干净后不会再被 untracked 挡住)
+3. 验证: `git ls-remote origin master` == `git rev-parse HEAD`,且 `git status --short --branch` 无输出
+4. **stash 一律不要 drop** —— 用户旧改动仍在 `stash@{0}`(未跟踪)/`stash@{1}`(已跟踪),可 `git show 'stash@{1}' --stat` 查看、`git stash pop` 取回;等用户确认无用后再由用户决定删除
+
+- **坑**: 第 ① 步只做 `git stash push`(不带 `-u`)时,`pull` 会被"未跟踪文件与上游新增文件同名"挡住,报 `error: The following untracked working tree files would be overwritten by merge` 后 `Aborting`,pull 完全不生效(HEAD 不动)。必须补 `git stash push -u`。
+- **坑**: stash 列表顺序 —— 后 stash 的在 `stash@{0}`,先 stash 的顺延到 `stash@{1}`。给 stash 写 `-m` 说明可避免事后分不清哪条是哪个仓库/哪一轮。
+
 ## CRITICAL 坑: 引号在 ssh 多层传递中被吞
 
 本机 PowerShell → ssh → 远端 cmd 的引号传递会丢失,导致:
