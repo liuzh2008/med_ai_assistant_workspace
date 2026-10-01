@@ -101,7 +101,12 @@ ssh -o ServerAliveInterval=30 testserver "bash /tmp/ts-pull-deploy.sh all 2>&1 |
 - **401 ≠ 端点存在**：Spring Security 对**未匹配路径**同样返回 401；判断端点是否存在要用**对照路径**或直接查产物（如 `strings app.jar | grep consultation/`）。
 - **前端部署成功要看 assets 哈希**：页面引用的 `app.<hash>.js` 必须等于本次构建产物，否则可能仍是旧镜像。
 
-### 7. 后端部署窗口
+### 7. 前端容器 `unhealthy` 而服务其实是好的（健康检查 IPv4/IPv6 陷阱，最隐蔽）
+实测：容器内 `wget http://localhost/` 把 `localhost` 解析到 **IPv6 `[::1]:80`**，而 nginx 只监听 **IPv4 `0.0.0.0:80`** → `Connection refused` → 容器**永久 `unhealthy`**；但宿主机 `curl http://127.0.0.1:8080/` 是 **200**，服务完全正常。
+→ 判据：**`docker ps` 的 `unhealthy` 不等于服务不可用**，要先看健康检查命令本身。修法是 Dockerfile 的 `HEALTHCHECK` 与 `/healthcheck.sh` 改用 **`http://127.0.0.1/`**（2026-10-01 已就地修复该目录下的 Dockerfile 并重建，容器随即 `healthy`）。
+→ 本脚本**只认 `(healthy)`**（曾因接受 `health: starting` 而漏报该问题，已收紧）。
+
+### 8. 后端部署窗口
 `docker restart med-ai-main` 会中断服务 **60~90s**（entrypoint 会等 Redis/Oracle 就绪）。建议避开使用时段；正式环境请走 CI（`trigger-release-build` / auto-deploy）而非本脚本。
 
 ---
@@ -123,7 +128,8 @@ ssh -o ServerAliveInterval=30 testserver "bash /tmp/ts-pull-deploy.sh all 2>&1 |
 - [ ] 后端：`docker ps --filter name=med-ai-main` 显示 `(healthy)`
 - [ ] 后端：`curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/api/ai/health/ping` → `200`
 - [ ] 前端：`curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/` → `200`
-- [ ] 前端：页面 `app.<hash>.js` 与 `dist/js/app.<hash>.js` 一致
+- [ ] 前端：容器状态为 **`(healthy)`**（若 `unhealthy` 而 `curl` 为 200，先查坑位 7 的 localhost/IPv6 健康检查问题）
+- [ ] 前端：页面引用的 `app.<hash>.js` 与 `dist/js/app.<hash>.js` 一致（本脚本会自动比对）
 - [ ] 业务：登录后访问目标页面/接口（如 `POST /api/consultation/patients/search` 应 200，无 JWT 应 401）
 - [ ] 回滚资料已生成：`$ROLLBACK/{app.jar.bak,dist.bak}`
 - [ ] 容器名核对：用的是 `med-ai-main` / `med-ai-assistant-frontend`（不是 `*-server` / `med-ai-frontend`）

@@ -225,15 +225,29 @@ deploy_frontend() {
     return 1
   fi
 
+  # 4b) wait until HEALTHY (strict). Accepting "health: starting" would mask a
+  #     genuinely unhealthy container -- learned from the localhost/IPv6
+  #     healthcheck bug where the container never became healthy (2026-10-01).
   local i status
-  for i in $(seq 1 12); do
+  status=""
+  for i in $(seq 1 24); do
     sleep 5
     status="$($SUDO docker ps --filter "name=$container" --format '{{.Status}}')"
     case "$status" in
       *"(healthy)"*) break ;;
     esac
   done
-  ok "frontend: container status=$status"
+  case "$status" in
+    *"(healthy)"*) ok "frontend: container healthy" ;;
+    *) bad "frontend: container not healthy after wait: $status"
+       log "  health detail:"
+       $SUDO docker inspect "$container" --format '{{json .State.Health}}' 2>/dev/null | head -c 400
+       log ""
+       log "  hint: if Log shows 'can't connect to remote host', the image HEALTHCHECK"
+       log "        may use localhost (resolves to IPv6 ::1) while nginx listens only on IPv4."
+       log "        Fix: use http://127.0.0.1/ in Dockerfile HEALTHCHECK, then rebuild."
+       return 1 ;;
+  esac
 
   # 5) verify served asset matches freshly built one
   local served built
