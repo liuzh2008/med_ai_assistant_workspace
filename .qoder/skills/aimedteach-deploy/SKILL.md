@@ -150,9 +150,12 @@ ssh testserver "sudo docker logs medteach-backend --tail 50"
 | 部署后页面 404/白屏 | nginx 挂载旧 default.conf | compose volume 挂 `./nginx.conf`；确认 zip 顶层目录为 `med-teach-frontend` |
 | 教学 API 403 | Key 不匹配 | 前端 `.env.production` 的 `VITE_AIMEDTEACH_API_KEY` 须与后端 `TEACHING_CASE_API_KEY` 一致 |
 | 版本号落后 | wuyiyuan/testServer 产物未重新构建 | 构建前核对 `version.txt` vs `package.json`/`pom.xml <revision>` |
+| **部署后接口 500 / `ORA-00904`（无效标识符）** | 后端实体新增列，但测试库未升级表结构（教学表不会自动建） | 先跑对应幂等脚本再重启后端。已知：`deploy/testServer/sql/clinical/28-clinical_focus_lock_columns.sql`（`FOCUS_LOCK_PLAN` ×2 + `FOCUS_LOCK_SELECTIONS`）——0.9.264 起实体读写这些列，缺列会让**任意会话读写**报 ORA-00904 |
+| **不确定 8085 该用哪个前端包（wuyiyuan / testServer）** | 两个包内容不同（wuyiyuan 定制包含 `hospital.jpg`） | `ssh testserver "sudo ls /root/docker/med-teach-frontend/dist/hospital.jpg"`：**存在 → 该机跑的是 wuyiyuan 包**，用 `build-and-package-wuyiyuan.bat` → `deploy/medteach-frontend.zip` → `deploy-from-package.sh` |
 
 ## 四、版本记录
 
 | 日期 | 版本 | 说明 |
 |------|------|------|
 | 2026-09-01 | 前端 0.1.19 / 后端 0.9.226 | 前后端均已在 100.66.1.4 部署验证通过：前端走 /root/docker 生产链路（bat→ps1→zip→deploy-from-package.sh），后端走 testServer（build-and-export-testserver.bat + deploy.sh）；健康检查 8085/8083 全绿 |
+| 2026-10-11 | 前端 0.1.84 / 后端 0.9.288 | 「考核成绩单」功能部署验证通过（前端统计页新增成绩单区 + 后端 2 个 `/api/admin/training-stats/batches*` 端点）。**两点新增经验已入上表**：① 后端部署前先跑 28 号表结构脚本（本次实测缺列，跑完 3 列补齐、启动日志无 ORA）；② 确认 8085 = **wuyiyuan 包**（dist 含 `hospital.jpg`）。验证要点：容器 healthy + `version.txt` + 容器内 chunk 含新 API 路径 + 403/404 语义 + nginx 8085→8083 代理 |
