@@ -159,3 +159,32 @@ ssh testserver "sudo docker logs medteach-backend --tail 50"
 |------|------|------|
 | 2026-09-01 | 前端 0.1.19 / 后端 0.9.226 | 前后端均已在 100.66.1.4 部署验证通过：前端走 /root/docker 生产链路（bat→ps1→zip→deploy-from-package.sh），后端走 testServer（build-and-export-testserver.bat + deploy.sh）；健康检查 8085/8083 全绿 |
 | 2026-10-11 | 前端 0.1.84 / 后端 0.9.288 | 「考核成绩单」功能部署验证通过（前端统计页新增成绩单区 + 后端 2 个 `/api/admin/training-stats/batches*` 端点）。**两点新增经验已入上表**：① 后端部署前先跑 28 号表结构脚本（本次实测缺列，跑完 3 列补齐、启动日志无 ORA）；② 确认 8085 = **wuyiyuan 包**（dist 含 `hospital.jpg`）。验证要点：容器 healthy + `version.txt` + 容器内 chunk 含新 API 路径 + 403/404 语义 + nginx 8085→8083 代理 |
+| 2026-10-12 | 前端 0.1.112 / 后端 0.9.316 | 「思维训练统计」拆「考核 / 训练」双标签页（均左列表 + 右详情）部署验证通过，**纯前端改动、后端未动**（8083 保持 0.9.316 未重新部署）。全流程无新坑：`build-and-package-wuyiyuan.bat < nul` → `deploy/medteach-frontend.zip`（24.9MB，顶层目录 med-teach-frontend）→ scp `/tmp` → `sudo cp` 到 `/root/docker` → `sudo bash -c 'cd /root/docker && bash deploy-from-package.sh'`（健康检查第 2 次通过）。**新增一条可复用验证手段**：页面级 UI 改动除 curl 外，用 Playwright Core + 本机 Edge headless 做真实渲染验证（见 §1.5 末），本次实测两 tab 标签、两页 `.split-layout/.list-pane/.detail-pane` 各 1、场次列表 2 项、训练记录 4 条、点击记录后 `[data-test="training-detail"]` 出现 |
+
+### 1.6 页面级（真实浏览器）验证 —— UI 改动推荐
+
+curl 只能证明"页面能下载、接口鉴权正常"，证明不了"页面渲染成什么样"。UI 改动建议补一次真实浏览器渲染断言
+（Playwright Core + 本机 Edge，无需下载浏览器；写法与 `e2e/*.spec.mjs` 同源）：
+
+```js
+import { chromium } from 'playwright-core'
+const browser = await chromium.launch({
+  executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe', headless: true
+})
+const page = await (await browser.newContext({ viewport: { width: 1600, height: 1000 } })).newPage()
+// 管理页登录态注入（免真实登录，避免在生产/测试库反复试密码）
+await page.addInitScript(() => {
+  localStorage.setItem('userId', '0001')
+  localStorage.setItem('roles', JSON.stringify(['SUPER_ADMIN']))
+  sessionStorage.setItem('aimedteach_session_verified', '1')   // 路由守卫要求"本会话已验真"
+})
+await page.goto('http://100.66.1.4:8085/admin/training-stats', { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(4000)                                // 等 created 里的两个接口回来
+console.log(await page.locator('.el-tabs__item').allInnerTexts())        // → ['考核','训练']
+console.log(await page.locator('.split-layout').count())                 // → 2
+await page.screenshot({ path: 'C:\\Users\\Administrator\\AppData\\Local\\Temp\\verify.png' })
+await browser.close()
+```
+
+要点：① 断言用 `.el-tabs__item` / `.split-layout` 等**结构类名**（比文本更稳）；② 截图后可用图片查看工具目视复核；
+③ 脚本放 `med-teach-frontend/e2e/` 下才能解析 `playwright-core`（用完即删，勿入库）。
