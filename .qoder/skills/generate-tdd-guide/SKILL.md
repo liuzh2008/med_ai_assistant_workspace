@@ -41,6 +41,7 @@ description: 生成 TDD（测试驱动开发）实施指南。按敏捷开发和
 
 ## 生成要求
 
+- **适用范围（系统级技能）**：本技能跨项目 / 跨系统使用，**不得把任何单一项目的口径当作通用规则**。文中出现的具体技术栈、配置文件（`pom.xml` / `package.json` / `vite.config.ts`）、测试框架、E2E 载体与规则文件（如 `.qoder/rules/*`）**一律只是"该项目的实测结论或示例"**；为目标项目生成前必须先实测该项目仓库，按实测结果替换。
 - 每条用户故事必须包含：用户角色（作为…）、需求描述（我需要…以便…）、验收标准（Given-When-Then）。
 - 每个开发任务必须三阶段齐备：红（失败测试清单）、绿（最小实现方案）、重构（优化方向）。
 - 周期表、风险矩阵、质量门禁表、交付计划表等**必须完整填写**，不得留空或写"待补充"。
@@ -154,7 +155,7 @@ jobs:
 - 运行后**必须出现 `Tests run:` 行且数量 > 0**；只有 `BUILD SUCCESS` 而无 `Tests run` = 测试根本没跑（多为包路径或命名不符）；
 - **新增测试文件名必须落在执行脚本的 glob 内**（如脚本跑 `test/xxx/*.test.mjs`，则文件不得写成 `.spec.mjs`）；
 - **标了 `*IT` / `*ITCase` 的类必须有 failsafe 或等价机制承接**，否则被 surefire 排除且静默不执行；
-- 项目强制项（`.qoder/rules/06-testing.md`）：用 `@MockitoBean`（禁用 `@MockBean`）；**禁止 `mvn test` 全量**，用 `mvn test -Dtest=XxxTest`；测试命名 `{方法}_{场景}_{期望}`。
+- **项目特定强制项（只在其所属项目内适用，换仓库必须先实测）**：以下条目出自 **MedAiAssistant 主项目**的 `.qoder/rules/06-testing.md`，**仅当目标仓库就是该主项目时**照写；目标仓库为其他项目（如 AiMedTeach）时，必须先实测该仓库既有的测试风格与命令再落笔——例如 `@MockitoBean` 与 `@MockBean` 在项目间并不一致，禁止跨项目套用。MedAiAssistant 口径：用 `@MockitoBean`（禁用 `@MockBean`）；**禁止 `mvn test` 全量**，用 `mvn test -Dtest=XxxTest`；测试命名 `{方法}_{场景}_{期望}`。
 
 ### 5. 质量保障体系
 
