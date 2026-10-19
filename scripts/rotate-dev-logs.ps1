@@ -278,4 +278,32 @@ if (-not $DryRun -and -not $Quiet) {
         $deleted.Count, [math]::Round($freedMB, 2))
 }
 
+# ---------------------------------------------------------------------------
+# Alert trail for files that are over their cap but cannot be rotated.
+# A running dev server holds its stdout log open, and cmd.exe opens redirect
+# targets without FILE_SHARE_DELETE, so Move-Item fails with "file in use".
+# That is exactly how dev-start.log once reached 11.6 GB unnoticed: every
+# scheduled run skipped it silently. Record the skips so the growth is visible
+# (scheduled runs use -Quiet, so console output alone would be lost).
+# ---------------------------------------------------------------------------
+$skipped = @($summary | Where-Object { $_.Action -eq 'Skip' })
+if ($skipped.Count -gt 0 -and -not $DryRun -and (Test-Path -LiteralPath $backendLogs)) {
+    $alertPath = Join-Path $backendLogs '.logrotate-alerts.log'
+    if (Test-Path -LiteralPath $alertPath) {
+        $alertItem = Get-Item -LiteralPath $alertPath -ErrorAction SilentlyContinue
+        # Self-limit the alert trail so it can never become the next big file.
+        if ($null -ne $alertItem -and $alertItem.Length -gt 256KB) {
+            Remove-Item -LiteralPath $alertPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+    $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    foreach ($s in $skipped) {
+        $line = '{0} SKIP {1} ({2} MB) - {3}' -f $stamp, $s.File, $s.SizeMB, $s.Reason
+        Add-Content -LiteralPath $alertPath -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue
+    }
+    if (-not $Quiet) {
+        Write-Warning ('{0} log file(s) over cap but locked by a running process; see {1}' -f $skipped.Count, $alertPath)
+    }
+}
+
 return $summary

@@ -41,10 +41,15 @@ if (-not (Test-Path -LiteralPath $rotateScript)) {
     throw "rotate-dev-logs.ps1 not found: $rotateScript"
 }
 
-$psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-$arguments = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}" -Quiet' -f $rotateScript
+$wrapper = Join-Path $PSScriptRoot 'run-log-rotate.cmd'
+if (-not (Test-Path -LiteralPath $wrapper)) {
+    throw "run-log-rotate.cmd not found: $wrapper"
+}
 
-$action = New-ScheduledTaskAction -Execute $psExe -Argument $arguments
+# Run through the wrapper so stdout/stderr land in scripts\logs\log-rotate-task.log
+# (Task Scheduler would otherwise discard them and -Quiet hides every failure).
+$action = New-ScheduledTaskAction -Execute (Join-Path $env:SystemRoot 'System32\cmd.exe') `
+    -Argument ('/c "' + $wrapper + '"')
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) `
     -RepetitionInterval (New-TimeSpan -Hours $IntervalHours) `
     -RepetitionDuration (New-TimeSpan -Days 3650)

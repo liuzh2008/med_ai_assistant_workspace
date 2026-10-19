@@ -186,6 +186,10 @@ foreach ($pattern in $Path) {
                     [void]$summary.Add([pscustomobject]@{
                         Action = 'WouldDelete'; File = $old.FullName; SizeMB = $oldMB; Archive = ''; Reason = 'total-cap'
                     })
+                    # Keep the running total in sync in dry-run mode too, otherwise
+                    # the loop reports deletes for archives that would still be
+                    # needed once earlier (larger) deletions bring it under the cap.
+                    $total -= $old.Length
                 }
                 else {
                     try {

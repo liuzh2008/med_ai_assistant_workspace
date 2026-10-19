@@ -90,3 +90,6 @@ sidebar-app/
 # DSH 路由插件套件（独立项目：源码 + lib 构建产物 + probe 实验结果，非本项目内容）
 /dsh-routing-suite/
 
+# 日志轮转脚本自身的运行日志（每次计划任务追加，不入库）
+/scripts/logs/
+
