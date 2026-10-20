@@ -26,6 +26,9 @@ medai-builds/
 temp/
 nul
 
+# Patient-derived records (OCR text / desensitized record compilations) — never commit
+doc/病历资料整理/
+
 # Root-level package files (generated accidentally)
 /package.json
 /package-lock.json
