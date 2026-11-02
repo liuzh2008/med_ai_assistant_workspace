@@ -148,17 +148,21 @@ node -e "console.log(JSON.parse(require('fs').readFileSync('D:/MedAiAssistant 1.
 
 用户选"是"后按端执行（**全部在 PowerShell 中 `cmd /c` 调用，bat 含 `pause` 必须喂 stdin，否则永久挂起**）：
 
-**① 主服务器（必须用它，才会传 APP_VERSION）**
+**① 主服务器（用非交互三步，不要调菜单脚本）**
 
 ```powershell
 cd "$ROOT\med_ai_assistant_1.0_bs_backend"
-cmd /c "(echo 2 & echo.) | build-and-export.bat"
+mvn package -DskipTests
+if ($LASTEXITCODE -ne 0) { throw "JAR 构建失败" }
+docker build --build-arg APP_VERSION=0.9.302 -t med-ai-main:latest -f Dockerfile .
+if ($LASTEXITCODE -ne 0) { throw "主服镜像构建失败" }
+docker save -o deploy/main-linux-oracle/med-ai-main.tar med-ai-main:latest
 # 产出：deploy\main-linux-oracle\med-ai-main.tar
 ```
 
-- 脚本是 1/2/3/0 菜单，**只能选 2（Build JAR and export Docker image）**。
-- 选项 1/3 会 `taskkill` 占用 8081 的进程（本机 dev 实例），**禁止**。
-- 脚本自动读 `pom.xml <revision>` 传 `--build-arg APP_VERSION`，镜像内 `version.txt` / LABEL 才正确。
+- **`build-and-export.bat` 是 `set /p` 交互菜单，后台/管道执行读不到输入 → 死循环刷 `[ERROR] Invalid option`（2026-11-02 实测）**。需要人工前台运行时才用，且只能选 2（选项 1/3 会 `taskkill` 占用 8081 的进程）。
+- `--build-arg APP_VERSION` **必须显式传**（主服 Dockerfile 默认 `0.9.281`）；版本取 `pom.xml <revision>`。
+- 用 `mvn package` 而非 `-Pexecution`：主服走默认 `main` profile。
 
 **② 执行服务器（不要用 `build-and-export-execution.bat`：它漏了 `-Pexecution`）**
 
@@ -201,8 +205,9 @@ Copy-Item "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.
 
 ```powershell
 # 后端版本：必须等于 pom <revision>（当前 0.9.302），否则说明 APP_VERSION 没传进去
-docker run --rm med-ai-main:latest cat /app/version.txt
-docker inspect --format '{{index .Config.Labels "version"}}' med-ai-main:latest
+# 必须 --entrypoint cat：镜像默认 entrypoint 会去连生产 Oracle 并挂住（2026-11-02 实测）
+docker run --rm --entrypoint cat med-ai-main:latest /app/version.txt
+docker inspect --format '{{.Config.Labels.version}}' med-ai-main:latest
 
 # 执行服（无 version.txt，用 LABEL/构建时间判断）
 docker inspect --format '{{.Created}} {{index .Config.Labels "version"}}' med-ai-execution:latest
@@ -259,13 +264,14 @@ Get-ChildItem "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\me
 8. **绝不覆盖** `.env.main` / `.env.execution`（Oracle 账号、DeepSeek key、加密盐）。
 9. **编码**：文件内容一律用 read / node 处理；`Get-Content` 在 5.1 下按 GBK 解码 UTF-8 会乱码。
 10. **安全**：不输出 API key、不下发生产凭据；五医院不可达时明确写"待现场核实"。
-11. **`build-prod-both.bat` 不能直接用于主服出包**：它没有 `--build-arg APP_VERSION`，主服 Dockerfile 的 `ARG APP_VERSION=0.9.281` 会让镜像 `version.txt`/LABEL 停在旧版本（10-23、11-01 两次踩过）。主服只用 `build-and-export.bat` 选项 2，或用 `build-prod-both.bat` 后逐端重 build 修版本。
-12. **`build-and-export.bat` 的菜单选项 1/3 会杀 8081 进程**（本机可能正是 dev 实例）→ 构建只用 `echo 2`。
+11. **`build-prod-both.bat` 不能直接用于主服出包**：它没有 `--build-arg APP_VERSION`，主服 Dockerfile 的 `ARG APP_VERSION=0.9.281` 会让镜像 `version.txt`/LABEL 停在旧版本（10-23、11-01 两次踩过）。主服走 Step 7 ① 的非交互三步并显式传版本。
+12. **`build-and-export.bat` 的菜单选项 1/3 会杀 8081 进程**（本机可能正是 dev 实例）→ 构建只选 2，且实际上不要用该菜单（见坑 14）。
 13. **`build-and-export-execution.bat` 漏 `-Pexecution`**（仅 `mvn package -DskipTests`，默认激活 main profile）→ 执行服按 Step 7 ② 手工三步构建。
-14. **三个 bat 末尾都有 `pause`**（前端还有 `pause >nul`）：必须 `cmd /c "(echo 2 & echo.) | xxx.bat"` 或 `cmd /c "echo.|xxx.bat"` 喂 stdin，否则后台执行永久挂起、看起来"构建没动静"。
-15. **前端脚本 docker 不可用时会 `SKIP_DOCKER=1` 继续出包** → 包内没有新镜像，部署后仍是旧前端（2026-10-26 事故同型）。构建前 `docker --version` 失败必须中止。
-16. **前端构建依赖网络**：`npm install`（失败分支走 `--force` 重装）、首次 `docker pull nginx:1.25-alpine`；离线机器需预热镜像/缓存。
-17. **构建成功 ≠ 包正确**：必须回读 `docker run --rm med-ai-main:latest cat /app/version.txt`（== pom revision）与包内 dist hash；否则会重复"包内 package.json 已 bump、产物仍是旧版"的漂移。
+14. **批处理不能靠"喂 stdin"非交互运行**：`build-and-export.bat` 用 `set /p` 读菜单，后台/管道执行时读不到输入 → 无限 `[ERROR] Invalid option`（2026-11-02 实测，只能 kill）。主服改为非交互三步；`build-and-package.bat` 可用 `cmd /c "(echo. & echo.) | ..."`，但**管道方式退出码可能为 1（产物其实正常）**——成功判据必须看产物/镜像校验，不看 exit code。
+15. **`docker run --rm <image> cat /app/version.txt` 会挂住**：镜像默认 entrypoint 是启动脚本，`cat` 被当参数忽略 → 实际去连生产 Oracle 并超时（2026-11-02 实测，`--rm` 也没能立刻回收容器）。读版本必须 `--entrypoint cat`；事后 `docker ps -a` 查残留容器并 `docker rm -f`。
+16. **前端脚本 docker 不可用时会 `SKIP_DOCKER=1` 继续出包** → 包内没有新镜像，部署后仍是旧前端（2026-10-26 事故同型）。构建前 `docker --version` 失败必须中止。
+17. **前端构建依赖网络**：`npm install`（失败分支走 `--force` 重装）、首次 `docker pull nginx:1.25-alpine`；离线机器需预热镜像/缓存。
+18. **构建成功 ≠ 包正确**：必须回读 `docker run --rm --entrypoint cat med-ai-main:latest /app/version.txt`（== pom revision）与包内 dist hash；否则会重复"包内 package.json 已 bump、产物仍是旧版"的漂移。
 
 ## 4. 边界
 
