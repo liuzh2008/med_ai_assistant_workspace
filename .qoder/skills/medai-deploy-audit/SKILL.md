@@ -1,6 +1,6 @@
 ---
 name: medai-deploy-audit
-description: MedAI 前后端与执行服务器 deploy 目录"部署包版本"与 doc/部署清单 的对账体检。判定五医院（cdwyy）、盐亭（yanting）、测试服（testserver）三端部署包是否最新，输出需要部署的服务器、SQL 脚本、配置文件清单与现场核实点。触发词：检查部署包、deploy 目录版本、五医院部署文件、部署清单对比、这次上线要部署什么、三端版本对账、部署包是不是最新。
+description: MedAI 前后端与执行服务器 deploy 目录"部署包版本"与 doc/部署清单 的对账体检。判定五医院（cdwyy）、盐亭（yanting）、测试服（testserver）三端部署包是否最新，输出需要部署的服务器、SQL 脚本、配置文件清单与现场核实点；核对后询问是否运行构建 bat（build-and-export.bat / build-and-package.bat）重建部署包，用户确认才执行并回读校验版本与 dist hash。触发词：检查部署包、deploy 目录版本、五医院部署文件、部署清单对比、这次上线要部署什么、三端版本对账、部署包是不是最新、重新构建部署包、构建 bat、重建 tar、重建前端包。
 ---
 
 # MedAI 部署包 × 部署清单 对账
@@ -14,7 +14,8 @@ description: MedAI 前后端与执行服务器 deploy 目录"部署包版本"与
 1. 确认工作区根：`pwd`（预期 `D:\MedAiAssistant 1.0 BS`）。
 2. 读 `doc/部署清单.md`（用 read 工具，禁止 `Get-Content`）。
 3. 按 §1 流程逐端核对，按 §2 格式输出四段结论。
-4. 用户未指定医院时默认 `cdwyy`（五医院）；提到盐亭用 `yanting`、测试服 `testserver`。
+4. 结论输出后按 **Step 7** 询问是否运行构建 bat 重建部署包（默认不构建，用户选择"是"才执行，并回读校验）。
+5. 用户未指定医院时默认 `cdwyy`（五医院）；提到盐亭用 `yanting`、测试服 `testserver`。
 
 ## 0. 参数
 
@@ -134,6 +135,94 @@ node -e "console.log(JSON.parse(require('fs').readFileSync('D:/MedAiAssistant 1.
 - 前端 `.env.production` 改了但 zip 生成时间早于改动 → 新包才生效（例：`VUE_APP_DSH_ASSISTANT_ENABLED=false` 未进 0.9.301 包）。
 - `prompt-templates/manifest.json` 版本不递增 → 同步按"版本一致"静默跳过（2026-11-01 已踩坑）。
 
+### Step 7 构建（必须经用户确认，默认不做）
+
+核对与四段结论输出完毕后，**先用 `ask_user_question` 询问**，不要擅自构建：
+
+> 问题：三端部署包落后于仓库，是否现在运行构建脚本重建？
+> 选项（推荐项放第一，按 Step 2/4 的判定动态生成）：
+> - **全部重建（后端主服 + 执行服 + 前端）** —— 三端都落后时推荐
+> - **只重建后端（主服 + 执行服）** —— 仅后端有改动
+> - **只重建前端** —— 仅前端有改动
+> - **不构建，只保留清单**（默认）
+
+用户选"是"后按端执行（**全部在 PowerShell 中 `cmd /c` 调用，bat 含 `pause` 必须喂 stdin，否则永久挂起**）：
+
+**① 主服务器（必须用它，才会传 APP_VERSION）**
+
+```powershell
+cd "$ROOT\med_ai_assistant_1.0_bs_backend"
+cmd /c "(echo 2 & echo.) | build-and-export.bat"
+# 产出：deploy\main-linux-oracle\med-ai-main.tar
+```
+
+- 脚本是 1/2/3/0 菜单，**只能选 2（Build JAR and export Docker image）**。
+- 选项 1/3 会 `taskkill` 占用 8081 的进程（本机 dev 实例），**禁止**。
+- 脚本自动读 `pom.xml <revision>` 传 `--build-arg APP_VERSION`，镜像内 `version.txt` / LABEL 才正确。
+
+**② 执行服务器（不要用 `build-and-export-execution.bat`：它漏了 `-Pexecution`）**
+
+```powershell
+cd "$ROOT\med_ai_assistant_1.0_bs_backend"
+mvn package -Pexecution -DskipTests
+if ($LASTEXITCODE -ne 0) { throw "JAR 构建失败" }
+docker build -t med-ai-execution:latest -f deploy/execution-linux/Dockerfile.execution.linux .
+if ($LASTEXITCODE -ne 0) { throw "执行服镜像构建失败" }
+docker save -o deploy/execution-linux/med-ai-execution.tar med-ai-execution:latest
+# 产出：deploy\execution-linux\med-ai-execution.tar
+```
+
+**③ 前端（会重建 dist + 镜像 + zip）**
+
+```powershell
+cd "$ROOT\med_ai_assistant_1.0_bs_vue"
+cmd /c "echo.|build-and-package.bat"
+# 产出：dist\、deploy\med_ai_assistant_1.0_bs_vue\（含 medai-images.tar）、deploy\med_ai_assistant_1.0_bs_vue.zip
+```
+
+构建前检查（缺一即停）：
+
+```powershell
+docker --version; mvn -v; node -v; npm -v          # 工具链
+git -C "$ROOT\med_ai_assistant_1.0_bs_backend" status --short   # 源码应干净，避免把调试改动打进包
+```
+
+构建前建议备份旧产物（覆盖前留回滚点）：
+
+```powershell
+$ts = Get-Date -Format 'yyyyMMdd-HHmm'
+$bak = "$ROOT\deploy-backup-$ts"; New-Item -ItemType Directory -Force $bak | Out-Null
+Copy-Item "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\med-ai-main.tar" $bak -ErrorAction SilentlyContinue
+Copy-Item "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\execution-linux\med-ai-execution.tar" $bak -ErrorAction SilentlyContinue
+Copy-Item "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.zip" $bak -ErrorAction SilentlyContinue
+```
+
+**构建后强制校验（不回读就宣布成功）**
+
+```powershell
+# 后端版本：必须等于 pom <revision>（当前 0.9.302），否则说明 APP_VERSION 没传进去
+docker run --rm med-ai-main:latest cat /app/version.txt
+docker inspect --format '{{index .Config.Labels "version"}}' med-ai-main:latest
+
+# 执行服（无 version.txt，用 LABEL/构建时间判断）
+docker inspect --format '{{.Created}} {{index .Config.Labels "version"}}' med-ai-execution:latest
+
+# 前端：包内 dist 入口 hash 必须等于工作区最新 dist
+node -e "const fs=require('fs');const d='D:/MedAiAssistant 1.0 BS/med_ai_assistant_1.0_bs_vue';
+const r=p=>[...new Set((fs.readFileSync(p,'utf8').match(/app\.[a-z0-9]+\.js/g)||[]))].join(',');
+console.log('包内:',r(d+'/deploy/med_ai_assistant_1.0_bs_vue/dist/index.html'));
+console.log('工作区:',r(d+'/dist/index.html'));"
+docker run --rm --entrypoint sh med-ai-assistant-frontend:latest -c 'grep -o "app\.[a-z0-9]*\.js" /usr/share/nginx/html/index.html'
+
+# 产物时间戳/大小（tar 约 237MB，zip 约 42MB）
+Get-ChildItem "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\med-ai-main.tar",
+              "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\execution-linux\med-ai-execution.tar",
+              "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.zip" |
+  Select-Object LastWriteTime, Length, Name
+```
+
+**判定：任一校验不符 → 报告失败点并停止，不进入部署、不宣布"包已就绪"。** 校验通过后回到 §2 输出格式，把"版本/HEAD/是否最新"三列更新为构建后的真实值。
+
 ## 2. 输出格式（固定四段）
 
 ```markdown
@@ -170,9 +259,16 @@ node -e "console.log(JSON.parse(require('fs').readFileSync('D:/MedAiAssistant 1.
 8. **绝不覆盖** `.env.main` / `.env.execution`（Oracle 账号、DeepSeek key、加密盐）。
 9. **编码**：文件内容一律用 read / node 处理；`Get-Content` 在 5.1 下按 GBK 解码 UTF-8 会乱码。
 10. **安全**：不输出 API key、不下发生产凭据；五医院不可达时明确写"待现场核实"。
+11. **`build-prod-both.bat` 不能直接用于主服出包**：它没有 `--build-arg APP_VERSION`，主服 Dockerfile 的 `ARG APP_VERSION=0.9.281` 会让镜像 `version.txt`/LABEL 停在旧版本（10-23、11-01 两次踩过）。主服只用 `build-and-export.bat` 选项 2，或用 `build-prod-both.bat` 后逐端重 build 修版本。
+12. **`build-and-export.bat` 的菜单选项 1/3 会杀 8081 进程**（本机可能正是 dev 实例）→ 构建只用 `echo 2`。
+13. **`build-and-export-execution.bat` 漏 `-Pexecution`**（仅 `mvn package -DskipTests`，默认激活 main profile）→ 执行服按 Step 7 ② 手工三步构建。
+14. **三个 bat 末尾都有 `pause`**（前端还有 `pause >nul`）：必须 `cmd /c "(echo 2 & echo.) | xxx.bat"` 或 `cmd /c "echo.|xxx.bat"` 喂 stdin，否则后台执行永久挂起、看起来"构建没动静"。
+15. **前端脚本 docker 不可用时会 `SKIP_DOCKER=1` 继续出包** → 包内没有新镜像，部署后仍是旧前端（2026-10-26 事故同型）。构建前 `docker --version` 失败必须中止。
+16. **前端构建依赖网络**：`npm install`（失败分支走 `--force` 重装）、首次 `docker pull nginx:1.25-alpine`；离线机器需预热镜像/缓存。
+17. **构建成功 ≠ 包正确**：必须回读 `docker run --rm med-ai-main:latest cat /app/version.txt`（== pom revision）与包内 dist hash；否则会重复"包内 package.json 已 bump、产物仍是旧版"的漂移。
 
 ## 4. 边界
 
-- 不 `git push`、不 `git init`、不修改任何部署包（除非用户要求"重新构建包"）。
+- 不 `git push`、不 `git init`；**未经 Step 7 用户确认不运行构建脚本**；构建仅重建本地 deploy 产物，**不部署、不触碰生产**。
 - 不连五医院/盐亭生产（网络隔离）；核实项交给现场。
 - 需要出上线单时，转 `deploy-order-doc` skill，产物落 `doc/部署说明/部署说明<YYYY-MM-DD>-<HHmm>.md`。
