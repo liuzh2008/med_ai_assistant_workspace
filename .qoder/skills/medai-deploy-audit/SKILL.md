@@ -137,6 +137,39 @@ node -e "console.log(JSON.parse(require('fs').readFileSync('D:/MedAiAssistant 1.
 
 ### Step 7 构建（必须经用户确认，默认不做）
 
+#### 7.0 前置条件（缺一即停）
+
+| 检查 | 命令 | 期望 / 处理 |
+|---|---|---|
+| Docker 守护进程 | `docker version --format '{{.Server.Version}}'` | 最常见故障：Docker Desktop 未启动 → `Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'`，轮询 ≤5 分钟（实测 15s 就绪，server 29.7.2） |
+| 工具链 | `mvn -v; node -v; npm -v` | mvn 3.9.10（`.m2\wrapper`）/ node v24 / npm 11 |
+| 版本一致 | `pom.xml <revision>` vs `package.json version` | 必须相同（当前 **0.9.302**）；不一致先 bump，不要带不一致构建 |
+| 源码状态 | `git -C <repo> status --short` | 关注**代码**改动；untracked 文档/脚本不影响产物，但要在报告里写明"不影响产物" |
+| 磁盘 | `Get-PSDrive D` | 主服 tar 226MB + 执行服 tar 226MB + 前端 zip 42MB + 镜像 40MB；备份再翻倍 → 预留 ≥1GB |
+| 旧产物备份 | 见下 | 三端产物会被**原地覆盖**，覆盖前留回滚点 |
+
+```powershell
+# 备份旧产物（放 _tmp，不放工作区根，避免污染 git 状态）
+$ROOT='D:\MedAiAssistant 1.0 BS'
+$ts = Get-Date -Format 'yyyyMMdd-HHmm'
+$bak = "$ROOT\_tmp\deploy-backup-$ts"; New-Item -ItemType Directory -Force $bak | Out-Null
+Copy-Item "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\med-ai-main.tar" $bak -ErrorAction SilentlyContinue
+Copy-Item "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\execution-linux\med-ai-execution.tar" $bak -ErrorAction SilentlyContinue
+Copy-Item "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.zip" $bak -ErrorAction SilentlyContinue
+```
+
+会被覆盖的产物：`deploy/main-linux-oracle/med-ai-main.tar`、`deploy/execution-linux/med-ai-execution.tar`、`deploy/med_ai_assistant_1.0_bs_vue.zip`、`deploy/med_ai_assistant_1.0_bs_vue/`（dist + medai-images.tar）、`med_ai_assistant_1.0_bs_vue/dist/`、`med_ai_assistant_1.0_bs_vue/medai-images.tar`。
+
+#### 7.1 构建方式选择
+
+| 端 | 推荐方式 | 说明 |
+|---|---|---|
+| 主服务器 | 非交互三步（7.2） | 后台/管道执行**绝不能**用 `build-and-export.bat`：它是 `set /p` 菜单，读不到 stdin → 死循环刷 `[ERROR] Invalid option`（2026-11-02 实测，只能 kill） |
+| 执行服务器 | 非交互三步（7.3） | `build-and-export-execution.bat` 漏 `-Pexecution`（默认 main profile） |
+| 前端 | `build-and-package.bat`（7.4） | 唯一入口，内含 npm build → dist 校验 → 镜像 → save → 正斜杠 zip |
+| 后端两端一起 | **不推荐** `build-prod-both.bat` | 不传 `--build-arg APP_VERSION`，主服 Dockerfile 默认 `0.9.281` → version.txt/LABEL 停在旧版 |
+| 人工前台 | 可跑 `build-and-export.bat` 选 2 | 仅限人盯着终端；选项 1/3 会 `taskkill` 8081，禁止 |
+
 核对与四段结论输出完毕后，**先用 `ask_user_question` 询问**，不要擅自构建：
 
 > 问题：三端部署包落后于仓库，是否现在运行构建脚本重建？
@@ -146,9 +179,11 @@ node -e "console.log(JSON.parse(require('fs').readFileSync('D:/MedAiAssistant 1.
 > - **只重建前端** —— 仅前端有改动
 > - **不构建，只保留清单**（默认）
 
-用户选"是"后按端执行（**全部在 PowerShell 中 `cmd /c` 调用，bat 含 `pause` 必须喂 stdin，否则永久挂起**）：
+用户确认后按端执行。**耗时参考（本机实测 2026-11-02）**：主服 mvn 5.7s（增量）+ docker build ≈90s + save ≈60s；前端 npm install 2s（缓存）+ vue build 28s + docker build ≈20s + save ≈30s + zip ≈10s。
 
-**① 主服务器（用非交互三步，不要调菜单脚本）**
+#### 7.2 主服务器（非交互三步，不要调菜单脚本）
+
+> 产出：`deploy/main-linux-oracle/med-ai-main.tar` + 镜像 `med-ai-main:latest`
 
 ```powershell
 cd "$ROOT\med_ai_assistant_1.0_bs_backend"
@@ -164,7 +199,9 @@ docker save -o deploy/main-linux-oracle/med-ai-main.tar med-ai-main:latest
 - `--build-arg APP_VERSION` **必须显式传**（主服 Dockerfile 默认 `0.9.281`）；版本取 `pom.xml <revision>`。
 - 用 `mvn package` 而非 `-Pexecution`：主服走默认 `main` profile。
 
-**② 执行服务器（不要用 `build-and-export-execution.bat`：它漏了 `-Pexecution`）**
+#### 7.3 执行服务器（非交互三步；`build-and-export-execution.bat` 漏 `-Pexecution`）
+
+> 产出：`deploy/execution-linux/med-ai-execution.tar` + 镜像 `med-ai-execution:latest`
 
 ```powershell
 cd "$ROOT\med_ai_assistant_1.0_bs_backend"
@@ -176,32 +213,39 @@ docker save -o deploy/execution-linux/med-ai-execution.tar med-ai-execution:late
 # 产出：deploy\execution-linux\med-ai-execution.tar
 ```
 
-**③ 前端（会重建 dist + 镜像 + zip）**
+#### 7.4 前端（`build-and-package.bat`，会重建 dist + 镜像 + zip）
+
+> 产出：`dist/`、`deploy/med_ai_assistant_1.0_bs_vue/`（含 `medai-images.tar`）、`deploy/med_ai_assistant_1.0_bs_vue.zip`
 
 ```powershell
 cd "$ROOT\med_ai_assistant_1.0_bs_vue"
-cmd /c "echo.|build-and-package.bat"
+# 脚本末尾有 pause >nul，必须喂空行；后台 job 的退出码可能为 1，以 7.6 产物校验为准
+cmd /c "(echo. & echo. & echo.) | build-and-package.bat"
 # 产出：dist\、deploy\med_ai_assistant_1.0_bs_vue\（含 medai-images.tar）、deploy\med_ai_assistant_1.0_bs_vue.zip
 ```
 
-构建前检查（缺一即停）：
+#### 7.5 后台执行规范（DSH job）
 
-```powershell
-docker --version; mvn -v; node -v; npm -v          # 工具链
-git -C "$ROOT\med_ai_assistant_1.0_bs_backend" status --short   # 源码应干净，避免把调试改动打进包
-```
+- 长命令用 `run_in_background: true` 启动，结束用 `job_output(wait: true)` 收；**不要**用同步命令硬等（会触发工具超时并转入后台）。
+- **不要信退出码**：前端 `cmd /c "(echo. & echo.) | build-and-package.bat"` 实测 job exit code **1**，而产物完全正常 → 成功判据一律看 7.6 校验。
+- 后台 job 里禁止交互式 bat（`set /p` / `pause`）；主服必须走非交互三步。
+- 主服与前端可并行（不同目录/镜像），但 docker build 吃 CPU/IO；机器紧张时顺序跑，失败重试成本更低。
+- 日志直接看 `job_output`（自动截尾）；**不要**用 `Get-Content` 读中文日志（GBK 乱码），需要落盘时用 node 写 UTF-8。
 
-构建前建议备份旧产物（覆盖前留回滚点）：
+#### 7.6 构建后强制校验（不回读不宣布成功）
 
-```powershell
-$ts = Get-Date -Format 'yyyyMMdd-HHmm'
-$bak = "$ROOT\deploy-backup-$ts"; New-Item -ItemType Directory -Force $bak | Out-Null
-Copy-Item "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\med-ai-main.tar" $bak -ErrorAction SilentlyContinue
-Copy-Item "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\execution-linux\med-ai-execution.tar" $bak -ErrorAction SilentlyContinue
-Copy-Item "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.zip" $bak -ErrorAction SilentlyContinue
-```
-
-**构建后强制校验（不回读就宣布成功）**
+| 端 | 校验 | 期望 |
+|---|---|---|
+| 主服 | `--entrypoint cat /app/version.txt` | == `pom <revision>`（0.9.302） |
+| 主服 | `docker inspect --format '{{.Config.Labels.version}}'` | == 0.9.302 |
+| 主服 | tar mtime / 大小 | 晚于构建开始 / ≈226MB |
+| 执行服 | `docker inspect --format '{{.Created}}'` | 新时间（无 version.txt） |
+| 执行服 | tar mtime / 大小 | 新 / ≈226MB |
+| 前端 | 包内 dist 入口 == 工作区 dist 入口 | 同一 `app.<hash>.js` |
+| 前端 | 镜像内 `index.html` 入口 | 同一 hash |
+| 前端 | zip 条目 / `.map` / 反斜杠 | ≈230 / 0 / 0 |
+| 前端 | zip / medai-images.tar 大小 | ≈42MB / ≈40MB |
+| 前端 | 包内 `.env.production` | 含 `VUE_APP_DSH_ASSISTANT_ENABLED=false`（生产） |
 
 ```powershell
 # 后端版本：必须等于 pom <revision>（当前 0.9.302），否则说明 APP_VERSION 没传进去
@@ -209,8 +253,8 @@ Copy-Item "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.
 docker run --rm --entrypoint cat med-ai-main:latest /app/version.txt
 docker inspect --format '{{.Config.Labels.version}}' med-ai-main:latest
 
-# 执行服（无 version.txt，用 LABEL/构建时间判断）
-docker inspect --format '{{.Created}} {{index .Config.Labels "version"}}' med-ai-execution:latest
+# 执行服（无 version.txt，用构建时间判断；注意模板里的引号在 pwsh 下会失效，用 .Config.Labels.version 点取法）
+docker inspect --format '{{.Created}} | {{.Config.Labels.version}}' med-ai-execution:latest
 
 # 前端：包内 dist 入口 hash 必须等于工作区最新 dist
 node -e "const fs=require('fs');const d='D:/MedAiAssistant 1.0 BS/med_ai_assistant_1.0_bs_vue';
@@ -219,7 +263,13 @@ console.log('包内:',r(d+'/deploy/med_ai_assistant_1.0_bs_vue/dist/index.html')
 console.log('工作区:',r(d+'/dist/index.html'));"
 docker run --rm --entrypoint sh med-ai-assistant-frontend:latest -c 'grep -o "app\.[a-z0-9]*\.js" /usr/share/nginx/html/index.html'
 
-# 产物时间戳/大小（tar 约 237MB，zip 约 42MB）
+# 前端 zip 结构（条目数 / 无 .map / 无反斜杠）与关键开关
+$zip = "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.zip"
+$e = tar -tf $zip 2>$null
+Write-Output ("条目: " + $e.Count + "  .map: " + ($e | Select-String '\.map$' | Measure-Object).Count + "  反斜杠: " + ($e | Select-String '\\' | Measure-Object).Count)
+Select-String -Path "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue\.env.production" -Pattern 'DSH_ASSISTANT'
+
+# 产物时间戳/大小（tar 约 226MB，zip 约 42MB）
 Get-ChildItem "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\med-ai-main.tar",
               "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\execution-linux\med-ai-execution.tar",
               "$ROOT\med_ai_assistant_1.0_bs_vue\deploy\med_ai_assistant_1.0_bs_vue.zip" |
@@ -227,6 +277,31 @@ Get-ChildItem "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\me
 ```
 
 **判定：任一校验不符 → 报告失败点并停止，不进入部署、不宣布"包已就绪"。** 校验通过后回到 §2 输出格式，把"版本/HEAD/是否最新"三列更新为构建后的真实值。
+
+#### 7.7 失败处理与回滚
+
+- 任一步非 0 → 停止，保留 `job_output` 尾部 30 行与失败命令；不继续下一步。
+- `docker build` 常见失败：Docker 未启动（npipe 连接失败）/ 基础镜像拉取失败（离线）/ 上下文过大（主服 383MB 属正常）。
+- `docker run` 校验挂住 → kill job，`docker ps -a --filter "ancestor=<image>"` 查残留并 `docker rm -f`。
+- 回滚：把 `_tmp\deploy-backup-<ts>\` 里的 tar/zip 复制回原位（构建只覆盖本地产物，未动服务器）。
+- **构建 ≠ 部署**：不自动上传、不重启任何服务器；下一步是 `deploy-order-doc` 出上线单。
+
+#### 7.8 注意事项（每条都有实测依据，构建前逐条过）
+
+1. **Docker Desktop 常未启动**（2026-11-02 首次构建即遇到）→ 先启动并轮询就绪，否则 `docker build/save` 直接报 npipe 连接失败。
+2. **交互菜单 bat 在后台必死循环**：`build-and-export.bat` 用 `set /p` 读菜单，`(echo 2 …) | bat` 在 DSH 后台执行时读不到输入 → 无限 `[ERROR] Invalid option`，只能 kill job；主服改非交互三步。
+3. **`--build-arg APP_VERSION` 必传**：主服 Dockerfile `ARG APP_VERSION=0.9.281`，不传则 `version.txt`/LABEL 停在 0.9.281（10-23、11-01 各踩一次）。版本取 `pom.xml <revision>`。
+4. **执行服必须 `-Pexecution`**：`build-and-export-execution.bat` 与 `build-prod-both.bat` 都没传，会以 main profile 打包。
+5. **前端 docker 不可用会静默降级**：脚本 `SKIP_DOCKER=1` 继续出包 → 包内没有新镜像，部署后仍是旧前端；构建前 `docker --version` 失败必须中止。
+6. **前端构建依赖网络**：`npm install`（失败分支 `--force` 重装）、首次 `docker pull nginx:1.25-alpine`；离线机器先预热。
+7. **`cmd /c` + `pause` 需喂空行**：`cmd /c "(echo. & echo. & echo.) | build-and-package.bat"`；但**退出码不可信**（实测 1，产物正常）。
+8. **读镜像版本必须 `--entrypoint cat`**：否则 `cat` 被 entrypoint 当参数忽略，容器去连生产 Oracle 挂住并留下运行中容器。
+9. **不要杀 8081**：菜单选项 1/3 会 `taskkill` 占用 8081 的进程（本机 dev 实例）；非交互三步天然不碰端口。
+10. **编码混杂**：`build-and-export.bat` 是 GBK，`build-and-export-execution.bat` / `build-prod-both.bat` / 前端 bat 是 UTF-8；用 node `TextDecoder` 检测后再读，禁止 `Get-Content` 读中文。
+11. **构建前版本一致**：`pom <revision>` 与 `package.json version` 必须相同；只改一侧会得到"后端 0.9.302 / 前端 0.9.301"的混合包。
+12. **产物 mtime 必须变**：三端 mtime 晚于构建开始时间；没变说明脚本提前退出（静默失败）。
+13. **备份放 `_tmp`**：不要放工作区根，避免污染 `git status`。
+14. **只重建、不部署**：产物留在本机 deploy 目录；上传/重启属于部署步骤，另走上线单。
 
 ## 2. 输出格式（固定四段）
 
@@ -264,14 +339,7 @@ Get-ChildItem "$ROOT\med_ai_assistant_1.0_bs_backend\deploy\main-linux-oracle\me
 8. **绝不覆盖** `.env.main` / `.env.execution`（Oracle 账号、DeepSeek key、加密盐）。
 9. **编码**：文件内容一律用 read / node 处理；`Get-Content` 在 5.1 下按 GBK 解码 UTF-8 会乱码。
 10. **安全**：不输出 API key、不下发生产凭据；五医院不可达时明确写"待现场核实"。
-11. **`build-prod-both.bat` 不能直接用于主服出包**：它没有 `--build-arg APP_VERSION`，主服 Dockerfile 的 `ARG APP_VERSION=0.9.281` 会让镜像 `version.txt`/LABEL 停在旧版本（10-23、11-01 两次踩过）。主服走 Step 7 ① 的非交互三步并显式传版本。
-12. **`build-and-export.bat` 的菜单选项 1/3 会杀 8081 进程**（本机可能正是 dev 实例）→ 构建只选 2，且实际上不要用该菜单（见坑 14）。
-13. **`build-and-export-execution.bat` 漏 `-Pexecution`**（仅 `mvn package -DskipTests`，默认激活 main profile）→ 执行服按 Step 7 ② 手工三步构建。
-14. **批处理不能靠"喂 stdin"非交互运行**：`build-and-export.bat` 用 `set /p` 读菜单，后台/管道执行时读不到输入 → 无限 `[ERROR] Invalid option`（2026-11-02 实测，只能 kill）。主服改为非交互三步；`build-and-package.bat` 可用 `cmd /c "(echo. & echo.) | ..."`，但**管道方式退出码可能为 1（产物其实正常）**——成功判据必须看产物/镜像校验，不看 exit code。
-15. **`docker run --rm <image> cat /app/version.txt` 会挂住**：镜像默认 entrypoint 是启动脚本，`cat` 被当参数忽略 → 实际去连生产 Oracle 并超时（2026-11-02 实测，`--rm` 也没能立刻回收容器）。读版本必须 `--entrypoint cat`；事后 `docker ps -a` 查残留容器并 `docker rm -f`。
-16. **前端脚本 docker 不可用时会 `SKIP_DOCKER=1` 继续出包** → 包内没有新镜像，部署后仍是旧前端（2026-10-26 事故同型）。构建前 `docker --version` 失败必须中止。
-17. **前端构建依赖网络**：`npm install`（失败分支走 `--force` 重装）、首次 `docker pull nginx:1.25-alpine`；离线机器需预热镜像/缓存。
-18. **构建成功 ≠ 包正确**：必须回读 `docker run --rm --entrypoint cat med-ai-main:latest /app/version.txt`（== pom revision）与包内 dist hash；否则会重复"包内 package.json 已 bump、产物仍是旧版"的漂移。
+11. **构建相关坑**：见 **Step 7.8**（14 条，均带实测依据）。最高频 4 条：Docker Desktop 未启动、菜单 bat 后台死循环、`--build-arg APP_VERSION` 必传、读镜像版本必须 `--entrypoint cat`。
 
 ## 4. 边界
 
