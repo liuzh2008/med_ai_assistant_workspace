@@ -7,7 +7,16 @@ description: Push Git commits to GitHub via SSH with aTrust VPN-compatible KEX a
 
 ## Background
 
-深信服 aTrust VPN 的 DPI 模块拦截 GitHub SSH 默认密钥交换算法 `curve25519-sha256`，导致 `git push` 超时。需使用 `diffie-hellman-group-exchange-sha256` 算法。
+**2026-11-04 修订（重要）**：GitHub 已不再提供 `diffie-hellman-group-exchange-sha256`
+（当前 offer：`mlkem768x25519-sha256` / `sntrup761x25519-sha512` / `curve25519-sha256` / `ecdh-*`）。
+旧配置把 KEX 固定成 group-exchange 会直接报
+`no matching key exchange method found`，**任何仓库都推不上去**。
+
+实测当前网络（本机 + aTrust）下 `curve25519-sha256` **可正常认证**（aTrust 未再拦截）。
+故配置改回 curve25519；若将来又被 DPI 拦截，优先试 `sntrup761x25519-sha512`（GitHub 提供，DPI 特征不同）。
+
+历史背景：2026-09 深信服 aTrust VPN 的 DPI 曾拦截 `curve25519-sha256`，当时用
+`diffie-hellman-group-exchange-sha256` 绕开；该算法现已被 GitHub 移除。
 
 ## Push Workflow
 
@@ -41,13 +50,13 @@ git push
 
 #### 2a. 检查 SSH 配置
 
-读取 `~/.ssh/config`，确认包含以下配置块：
+读取 `~/.ssh/config`，确认 github.com 块使用 GitHub 当前支持的算法（**不要再写 group-exchange**）：
 
 ```
 Host github.com
     HostName github.com
     User git
-    KexAlgorithms diffie-hellman-group-exchange-sha256
+    KexAlgorithms curve25519-sha256
 ```
 
 #### 2b. 如缺失，追加配置
