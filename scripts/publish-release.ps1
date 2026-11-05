@@ -235,7 +235,7 @@ function Publish-Backend {
         }
     }
     $manifestPath = Join-Path $RelDir "med_ai_assistant_backend-manifest-$Version.json"
-    $manifest | ConvertTo-Json -Depth 6 | Set-Content -Path $manifestPath -Encoding UTF8
+    [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 6), [Text.UTF8Encoding]::new($false))
     Write-Host "==> manifest: $manifestPath"
 
     $assets = @()
@@ -332,7 +332,7 @@ function Publish-Frontend {
         }
     }
     $manifestPath = Join-Path $RelDir "med_ai_assistant_frontend-manifest-$Version.json"
-    $manifest | ConvertTo-Json -Depth 6 | Set-Content -Path $manifestPath -Encoding UTF8
+    [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 6), [Text.UTF8Encoding]::new($false))
 
     Publish-GiteeRelease -Repo "med_ai_assistant_1.0_bs_vue" -Tag "frontend-v$Version" `
         -DisplayName "Frontend build v$Version" -AssetPaths @($zipPath, $manifestPath) -TargetBranch "master"
