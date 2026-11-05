@@ -12,6 +12,42 @@
 ## 铁律（最高优先级，用户明确要求，违反即违规）
 - **永远不要杀掉 3081 开发实体**：端口 3081 上运行的 DSH web 实例（node / `apps/cli/src/bin.ts`，命令行含 `--port 3081`，DSH_HOME=~/.dsh-dev 的 dev 沙箱）是不可触碰的开发实体。禁止 kill / Stop-Process / taskkill / 重启其进程或子进程树，禁止修改其启动配置。需要重启 DSH 时只能操作 3080 正式实例（`start-dsh.cmd` / `restart-dsh.ps1`）；3081 永远保持运行。
 
+## 文件命名规范（硬性要求，用户明确要求，违反即违规）
+
+**核心原则：文件名必须让人只看名字就知道「内容、归属、用途」。禁止偷懒式泛名。** 命名前先问：三个月后别人（或自己）看到这个名字，能否不看内容就判断它是什么、属于哪次改动？
+
+### 文档文件名
+
+- 必须包含 **主题 + 时间或版本**；同一主题多份时用时间/序号区分。
+- 禁止使用：`新建文档.md`、`说明.md`、`文档.md`、`方案.md`、`temp.md`、`未命名.md`、`1.md`、`test.md`、`笔记.md` 这类无法判断内容的名称。
+- 遵循既有前缀约定（新建文档先看同目录已有文件的命名风格，照做，不自创）：
+  - 部署说明：`部署说明<YYYY-MM-DD>-<HHmm>-<主题>.md`（例：`部署说明2026-11-05-1025-自动部署链路切换.md`）
+  - 设计/调研：`<主题>-<YYYYMMDD>.md`（例：`自动部署链路改造设计-20261104.md`）
+  - 问题修复：`<问题简述>-<YYYYMMDD>.md`（例：`dsh-retrace插件适配DSH0.1.5失败-20260911.md`）
+- 文档内一级标题必须与文件名主题一致，不得「文件名写 A、标题写 B」。
+
+### 代码文件名
+
+- 遵循语言/框架既有约定，不得自创风格：
+  - Java：类名即文件名，`PascalCase`（`BuildFileController.java`）；测试 `XxxTest.java`
+  - Vue 组件：`PascalCase.vue`（`TaskTriggerPage.vue`）
+  - TS/JS 模块：`kebab-case.ts`
+  - Shell / PowerShell：`kebab-case.sh` / `kebab-case.ps1`（`gitee-pull-release.sh`、`publish-release.ps1`）
+  - 配置文件：保持工具默认名（`application.properties`、`pom.xml`、`package.json`），**禁止改名**
+- 禁止：`test.sh`、`new.ts`、`utils2.js`、`temp.sh`、`a.java`、`Untitled.java`、`xxx` 等占位名。
+- 序号后缀必须有语义（`-offline` 优于 `-v2`）；同一目录不得出现 `script1.sh` / `script2.sh` 这种无意义编号。
+- 一个文件承担多职责时，先拆分，而不是起名 `misc.ts` / `helper.js` 掩盖职责不清。
+
+### 临时文件
+
+- 一律放 `temp/`，且带明确前缀（`verify-*.sh`、`e2e-*.ps1`、`probe-*.txt`），用完即删。
+- **交付物禁止放 `temp/`**；临时文件禁止出现在 `doc/`、`scripts/`、`deploy/`。
+
+### 重命名
+
+- 发现历史文件名不准确时，用 `git mv` 保留历史，并 `grep` 确认无残留引用后同步更新。
+- 重命名后必须在提交信息里写明「旧名 → 新名」及原因。
+
 ## 项目身份
 - 医疗AI辅助系统 (MedAiAssistant)：Java 21 + Spring Boot 3.5.8 + Oracle 21c / Vue 3.2.13 + Element Plus；主服务器 + 执行服务器双节点。
 - 技术细节见 `.qoder/rules/`；领域知识查 `.qoder/repowiki/zh/content/`。
