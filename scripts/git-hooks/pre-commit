@@ -71,6 +71,12 @@ if [ -f "package.json" ]; then
 fi
 
 if [ "$FAIL" -ne 0 ]; then
+  # 记录拦截明细，便于事后统计"门禁实际拦下了什么"
+  {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] BLOCKED  reason=${FAIL_REASON:-unknown}"
+    git diff --cached --name-only --diff-filter=ACM 2>/dev/null | sed 's/^/  staged: /' || true
+    echo
+  } >> "$(git rev-parse --git-dir)/precommit-rejections.log" 2>/dev/null || true
   echo
   echo "${RED}提交被门禁拦截：请先修复上述问题（或必要时 SKIP_PRECOMMIT=1 跳过）${NC}" >&2
   exit 1
