@@ -300,6 +300,9 @@ function Publish-Frontend {
         $src = Join-Path $VueDir $f
         if (Test-Path $src) { Copy-Item $src (Join-Path $Pkg $f) -Force }
     }
+    # 前端白名单（key=value，构建前写入 .env.production）
+    $forceFe = Join-Path $VueDir "deploy\force-override-frontend.keys"
+    if (Test-Path $forceFe) { Copy-Item $forceFe (Join-Path $Pkg "force-override.keys") -Force }
     # 部署脚本
     foreach ($s in @("deploy\deploy-from-package.sh", "deploy\auto-deploy-frontend.sh", "deploy\restore-frontend.sh")) {
         $src = Join-Path $VueDir $s
