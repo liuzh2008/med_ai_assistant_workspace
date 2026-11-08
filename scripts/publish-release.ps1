@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     开发机构建并发布到 Gitee Release（后端 jar + 前端包，一条命令）。
 
@@ -212,6 +212,12 @@ function Publish-Backend {
     # 白名单强制覆盖清单（可选）：列入的配置键在部署时用部署包值覆盖服务器现有值
     $forceKeys = Join-Path $mainDeploy "config\force-override.keys"
     if (Test-Path $forceKeys) { Copy-Item $forceKeys (Join-Path $Pkg "config") -Force }
+    # 执行服务器白名单（key=value 自包含清单，部署时覆盖执行服务器配置）
+    $execForceKeys = Join-Path $execDeploy "config\force-override-execution.keys"
+    if (Test-Path $execForceKeys) {
+        New-Item -ItemType Directory -Path (Join-Path $Pkg "config-execution") -Force | Out-Null
+        Copy-Item $execForceKeys (Join-Path $Pkg "config-execution\force-override.keys") -Force
+    }
     Copy-Item (Join-Path $BackendDir "sql") (Join-Path $Pkg "sql") -Recurse -Force
     $mig = Join-Path $BackendDir "src\main\resources\db\migration\oracle"
     if (Test-Path $mig) {
