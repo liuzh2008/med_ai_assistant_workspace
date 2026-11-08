@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# =============================================================================
+# pre-commit 门禁（三个仓库共用同一份脚本）
+#
+# 目的：把"验证"从 agent 的自觉下沉为机制——不通过就不许提交。
+# 检查项：
+#   1. 本次暂存的 .sh 脚本必须通过 `bash -n` 语法检查
+#   2. 若仓库是 Maven 项目（存在 pom.xml），执行 `mvn -q -DskipTests compile`
+#   3. 若仓库是前端项目（package.json 含 vue），校验 package.json 可解析
+#
+# 逃生舱（仅限明确知道后果时使用）：
+#   SKIP_PRECOMMIT=1 git commit -m "..."
+#
+# 安装方式（每个仓库执行一次）：
+#   git config core.hooksPath scripts/git-hooks
+# =============================================================================
+set -uo pipefail
+
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+YELLOW=$'\033[1;33m'
+NC=$'\033[0m'
+
+log() { echo "[pre-commit] $1"; }
+ok() { echo "${GREEN}[pre-commit] ✓ $1${NC}"; }
+bad() { echo "${RED}[pre-commit] ✗ $1${NC}" >&2; }
+
+if [ "${SKIP_PRECOMMIT:-0}" = "1" ]; then
+  echo "${YELLOW}[pre-commit] SKIP_PRECOMMIT=1：跳过门禁检查${NC}" >&2
+  exit 0
+fi
+
+FAIL=0
+
+# ---- 1) 暂存的 shell 脚本语法检查 ----
+STAGED_SH="$(git diff --cached --name-only --diff-filter=ACM -- '*.sh' 2>/dev/null || true)"
+if [ -n "$STAGED_SH" ]; then
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    [ -f "$f" ] || continue
+    if bash -n "$f" 2>/tmp/precommit-bashn.err; then
+      ok "bash -n $f"
+    else
+      bad "语法错误: $f"
+      sed 's/^/    /' /tmp/precommit-bashn.err >&2 || true
+      FAIL=1
+    fi
+  done <<< "$STAGED_SH"
+fi
+
+# ---- 2) Maven 项目：编译（跳过测试） ----
+if [ -f "pom.xml" ] && [ -d "src/main/java" ]; then
+  log "检测到 Maven 项目，执行 mvn -q -DskipTests compile ..."
+  if mvn -q -DskipTests compile >/tmp/precommit-mvn.log 2>&1; then
+    ok "mvn compile"
+  else
+    bad "Maven 编译失败（末尾 40 行）："
+    tail -40 /tmp/precommit-mvn.log | sed 's/^/    /' >&2 || true
+    FAIL=1
+  fi
+fi
+
+# ---- 3) 前端项目：package.json 可解析 ----
+if [ -f "package.json" ]; then
+  if node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))" >/dev/null 2>&1; then
+    ok "package.json 可解析"
+  else
+    bad "package.json 无法解析"
+    FAIL=1
+  fi
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+  echo
+  echo "${RED}提交被门禁拦截：请先修复上述问题（或必要时 SKIP_PRECOMMIT=1 跳过）${NC}" >&2
+  exit 1
+fi
+
+ok "门禁通过"
+exit 0
