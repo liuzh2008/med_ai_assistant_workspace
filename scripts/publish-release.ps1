@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     开发机构建并发布到 Gitee Release（后端 jar + 前端包，一条命令）。
 
@@ -210,13 +210,14 @@ function Publish-Backend {
     New-Item -ItemType Directory -Path (Join-Path $Pkg "config") -Force | Out-Null
     Copy-Item (Join-Path $mainDeploy "config\application.properties") (Join-Path $Pkg "config") -Force
     # 白名单强制覆盖清单（可选）：列入的配置键在部署时用部署包值覆盖服务器现有值
-    $forceKeys = Join-Path $mainDeploy "config\force-override.keys"
-    if (Test-Path $forceKeys) { Copy-Item $forceKeys (Join-Path $Pkg "config") -Force }
-    # 执行服务器白名单（key=value 自包含清单，部署时覆盖执行服务器配置）
-    $execForceKeys = Join-Path $execDeploy "config\force-override-execution.keys"
-    if (Test-Path $execForceKeys) {
+    # 主服务器白名单（通用 + 各环境 force-override.*.keys）
+    Get-ChildItem (Join-Path $mainDeploy "config\force-override*.keys") -ErrorAction SilentlyContinue |
+        ForEach-Object { Copy-Item $_.FullName (Join-Path $Pkg "config") -Force }
+    # 执行服务器白名单（通用 + 各环境）
+    $execKeys = Get-ChildItem (Join-Path $execDeploy "config\force-override*.keys") -ErrorAction SilentlyContinue
+    if ($execKeys) {
         New-Item -ItemType Directory -Path (Join-Path $Pkg "config-execution") -Force | Out-Null
-        Copy-Item $execForceKeys (Join-Path $Pkg "config-execution\force-override.keys") -Force
+        $execKeys | ForEach-Object { Copy-Item $_.FullName (Join-Path $Pkg "config-execution\$($_.Name)") -Force }
     }
     Copy-Item (Join-Path $BackendDir "sql") (Join-Path $Pkg "sql") -Recurse -Force
     $mig = Join-Path $BackendDir "src\main\resources\db\migration\oracle"
@@ -300,9 +301,9 @@ function Publish-Frontend {
         $src = Join-Path $VueDir $f
         if (Test-Path $src) { Copy-Item $src (Join-Path $Pkg $f) -Force }
     }
-    # 前端白名单（key=value，构建前写入 .env.production）
-    $forceFe = Join-Path $VueDir "deploy\force-override-frontend.keys"
-    if (Test-Path $forceFe) { Copy-Item $forceFe (Join-Path $Pkg "force-override.keys") -Force }
+    # 前端白名单（通用 + 各环境 force-override.*.keys）
+    Get-ChildItem (Join-Path $VueDir "deploy\force-override*.keys") -ErrorAction SilentlyContinue |
+        ForEach-Object { Copy-Item $_.FullName (Join-Path $Pkg $_.Name) -Force }
     # 部署脚本
     foreach ($s in @("deploy\deploy-from-package.sh", "deploy\auto-deploy-frontend.sh", "deploy\restore-frontend.sh")) {
         $src = Join-Path $VueDir $s
