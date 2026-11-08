@@ -209,6 +209,9 @@ function Publish-Backend {
     Copy-Item (Join-Path $execDeploy "auto-deploy-execution.sh") $Pkg -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Path (Join-Path $Pkg "config") -Force | Out-Null
     Copy-Item (Join-Path $mainDeploy "config\application.properties") (Join-Path $Pkg "config") -Force
+    # 白名单强制覆盖清单（可选）：列入的配置键在部署时用部署包值覆盖服务器现有值
+    $forceKeys = Join-Path $mainDeploy "config\force-override.keys"
+    if (Test-Path $forceKeys) { Copy-Item $forceKeys (Join-Path $Pkg "config") -Force }
     Copy-Item (Join-Path $BackendDir "sql") (Join-Path $Pkg "sql") -Recurse -Force
     $mig = Join-Path $BackendDir "src\main\resources\db\migration\oracle"
     if (Test-Path $mig) {
@@ -307,9 +310,9 @@ function Publish-Frontend {
         Write-Host "==> 构建前端镜像并导出 medai-images.tar ..."
         Push-Location $VueDir
         try {
-            & docker build -t med-ai-assistant-frontend:latest . 2>&1 | Select-Object -Last 3
-            & docker pull nginx:1.25-alpine 2>&1 | Select-Object -Last 2
-            & docker save -o $imagesTar med-ai-assistant-frontend:latest nginx:1.25-alpine 2>&1 | Select-Object -Last 2
+            & cmd /c "docker build -t med-ai-assistant-frontend:latest . 2>&1" | Select-Object -Last 3
+            & cmd /c "docker pull nginx:1.25-alpine 2>&1" | Select-Object -Last 2
+            & cmd /c "docker save -o `"$imagesTar`" med-ai-assistant-frontend:latest nginx:1.25-alpine 2>&1" | Select-Object -Last 2
         } finally { Pop-Location }
     } else {
         Write-Host "==> 本机 Docker 不可用，跳过离线镜像（生产 deploy-linux.sh 会走到 --build 分支）"
